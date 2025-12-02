@@ -90,18 +90,18 @@ def get_report_type_context(report_type: str) -> str:
 **Report Type: Yearly Prediction (The Compass)**
 
 Required API Calls:
-1. /horoscope/planet-details - Get current planetary positions
-2. /horoscope/major-vdasha - Get dasha periods for the year
-3. /horoscope/major-transit - Get Saturn and Jupiter transits for next 12 months
-4. /panchang/daily - Get important dates for each month
+1. /horoscope/planet-details - Get current planetary positions and house placements
+
+IMPORTANT: Make only ONE API call to /horoscope/planet-details endpoint. 
+This endpoint returns all planetary positions, houses, and aspects needed for analysis.
 
 Focus Areas:
-- Month-by-month breakdown of events
-- Health predictions (focus on 6th house)
-- Family harmony (focus on 4th and 7th houses)
-- Financial prospects (focus on 2nd and 11th houses)
-- Career changes (focus on 10th house)
-- Major transits impact
+- Month-by-month breakdown based on current planetary positions
+- Health predictions (analyze 6th house)
+- Family harmony (analyze 4th and 7th houses)
+- Financial prospects (analyze 2nd and 11th houses)
+- Career outlook (analyze 10th house)
+- Major transits impact based on current positions
 """,
         
         "love_marriage": """
