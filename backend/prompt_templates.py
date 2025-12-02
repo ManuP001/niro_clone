@@ -128,7 +128,7 @@ Focus Areas:
 
 Required API Calls:
 1. /horoscope/planet-details - Focus on 10th house (career)
-2. /horoscope/vimshottari-dasha - Current dasha impact on career
+2. /horoscope/major-vdasha - Current dasha impact on career
 3. /horoscope/major-transit - Jupiter and Saturn influence on 10th house
 4. /panchang/daily - Find auspicious dates for interviews/job changes
 
