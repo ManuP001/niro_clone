@@ -200,39 +200,20 @@ async def generate_report_background(report: Report, request: ReportRequest):
         
         logger.info(f"Starting report generation for {report.report_id}")
         
-        # Step 2: Build prompt with API docs
-        api_docs = build_code_generation_prompt(
-            report_type=request.report_type,
-            user_data=request.birth_details.model_dump()
+        # Step 2: Fetch data from VedicAstroAPI (using direct client for MVP reliability)
+        logger.info("Fetching data from VedicAstroAPI...")
+        bd = request.birth_details
+        raw_response = vedic_client.get_planet_details(
+            dob=bd.dob,
+            tob=bd.tob,
+            lat=bd.lat,
+            lon=bd.lon,
+            tz=bd.timezone
         )
         
-        user_intent = f"Generate {request.report_type.replace('_', ' ')} astrological report"
-        
-        # Step 3: Generate code using Gemini Pro
-        logger.info("Generating code with Gemini Pro...")
-        generated_code = gemini_agent.generate_code(
-            user_intent=user_intent,
-            api_docs=api_docs,
-            user_data=request.birth_details.model_dump()
-        )
-        
-        # Save generated code
-        await db.reports.update_one(
-            {"report_id": report.report_id},
-            {"$set": {"generated_code": generated_code}}
-        )
-        
-        # Step 4: Execute code in sandbox
-        logger.info("Executing code in sandbox...")
-        env_vars = {
-            'VEDIC_API_KEY': os.environ['VEDIC_API_KEY'],
-            'VEDIC_API_BASE_URL': os.environ['VEDIC_API_BASE_URL']
-        }
-        
-        success, raw_json, error_msg = sandbox_executor.execute_code(generated_code, env_vars)
-        
-        if not success:
-            logger.error(f"Code execution failed: {error_msg}")
+        if not raw_response.get('success'):
+            error_msg = raw_response.get('error', 'Unknown API error')
+            logger.error(f"VedicAstroAPI failed: {error_msg}")
             await db.reports.update_one(
                 {"report_id": report.report_id},
                 {"$set": {
@@ -243,12 +224,15 @@ async def generate_report_background(report: Report, request: ReportRequest):
             )
             return
         
+        raw_json = raw_response.get('data', {})
+        
         # Save raw JSON
         await db.reports.update_one(
             {"report_id": report.report_id},
             {"$set": {
                 "raw_json": raw_json,
-                "code_execution_success": True
+                "code_execution_success": True,
+                "generated_code": "Direct API call (MVP mode)"
             }}
         )
         
