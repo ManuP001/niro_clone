@@ -108,12 +108,32 @@ EXAMPLE STRUCTURE:
 ```
 import os
 import requests
-import json
 
 try:
     api_key = os.environ['VEDIC_API_KEY']
-    # ... your API calls here
-    result = {{"data": response_data}}
+    base_url = os.environ['VEDIC_API_BASE_URL']
+    
+    # Example API call
+    response = requests.get(
+        f"{{base_url}}/horoscope/planet-details",
+        params={{
+            'api_key': api_key,
+            'dob': '15/08/1990',  # Use forward slashes
+            'tob': '14:30',
+            'lat': 28.6139,
+            'lon': 77.2090,
+            'tz': 5.5
+        }},
+        timeout=15
+    )
+    response.raise_for_status()
+    data = response.json()
+    
+    if data.get('status') == 200:
+        result = {{"success": True, "data": data.get('response', {{}})}}
+    else:
+        result = {{"error": f"API returned status {{data.get('status')}}: {{data.get('response', 'Unknown error')}}"}}
+        
 except Exception as e:
     result = {{"error": str(e)}}
 ```
