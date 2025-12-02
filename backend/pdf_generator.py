@@ -142,14 +142,32 @@ class AstroPrescriptionPDF:
         paragraphs = interpreted_text.split('\n\n')
         for para in paragraphs:
             if para.strip():
-                # Check if it's a heading (starts with **)
-                if para.strip().startswith('**') and para.strip().endswith('**'):
-                    heading_text = para.strip().strip('*').strip()
-                    elements.append(Paragraph(heading_text, subheading_style))
+                # Clean markdown formatting first
+                para = para.strip()
+                
+                # Remove ### markdown headers
+                if para.startswith('###'):
+                    para = para[3:].strip()
+                    # Remove any surrounding ** markers
+                    para = para.strip('*').strip()
+                    elements.append(Paragraph(para, subheading_style))
+                elif para.startswith('##'):
+                    para = para[2:].strip()
+                    para = para.strip('*').strip()
+                    elements.append(Paragraph(para, heading_style))
+                elif para.startswith('#'):
+                    para = para[1:].strip()
+                    para = para.strip('*').strip()
+                    elements.append(Paragraph(para, heading_style))
                 else:
-                    # Clean up markdown formatting
-                    para = para.replace('**', '<b>').replace('**', '</b>')
-                    para = para.replace('*', '•')
+                    # Regular paragraph - clean up markdown
+                    # Replace ** bold markers properly
+                    import re
+                    para = re.sub(r'\*\*([^\*]+)\*\*', r'<b>\1</b>', para)
+                    # Replace single * with bullet
+                    para = para.replace('* ', '• ')
+                    # Remove any remaining single asterisks
+                    para = para.replace('*', '')
                     elements.append(Paragraph(para, body_style))
         
         elements.append(Spacer(1, 0.3*inch))
