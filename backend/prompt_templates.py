@@ -127,17 +127,16 @@ Focus Areas:
 **Report Type: Career & Job Success (The Climber)**
 
 Required API Calls:
-1. /horoscope/planet-details - Focus on 10th house (career)
-2. /horoscope/major-vdasha - Current dasha impact on career
-3. /horoscope/major-transit - Jupiter and Saturn influence on 10th house
-4. /panchang/daily - Find auspicious dates for interviews/job changes
+1. /horoscope/planet-details - Focus on 10th house (career) and planetary positions
+
+IMPORTANT: Make only ONE API call to /horoscope/planet-details endpoint.
+This endpoint returns all planetary positions, houses, and aspects needed for career analysis.
 
 Focus Areas:
 - 10th house lord and placement
 - Saturn's role in career stability
 - Jupiter's role in career growth
-- Current dasha period's career impact
-- Best time windows for job changes
+- Best time windows for job changes based on transits
 - Office politics strategy (based on 6th house)
 - Entrepreneurship vs. job suitability
 - Career obstacles and remedies
