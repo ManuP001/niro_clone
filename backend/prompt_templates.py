@@ -108,19 +108,19 @@ Focus Areas:
 **Report Type: Love & Marriage Compatibility (The Harmony)**
 
 Required API Calls:
-1. /matching/guna-milan - Get compatibility score (both partners' details needed)
-2. /horoscope/mangal-dosha - Check mangal dosha for both
-3. /horoscope/planet-details - Analyze 7th house for both partners
-4. /horoscope/major-vdasha - Find marriage timing
+1. /horoscope/planet-details - Analyze 7th house, Venus, and Mars positions
+
+IMPORTANT: Make only ONE API call to /horoscope/planet-details endpoint.
+This endpoint returns all planetary positions, houses, and aspects needed for love/marriage analysis.
 
 Focus Areas:
-- Guna Milan score and interpretation
 - 7th house lord and placement
-- Venus and Mars positions
-- Mangal dosha presence and remedies
-- Relationship dynamics and conflict areas
-- Auspicious marriage dates
-- Long-term compatibility factors
+- Venus and Mars positions and aspects
+- Relationship timing and dynamics
+- Compatibility factors from planetary positions
+- Marriage prospects and auspicious periods
+- Conflict areas and remedies
+- Long-term relationship guidance
 """,
         
         "career_job": """
