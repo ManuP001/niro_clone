@@ -23,8 +23,19 @@ Authentication: Use 'api_key' parameter in the request
    - tz (required): Timezone offset (e.g., 5.5 for IST)
    - lang (optional): Language (default: 'en')
    
-   Response: Returns {"status": 200, "response": {...planetary data...}}
-   The response field contains planets, houses, and other astrological data
+   Response Structure:
+   {
+     "status": 200,
+     "response": {
+       // Planetary data and astrological information
+     },
+     "remaining_api_calls": 494
+   }
+   
+   IMPORTANT: 
+   - Always check if data['status'] == 200
+   - Extract the actual data from data['response'] field
+   - Store the data['response'] content in your result dictionary
 
 2. **Dasha Predictions**
    Endpoint: /horoscope/major-vdasha
