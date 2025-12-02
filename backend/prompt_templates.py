@@ -35,7 +35,7 @@ Authentication: Use 'api_key' parameter in the request
    }
 
 2. **Dasha Predictions**
-   Endpoint: /horoscope/vimshottari-dasha
+   Endpoint: /horoscope/major-vdasha
    Method: GET
    Parameters: Same as planet-details
    Response: Returns Vimshottari dasha periods (Mahadasha, Antardasha, etc.)
