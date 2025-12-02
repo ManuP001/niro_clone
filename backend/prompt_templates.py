@@ -111,7 +111,7 @@ Required API Calls:
 1. /matching/guna-milan - Get compatibility score (both partners' details needed)
 2. /horoscope/mangal-dosha - Check mangal dosha for both
 3. /horoscope/planet-details - Analyze 7th house for both partners
-4. /horoscope/vimshottari-dasha - Find marriage timing
+4. /horoscope/major-vdasha - Find marriage timing
 
 Focus Areas:
 - Guna Milan score and interpretation
