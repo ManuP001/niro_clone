@@ -91,7 +91,7 @@ def get_report_type_context(report_type: str) -> str:
 
 Required API Calls:
 1. /horoscope/planet-details - Get current planetary positions
-2. /horoscope/vimshottari-dasha - Get dasha periods for the year
+2. /horoscope/major-vdasha - Get dasha periods for the year
 3. /horoscope/major-transit - Get Saturn and Jupiter transits for next 12 months
 4. /panchang/daily - Get important dates for each month
 
