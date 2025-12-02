@@ -16,23 +16,15 @@ Authentication: Use 'api_key' parameter in the request
    Method: GET
    Parameters:
    - api_key (required): Your API key
-   - date (required): Date in DD-MM-YYYY format
+   - dob (required): Date of birth in DD/MM/YYYY format (use forward slashes)
    - tob (required): Time of birth in HH:MM format (24-hour)
    - lat (required): Latitude (decimal)
    - lon (required): Longitude (decimal)
    - tz (required): Timezone offset (e.g., 5.5 for IST)
    - lang (optional): Language (default: 'en')
    
-   Response: Returns planetary positions, house placements, and aspects
-   Example response:
-   {
-     "planets": [
-       {"name": "Sun", "sign": "Aries", "degree": 15.23, "house": 1},
-       {"name": "Moon", "sign": "Taurus", "degree": 22.45, "house": 2}
-     ],
-     "houses": [...],
-     "aspects": [...]
-   }
+   Response: Returns {"status": 200, "response": {...planetary data...}}
+   The response field contains planets, houses, and other astrological data
 
 2. **Dasha Predictions**
    Endpoint: /horoscope/major-vdasha
