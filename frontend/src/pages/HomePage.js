@@ -93,6 +93,18 @@ const HomePage = () => {
     }
   }, [citySearch]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (cityOpen && !event.target.closest('#city-input') && !event.target.closest('.absolute.z-50')) {
+        setCityOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [cityOpen]);
+
   // Handle city selection
   const handleCitySelect = (city) => {
     setSelectedCity(city);
