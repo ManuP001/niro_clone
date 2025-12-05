@@ -22,6 +22,9 @@ const HomePage = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    gender: '',
+    occupation: '',
+    relationship_status: '',
     dob: '',
     tob: '',
     location: '',
