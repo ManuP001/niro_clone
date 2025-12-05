@@ -38,6 +38,7 @@ gemini_agent = GeminiAgent()
 sandbox_executor = get_sandbox_executor(use_docker=True)  # Use Docker for production
 pdf_generator = AstroPrescriptionPDF(output_dir="/app/backend/reports")
 vedic_client = VedicAstroClient()  # Direct API client for MVP
+visual_extractor = VisualDataExtractor()  # Visual data extraction for charts
 
 # Create the main app without a prefix
 app = FastAPI(title="Astro-Trust Engine API", version="1.0.0")
