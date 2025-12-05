@@ -77,6 +77,66 @@ async def health_check():
         "database": "connected"
     }
 
+# ============= UTILITY ENDPOINTS =============
+
+@api_router.post("/utils/parse-time")
+async def parse_time_endpoint(request: dict):
+    """
+    Parse and validate flexible time input
+    
+    Body: {"time_input": "2:35 PM"}
+    Returns: {"success": true, "normalized_time": "14:35", "display_time": "2:35 PM"}
+    """
+    time_input = request.get('time_input', '')
+    success, normalized_time, error_message = time_parser.parse_time(time_input)
+    
+    if success:
+        display_time = time_parser.convert_to_display_format(normalized_time)
+        return {
+            "success": True,
+            "normalized_time": normalized_time,
+            "display_time": display_time,
+            "error_message": None
+        }
+    else:
+        return {
+            "success": False,
+            "normalized_time": None,
+            "display_time": None,
+            "error_message": error_message
+        }
+
+@api_router.get("/utils/search-cities")
+async def search_cities_endpoint(query: str, max_results: int = 10):
+    """
+    Search cities with autocomplete
+    
+    Query params:
+    - query: Search query (min 3 characters)
+    - max_results: Max results to return (default 10)
+    
+    Returns: List of cities with lat, lon, timezone
+    """
+    if len(query) < 3:
+        return {"cities": []}
+    
+    try:
+        # Try GeoNames first
+        cities = city_service.search_cities(query, max_results)
+        
+        # Fallback to in-memory database if GeoNames fails or returns nothing
+        if not cities:
+            logger.info("Using fallback city service")
+            cities = fallback_city_service.search_cities(query, max_results)
+        
+        return {"cities": cities}
+        
+    except Exception as e:
+        logger.error(f"City search error: {str(e)}")
+        # Use fallback on error
+        cities = fallback_city_service.search_cities(query, max_results)
+        return {"cities": cities}
+
 # ============= USER MANAGEMENT =============
 
 @api_router.post("/users", response_model=User)
