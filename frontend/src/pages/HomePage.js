@@ -30,10 +30,23 @@ const HomePage = () => {
     relationship_status: '',
     dob: '',
     tob: '',
+    tobInput: '', // Raw time input
+    tobNormalized: '', // Normalized 24h format
     location: '',
-    lat: 28.6139,
-    lon: 77.2090,
+    lat: null,
+    lon: null,
+    timezone: 5.5,
   });
+
+  // City autocomplete state
+  const [cityOpen, setCityOpen] = useState(false);
+  const [citySearch, setCitySearch] = useState('');
+  const [cityResults, setCityResults] = useState([]);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [loadingCities, setLoadingCities] = useState(false);
+
+  // Time input state
+  const [timeError, setTimeError] = useState('');
 
   useEffect(() => {
     fetchPricing();
