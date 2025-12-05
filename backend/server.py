@@ -239,17 +239,38 @@ async def generate_report_background(report: Report, request: ReportRequest):
             }}
         )
         
-        # Step 5: Interpret results with Gemini Pro
-        logger.info("Interpreting report with Gemini Pro...")
+        # Step 5: Build user context for gender-neutral interpretation
+        user_doc = await db.users.find_one({"user_id": request.user_id}, {"_id": 0})
+        user_context = build_user_context({
+            'name': user_doc.get('name', 'User') if user_doc else 'User',
+            'gender': user_doc.get('gender', 'prefer_not_to_say') if user_doc else 'prefer_not_to_say',
+            'occupation': user_doc.get('occupation') if user_doc else None,
+            'relationship_status': user_doc.get('relationship_status') if user_doc else None
+        })
+        
+        # Step 6: Interpret results with Gemini Pro (with advanced prompts)
+        logger.info("Interpreting report with Gemini Pro (advanced prompts)...")
         interpreted_text = gemini_agent.interpret_report(
             raw_json=raw_json,
+            report_type=request.report_type,
+            user_context=user_context
+        )
+        
+        # Step 7: Extract visual data for charts
+        logger.info("Extracting visual data...")
+        visual_data = visual_extractor.extract_visual_data(
+            raw_json=raw_json,
+            interpreted_text=interpreted_text,
             report_type=request.report_type
         )
         
-        # Save interpretation
+        # Save interpretation and visual data
         await db.reports.update_one(
             {"report_id": report.report_id},
-            {"$set": {"interpreted_text": interpreted_text}}
+            {"$set": {
+                "interpreted_text": interpreted_text,
+                "visual_data": visual_data.model_dump()
+            }}
         )
         
         # Step 6: Generate PDF
