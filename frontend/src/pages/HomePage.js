@@ -107,7 +107,9 @@ const HomePage = () => {
 
   // Handle city selection
   const handleCitySelect = (city) => {
+    console.log('City selected:', city);
     setSelectedCity(city);
+    setCitySearch(city.display_name);
     setFormData({
       ...formData,
       location: city.display_name,
@@ -116,7 +118,8 @@ const HomePage = () => {
       timezone: city.timezone === 'Asia/Kolkata' ? 5.5 : 5.5 // Default to IST
     });
     setCityOpen(false);
-    toast.success(`Selected: ${city.display_name}`);
+    setCityResults([]);
+    toast.success(`✓ Selected: ${city.name}, ${city.country}`);
   };
 
   // Handle time input with smart parsing
