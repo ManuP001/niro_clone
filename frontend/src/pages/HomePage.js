@@ -250,7 +250,7 @@ const HomePage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Email (Optional)</Label>
                   <Input
                     id="email"
                     name="email"
@@ -260,6 +260,50 @@ const HomePage = () => {
                     onChange={handleInputChange}
                     data-testid="input-email"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Gender (Optional - helps with accurate analysis)</Label>
+                  <Select value={formData.gender} onValueChange={(value) => setFormData({...formData, gender: value})}>
+                    <SelectTrigger data-testid="input-gender">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="non_binary">Non-binary</SelectItem>
+                      <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="occupation">Occupation (Optional)</Label>
+                  <Input
+                    id="occupation"
+                    name="occupation"
+                    placeholder="e.g., Software Engineer, Teacher"
+                    value={formData.occupation}
+                    onChange={handleInputChange}
+                    data-testid="input-occupation"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="relationship_status">Relationship Status (Optional)</Label>
+                  <Select value={formData.relationship_status} onValueChange={(value) => setFormData({...formData, relationship_status: value})}>
+                    <SelectTrigger data-testid="input-relationship">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="single">Single</SelectItem>
+                      <SelectItem value="in_relationship">In a Relationship</SelectItem>
+                      <SelectItem value="engaged">Engaged</SelectItem>
+                      <SelectItem value="married">Married</SelectItem>
+                      <SelectItem value="divorced">Divorced</SelectItem>
+                      <SelectItem value="widowed">Widowed</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
