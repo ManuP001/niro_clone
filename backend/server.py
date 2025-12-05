@@ -106,7 +106,8 @@ async def get_pricing():
         default_prices = [
             {"report_type": "yearly_prediction", "current_price_inr": 499.0},
             {"report_type": "love_marriage", "current_price_inr": 599.0},
-            {"report_type": "career_job", "current_price_inr": 549.0}
+            {"report_type": "career_job", "current_price_inr": 549.0},
+            {"report_type": "retro_check", "current_price_inr": 399.0}  # NEW: Past verification
         ]
         
         for price_data in default_prices:
