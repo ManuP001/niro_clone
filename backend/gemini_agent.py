@@ -159,70 +159,57 @@ Now write the complete Python script:
     
     def interpret_report(self, raw_json: Dict[str, Any], report_type: str, user_context: str = "") -> str:
         """
-        Interpret raw astrology data into human-readable, empathetic report
-        Uses Gemini 2.5 Pro for deep interpretation
+        Interpret raw astrology data into human-readable, data-driven report
+        Uses Gemini 2.5 Pro with advanced anti-Barnum prompts
         
         Args:
             raw_json: Raw data from VedicAstroAPI
-            report_type: Type of report (yearly_prediction, love_marriage, career_job)
-            user_profile: Target audience profile for tone adjustment
+            report_type: Type of report (yearly_prediction, love_marriage, career_job, retro_check)
+            user_context: Gender-neutral user context with occupation, relationship status
         
         Returns:
-            str: Empathetic, human-readable interpretation
+            str: Data-driven, specific interpretation following "Because Rule"
         """
         
-        report_prompts = {
-            "yearly_prediction": """You are a compassionate Vedic astrology scholar interpreting a YEARLY PREDICTION for {user_profile}.
-
-Provide:
-1. Month-by-month breakdown of key events
-2. Health score and high-risk periods
-3. Major transits (Saturn/Jupiter) impact
-4. Family harmony index
-5. Specific remedies for challenging periods""",
-            
-            "love_marriage": """You are a compassionate Vedic astrology scholar interpreting a LOVE & MARRIAGE COMPATIBILITY report for {user_profile}.
-
-Provide:
-1. Guna Milan score and what it means
-2. 7th House analysis (marriage prospects)
-3. Mangal Dosha check and remedies if present
-4. Conflict resolution strategies
-5. Auspicious marriage dates/periods""",
-            
-            "career_job": """You are a compassionate Vedic astrology scholar interpreting a CAREER & JOB report for {user_profile}.
-
-Provide:
-1. 10th House (Karma/Career) analysis
-2. Opportunity windows (best periods for interviews, job changes)
-3. Office strategy (dos and don'ts)
-4. Career growth timeline
-5. Remedies for career obstacles"""
+        # Import advanced prompts
+        from advanced_prompts import (
+            get_yearly_prediction_advanced_prompt,
+            get_love_marriage_advanced_prompt,
+            get_career_job_advanced_prompt,
+            get_retro_check_prompt
+        )
+        
+        report_template_map = {
+            "yearly_prediction": get_yearly_prediction_advanced_prompt(),
+            "love_marriage": get_love_marriage_advanced_prompt(),
+            "career_job": get_career_job_advanced_prompt(),
+            "retro_check": get_retro_check_prompt()
         }
         
-        base_prompt = report_prompts.get(report_type, report_prompts["yearly_prediction"])
+        template = report_template_map.get(report_type, report_template_map["yearly_prediction"])
         
-        prompt = f"""{base_prompt.format(user_profile=user_profile)}
+        prompt = f"""You are an expert Vedic astrology analyst who provides DATA-DRIVEN, SPECIFIC interpretations.
+
+{user_context}
+
+{template}
 
 **RAW ASTROLOGICAL DATA:**
 ```json
 {raw_json}
 ```
 
-**TONE GUIDELINES:**
-- Be warm, empathetic, and solution-oriented
-- Avoid fear-mongering or fatalistic language
-- Focus on actionable insights and remedies
-- Use simple language, avoid jargon
-- Provide specific timelines and dates where possible
-- Always end with an empowering message
+**CRITICAL EXECUTION RULES:**
+1. **The "Because Rule":** Every prediction MUST explain WHY (reference specific planetary factor)
+2. **Date Precision:** Use exact date ranges (e.g., "June 10-July 15, 2026"), NOT vague terms like "mid-year"
+3. **Probability Scores:** Include likelihood percentages (e.g., "78% probability")
+4. **Anti-Barnum:** No generic statements. Every claim must be specific and verifiable
+5. **Gender Neutrality:** Use correct pronouns from user context. No assumptions about family role or occupation
+6. **Specific Sub-Headings:** Use data-driven titles (e.g., "The Promotion Window" not just "Career")
+7. **Professional Tone:** Direct, honest, empowering but not sugar-coated
 
-**OUTPUT FORMAT:**
-Provide a well-structured report with:
-- **Overview** (2-3 sentences summary)
-- **Detailed Analysis** (main findings)
-- **Remedies & Recommendations** (practical steps)
-- **Timeline** (when to expect results)
+**STRUCTURE COMPLIANCE:**
+Follow the exact section structure provided in the template above. Do not skip sections.
 
 Write the complete interpretation now:
 """
