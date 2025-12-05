@@ -41,6 +41,9 @@ sandbox_executor = get_sandbox_executor(use_docker=True)  # Use Docker for produ
 pdf_generator = AstroPrescriptionPDF(output_dir="/app/backend/reports")
 vedic_client = VedicAstroClient()  # Direct API client for MVP
 visual_extractor = VisualDataExtractor()  # Visual data extraction for charts
+time_parser = TimeParser()  # Smart time parsing
+city_service = CityService()  # City autocomplete with GeoNames
+fallback_city_service = FallbackCityService()  # Fallback for demo
 
 # Create the main app without a prefix
 app = FastAPI(title="Astro-Trust Engine API", version="1.0.0")
