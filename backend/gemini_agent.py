@@ -157,7 +157,7 @@ Now write the complete Python script:
         logger.info("Code generation completed")
         return code
     
-    def interpret_report(self, raw_json: Dict[str, Any], report_type: str, user_profile: str = "Indian Homemaker") -> str:
+    def interpret_report(self, raw_json: Dict[str, Any], report_type: str, user_context: str = "") -> str:
         """
         Interpret raw astrology data into human-readable, empathetic report
         Uses Gemini 2.5 Pro for deep interpretation
