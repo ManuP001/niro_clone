@@ -123,27 +123,35 @@ const HomePage = () => {
   const reportTypes = [
     {
       id: 'yearly_prediction',
-      name: 'Yearly Prediction',
+      name: 'Yearly Prediction 2026',
       subtitle: 'The Compass',
       icon: <Stars className="w-6 h-6" />,
-      description: 'Month-by-month guidance, health predictions, and major transits for the year ahead',
-      features: ['12-Month Forecast', 'Health Analysis', 'Transit Impact', 'Family Harmony']
+      description: 'Advanced structured report: The Diagnosis + 2026 Forecast + Astro-Prescription',
+      features: ['Self-Discovery Blueprint', 'Topic-Wise Predictions', 'Precision Timing', 'Visual Timelines']
+    },
+    {
+      id: 'retro_check',
+      name: 'The Retro-Check',
+      subtitle: 'Past Verification',
+      icon: <Sparkles className="w-6 h-6" />,
+      description: 'Verify accuracy by analyzing your past 18-24 months with precise transit analysis',
+      features: ['Past 18-24 Months', 'Big Signal Transits', 'Real-World Validation', 'Pattern Recognition']
     },
     {
       id: 'love_marriage',
       name: 'Love & Marriage',
       subtitle: 'The Harmony',
       icon: <Heart className="w-6 h-6" />,
-      description: 'Compatibility analysis, marriage timing, and relationship guidance',
-      features: ['Guna Milan Score', 'Mangal Dosha Check', 'Marriage Timing', 'Conflict Resolution']
+      description: 'Deep relationship analysis with precise timing and compatibility insights',
+      features: ['Relationship DNA', 'Marriage Windows', 'Conflict Cycles', 'Partner Compatibility']
     },
     {
       id: 'career_job',
       name: 'Career & Job',
       subtitle: 'The Climber',
       icon: <Briefcase className="w-6 h-6" />,
-      description: 'Career opportunities, job timing, and professional growth insights',
-      features: ['Career Analysis', 'Opportunity Windows', 'Office Strategy', 'Growth Timeline']
+      description: 'Career roadmap with promotion windows, risk periods, and growth opportunities',
+      features: ['Promotion Timing', 'Job Change Windows', 'Income Cycles', 'Office Politics Strategy']
     }
   ];
 
