@@ -69,6 +69,73 @@ const HomePage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handle city search
+  useEffect(() => {
+    if (citySearch.length >= 3) {
+      const delaySearch = setTimeout(async () => {
+        setLoadingCities(true);
+        try {
+          const response = await axios.get(`${API}/utils/search-cities`, {
+            params: { query: citySearch, max_results: 10 }
+          });
+          setCityResults(response.data.cities || []);
+        } catch (error) {
+          console.error('City search error:', error);
+          toast.error('Failed to search cities');
+        } finally {
+          setLoadingCities(false);
+        }
+      }, 300); // Debounce
+
+      return () => clearTimeout(delaySearch);
+    } else {
+      setCityResults([]);
+    }
+  }, [citySearch]);
+
+  // Handle city selection
+  const handleCitySelect = (city) => {
+    setSelectedCity(city);
+    setFormData({
+      ...formData,
+      location: city.display_name,
+      lat: city.lat,
+      lon: city.lon,
+      timezone: city.timezone === 'Asia/Kolkata' ? 5.5 : 5.5 // Default to IST
+    });
+    setCityOpen(false);
+    toast.success(`Selected: ${city.display_name}`);
+  };
+
+  // Handle time input with smart parsing
+  const handleTimeInput = async (value) => {
+    setFormData({ ...formData, tobInput: value });
+    setTimeError('');
+
+    if (value.length >= 2) {
+      try {
+        const response = await axios.post(`${API}/utils/parse-time`, {
+          time_input: value
+        });
+
+        if (response.data.success) {
+          setFormData({
+            ...formData,
+            tobInput: value,
+            tobNormalized: response.data.normalized_time,
+            tob: response.data.normalized_time
+          });
+          setTimeError('');
+        } else {
+          setTimeError(response.data.error_message);
+          setFormData({ ...formData, tobInput: value, tob: '' });
+        }
+      } catch (error) {
+        console.error('Time parsing error:', error);
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
