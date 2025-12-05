@@ -273,11 +273,8 @@ async def generate_report_background(report: Report, request: ReportRequest):
             }}
         )
         
-        # Step 6: Generate PDF
+        # Step 8: Generate PDF
         logger.info("Generating PDF...")
-        
-        # Get user details for PDF
-        user_doc = await db.users.find_one({"user_id": request.user_id}, {"_id": 0})
         
         pdf_data = {
             'report_id': report.report_id,
