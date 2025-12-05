@@ -121,20 +121,20 @@ async def search_cities_endpoint(query: str, max_results: int = 10):
         return {"cities": []}
     
     try:
-        # Try GeoNames first
-        cities = city_service.search_cities(query, max_results)
+        # Use Indian city database as primary source (fast, reliable, comprehensive)
+        cities = indian_city_service.search_cities(query, max_results)
         
-        # Fallback to in-memory database if GeoNames fails or returns nothing
+        # If no results found in Indian database, try GeoNames for international cities
         if not cities:
-            logger.info("Using fallback city service")
-            cities = fallback_city_service.search_cities(query, max_results)
+            logger.info("No results in Indian database, trying GeoNames")
+            cities = city_service.search_cities(query, max_results)
         
         return {"cities": cities}
         
     except Exception as e:
         logger.error(f"City search error: {str(e)}")
-        # Use fallback on error
-        cities = fallback_city_service.search_cities(query, max_results)
+        # Use Indian database as fallback on any error
+        cities = indian_city_service.search_cities(query, max_results)
         return {"cities": cities}
 
 # ============= USER MANAGEMENT =============
