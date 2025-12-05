@@ -43,7 +43,7 @@ vedic_client = VedicAstroClient()  # Direct API client for MVP
 visual_extractor = VisualDataExtractor()  # Visual data extraction for charts
 time_parser = TimeParser()  # Smart time parsing
 city_service = CityService()  # City autocomplete with GeoNames
-fallback_city_service = FallbackCityService()  # Fallback for demo
+indian_city_service = IndianCityService()  # Comprehensive Indian cities database
 
 # Create the main app without a prefix
 app = FastAPI(title="Astro-Trust Engine API", version="1.0.0")
