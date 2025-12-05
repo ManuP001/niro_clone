@@ -308,18 +308,28 @@ INDIAN_CITIES_DATABASE = [
     {'name': 'Maheshtala', 'state': 'West Bengal', 'country': 'India', 'lat': 22.5093, 'lon': 88.2477, 'tz': 5.5},
 ]
 
-class FallbackCityService:
-    """Fallback city service using in-memory database"""
+class IndianCityService:
+    """Fast, comprehensive Indian city database service"""
     
     def search_cities(self, query: str, max_results: int = 10) -> List[Dict[str, Any]]:
-        """Search cities in fallback database"""
-        query_lower = query.lower()
+        """
+        Search cities in comprehensive Indian database
+        Supports fuzzy matching and partial search
+        """
+        query_lower = query.lower().strip()
         
-        results = []
-        for city in INDIAN_CITIES_FALLBACK:
-            if city['name'].lower().startswith(query_lower):
-                results.append({
-                    'id': f"fallback_{city['name'].lower()}",
+        # Exact match results (higher priority)
+        exact_results = []
+        # Partial match results
+        partial_results = []
+        
+        for city in INDIAN_CITIES_DATABASE:
+            city_name_lower = city['name'].lower()
+            
+            # Exact match at start
+            if city_name_lower.startswith(query_lower):
+                exact_results.append({
+                    'id': f"in_{city['name'].lower().replace(' ', '_')}",
                     'name': city['name'],
                     'country': city['country'],
                     'country_code': 'IN',
@@ -329,8 +339,32 @@ class FallbackCityService:
                     'timezone': 'Asia/Kolkata',
                     'display_name': f"{city['name']}, {city['state']}, {city['country']}"
                 })
-                
-                if len(results) >= max_results:
+            # Partial match (query appears anywhere in name)
+            elif query_lower in city_name_lower and len(partial_results) < max_results:
+                partial_results.append({
+                    'id': f"in_{city['name'].lower().replace(' ', '_')}",
+                    'name': city['name'],
+                    'country': city['country'],
+                    'country_code': 'IN',
+                    'state': city['state'],
+                    'lat': city['lat'],
+                    'lon': city['lon'],
+                    'timezone': 'Asia/Kolkata',
+                    'display_name': f"{city['name']}, {city['state']}, {city['country']}"
+                })
+        
+        # Combine results: exact matches first, then partial
+        combined = exact_results + partial_results
+        
+        # Remove duplicates (some cities have alternate names)
+        seen = set()
+        unique_results = []
+        for city in combined:
+            key = f"{city['lat']},{city['lon']}"
+            if key not in seen:
+                seen.add(key)
+                unique_results.append(city)
+                if len(unique_results) >= max_results:
                     break
         
-        return results
+        return unique_results
