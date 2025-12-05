@@ -24,6 +24,8 @@ from prompt_templates import build_code_generation_prompt
 from vedic_api_client import VedicAstroClient
 from advanced_prompts import build_user_context
 from visual_data_extractor import VisualDataExtractor
+from time_parser import TimeParser
+from city_service import CityService, FallbackCityService
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
