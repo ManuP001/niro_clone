@@ -288,7 +288,7 @@ async def generate_report_background(report: Report, request: ReportRequest):
         pdf_path = pdf_generator.generate_pdf(pdf_data)
         pdf_url = pdf_generator.get_pdf_url(pdf_path)
         
-        # Step 7: Mark as completed
+        # Step 9: Mark as completed
         processing_time = time.time() - start_time
         
         await db.reports.update_one(
