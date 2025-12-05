@@ -443,80 +443,74 @@ const HomePage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
+                  <Label htmlFor="city-input" className="flex items-center gap-2">
                     <MapPin className="w-4 h-4" />
-                    Birth Location * (Auto-complete)
+                    Birth Location * (Type to search)
                   </Label>
-                  <Popover open={cityOpen} onOpenChange={setCityOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={cityOpen}
-                        className="w-full justify-between"
-                        data-testid="city-selector"
-                      >
-                        {selectedCity ? selectedCity.display_name : "Search for your city..."}
-                        <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
-                      <Command>
-                        <CommandInput 
-                          placeholder="Type city name (min 3 letters)..." 
-                          value={citySearch}
-                          onValueChange={setCitySearch}
-                        />
-                        <CommandList>
-                          {loadingCities && (
-                            <div className="p-4 text-sm text-center">
-                              <Loader2 className="w-4 h-4 animate-spin mx-auto" />
-                              Searching...
-                            </div>
-                          )}
-                          {!loadingCities && cityResults.length === 0 && citySearch.length >= 3 && (
-                            <CommandEmpty>No cities found. Try different spelling.</CommandEmpty>
-                          )}
-                          {!loadingCities && cityResults.length === 0 && citySearch.length < 3 && (
-                            <CommandEmpty>Type at least 3 characters to search</CommandEmpty>
-                          )}
-                          {!loadingCities && cityResults.length > 0 && (
-                            <CommandGroup>
-                              {cityResults.map((city) => (
-                                <CommandItem
-                                  key={city.id}
-                                  value={city.display_name}
-                                  onSelect={() => handleCitySelect(city)}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      selectedCity?.id === city.id ? "opacity-100" : "opacity-0"
-                                    )}
-                                  />
+                  <div className="relative">
+                    <Input
+                      id="city-input"
+                      placeholder="Type city name (min 3 letters)..."
+                      value={citySearch}
+                      onChange={(e) => setCitySearch(e.target.value)}
+                      onFocus={() => setCityOpen(true)}
+                      className={selectedCity ? 'border-green-500' : ''}
+                      data-testid="city-input"
+                    />
+                    {citySearch.length >= 3 && cityOpen && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                        {loadingCities && (
+                          <div className="p-4 text-sm text-center text-gray-500">
+                            <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+                            Searching cities...
+                          </div>
+                        )}
+                        {!loadingCities && cityResults.length === 0 && (
+                          <div className="p-4 text-sm text-center text-gray-500">
+                            No cities found. Try different spelling.
+                          </div>
+                        )}
+                        {!loadingCities && cityResults.length > 0 && (
+                          <div>
+                            {cityResults.map((city) => (
+                              <div
+                                key={city.id}
+                                onClick={() => handleCitySelect(city)}
+                                className="px-4 py-3 cursor-pointer hover:bg-purple-50 border-b border-gray-100 last:border-b-0"
+                                data-testid={`city-option-${city.name}`}
+                              >
+                                <div className="flex items-start gap-2">
+                                  <MapPin className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
                                   <div className="flex flex-col">
-                                    <span className="font-medium">{city.name}</span>
+                                    <span className="font-medium text-gray-900">{city.name}</span>
                                     <span className="text-xs text-gray-500">
                                       {city.state && `${city.state}, `}{city.country}
                                     </span>
                                   </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          )}
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   {selectedCity && (
-                    <p className="text-xs text-green-600 flex items-center gap-1">
-                      <Check className="w-3 h-3" />
-                      Coordinates: {selectedCity.lat.toFixed(4)}°, {selectedCity.lon.toFixed(4)}°
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                      <p className="text-sm text-green-800 flex items-center gap-2 font-medium">
+                        <Check className="w-4 h-4" />
+                        Selected: {selectedCity.display_name}
+                      </p>
+                      <p className="text-xs text-green-600 mt-1 ml-6">
+                        Coordinates: {selectedCity.lat.toFixed(4)}°, {selectedCity.lon.toFixed(4)}°
+                      </p>
+                    </div>
+                  )}
+                  {!selectedCity && (
+                    <p className="text-xs text-gray-500">
+                      Start typing to search cities. Lat/long will be auto-determined.
                     </p>
                   )}
-                  <p className="text-xs text-gray-500">
-                    Latitude & longitude will be automatically determined
-                  </p>
                 </div>
               </div>
 
