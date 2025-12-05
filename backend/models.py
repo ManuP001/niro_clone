@@ -8,6 +8,7 @@ class ReportType(str, Enum):
     YEARLY_PREDICTION = "yearly_prediction"
     LOVE_MARRIAGE = "love_marriage"
     CAREER_JOB = "career_job"
+    RETRO_CHECK = "retro_check"  # NEW: Past verification report
 
 class PaymentStatus(str, Enum):
     PENDING = "pending"
@@ -19,6 +20,12 @@ class ReportStatus(str, Enum):
     PROCESSING = "processing"
     COMPLETED = "completed"
     FAILED = "failed"
+
+class Gender(str, Enum):
+    MALE = "male"
+    FEMALE = "female"
+    NON_BINARY = "non_binary"
+    PREFER_NOT_TO_SAY = "prefer_not_to_say"
 
 # ============= USER MODELS =============
 
@@ -32,13 +39,19 @@ class UserBirthDetails(BaseModel):
     timezone: float = Field(default=5.5, description="Timezone offset (IST = 5.5)")
 
 class User(BaseModel):
-    """User model"""
+    """User model with enhanced profiling"""
     model_config = ConfigDict(extra="ignore")
     
     user_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     name: str
     email: Optional[str] = None
     phone: Optional[str] = None
+    
+    # Enhanced user profiling (anti-hallucination)
+    gender: Optional[Gender] = None
+    occupation: Optional[str] = None
+    relationship_status: Optional[str] = None  # single, married, divorced, etc.
+    
     birth_details: UserBirthDetails
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -47,6 +60,9 @@ class UserCreate(BaseModel):
     name: str
     email: Optional[str] = None
     phone: Optional[str] = None
+    gender: Optional[Gender] = None
+    occupation: Optional[str] = None
+    relationship_status: Optional[str] = None
     birth_details: UserBirthDetails
 
 # ============= TRANSACTION MODELS =============
@@ -87,6 +103,14 @@ class ReportRequest(BaseModel):
     birth_details: UserBirthDetails
     partner_details: Optional[UserBirthDetails] = None  # For love_marriage report
 
+class VisualData(BaseModel):
+    """Structured visual data for charts and timelines"""
+    timeline_events: List[Dict[str, Any]] = Field(default_factory=list)
+    monthly_intensity: Dict[str, float] = Field(default_factory=dict)  # month: intensity_score
+    risk_windows: List[Dict[str, Any]] = Field(default_factory=list)
+    opportunity_windows: List[Dict[str, Any]] = Field(default_factory=list)
+    planetary_positions: Dict[str, Any] = Field(default_factory=dict)
+
 class Report(BaseModel):
     """Generated astrological report"""
     model_config = ConfigDict(extra="ignore")
@@ -108,6 +132,9 @@ class Report(BaseModel):
     # Interpreted report
     interpreted_text: Optional[str] = None
     
+    # Visual data for charts and timelines
+    visual_data: Optional[VisualData] = None
+    
     # PDF
     pdf_url: Optional[str] = None
     
@@ -122,6 +149,7 @@ class ReportResponse(BaseModel):
     status: ReportStatus
     report_type: ReportType
     interpreted_text: Optional[str] = None
+    visual_data: Optional[VisualData] = None
     pdf_url: Optional[str] = None
     processing_time_seconds: Optional[float] = None
     error_message: Optional[str] = None
