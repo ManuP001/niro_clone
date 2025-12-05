@@ -195,11 +195,11 @@ const HomePage = () => {
         report_type: selectedReport,
         birth_details: {
           dob: formData.dob,
-          tob: formData.tob,
-          lat: parseFloat(formData.lat),
-          lon: parseFloat(formData.lon),
+          tob: formData.tob, // Normalized 24h format
+          lat: formData.lat,
+          lon: formData.lon,
           location: formData.location,
-          timezone: 5.5
+          timezone: formData.timezone
         }
       });
 
