@@ -403,60 +403,109 @@ const HomePage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="tob">Time of Birth * (HH:MM)</Label>
+                  <Label htmlFor="tob" className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    Time of Birth * (Flexible Format)
+                  </Label>
                   <Input
                     id="tob"
-                    name="tob"
-                    placeholder="14:30"
-                    value={formData.tob}
-                    onChange={handleInputChange}
+                    name="tobInput"
+                    placeholder="e.g., 2:35 PM, 14:35, or 1435"
+                    value={formData.tobInput}
+                    onChange={(e) => handleTimeInput(e.target.value)}
+                    className={timeError ? 'border-red-500' : ''}
                     required
                     data-testid="input-tob"
                   />
+                  {timeError && (
+                    <p className="text-xs text-red-600">{timeError}</p>
+                  )}
+                  {formData.tobNormalized && !timeError && (
+                    <p className="text-xs text-green-600 flex items-center gap-1">
+                      <Check className="w-3 h-3" /> 
+                      Parsed as: {formData.tobNormalized}
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    Accepts: 12-hour (2:35 PM), 24-hour (14:35), or compact (1435)
+                  </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Birth Location *</Label>
-                  <Input
-                    id="location"
-                    name="location"
-                    placeholder="New Delhi, India"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    required
-                    data-testid="input-location"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="lat">Latitude</Label>
-                    <Input
-                      id="lat"
-                      name="lat"
-                      type="number"
-                      step="0.0001"
-                      placeholder="28.6139"
-                      value={formData.lat}
-                      onChange={handleInputChange}
-                      required
-                      data-testid="input-lat"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lon">Longitude</Label>
-                    <Input
-                      id="lon"
-                      name="lon"
-                      type="number"
-                      step="0.0001"
-                      placeholder="77.2090"
-                      value={formData.lon}
-                      onChange={handleInputChange}
-                      required
-                      data-testid="input-lon"
-                    />
-                  </div>
+                  <Label className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Birth Location * (Auto-complete)
+                  </Label>
+                  <Popover open={cityOpen} onOpenChange={setCityOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={cityOpen}
+                        className="w-full justify-between"
+                        data-testid="city-selector"
+                      >
+                        {selectedCity ? selectedCity.display_name : "Search for your city..."}
+                        <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput 
+                          placeholder="Type city name (min 3 letters)..." 
+                          value={citySearch}
+                          onValueChange={setCitySearch}
+                        />
+                        <CommandList>
+                          {loadingCities && (
+                            <div className="p-4 text-sm text-center">
+                              <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                              Searching...
+                            </div>
+                          )}
+                          {!loadingCities && cityResults.length === 0 && citySearch.length >= 3 && (
+                            <CommandEmpty>No cities found. Try different spelling.</CommandEmpty>
+                          )}
+                          {!loadingCities && cityResults.length === 0 && citySearch.length < 3 && (
+                            <CommandEmpty>Type at least 3 characters to search</CommandEmpty>
+                          )}
+                          {!loadingCities && cityResults.length > 0 && (
+                            <CommandGroup>
+                              {cityResults.map((city) => (
+                                <CommandItem
+                                  key={city.id}
+                                  value={city.display_name}
+                                  onSelect={() => handleCitySelect(city)}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedCity?.id === city.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{city.name}</span>
+                                    <span className="text-xs text-gray-500">
+                                      {city.state && `${city.state}, `}{city.country}
+                                    </span>
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          )}
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  {selectedCity && (
+                    <p className="text-xs text-green-600 flex items-center gap-1">
+                      <Check className="w-3 h-3" />
+                      Coordinates: {selectedCity.lat.toFixed(4)}°, {selectedCity.lon.toFixed(4)}°
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    Latitude & longitude will be automatically determined
+                  </p>
                 </div>
               </div>
 
