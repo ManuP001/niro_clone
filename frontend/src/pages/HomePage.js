@@ -62,6 +62,9 @@ const HomePage = () => {
       const userResponse = await axios.post(`${API}/users`, {
         name: formData.name,
         email: formData.email,
+        gender: formData.gender || null,
+        occupation: formData.occupation || null,
+        relationship_status: formData.relationship_status || null,
         birth_details: {
           dob: formData.dob,
           tob: formData.tob,
