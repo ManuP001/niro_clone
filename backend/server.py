@@ -36,6 +36,9 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Configuration for calculation source (must be set before initialization)
+ASTRO_CALC_SOURCE = os.environ.get('ASTRO_CALCULATION_SOURCE', 'vedic_api')
+
 # Initialize core components
 gemini_agent = GeminiAgent()
 sandbox_executor = get_sandbox_executor(use_docker=True)  # Use Docker for production
@@ -46,10 +49,6 @@ visual_extractor = VisualDataExtractor()  # Visual data extraction for charts
 time_parser = TimeParser()  # Smart time parsing
 city_service = CityService()  # City autocomplete with GeoNames
 indian_city_service = IndianCityService()  # Comprehensive Indian cities database
-
-# Configuration for calculation source
-ASTRO_CALC_SOURCE = os.environ.get('ASTRO_CALCULATION_SOURCE', 'vedic_api')
-logger.info(f"Astrological calculation source: {ASTRO_CALC_SOURCE}")
 
 # Create the main app without a prefix
 app = FastAPI(title="Astro-Trust Engine API", version="1.0.0")
