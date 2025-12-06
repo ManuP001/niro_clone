@@ -113,6 +113,58 @@ async def parse_time_endpoint(request: dict):
             "error_message": error_message
         }
 
+@api_router.post("/utils/compare-calculations")
+async def compare_calculations(request: dict):
+    """
+    Compare VedicAPI vs Gemini LLM calculations
+    For testing and quality assessment
+    
+    Body: {
+        "dob": "15-08-1990",
+        "tob": "14:30",
+        "lat": 28.6139,
+        "lon": 77.2090,
+        "location": "Delhi, India"
+    }
+    """
+    try:
+        dob = request.get('dob')
+        tob = request.get('tob')
+        lat = request.get('lat')
+        lon = request.get('lon')
+        location = request.get('location', 'Unknown')
+        timezone = request.get('timezone', 5.5)
+        
+        # Method 1: VedicAstroAPI
+        logger.info("Fetching from VedicAstroAPI...")
+        vedic_response = vedic_client.get_planet_details(dob, tob, lat, lon, timezone)
+        
+        # Method 2: Gemini LLM
+        logger.info("Calculating with Gemini LLM...")
+        gemini_success, gemini_data, gemini_error = gemini_calculator.calculate_houses_and_planets(
+            dob, tob, lat, lon, location, timezone
+        )
+        
+        return {
+            "vedic_api": {
+                "success": vedic_response.get('success'),
+                "data": vedic_response.get('data', {}),
+                "error": vedic_response.get('error'),
+                "source": "VedicAstroAPI (Astronomical Calculations)"
+            },
+            "gemini_llm": {
+                "success": gemini_success,
+                "data": gemini_data if gemini_success else {},
+                "error": gemini_error,
+                "source": "Gemini LLM (AI-Generated, Experimental)"
+            },
+            "comparison_notes": "VedicAPI uses Swiss Ephemeris for accurate astronomical calculations. Gemini LLM generates estimates and may not be astronomically accurate."
+        }
+        
+    except Exception as e:
+        logger.error(f"Comparison failed: {str(e)}")
+        return {"error": str(e)}
+
 @api_router.get("/utils/search-cities")
 async def search_cities_endpoint(query: str, max_results: int = 10):
     """
