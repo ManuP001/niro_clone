@@ -275,31 +275,60 @@ async def generate_report_background(report: Report, request: ReportRequest):
         
         logger.info(f"Starting report generation for {report.report_id}")
         
-        # Step 2: Fetch data from VedicAstroAPI (using direct client for MVP reliability)
-        logger.info("Fetching data from VedicAstroAPI...")
+        # Step 2: Fetch astrological data (VedicAPI or Gemini LLM based on config)
         bd = request.birth_details
-        raw_response = vedic_client.get_planet_details(
-            dob=bd.dob,
-            tob=bd.tob,
-            lat=bd.lat,
-            lon=bd.lon,
-            tz=bd.timezone
-        )
         
-        if not raw_response.get('success'):
-            error_msg = raw_response.get('error', 'Unknown API error')
-            logger.error(f"VedicAstroAPI failed: {error_msg}")
-            await db.reports.update_one(
-                {"report_id": report.report_id},
-                {"$set": {
-                    "status": "failed",
-                    "code_execution_success": False,
-                    "code_execution_error": error_msg
-                }}
+        if ASTRO_CALC_SOURCE == 'gemini_llm':
+            logger.info("Using Gemini LLM for astrological calculations (EXPERIMENTAL)")
+            success, raw_json, error_msg = gemini_calculator.calculate_houses_and_planets(
+                dob=bd.dob,
+                tob=bd.tob,
+                lat=bd.lat,
+                lon=bd.lon,
+                location=bd.location,
+                timezone=bd.timezone
             )
-            return
-        
-        raw_json = raw_response.get('data', {})
+            
+            if not success:
+                logger.error(f"Gemini calculation failed: {error_msg}")
+                await db.reports.update_one(
+                    {"report_id": report.report_id},
+                    {"$set": {
+                        "status": "failed",
+                        "code_execution_success": False,
+                        "code_execution_error": f"Gemini LLM calculation failed: {error_msg}"
+                    }}
+                )
+                return
+            
+            # Format for interpretation
+            raw_json = gemini_calculator.format_for_interpretation(raw_json)
+            
+        else:
+            # Default: Use VedicAstroAPI (accurate, reliable)
+            logger.info("Fetching data from VedicAstroAPI (accurate astronomical calculations)")
+            raw_response = vedic_client.get_planet_details(
+                dob=bd.dob,
+                tob=bd.tob,
+                lat=bd.lat,
+                lon=bd.lon,
+                tz=bd.timezone
+            )
+            
+            if not raw_response.get('success'):
+                error_msg = raw_response.get('error', 'Unknown API error')
+                logger.error(f"VedicAstroAPI failed: {error_msg}")
+                await db.reports.update_one(
+                    {"report_id": report.report_id},
+                    {"$set": {
+                        "status": "failed",
+                        "code_execution_success": False,
+                        "code_execution_error": error_msg
+                    }}
+                )
+                return
+            
+            raw_json = raw_response.get('data', {})
         
         # Save raw JSON
         await db.reports.update_one(
