@@ -40,11 +40,16 @@ db = client[os.environ['DB_NAME']]
 gemini_agent = GeminiAgent()
 sandbox_executor = get_sandbox_executor(use_docker=True)  # Use Docker for production
 pdf_generator = AstroPrescriptionPDF(output_dir="/app/backend/reports")
-vedic_client = VedicAstroClient()  # Direct API client for MVP
+vedic_client = VedicAstroClient()  # VedicAstroAPI client (accurate)
+gemini_calculator = GeminiAstroCalculator()  # Gemini LLM calculator (experimental)
 visual_extractor = VisualDataExtractor()  # Visual data extraction for charts
 time_parser = TimeParser()  # Smart time parsing
 city_service = CityService()  # City autocomplete with GeoNames
 indian_city_service = IndianCityService()  # Comprehensive Indian cities database
+
+# Configuration for calculation source
+ASTRO_CALC_SOURCE = os.environ.get('ASTRO_CALCULATION_SOURCE', 'vedic_api')
+logger.info(f"Astrological calculation source: {ASTRO_CALC_SOURCE}")
 
 # Create the main app without a prefix
 app = FastAPI(title="Astro-Trust Engine API", version="1.0.0")
