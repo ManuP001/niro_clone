@@ -80,6 +80,7 @@ async def health_check():
         "status": "healthy",
         "gemini_configured": bool(os.environ.get('GEMINI_API_KEY')),
         "vedic_api_configured": bool(os.environ.get('VEDIC_API_KEY')),
+        "astro_calculation_source": ASTRO_CALC_SOURCE,
         "database": "connected"
     }
 
