@@ -70,7 +70,8 @@ async def root():
     return {
         "message": "Astro-Trust Engine API",
         "version": "1.0.0",
-        "status": "operational"
+        "status": "operational",
+        "astro_calculation_source": ASTRO_CALC_SOURCE
     }
 
 @api_router.get("/health")
