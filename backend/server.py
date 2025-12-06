@@ -22,6 +22,7 @@ from sandbox_executor import get_sandbox_executor
 from pdf_generator import AstroPrescriptionPDF
 from prompt_templates import build_code_generation_prompt
 from vedic_api_client import VedicAstroClient
+from gemini_astro_calculator import GeminiAstroCalculator
 from advanced_prompts import build_user_context
 from visual_data_extractor import VisualDataExtractor
 from time_parser import TimeParser
