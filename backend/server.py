@@ -86,6 +86,43 @@ async def health_check():
 
 # ============= UTILITY ENDPOINTS =============
 
+@api_router.get("/utils/check-gemini-quota")
+async def check_gemini_quota():
+    """
+    Test Gemini API quota by making a small request
+    Returns quota status and any errors
+    """
+    try:
+        test_prompt = "Reply with: OK"
+        response = gemini_agent._call_model(
+            gemini_agent.flash_model,  # Use flash for quota check (cheaper)
+            test_prompt,
+            temperature=0.1
+        )
+        
+        return {
+            "status": "available",
+            "message": "Gemini API is working",
+            "model_tested": "gemini-2.5-flash",
+            "response": response[:100]
+        }
+    except Exception as e:
+        error_msg = str(e)
+        
+        if "ResourceExhausted" in error_msg or "quota" in error_msg.lower():
+            return {
+                "status": "quota_exceeded",
+                "message": "Gemini API quota exceeded",
+                "error": error_msg,
+                "solution": "Upgrade your Gemini API key at https://aistudio.google.com/app/apikey or wait for quota reset"
+            }
+        else:
+            return {
+                "status": "error",
+                "message": "Gemini API error",
+                "error": error_msg
+            }
+
 @api_router.post("/utils/parse-time")
 async def parse_time_endpoint(request: dict):
     """
