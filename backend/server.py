@@ -439,8 +439,9 @@ async def generate_report_background(report: Report, request: ReportRequest):
             'relationship_status': user_doc.get('relationship_status') if user_doc else None
         })
         
-        # Step 6: Interpret results with Gemini Pro (with advanced prompts)
-        logger.info("Interpreting report with Gemini Pro (advanced prompts)...")
+        # Step 6: Interpret results with Gemini (with advanced prompts)
+        # Note: Using appropriate model based on quota availability
+        logger.info("Interpreting report with Gemini AI (advanced prompts)...")
         try:
             interpreted_text = gemini_agent.interpret_report(
                 raw_json=raw_json,
