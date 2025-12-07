@@ -33,13 +33,8 @@ class GeminiAgent:
         
         logger.info(f"GeminiAgent initialized with Pro: {self.pro_model_name}, Flash: {self.flash_model_name}")
     
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=2, max=10),
-        retry=retry_if_exception_type(Exception)
-    )
-    def _call_model(self, model: genai.GenerativeModel, prompt: str, temperature: float = 0.7) -> str:
-        """Internal method to call Gemini model with retry logic"""
+    def _call_model(self, model: genai.GenerativeModel, prompt: str, temperature: float = 0.7, allow_fallback: bool = True) -> str:
+        """Internal method to call Gemini model with quota fallback"""
         try:
             generation_config = genai.types.GenerationConfig(
                 temperature=temperature,
@@ -58,7 +53,29 @@ class GeminiAgent:
                 raise Exception("No response generated from Gemini")
                 
         except Exception as e:
-            logger.error(f"Error calling Gemini model: {str(e)}")
+            error_msg = str(e)
+            
+            # Check if it's a quota error and we can fallback
+            if allow_fallback and ("ResourceExhausted" in error_msg or "quota" in error_msg.lower()):
+                logger.warning(f"Quota exceeded for {model._model_name}, attempting fallback to Flash model...")
+                
+                # If Pro failed, try Flash
+                if model == self.pro_model:
+                    try:
+                        logger.info("Falling back to gemini-2.5-flash...")
+                        response = self.flash_model.generate_content(
+                            prompt,
+                            generation_config=generation_config
+                        )
+                        
+                        if response.candidates:
+                            logger.info("Successfully used Flash model as fallback")
+                            return response.text
+                    except Exception as fallback_error:
+                        logger.error(f"Fallback to Flash also failed: {str(fallback_error)}")
+                        raise
+            
+            logger.error(f"Error calling Gemini model: {error_msg}")
             raise
     
     def generate_code(self, user_intent: str, api_docs: str, user_data: Dict[str, Any]) -> str:
