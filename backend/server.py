@@ -404,11 +404,34 @@ async def generate_report_background(report: Report, request: ReportRequest):
         
         # Step 6: Interpret results with Gemini Pro (with advanced prompts)
         logger.info("Interpreting report with Gemini Pro (advanced prompts)...")
-        interpreted_text = gemini_agent.interpret_report(
-            raw_json=raw_json,
-            report_type=request.report_type,
-            user_context=user_context
-        )
+        try:
+            interpreted_text = gemini_agent.interpret_report(
+                raw_json=raw_json,
+                report_type=request.report_type,
+                user_context=user_context
+            )
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Gemini interpretation failed: {error_msg}")
+            
+            # Check if it's a quota error
+            if "ResourceExhausted" in error_msg or "quota" in error_msg.lower():
+                await db.reports.update_one(
+                    {"report_id": report.report_id},
+                    {"$set": {
+                        "status": "failed",
+                        "code_execution_error": "Gemini API quota exceeded. Please upgrade your Gemini API key or wait for quota reset. Visit: https://aistudio.google.com/app/apikey"
+                    }}
+                )
+            else:
+                await db.reports.update_one(
+                    {"report_id": report.report_id},
+                    {"$set": {
+                        "status": "failed",
+                        "code_execution_error": f"Report interpretation failed: {error_msg}"
+                    }}
+                )
+            return
         
         # Step 7: Extract visual data for charts
         logger.info("Extracting visual data...")
