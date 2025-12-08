@@ -137,16 +137,27 @@ Return ONLY the JSON, no markdown, no other text.
             ambiguous_fields=data.get('ambiguous_fields', [])
         )
         
-        # Extract user data
-        if data.get('user') and data['user'].get('name'):
-            place_data = data['user'].get('place_of_birth', {})
-            if place_data and place_data.get('city') and place_data.get('country'):
-                extracted.user = SubjectData(
-                    name=data['user']['name'],
-                    date_of_birth=data['user'].get('date_of_birth', ''),
-                    time_of_birth=data['user'].get('time_of_birth'),
-                    place_of_birth=PlaceData(**place_data)
-                )
+        # Extract user data - be more lenient
+        if data.get('user'):
+            user_data = data['user']
+            if user_data.get('name'):
+                place_data = user_data.get('place_of_birth', {})
+                # Accept place data even if country is missing (we'll infer it)
+                if place_data and place_data.get('city'):
+                    # If no country specified, assume India for common Indian cities
+                    if not place_data.get('country'):
+                        indian_cities = ['delhi', 'mumbai', 'bangalore', 'chennai', 'kolkata', 
+                                       'hyderabad', 'pune', 'ahmedabad', 'jaipur', 'dehradun',
+                                       'lucknow', 'kanpur', 'nagpur', 'indore', 'bhopal']
+                        if place_data['city'].lower() in indian_cities:
+                            place_data['country'] = 'India'
+                    
+                    extracted.user = SubjectData(
+                        name=user_data['name'],
+                        date_of_birth=user_data.get('date_of_birth', ''),
+                        time_of_birth=user_data.get('time_of_birth'),
+                        place_of_birth=PlaceData(**place_data)
+                    )
         
         # Extract context
         context_data = data.get('context', {})
