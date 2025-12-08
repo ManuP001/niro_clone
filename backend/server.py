@@ -657,9 +657,11 @@ async def send_chat_message(request: ChatRequest):
     Send a message in chat conversation
     Handles NLP extraction, validation, and interpretation
     """
-    
-    # Get or create session
-    session_id = request.session_id
+    try:
+        logger.info(f"=== Chat message received: {request.message} ===")
+        
+        # Get or create session
+        session_id = request.session_id
     if not session_id:
         # Create new session
         session = ChatSession(user_id=request.user_id)
