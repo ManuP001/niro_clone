@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Stars, Heart, Briefcase, Sparkles, Check, MapPin, Clock } from 'lucide-react';
+import { Loader2, Stars, Heart, Briefcase, Sparkles, Check, MapPin, Clock, MessageSquare, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -18,6 +18,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false);
   const [prices, setPrices] = useState({});
   const [selectedReport, setSelectedReport] = useState('yearly_prediction');
+  const [mode, setMode] = useState('reports'); // 'reports' or 'chat'
   
   const [formData, setFormData] = useState({
     name: '',
