@@ -225,16 +225,12 @@ Return ONLY the JSON, no markdown, no other text.
   }}
 }}
 
-Keep it concise for fast response. JSON only, no markdown.
-- Avoid jargon, explain concepts simply
-- Be probabilistic, not absolute ("likely", "suggests", "indicates")
-- Empowering, not fear-inducing
-
-Return ONLY the JSON."""
+Keep it concise for fast response. JSON only, no markdown."""
 
         try:
+            # Use Flash model for faster responses (latency optimization)
             response = self.gemini_agent._call_model(
-                self.gemini_agent.pro_model,  # Use Pro for quality interpretation
+                self.gemini_agent.flash_model,  # Use Flash for speed
                 prompt,
                 temperature=0.7
             )
