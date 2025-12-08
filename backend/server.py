@@ -721,9 +721,17 @@ async def send_chat_message(request: ChatRequest):
                     cities = city_service.search_cities(place.city, max_results=1)
                 
                 if cities:
-                    place.latitude = cities[0]['lat']
-                    place.longitude = cities[0]['lon']
-                    logger.info(f"Found coordinates: {place.latitude}, {place.longitude}")
+                    # Pydantic models are immutable by default, so we need to create a new one
+                    from chat_models import PlaceData
+                    new_place = PlaceData(
+                        city=place.city,
+                        region=place.region,
+                        country=place.country,
+                        latitude=cities[0]['lat'],
+                        longitude=cities[0]['lon']
+                    )
+                    extracted_data.user.place_of_birth = new_place
+                    logger.info(f"Found coordinates: {new_place.latitude}, {new_place.longitude}")
             except Exception as e:
                 logger.warning(f"Failed to lookup city coordinates: {str(e)}")
     
