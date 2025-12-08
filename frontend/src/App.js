@@ -12,6 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/report/:reportId" element={<ReportPage />} />
+          <Route path="/chat" element={<ChatPage />} />
         </Routes>
       </BrowserRouter>
     </div>
