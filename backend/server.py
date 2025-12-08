@@ -704,14 +704,16 @@ async def send_chat_message(request: ChatRequest):
     ]
     
     # Extract birth details using NLP
-    print(f"CHAT DEBUG: About to extract from: '{request.message}'", flush=True)
-    logger.info(f"Extracting birth details from user message: '{request.message}'")
+    with open("/tmp/chat_debug.log", "a") as f:
+        f.write(f"About to extract from: '{request.message}'\n")
+    
     extracted_data = chat_agent.extract_birth_details(
         request.message,
         conversation_history[:-1]  # Exclude current message
     )
-    print(f"CHAT DEBUG: Extraction done - confidence={extracted_data.confidence_score}, user={extracted_data.user is not None}", flush=True)
-    logger.info(f"Extraction result - confidence: {extracted_data.confidence_score}, user: {extracted_data.user}, missing: {extracted_data.missing_fields}")
+    
+    with open("/tmp/chat_debug.log", "a") as f:
+        f.write(f"Extraction done - confidence={extracted_data.confidence_score}, user={extracted_data.user is not None}, missing={extracted_data.missing_fields}\n")
     
     # If city is extracted but no lat/lon, look it up
     if extracted_data.user and extracted_data.user.place_of_birth:
