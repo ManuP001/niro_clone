@@ -687,36 +687,36 @@ async def send_chat_message(request: ChatRequest):
             role=ChatRole.USER,
             content=request.message
         )
-    
-    msg_doc = user_message.model_dump()
-    msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
-    await db.chat_messages.insert_one(msg_doc)
-    
-    # Get conversation history
-    history_docs = await db.chat_messages.find(
-        {"session_id": session_id},
-        {"_id": 0}
-    ).sort("timestamp", 1).to_list(100)
-    
-    conversation_history = [
-        {"role": msg['role'], "content": msg['content']} 
-        for msg in history_docs
-    ]
-    
-    # Extract birth details using NLP
-    with open("/tmp/chat_debug.log", "a") as f:
-        f.write(f"About to extract from: '{request.message}'\n")
-    
-    extracted_data = chat_agent.extract_birth_details(
-        request.message,
-        conversation_history[:-1]  # Exclude current message
-    )
-    
-    with open("/tmp/chat_debug.log", "a") as f:
-        f.write(f"Extraction done - confidence={extracted_data.confidence_score}, user={extracted_data.user is not None}, missing={extracted_data.missing_fields}\n")
-    
-    # If city is extracted but no lat/lon, look it up
-    if extracted_data.user and extracted_data.user.place_of_birth:
+        
+        msg_doc = user_message.model_dump()
+        msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
+        await db.chat_messages.insert_one(msg_doc)
+        
+        # Get conversation history
+        history_docs = await db.chat_messages.find(
+            {"session_id": session_id},
+            {"_id": 0}
+        ).sort("timestamp", 1).to_list(100)
+        
+        conversation_history = [
+            {"role": msg['role'], "content": msg['content']} 
+            for msg in history_docs
+        ]
+        
+        # Extract birth details using NLP
+        with open("/tmp/chat_debug.log", "a") as f:
+            f.write(f"About to extract from: '{request.message}'\n")
+        
+        extracted_data = chat_agent.extract_birth_details(
+            request.message,
+            conversation_history[:-1]  # Exclude current message
+        )
+        
+        with open("/tmp/chat_debug.log", "a") as f:
+            f.write(f"Extraction done - confidence={extracted_data.confidence_score}, user={extracted_data.user is not None}, missing={extracted_data.missing_fields}\n")
+        
+        # If city is extracted but no lat/lon, look it up
+        if extracted_data.user and extracted_data.user.place_of_birth:
         place = extracted_data.user.place_of_birth
         if place.city and not place.latitude:
             logger.info(f"Looking up coordinates for city: {place.city}")
