@@ -687,63 +687,63 @@ async def send_chat_message(request: ChatRequest):
             role=ChatRole.USER,
             content=request.message
         )
-        
-        msg_doc = user_message.model_dump()
-        msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
-        await db.chat_messages.insert_one(msg_doc)
-        
-        # Get conversation history
-        history_docs = await db.chat_messages.find(
-            {"session_id": session_id},
-            {"_id": 0}
-        ).sort("timestamp", 1).to_list(100)
-        
-        conversation_history = [
-            {"role": msg['role'], "content": msg['content']} 
-            for msg in history_docs
-        ]
-        
-        # Extract birth details using NLP
-        with open("/tmp/chat_debug.log", "a") as f:
-            f.write(f"About to extract from: '{request.message}'\n")
-        
-        extracted_data = chat_agent.extract_birth_details(
-            request.message,
-            conversation_history[:-1]  # Exclude current message
-        )
-        
-        with open("/tmp/chat_debug.log", "a") as f:
-            f.write(f"Extraction done - confidence={extracted_data.confidence_score}, user={extracted_data.user is not None}, missing={extracted_data.missing_fields}\n")
-        
-        # If city is extracted but no lat/lon, look it up
-        if extracted_data.user and extracted_data.user.place_of_birth:
-            place = extracted_data.user.place_of_birth
-            if place.city and not place.latitude:
-                logger.info(f"Looking up coordinates for city: {place.city}")
-                try:
-                    # Try Indian cities first
-                    cities = indian_city_service.search_cities(place.city, max_results=1)
-                    if not cities:
-                        # Try international search
-                        cities = city_service.search_cities(place.city, max_results=1)
-                    
-                    if cities:
-                        # Pydantic models are immutable by default, so we need to create a new one
-                        from chat_models import PlaceData
-                        new_place = PlaceData(
-                            city=place.city,
-                            region=place.region,
-                            country=place.country,
-                            latitude=cities[0]['lat'],
-                            longitude=cities[0]['lon']
-                        )
-                        extracted_data.user.place_of_birth = new_place
-                        logger.info(f"Found coordinates: {new_place.latitude}, {new_place.longitude}")
-                except Exception as e:
-                    logger.warning(f"Failed to lookup city coordinates: {str(e)}")
-        
-        # Check if we have enough data
-        if extracted_data.confidence_score < 0.6 or extracted_data.missing_fields or not extracted_data.user:
+    
+    msg_doc = user_message.model_dump()
+    msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
+    await db.chat_messages.insert_one(msg_doc)
+    
+    # Get conversation history
+    history_docs = await db.chat_messages.find(
+        {"session_id": session_id},
+        {"_id": 0}
+    ).sort("timestamp", 1).to_list(100)
+    
+    conversation_history = [
+        {"role": msg['role'], "content": msg['content']} 
+        for msg in history_docs
+    ]
+    
+    # Extract birth details using NLP
+    with open("/tmp/chat_debug.log", "a") as f:
+        f.write(f"About to extract from: '{request.message}'\n")
+    
+    extracted_data = chat_agent.extract_birth_details(
+        request.message,
+        conversation_history[:-1]  # Exclude current message
+    )
+    
+    with open("/tmp/chat_debug.log", "a") as f:
+        f.write(f"Extraction done - confidence={extracted_data.confidence_score}, user={extracted_data.user is not None}, missing={extracted_data.missing_fields}\n")
+    
+    # If city is extracted but no lat/lon, look it up
+    if extracted_data.user and extracted_data.user.place_of_birth:
+        place = extracted_data.user.place_of_birth
+        if place.city and not place.latitude:
+            logger.info(f"Looking up coordinates for city: {place.city}")
+            try:
+                # Try Indian cities first
+                cities = indian_city_service.search_cities(place.city, max_results=1)
+                if not cities:
+                    # Try international search
+                    cities = city_service.search_cities(place.city, max_results=1)
+                
+                if cities:
+                    # Pydantic models are immutable by default, so we need to create a new one
+                    from chat_models import PlaceData
+                    new_place = PlaceData(
+                        city=place.city,
+                        region=place.region,
+                        country=place.country,
+                        latitude=cities[0]['lat'],
+                        longitude=cities[0]['lon']
+                    )
+                    extracted_data.user.place_of_birth = new_place
+                    logger.info(f"Found coordinates: {new_place.latitude}, {new_place.longitude}")
+            except Exception as e:
+                logger.warning(f"Failed to lookup city coordinates: {str(e)}")
+    
+    # Check if we have enough data
+    if extracted_data.confidence_score < 0.6 or extracted_data.missing_fields or not extracted_data.user:
         # Need more information
         followup = chat_agent.generate_followup_question(extracted_data)
         
