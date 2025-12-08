@@ -261,7 +261,7 @@ const ChatPage = () => {
               <button
                 key={i}
                 onClick={() => setInputMessage(example)}
-                className=\"text-xs px-3 py-2 bg-white border border-purple-200 rounded-full hover:bg-purple-50 transition-colors\"
+                className="text-xs px-3 py-2 bg-white border border-blue-200 rounded-full hover:bg-blue-50 transition-colors"
                 disabled={isLoading}
               >
                 {example.substring(0, 50)}...
