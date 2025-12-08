@@ -91,7 +91,7 @@ class AstroChatAgent:
   "notes": ""
 }}
 
-Return ONLY the JSON, no markdown, no other text.
+Return ONLY the JSON, no markdown, no other text."""
 
         try:
             response = self.gemini_agent._call_model(
