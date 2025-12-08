@@ -316,8 +316,9 @@ const HomePage = () => {
         </div>
 
         {/* Report Selection (only show in reports mode) */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          {reportTypes.map((report) => (
+        {mode === 'reports' && (
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            {reportTypes.map((report) => (
             <Card 
               key={report.id}
               className={`cursor-pointer transition-all duration-300 hover:shadow-2xl border-2 ${
