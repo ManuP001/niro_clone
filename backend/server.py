@@ -658,6 +658,7 @@ async def send_chat_message(request: ChatRequest):
     Handles NLP extraction, validation, and interpretation
     """
     try:
+        print(f"\n=== CHAT DEBUG: Message received: {request.message} ===", flush=True)
         logger.info(f"=== Chat message received: {request.message} ===")
         
         # Get or create session
