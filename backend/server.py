@@ -820,13 +820,21 @@ async def send_chat_message(request: ChatRequest):
         }}
     )
     
-    return ChatResponse(
-        session_id=session_id,
-        message=interpretation,
-        extracted_data=extracted_data,
-        requires_followup=False,
-        confidence_metadata=confidence_metadata
-    )
+        return ChatResponse(
+            session_id=session_id,
+            message=interpretation,
+            extracted_data=extracted_data,
+            requires_followup=False,
+            confidence_metadata=confidence_metadata
+        )
+    except Exception as e:
+        logger.error(f"=== Chat endpoint error: {str(e)} ===", exc_info=True)
+        # Return a generic error response
+        return ChatResponse(
+            session_id=session_id if 'session_id' in locals() else "error",
+            message="I apologize, but I encountered a technical issue. Please try again.",
+            requires_followup=True
+        )
 
 @api_router.get("/chat/sessions/{session_id}")
 async def get_chat_session(session_id: str):
