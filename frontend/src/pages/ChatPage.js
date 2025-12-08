@@ -221,15 +221,15 @@ const ChatPage = () => {
           </ScrollArea>
 
           {/* Input Area */}
-          <CardContent className=\"p-4 border-t\">
-            <div className=\"flex gap-2\">
+          <CardContent className="p-4 border-t">
+            <div className="flex gap-2">
               <Input
-                placeholder=\"Type your message... (e.g., 'I was born on 15 Aug 1990 at 2:30 PM in Mumbai')\"
+                placeholder="Type your message... (e.g., 'I was born on 15 Aug 1990 at 2:30 PM in Mumbai')"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 disabled={isLoading}
-                className=\"flex-1\"
+                className="flex-1"
               />
               <Button
                 onClick={sendMessage}
@@ -243,20 +243,20 @@ const ChatPage = () => {
                 )}
               </Button>
             </div>
-            <p className=\"text-xs text-gray-500 mt-2\">
+            <p className="text-xs text-gray-500 mt-2">
               💡 Tip: Share your name, birth date, time, and place for accurate insights
             </p>
           </CardContent>
         </Card>
 
         {/* Example queries */}
-        <div className=\"mt-6 text-center\">
-          <p className=\"text-sm text-gray-600 mb-3\">Try asking:</p>
-          <div className=\"flex flex-wrap gap-2 justify-center\">
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600 mb-3">Try asking:</p>
+          <div className="flex flex-wrap gap-2 justify-center">
             {[
-              \"I was born on 15 Aug 1990 at 2:30 PM in Mumbai. Tell me about my career.\",
-              \"What does my birth chart say about relationships?\",
-              \"I need a panchang for today\"
+              "I was born on 15 Aug 1990 at 2:30 PM in Mumbai. Tell me about my career.",
+              "What does my birth chart say about relationships?",
+              "I need a panchang for today"
             ].map((example, i) => (
               <button
                 key={i}
