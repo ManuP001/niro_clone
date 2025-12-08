@@ -135,8 +135,8 @@ const ChatPage = () => {
           </CardHeader>
 
           {/* Messages Area */}
-          <ScrollArea className=\"flex-1 p-6\">
-            <div className=\"space-y-4\">
+          <ScrollArea className="flex-1 p-6">
+            <div className="space-y-4">
               {messages.map((message, index) => (
                 <div
                   key={index}
