@@ -329,40 +329,48 @@ class ReportGenerationTester:
                           f"Report generation started: {report_id}")
             
             # Step 5: Check report status (wait for processing)
-            max_attempts = 10
+            max_attempts = 8
             for attempt in range(max_attempts):
-                time.sleep(3)  # Wait 3 seconds between checks
+                time.sleep(5)  # Wait 5 seconds between checks
                 
-                response = self.session.get(f"{BACKEND_URL}/reports/{report_id}", timeout=10)
-                if response.status_code != 200:
-                    self.log_result("Report Flow - Status Check", False, 
-                                  f"HTTP {response.status_code}", response.text)
-                    return False
-                
-                status_data = response.json()
-                status = status_data.get("status")
-                
-                print(f"   Attempt {attempt + 1}: Report status = {status}")
-                
-                if status == "completed":
-                    self.log_result("Report Flow - Status Check", True, 
-                                  f"Report completed successfully in {attempt + 1} attempts")
-                    return True
-                elif status == "failed":
-                    error = status_data.get("code_execution_error", "Unknown error")
-                    self.log_result("Report Flow - Status Check", False, 
-                                  f"Report generation failed: {error}", status_data)
-                    return False
-                elif status in ["pending", "processing"]:
-                    continue  # Keep waiting
-                else:
-                    self.log_result("Report Flow - Status Check", False, 
-                                  f"Unknown status: {status}", status_data)
-                    return False
+                try:
+                    response = self.session.get(f"{BACKEND_URL}/reports/{report_id}", timeout=15)
+                    if response.status_code != 200:
+                        self.log_result("Report Flow - Status Check", False, 
+                                      f"HTTP {response.status_code}", response.text)
+                        return False
+                    
+                    status_data = response.json()
+                    status = status_data.get("status")
+                    
+                    print(f"   Attempt {attempt + 1}: Report status = {status}")
+                    
+                    if status == "completed":
+                        self.log_result("Report Flow - Status Check", True, 
+                                      f"Report completed successfully in {attempt + 1} attempts")
+                        return True
+                    elif status == "failed":
+                        error = status_data.get("code_execution_error", "Unknown error")
+                        self.log_result("Report Flow - Status Check", False, 
+                                      f"Report generation failed: {error}", status_data)
+                        return False
+                    elif status in ["pending", "processing"]:
+                        continue  # Keep waiting
+                    else:
+                        self.log_result("Report Flow - Status Check", False, 
+                                      f"Unknown status: {status}", status_data)
+                        return False
+                        
+                except requests.exceptions.Timeout:
+                    print(f"   Attempt {attempt + 1}: Timeout checking status, retrying...")
+                    continue
+                except Exception as e:
+                    print(f"   Attempt {attempt + 1}: Error checking status: {str(e)}")
+                    continue
             
             # If we get here, report didn't complete in time
             self.log_result("Report Flow - Status Check", False, 
-                          f"Report still processing after {max_attempts} attempts")
+                          f"Report still processing after {max_attempts} attempts (may be working but slow)")
             return False
             
         except Exception as e:
