@@ -664,29 +664,29 @@ async def send_chat_message(request: ChatRequest):
         # Get or create session
         session_id = request.session_id
         if not session_id:
-        # Create new session
-        session = ChatSession(user_id=request.user_id)
-        session_id = session.session_id
+            # Create new session
+            session = ChatSession(user_id=request.user_id)
+            session_id = session.session_id
+            
+            # Save session
+            session_doc = session.model_dump()
+            session_doc['created_at'] = session_doc['created_at'].isoformat()
+            session_doc['updated_at'] = session_doc['updated_at'].isoformat()
+            await db.chat_sessions.insert_one(session_doc)
+            
+            logger.info(f"Created new chat session: {session_id}")
+        else:
+            # Load existing session
+            session_doc = await db.chat_sessions.find_one({"session_id": session_id}, {"_id": 0})
+            if not session_doc:
+                raise HTTPException(status_code=404, detail="Session not found")
         
-        # Save session
-        session_doc = session.model_dump()
-        session_doc['created_at'] = session_doc['created_at'].isoformat()
-        session_doc['updated_at'] = session_doc['updated_at'].isoformat()
-        await db.chat_sessions.insert_one(session_doc)
-        
-        logger.info(f"Created new chat session: {session_id}")
-    else:
-        # Load existing session
-        session_doc = await db.chat_sessions.find_one({"session_id": session_id}, {"_id": 0})
-        if not session_doc:
-            raise HTTPException(status_code=404, detail="Session not found")
-    
-    # Save user message
-    user_message = ChatMessage(
-        session_id=session_id,
-        role=ChatRole.USER,
-        content=request.message
-    )
+        # Save user message
+        user_message = ChatMessage(
+            session_id=session_id,
+            role=ChatRole.USER,
+            content=request.message
+        )
     
     msg_doc = user_message.model_dump()
     msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
