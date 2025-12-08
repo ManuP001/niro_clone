@@ -360,10 +360,12 @@ const HomePage = () => {
                 </ul>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {/* Form */}
+        {/* Form (only show in reports mode) */}
+        {mode === 'reports' && (
         <Card className="shadow-2xl border-2 border-purple-200">
           <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
             <CardTitle className="text-2xl">Enter Your Birth Details</CardTitle>
