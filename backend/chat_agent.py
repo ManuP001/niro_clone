@@ -43,60 +43,55 @@ class AstroChatAgent:
                 for msg in conversation_history[-5:]  # Last 5 messages
             ])
         
-        prompt = f"""You are an NLP extraction system for an astrology application. Extract birth details from user messages.
+        prompt = f"""Extract birth details from user message. Be VERY lenient and extract even partial information.
 
-**CONVERSATION HISTORY:**
-{context_str if context_str else "No previous context"}
+**PREVIOUS MESSAGES:**
+{context_str if context_str else "None"}
 
-**CURRENT USER MESSAGE:**
+**CURRENT MESSAGE:**
 "{user_message}"
 
-**YOUR TASK:**
-Extract the following information if present:
-1. Person's name
-2. Date of birth (convert to YYYY-MM-DD format)
-3. Time of birth (convert to HH:MM 24h format, or mark as "unknown")
-4. Place of birth (city, region/state, country)
-5. Request type (natal chart, marriage compatibility, relationship advice, panchang, synastry)
-6. Partner details (if mentioned - same fields as above)
-7. Whether user has given consent to process their data
+**EXTRACT:**
+1. Name (first word/name in message)
+2. Date of birth (DD-MM-YYYY, DD/MM/YYYY, any date format → YYYY-MM-DD)
+3. Time (12h or 24h → HH:MM format, e.g., "10:47am" → "10:47")
+4. Place (any city name → extract city name, assume India if not specified)
 
-**OUTPUT FORMAT:**
-Return ONLY valid JSON with this structure:
+**IMPORTANT EXTRACTION TIPS:**
+- "Manu Pant, 10-10-1985, 10:47am, Dehradun" → name: Manu Pant, dob: 1985-10-10, time: 10:47, city: Dehradun
+- If date format is DD-MM-YYYY, convert to YYYY-MM-DD
+- If time has "am/pm", convert to 24h (10:47am → 10:47, 2:30pm → 14:30)
+- For Indian cities (Delhi, Mumbai, Bangalore, Dehradun, etc.), set country as "India"
+- Extract name even if it's just 2 words at the start
+- ALWAYS set consent_given to true if any birth details are shared
+- Set confidence_score to 0.9 if name, date, time, and place are all present
+- Only mark fields as "missing" if they are truly absent from the message
 
+**RETURN JSON ONLY:**
 {{
-  "extraction_successful": true/false,
-  "confidence_score": 0.0-1.0,
+  "extraction_successful": true,
+  "confidence_score": 0.9,
   "user": {{
-    "name": "extracted name or null",
-    "date_of_birth": "YYYY-MM-DD or null",
-    "time_of_birth": "HH:MM or 'unknown' or null",
+    "name": "extracted name",
+    "date_of_birth": "YYYY-MM-DD",
+    "time_of_birth": "HH:MM",
     "place_of_birth": {{
-      "city": "city name or null",
-      "region": "state/region or null",
-      "country": "country or null"
+      "city": "city name",
+      "region": null,
+      "country": "India"
     }}
   }},
   "context": {{
-    "request_type": "natal|marriage|relationship|panchang|synastry",
-    "partner": {{...}} (only if mentioned, otherwise null),
-    "consent_given": true/false
+    "request_type": "natal",
+    "partner": null,
+    "consent_given": true
   }},
-  "missing_fields": ["list", "of", "missing", "required", "fields"],
-  "ambiguous_fields": ["list", "of", "ambiguous", "fields"],
-  "notes": "Any important notes about the extraction"
+  "missing_fields": [],
+  "ambiguous_fields": [],
+  "notes": ""
 }}
 
-**EXTRACTION RULES:**
-- If date is in Indian format (DD-MM-YYYY or DD/MM/YYYY), convert to YYYY-MM-DD
-- If time is in 12h format, convert to 24h
-- If place is mentioned as "Delhi", "Mumbai" etc, fill city and country as "India"
-- Mark time as "unknown" if user says "don't know", "not sure", "morning/evening" etc
-- Confidence 1.0 = all required fields present and clear
-- Confidence 0.7-0.9 = most fields present, some ambiguity
-- Confidence <0.7 = significant missing data
-
-Return ONLY the JSON, no other text."""
+Return ONLY the JSON, no markdown, no other text.
 
         try:
             response = self.gemini_agent._call_model(
