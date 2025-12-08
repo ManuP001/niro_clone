@@ -51,6 +51,7 @@ visual_extractor = VisualDataExtractor()  # Visual data extraction for charts
 time_parser = TimeParser()  # Smart time parsing
 city_service = CityService()  # City autocomplete with GeoNames
 indian_city_service = IndianCityService()  # Comprehensive Indian cities database
+chat_agent = AstroChatAgent()  # Chat-based astrology agent
 
 # Create the main app without a prefix
 app = FastAPI(title="Astro-Trust Engine API", version="1.0.0")
