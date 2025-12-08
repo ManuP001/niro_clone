@@ -648,6 +648,173 @@ async def clarify_question(question: FollowUpQuestion):
     
     return response
 
+# ============= CHAT SYSTEM =============
+
+@api_router.post("/chat/message", response_model=ChatResponse)
+async def send_chat_message(request: ChatRequest):
+    """
+    Send a message in chat conversation
+    Handles NLP extraction, validation, and interpretation
+    """
+    
+    # Get or create session
+    session_id = request.session_id
+    if not session_id:
+        # Create new session
+        session = ChatSession(user_id=request.user_id)
+        session_id = session.session_id
+        
+        # Save session
+        session_doc = session.model_dump()
+        session_doc['created_at'] = session_doc['created_at'].isoformat()
+        session_doc['updated_at'] = session_doc['updated_at'].isoformat()
+        await db.chat_sessions.insert_one(session_doc)
+        
+        logger.info(f"Created new chat session: {session_id}")
+    else:
+        # Load existing session
+        session_doc = await db.chat_sessions.find_one({"session_id": session_id}, {"_id": 0})
+        if not session_doc:
+            raise HTTPException(status_code=404, detail="Session not found")
+    
+    # Save user message
+    user_message = ChatMessage(
+        session_id=session_id,
+        role=ChatRole.USER,
+        content=request.message
+    )
+    
+    msg_doc = user_message.model_dump()
+    msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
+    await db.chat_messages.insert_one(msg_doc)
+    
+    # Get conversation history
+    history_docs = await db.chat_messages.find(
+        {"session_id": session_id},
+        {"_id": 0}
+    ).sort("timestamp", 1).to_list(100)
+    
+    conversation_history = [
+        {"role": msg['role'], "content": msg['content']} 
+        for msg in history_docs
+    ]
+    
+    # Extract birth details using NLP
+    logger.info("Extracting birth details from user message...")
+    extracted_data = chat_agent.extract_birth_details(
+        request.message,
+        conversation_history[:-1]  # Exclude current message
+    )
+    
+    # Check if we have enough data
+    if extracted_data.confidence_score < 0.6 or extracted_data.missing_fields:
+        # Need more information
+        followup = chat_agent.generate_followup_question(extracted_data)
+        
+        # Save assistant message
+        assistant_message = ChatMessage(
+            session_id=session_id,
+            role=ChatRole.ASSISTANT,
+            content=followup,
+            extracted_data=extracted_data
+        )
+        
+        msg_doc = assistant_message.model_dump()
+        msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
+        if msg_doc.get('extracted_data'):
+            msg_doc['extracted_data'] = extracted_data.model_dump()
+        await db.chat_messages.insert_one(msg_doc)
+        
+        # Update session
+        await db.chat_sessions.update_one(
+            {"session_id": session_id},
+            {"$set": {"extracted_data": extracted_data.model_dump(), "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+        
+        return ChatResponse(
+            session_id=session_id,
+            message=followup,
+            extracted_data=extracted_data,
+            requires_followup=True,
+            followup_question=followup
+        )
+    
+    # We have enough data - call VedicAstroAPI
+    logger.info("Sufficient data extracted, calling VedicAstroAPI...")
+    
+    bd = extracted_data.user.place_of_birth
+    api_response = vedic_client.get_planet_details(
+        dob=extracted_data.user.date_of_birth.replace('-', '/'),
+        tob=extracted_data.user.time_of_birth or "12:00",
+        lat=bd.latitude or 28.6139,  # Default to Delhi if not available
+        lon=bd.longitude or 77.2090,
+        tz=5.5
+    )
+    
+    if not api_response.get('success'):
+        return ChatResponse(
+            session_id=session_id,
+            message="I encountered an issue fetching your astrological data. Could you please verify your birth details?",
+            requires_followup=True
+        )
+    
+    # Generate interpretation
+    logger.info("Generating interpretation...")
+    interpretation, confidence_metadata = chat_agent.generate_interpretation(
+        api_response.get('data', {}),
+        extracted_data,
+        extracted_data.context.request_type
+    )
+    
+    # Save assistant message
+    assistant_message = ChatMessage(
+        session_id=session_id,
+        role=ChatRole.ASSISTANT,
+        content=interpretation,
+        confidence_metadata=confidence_metadata
+    )
+    
+    msg_doc = assistant_message.model_dump()
+    msg_doc['timestamp'] = msg_doc['timestamp'].isoformat()
+    if msg_doc.get('confidence_metadata'):
+        msg_doc['confidence_metadata'] = confidence_metadata.model_dump()
+    await db.chat_messages.insert_one(msg_doc)
+    
+    # Update session
+    await db.chat_sessions.update_one(
+        {"session_id": session_id},
+        {"$set": {
+            "status": "completed",
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return ChatResponse(
+        session_id=session_id,
+        message=interpretation,
+        extracted_data=extracted_data,
+        requires_followup=False,
+        confidence_metadata=confidence_metadata
+    )
+
+@api_router.get("/chat/sessions/{session_id}")
+async def get_chat_session(session_id: str):
+    """Get chat session with message history"""
+    
+    session = await db.chat_sessions.find_one({"session_id": session_id}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    messages = await db.chat_messages.find(
+        {"session_id": session_id},
+        {"_id": 0}
+    ).sort("timestamp", 1).to_list(1000)
+    
+    return {
+        "session": session,
+        "messages": messages
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
