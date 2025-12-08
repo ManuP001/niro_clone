@@ -120,7 +120,8 @@ Return ONLY the JSON, no markdown, no other text."""
             return extracted_data
             
         except Exception as e:
-            logger.error(f"Extraction failed: {str(e)}")
+            logger.error(f"Extraction failed: {str(e)}", exc_info=True)
+            logger.error(f"Raw response: {response if 'response' in locals() else 'No response'}")
             # Return empty extraction
             return ExtractedData(
                 confidence_score=0.0,
