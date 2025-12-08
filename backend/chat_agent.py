@@ -205,61 +205,27 @@ Return ONLY the JSON, no markdown, no other text.
             Tuple of (interpretation_text, confidence_metadata)
         """
         
-        prompt = f"""You are an expert Vedic astrologer providing probabilistic interpretations.
+        prompt = f"""Provide a brief astrological interpretation based on birth chart data.
 
-**USER REQUEST:** {request_type} chart analysis
+**Birth Info:** {extracted_data.user.name if extracted_data.user else 'User'}, {extracted_data.user.date_of_birth if extracted_data.user else ''}, {extracted_data.user.place_of_birth.city if extracted_data.user and extracted_data.user.place_of_birth else ''}
 
-**EXTRACTED BIRTH DATA:**
-{json.dumps(extracted_data.model_dump() if hasattr(extracted_data, 'model_dump') else {}, indent=2)}
+**Chart Data:**
+{json.dumps(api_response, indent=2)[:1000]}
 
-**ASTROLOGICAL DATA FROM API:**
-```json
-{json.dumps(api_response, indent=2)}
-```
+**Task:** Write 2-3 paragraphs covering key insights about career, relationships, and personality based on the planetary positions. Be warm, conversational, and focus on practical guidance.
 
-**YOUR TASK:**
-Provide a conversational, human-friendly interpretation that includes:
-
-1. **Main Interpretation** (2-3 paragraphs)
-   - Explain key findings in simple language
-   - Focus on most significant astrological factors
-   - Be warm and empathetic
-
-2. **Confidence Assessment**
-   - Overall confidence score (0-1)
-   - List assumptions made (e.g., "Assuming birth time is accurate...")
-   - Data quality notes (e.g., "Without exact birth time, ascendant is approximate")
-
-3. **Alternate Readings** (if applicable)
-   - If birth time is unknown or approximate, provide 2-3 alternate scenarios
-   - Rank by likelihood
-
-**OUTPUT FORMAT:**
-```json
+**Return JSON:**
 {{
-  "interpretation": "Your warm, conversational interpretation here...",
+  "interpretation": "Your brief, friendly interpretation (2-3 paragraphs)...",
   "confidence_metadata": {{
     "overall_confidence": 0.85,
-    "assumptions": [
-      "Birth time is accurate",
-      "Using Lahiri ayanamsa"
-    ],
-    "alternate_readings": [
-      {{
-        "scenario": "If born 1 hour earlier",
-        "likelihood": 0.15,
-        "key_difference": "Ascendant would be..."
-      }}
-    ],
-    "data_quality_notes": [
-      "Exact birth time available - high precision possible"
-    ]
+    "assumptions": ["Birth time accurate", "Using Lahiri ayanamsa"],
+    "alternate_readings": [],
+    "data_quality_notes": ["Data quality good"]
   }}
 }}
-```
 
-**TONE:**
-- Conversational and warm
+Keep it concise for fast response. JSON only, no markdown.
 - Avoid jargon, explain concepts simply
 - Be probabilistic, not absolute ("likely", "suggests", "indicates")
 - Empowering, not fear-inducing
