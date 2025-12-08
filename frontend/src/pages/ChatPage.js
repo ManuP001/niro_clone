@@ -94,18 +94,30 @@ const ChatPage = () => {
   };
 
   return (
-    <div className=\"min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50\">
-      <div className=\"container mx-auto px-4 py-8 max-w-4xl\">
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
         
+        {/* Back Button */}
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </Button>
+        </div>
+
         {/* Header */}
-        <div className=\"text-center mb-6\">
-          <div className=\"inline-flex items-center justify-center mb-2\">
-            <Sparkles className=\"w-8 h-8 text-purple-600 mr-2\" />
-            <h1 className=\"text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent\">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center mb-2">
+            <Sparkles className="w-8 h-8 text-blue-600 mr-2" />
+            <h1 className="text-4xl font-bold text-blue-600">
               AstroTrust Chat
             </h1>
           </div>
-          <p className=\"text-gray-600\">
+          <p className="text-gray-600">
             Conversational Astrology powered by AI
           </p>
         </div>
