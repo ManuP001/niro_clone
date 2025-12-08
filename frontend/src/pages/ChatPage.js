@@ -151,14 +151,14 @@ const ChatPage = () => {
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                         message.role === 'user'
-                          ? 'bg-purple-600'
-                          : 'bg-gradient-to-br from-purple-500 to-pink-500'
+                          ? 'bg-blue-600'
+                          : 'bg-blue-500'
                       }`}
                     >
                       {message.role === 'user' ? (
-                        <User className=\"w-5 h-5 text-white\" />
+                        <User className="w-5 h-5 text-white" />
                       ) : (
-                        <Bot className=\"w-5 h-5 text-white\" />
+                        <Bot className="w-5 h-5 text-white" />
                       )}
                     </div>
 
@@ -166,8 +166,8 @@ const ChatPage = () => {
                     <div
                       className={`rounded-2xl px-4 py-3 ${
                         message.role === 'user'
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-white border border-gray-200 text-gray-800'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-50 border border-gray-200 text-gray-800'
                       }`}
                     >
                       <p className=\"text-sm whitespace-pre-wrap\">{message.content}</p>
