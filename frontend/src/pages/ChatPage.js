@@ -204,13 +204,13 @@ const ChatPage = () => {
               
               {/* Loading indicator */}
               {isLoading && (
-                <div className=\"flex justify-start\">
-                  <div className=\"flex gap-3 max-w-[80%]\">
-                    <div className=\"w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center\">
-                      <Bot className=\"w-5 h-5 text-white\" />
+                <div className="flex justify-start">
+                  <div className="flex gap-3 max-w-[80%]">
+                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+                      <Bot className="w-5 h-5 text-white" />
                     </div>
-                    <div className=\"bg-white border border-gray-200 rounded-2xl px-4 py-3\">
-                      <Loader2 className=\"w-5 h-5 animate-spin text-purple-600\" />
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3">
+                      <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                     </div>
                   </div>
                 </div>
