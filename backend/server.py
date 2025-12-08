@@ -658,8 +658,8 @@ async def send_chat_message(request: ChatRequest):
     Handles NLP extraction, validation, and interpretation
     """
     try:
-        print(f"\n=== CHAT DEBUG: Message received: {request.message} ===", flush=True)
-        logger.info(f"=== Chat message received: {request.message} ===")
+        with open("/tmp/chat_debug.log", "a") as f:
+            f.write(f"\n=== CHAT: Message received: {request.message} ===\n")
         
         # Get or create session
         session_id = request.session_id
