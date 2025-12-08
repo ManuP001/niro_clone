@@ -149,6 +149,18 @@ backend:
         agent: "testing"
         comment: "✅ NLP extraction working correctly. Successfully extracts birth details from user messages and generates appropriate follow-up questions when information is incomplete."
 
+  - task: "Report Generation Regression Testing"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ REPORT GENERATION FUNCTIONALITY VERIFIED - No regression from Chat implementation. All core endpoints working: 1) Pricing API ✅ (all 4 report types with valid prices), 2) Health Check ✅ (Gemini & VedicAPI configured), 3) City Search ✅ (returns cities with lat/lon), 4) Time Parser ✅ (correctly parses time formats), 5) User/Transaction/Payment flow ✅. Report generation process functional but has intermittent Gemini API quota/safety filter issues (external dependency, not regression). Core report generation infrastructure intact."
+
 frontend:
   - task: "Chat Route Integration"
     implemented: true
