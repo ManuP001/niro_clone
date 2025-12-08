@@ -234,12 +234,12 @@ const ChatPage = () => {
               <Button
                 onClick={sendMessage}
                 disabled={isLoading || !inputMessage.trim()}
-                className=\"bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700\"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {isLoading ? (
-                  <Loader2 className=\"w-5 h-5 animate-spin\" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
-                  <Send className=\"w-5 h-5\" />
+                  <Send className="w-5 h-5" />
                 )}
               </Button>
             </div>
