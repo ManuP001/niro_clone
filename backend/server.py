@@ -775,6 +775,9 @@ async def send_chat_message(request: ChatRequest):
     logger.info("Sufficient data extracted, calling VedicAstroAPI...")
     
     bd = extracted_data.user.place_of_birth
+    with open("/tmp/chat_debug.log", "a") as f:
+        f.write(f"Calling VedicAPI with: dob={extracted_data.user.date_of_birth}, tob={extracted_data.user.time_of_birth}, lat={bd.latitude}, lon={bd.longitude}\n")
+    
     api_response = vedic_client.get_planet_details(
         dob=extracted_data.user.date_of_birth.replace('-', '/'),
         tob=extracted_data.user.time_of_birth or "12:00",
@@ -782,6 +785,11 @@ async def send_chat_message(request: ChatRequest):
         lon=bd.longitude or 77.2090,
         tz=5.5
     )
+    
+    with open("/tmp/chat_debug.log", "a") as f:
+        f.write(f"VedicAPI response success: {api_response.get('success')}\n")
+        if not api_response.get('success'):
+            f.write(f"VedicAPI error: {api_response.get('error')}\n")
     
     if not api_response.get('success'):
         return ChatResponse(
