@@ -273,7 +273,7 @@ const HomePage = () => {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
             <Sparkles className="w-8 h-8 text-purple-600 mr-2" />
             <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -285,7 +285,37 @@ const HomePage = () => {
           </p>
         </div>
 
-        {/* Report Selection */}
+        {/* Mode Toggle */}
+        <div className="flex justify-center mb-8">
+          <Card className="inline-flex p-1 bg-white shadow-lg border-2 border-purple-200">
+            <Button
+              variant={mode === 'reports' ? 'default' : 'ghost'}
+              className={`flex items-center gap-2 ${
+                mode === 'reports'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                  : 'text-gray-600 hover:text-purple-600'
+              }`}
+              onClick={() => setMode('reports')}
+            >
+              <FileText className="w-4 h-4" />
+              Generate Report
+            </Button>
+            <Button
+              variant={mode === 'chat' ? 'default' : 'ghost'}
+              className={`flex items-center gap-2 ${
+                mode === 'chat'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                  : 'text-gray-600 hover:text-purple-600'
+              }`}
+              onClick={() => navigate('/chat')}
+            >
+              <MessageSquare className="w-4 h-4" />
+              Chat with AI
+            </Button>
+          </Card>
+        </div>
+
+        {/* Report Selection (only show in reports mode) */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           {reportTypes.map((report) => (
             <Card 
