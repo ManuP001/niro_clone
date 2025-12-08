@@ -707,8 +707,27 @@ async def send_chat_message(request: ChatRequest):
         conversation_history[:-1]  # Exclude current message
     )
     
+    # If city is extracted but no lat/lon, look it up
+    if extracted_data.user and extracted_data.user.place_of_birth:
+        place = extracted_data.user.place_of_birth
+        if place.city and not place.latitude:
+            logger.info(f"Looking up coordinates for city: {place.city}")
+            try:
+                # Try Indian cities first
+                cities = indian_city_service.search_cities(place.city, max_results=1)
+                if not cities:
+                    # Try international search
+                    cities = city_service.search_cities(place.city, max_results=1)
+                
+                if cities:
+                    place.latitude = cities[0]['lat']
+                    place.longitude = cities[0]['lon']
+                    logger.info(f"Found coordinates: {place.latitude}, {place.longitude}")
+            except Exception as e:
+                logger.warning(f"Failed to lookup city coordinates: {str(e)}")
+    
     # Check if we have enough data
-    if extracted_data.confidence_score < 0.6 or extracted_data.missing_fields:
+    if extracted_data.confidence_score < 0.6 or extracted_data.missing_fields or not extracted_data.user:
         # Need more information
         followup = chat_agent.generate_followup_question(extracted_data)
         
