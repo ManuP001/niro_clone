@@ -123,13 +123,13 @@ const ChatPage = () => {
         </div>
 
         {/* Chat Container */}
-        <Card className=\"shadow-2xl border-2 border-purple-200 h-[600px] flex flex-col\">
-          <CardHeader className=\"bg-gradient-to-r from-purple-50 to-pink-50 border-b\">
-            <CardTitle className=\"text-xl flex items-center gap-2\">
-              <Bot className=\"w-5 h-5\" />
+        <Card className="shadow-lg border border-gray-200 h-[600px] flex flex-col bg-white">
+          <CardHeader className="bg-blue-50 border-b border-gray-200">
+            <CardTitle className="text-xl flex items-center gap-2 text-blue-600">
+              <Bot className="w-5 h-5" />
               Chat with AstroTrust
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-gray-600">
               Share your birth details and I'll provide personalized insights
             </CardDescription>
           </CardHeader>
