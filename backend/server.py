@@ -663,7 +663,7 @@ async def send_chat_message(request: ChatRequest):
         
         # Get or create session
         session_id = request.session_id
-    if not session_id:
+        if not session_id:
         # Create new session
         session = ChatSession(user_id=request.user_id)
         session_id = session.session_id
