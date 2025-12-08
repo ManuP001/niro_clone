@@ -263,7 +263,8 @@ class ReportGenerationTester:
             # Step 2: Create transaction
             transaction_data = {
                 "user_id": user_id,
-                "report_type": "yearly_prediction"
+                "report_type": "yearly_prediction",
+                "amount": 499.0  # Dummy amount - server will fetch actual price
             }
             
             response = self.session.post(f"{BACKEND_URL}/transactions/create", 
