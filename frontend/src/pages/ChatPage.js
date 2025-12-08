@@ -170,21 +170,21 @@ const ChatPage = () => {
                           : 'bg-gray-50 border border-gray-200 text-gray-800'
                       }`}
                     >
-                      <p className=\"text-sm whitespace-pre-wrap\">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       
                       {/* Confidence metadata */}
                       {message.confidence_metadata && (
-                        <div className=\"mt-3 pt-3 border-t border-gray-200 text-xs\">
-                          <div className=\"flex items-center gap-2\">
-                            <span className=\"font-medium\">Confidence:</span>
-                            <span className=\"text-green-600\">
+                        <div className="mt-3 pt-3 border-t border-gray-200 text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Confidence:</span>
+                            <span className="text-green-600">
                               {(message.confidence_metadata.overall_confidence * 100).toFixed(0)}%
                             </span>
                           </div>
                           {message.confidence_metadata.assumptions?.length > 0 && (
-                            <div className=\"mt-1 text-gray-600\">
-                              <span className=\"font-medium\">Assumptions:</span>
-                              <ul className=\"list-disc list-inside mt-1\">
+                            <div className="mt-1 text-gray-600">
+                              <span className="font-medium">Assumptions:</span>
+                              <ul className="list-disc list-inside mt-1">
                                 {message.confidence_metadata.assumptions.slice(0, 3).map((assumption, i) => (
                                   <li key={i}>{assumption}</li>
                                 ))}
@@ -194,7 +194,7 @@ const ChatPage = () => {
                         </div>
                       )}
 
-                      <p className=\"text-xs mt-2 opacity-70\">
+                      <p className="text-xs mt-2 opacity-70">
                         {new Date(message.timestamp).toLocaleTimeString()}
                       </p>
                     </div>
