@@ -61,15 +61,19 @@ class NiroChatAgent:
     def _get_llm_response(self, prompt: str, system_prompt: str = None) -> str:
         """Get response from LLM (Gemini with OpenAI fallback)"""
         
+        logger.info(f"Attempting LLM call. Gemini key: {bool(self.gemini_key)}, OpenAI key: {bool(self.openai_key)}")
+        
         # Try Gemini first
         if self.gemini_key:
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=self.gemini_key)
-                model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
+                model = genai.GenerativeModel('gemini-2.0-flash')
                 
                 full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
+                logger.info("Calling Gemini API...")
                 response = model.generate_content(full_prompt)
+                logger.info(f"Gemini response received: {len(response.text)} chars")
                 return response.text
             except Exception as e:
                 logger.warning(f"Gemini failed: {e}, trying OpenAI fallback")
@@ -85,11 +89,13 @@ class NiroChatAgent:
                     messages.append({"role": "system", "content": system_prompt})
                 messages.append({"role": "user", "content": prompt})
                 
+                logger.info("Calling OpenAI API...")
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=messages,
                     temperature=0.7
                 )
+                logger.info(f"OpenAI response received")
                 return response.choices[0].message.content
             except Exception as e:
                 logger.error(f"OpenAI also failed: {e}")
