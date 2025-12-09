@@ -79,10 +79,11 @@ class VedicAPIClient:
     """
     
     def __init__(self, base_url: str = None, api_key: str = None):
-        self.base_url = base_url or VEDIC_API_BASE_URL
-        self.api_key = api_key or VEDIC_API_KEY
+        # Read from environment at instantiation time, not at module load time
+        self.base_url = base_url or os.environ.get('VEDIC_API_BASE_URL', 'https://api.vedicastroapi.com/v3-json')
+        self.api_key = api_key or os.environ.get('VEDIC_API_KEY', '')
         self._client: Optional[httpx.AsyncClient] = None
-        logger.info(f"VedicAPIClient initialized (STUB mode - using generated data)")
+        logger.info(f"VedicAPIClient initialized with base_url={self.base_url}")
     
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create HTTP client"""
