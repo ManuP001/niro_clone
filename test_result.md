@@ -101,178 +101,123 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
-user_problem_statement: "Complete Chat LLM System Implementation - Add conversational AI astrology feature with toggle between Report Generation and Chat Interface"
+user_problem_statement: "Build Conversation Orchestrator + Router for NIRO - AI Vedic astrologer with session management, mode routing, and astro engine integration"
 
 backend:
-  - task: "Chat Backend API Endpoints"
+  - task: "Conversation Orchestrator Module"
     implemented: true
     working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Implemented POST /api/chat/message endpoint with NLP extraction, VedicAPI integration, and Gemini interpretation. Endpoint tested with curl successfully - returns proper JSON responses with session management."
-      - working: true
-        agent: "testing"
-        comment: "✅ Chat API endpoints working correctly. Session management, message processing, and NLP extraction all functional. VedicAPI integration has external dependency issues but chat system handles errors gracefully with appropriate user feedback."
-
-  - task: "Chat Models and Data Structures"
-    implemented: true
-    working: true
-    file: "/app/backend/chat_models.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Complete Pydantic models for ChatSession, ChatMessage, ChatRequest, ChatResponse with proper serialization. No changes needed."
-      - working: true
-        agent: "testing"
-        comment: "✅ All data models working correctly. JSON serialization and API responses properly structured."
-
-  - task: "Chat Agent NLP Logic"
-    implemented: true
-    working: true
-    file: "/app/backend/chat_agent.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "NLP extraction using Gemini for birth details parsing, follow-up question generation, and interpretation. Logic complete."
-      - working: true
-        agent: "testing"
-        comment: "✅ NLP extraction working correctly. Successfully extracts birth details from user messages and generates appropriate follow-up questions when information is incomplete."
-
-  - task: "Report Generation Regression Testing"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ REPORT GENERATION FUNCTIONALITY VERIFIED - No regression from Chat implementation. All core endpoints working: 1) Pricing API ✅ (all 4 report types with valid prices), 2) Health Check ✅ (Gemini & VedicAPI configured), 3) City Search ✅ (returns cities with lat/lon), 4) Time Parser ✅ (correctly parses time formats), 5) User/Transaction/Payment flow ✅. Report generation process functional but has intermittent Gemini API quota/safety filter issues (external dependency, not regression). Core report generation infrastructure intact."
-
-  - task: "NIRO Chat API Endpoint"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Implemented POST /api/chat endpoint for NIRO chat system. Features: structured responses with summary/reasons/remedies, quick reply action chips, session management, Gemini with OpenAI fallback. Backend tested successfully with curl - returns properly formatted JSON responses."
-      - working: true
-        agent: "testing"
-        comment: "✅ NIRO Chat API endpoint fully functional! Comprehensive testing completed: 1) Basic career message detection ✅ (correctly identifies 'career' focus), 2) ActionId 'focus_career' ✅ (returns FOCUS_READING mode with career focus), 3) ActionId 'focus_relationship' ✅ (returns FOCUS_READING mode with relationship focus), 4) ActionId 'daily_guidance' ✅ (returns DAILY_GUIDANCE mode with null focus), 5) SuggestedActions array populated ✅ (4 valid actions with id/label), 6) Response schema validation ✅ (all required fields: reply{summary, reasons, remedies}, mode, focus, suggestedActions). Multi-provider LLM system working: Gemini quota exceeded → OpenAI fallback successful. All 6 test cases passed."
-
-  - task: "NIRO Models and Agent"
-    implemented: true
-    working: true
-    file: "/app/backend/niro_agent.py, /app/backend/niro_models.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "main"
-        comment: "Created NiroChatAgent with LLM integration (Gemini + OpenAI fallback), structured response parsing, action configurations, and follow-up action suggestions. Pydantic models for NiroChatRequest, NiroChatResponse, NiroReply, SuggestedAction."
-      - working: true
-        agent: "testing"
-        comment: "✅ NIRO Models and Agent working perfectly! NiroChatAgent successfully processes messages with proper LLM integration (Gemini + OpenAI fallback). Structured response parsing working correctly - extracts summary, reasons, and remedies from LLM responses. Action configurations properly map actionIds to focus areas and modes. Pydantic models validate request/response structure correctly. All components tested and functional."
-
-frontend:
-  - task: "Chat Route Integration"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/App.js"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Added /chat route to App.js for ChatPage component"
-      - working: true
-        agent: "testing"
-        comment: "✅ Chat route working perfectly. Navigation to /chat loads ChatPage component correctly."
-
-  - task: "Toggle UI Between Reports and Chat"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/pages/HomePage.js"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Added toggle buttons at top of HomePage with 'Generate Report' and 'Chat with AI' options. Report view conditionally renders based on mode state. Chat button navigates to /chat route."
-      - working: true
-        agent: "testing"
-        comment: "✅ Toggle functionality working perfectly. 'Generate Report' and 'Chat with AI' buttons present and functional. Navigation between modes works correctly. Report cards display properly in reports mode."
-
-  - task: "ChatPage UI Implementation"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/pages/ChatPage.js"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Fully implemented ChatPage with minimalist white background and blue accents. Features: message display with avatars, user input, loading states, confidence metadata display, back to home button, example queries."
-      - working: true
-        agent: "testing"
-        comment: "✅ ChatPage UI working excellently. White background with blue accents implemented correctly. All UI elements present: welcome message, input field, send button, example queries, back button. Message bubbles styled properly with user (blue) and bot (gray) differentiation. Chat interaction flow working smoothly."
-
-  - task: "NIRO Chat UI Implementation"
-    implemented: true
-    working: true
-    file: "/app/frontend/src/pages/NiroChatPage.tsx"
+    file: "/app/backend/conversation/orchestrator.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: true
         agent: "main"
-        comment: "Implemented complete NIRO chat UI in TypeScript with React components: NiroChat (main), MessageList, UserMessage, NiroMessage (with summary/reasons/remedies sections), QuickReplyChips, ChatInput. Features: WhatsApp-like UI, structured message display with visual sections, quick reply chips, auto-scroll, session persistence in localStorage, loading states, error handling. Route added at /niro."
+        comment: "Implemented ConversationOrchestrator class with session management, mode routing, astro engine integration, and LLM response generation. All components modular and swappable."
+
+  - task: "Session Store (In-Memory)"
+    implemented: true
+    working: true
+    file: "/app/backend/conversation/session_store.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented InMemorySessionStore with abstract SessionStore interface for easy swap to Redis/MongoDB. Tested get, set, delete, get_or_create operations."
+
+  - task: "Mode Router"
+    implemented: true
+    working: true
+    file: "/app/backend/conversation/mode_router.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented route_mode() with rules: 1) No birth details -> BIRTH_COLLECTION, 2) No retro done -> PAST_THEMES, 3) ActionId mapping, 4) Keyword inference for focus. Tested all paths."
+
+  - task: "Astro Engine (Stubbed)"
+    implemented: true
+    working: true
+    file: "/app/backend/conversation/astro_engine.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented AstroEngine stub with compute_astro_raw() and build_astro_features(). Generates deterministic fake data based on birth details. Ready for real engine integration."
+
+  - task: "NIRO LLM Module (Stubbed)"
+    implemented: true
+    working: true
+    file: "/app/backend/conversation/niro_llm.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented NiroLLM with call_niro_llm() that tries real Gemini/OpenAI first, falls back to stub responses. Structured response parsing working correctly."
+
+  - task: "POST /api/chat Endpoint (Orchestrator)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Updated /api/chat endpoint to use ConversationOrchestrator. Tested: BIRTH_COLLECTION mode, birth details setting, PAST_THEMES mode, FOCUS_READING with actionId and keyword inference. All working."
+
+  - task: "Session Management Endpoints"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added GET /api/chat/session/{id}, POST /api/chat/session/{id}/birth-details, DELETE /api/chat/session/{id} endpoints. All tested and working."
+
+frontend:
+  - task: "NIRO Chat UI Implementation"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/NiroChatPage.tsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Previously implemented NIRO chat UI with TypeScript components. No changes needed for orchestrator - same API contract."
 
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 2
+  test_sequence: 3
   run_ui: true
 
 test_plan:
   current_focus:
-    - "NIRO Chat API Endpoint"
-    - "NIRO Chat UI Implementation"
+    - "Conversation Orchestrator Module"
+    - "Mode Router"
+    - "POST /api/chat Endpoint (Orchestrator)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Chat LLM System implementation complete. Need comprehensive testing of: 1) Backend chat API (message handling, NLP extraction, session management), 2) Frontend toggle functionality between reports and chat, 3) ChatPage UI and UX, 4) End-to-end chat conversation flow with birth detail extraction and astrological interpretation. All services running successfully. Frontend compiled without errors."
-  - agent: "testing"
-    message: "✅ COMPREHENSIVE TESTING COMPLETED - Chat LLM System fully functional! All core features working: 1) Homepage toggle between reports/chat modes ✅, 2) Chat navigation and routing ✅, 3) ChatPage UI with proper styling ✅, 4) Message interaction flow ✅, 5) Birth details extraction ✅, 6) Example queries ✅, 7) Back navigation ✅. Minor issue: VedicAPI external dependency has connectivity issues but system handles gracefully with appropriate error messages. Chat system ready for production use."
-  - agent: "testing"
-    message: "✅ REPORT GENERATION REGRESSION TESTING COMPLETE - No impact from Chat feature implementation. All report generation endpoints verified working: Pricing API (4 report types), Health Check (APIs configured), City Search (lat/lon data), Time Parser (format conversion), User/Transaction/Payment flow. Report generation process functional with intermittent Gemini API issues (external dependency, not regression). Core functionality intact - Chat implementation did not break existing report generation features."
-  - agent: "testing"
-    message: "✅ MULTI-PROVIDER SYSTEM TESTING COMPLETE - AstroTrust Chat with Gemini + OpenAI fallback system working perfectly! Test Results: 1) Chat page navigation ✅, 2) UI elements (white background, blue accents) ✅, 3) Birth details input ('Manu Pant, 10-10-1985, 10:47am, Dehradun') ✅, 4) Multi-provider AI response system ✅ (Gemini quota exceeded, OpenAI fallback successful), 5) Message display with proper styling (blue user bubbles, gray AI bubbles) ✅, 6) Multiple message conversation flow ✅, 7) Back navigation ✅. Backend logs confirm: Gemini quota exceeded → OpenAI fallback → successful responses. Multi-provider routing working as designed. System ready for production."
-  - agent: "main"
-    message: "NIRO Chat UI Implementation complete. Created full TypeScript React chat UI for NIRO product. Features: 1) POST /api/chat backend endpoint with structured responses (summary, reasons, remedies), 2) Quick reply chips with suggested actions, 3) WhatsApp-like UI with visual separation of message sections, 4) TypeScript components: NiroChat, MessageList, UserMessage, NiroMessage, QuickReplyChips, ChatInput, 5) Session persistence in localStorage, 6) Auto-scroll and loading states. Route available at /niro. Backend tested with curl - returning proper responses. Frontend compiled and rendering correctly. Screenshots taken showing full functionality."
+    message: "Conversation Orchestrator implementation complete. Created modular architecture: 1) conversation/models.py - Pydantic models, 2) conversation/session_store.py - In-memory store with abstract interface, 3) conversation/mode_router.py - Mode/focus routing logic, 4) conversation/astro_engine.py - Stubbed astro calculations, 5) conversation/niro_llm.py - LLM integration with stubs, 6) conversation/orchestrator.py - Main orchestration. Updated /api/chat to use orchestrator. All curl tests passing. Need comprehensive backend testing."
   - agent: "testing"
     message: "✅ NIRO CHAT API TESTING COMPLETE - All backend functionality verified working! Comprehensive test results: 1) POST /api/chat endpoint ✅ (all HTTP 200 responses), 2) Basic career message detection ✅ (correctly identifies 'career' focus from message content), 3) ActionId routing ✅ (focus_career → FOCUS_READING/career, focus_relationship → FOCUS_READING/relationship, daily_guidance → DAILY_GUIDANCE/null), 4) Response structure validation ✅ (reply{summary, reasons, remedies}, mode, focus, suggestedActions), 5) SuggestedActions population ✅ (4 valid actions with id/label fields), 6) Multi-provider LLM system ✅ (Gemini quota exceeded → OpenAI fallback successful). All 6 test cases passed. Backend logs show proper API responses and fallback behavior. NIRO Chat API ready for production use."
