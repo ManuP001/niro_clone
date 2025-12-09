@@ -779,7 +779,6 @@ async def send_chat_message(request: ChatRequest):
         f.write(f"Calling VedicAPI with: dob={extracted_data.user.date_of_birth}, tob={extracted_data.user.time_of_birth}, lat={bd.latitude}, lon={bd.longitude}\n")
     
     # Convert date from YYYY-MM-DD to DD/MM/YYYY for VedicAPI
-    from datetime import datetime
     dob_obj = datetime.strptime(extracted_data.user.date_of_birth, "%Y-%m-%d")
     dob_formatted = dob_obj.strftime("%d/%m/%Y")
     
