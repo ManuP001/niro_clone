@@ -1896,8 +1896,8 @@ class ReportGenerationTester:
     def run_all_tests(self):
         """Run all backend tests including NIRO chat orchestrator"""
         print("=" * 60)
-        print("TESTING NIRO CONVERSATION ORCHESTRATOR")
-        print("Comprehensive Backend API Testing")
+        print("TESTING NIRO ENHANCED ORCHESTRATOR")
+        print("Complete Backend API Testing with Topic Classification & Astro Features")
         print("=" * 60)
         
         tests = [
@@ -1907,7 +1907,19 @@ class ReportGenerationTester:
             ("City Search", self.test_city_search),
             ("Time Parser", self.test_time_parser),
             
-            # NIRO Orchestrator Tests (as per review request)
+            # Enhanced NIRO Tests (Review Request Specific)
+            ("1. Topic Taxonomy Endpoint", self.test_topic_taxonomy_endpoint),
+            ("2. Birth Details Extraction", self.test_birth_details_extraction),
+            ("3. Career Topic Classification", self.test_career_topic_classification),
+            ("4. Romantic Relationships Topic", self.test_romantic_relationships_topic),
+            ("5. Money Topic Classification", self.test_money_topic_classification),
+            ("6. Health Topic Classification", self.test_health_topic_classification),
+            ("7. ActionId Topic Override", self.test_actionid_topic_override),
+            ("8. Session State with Astro Profile", self.test_session_state_with_astro_profile),
+            ("9. Response Structure Validation", self.test_response_structure_validation),
+            ("10. Daily Guidance Mode", self.test_daily_guidance_mode),
+            
+            # Legacy NIRO Orchestrator Tests
             ("NIRO Birth Collection Mode", self.test_niro_birth_collection_mode),
             ("NIRO Set Birth Details", self.test_niro_set_birth_details),
             ("NIRO Past Themes Mode", self.test_niro_past_themes_mode),
@@ -1918,8 +1930,6 @@ class ReportGenerationTester:
             ("NIRO Suggested Actions", self.test_niro_chat_suggested_actions_populated),
             ("NIRO Response Schema", self.test_niro_chat_response_schema),
             ("NIRO Session Reset", self.test_niro_session_reset),
-            
-            # Additional NIRO Tests
             ("NIRO Daily Guidance Action", self.test_niro_chat_daily_guidance_action),
             ("NIRO Basic Career Message", self.test_niro_chat_basic_message),
             
