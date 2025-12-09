@@ -173,11 +173,14 @@ backend:
     file: "/app/backend/astro_client/niro_llm.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented NiroLLMModule with full NIRO_SYSTEM_PROMPT. call_niro_llm() tries Gemini/OpenAI, falls back to topic-specific stub responses. Parses SUMMARY/REASONS/REMEDIES structure."
+      - working: true
+        agent: "testing"
+        comment: "NIRO LLM Module working with **STUBBED responses**. Response structure validation passed: summary (2-3 lines), reasons (2-4 bullets), remedies array, suggestedActions array. Backend logs show 'Using STUB LLM response - replace with real LLM'. Real Gemini/OpenAI integration needed for production."
 
   - task: "Enhanced Orchestrator"
     implemented: true
