@@ -133,10 +133,12 @@ class VedicAPIClient:
                 return data.get('response', {})
             
         except httpx.HTTPError as e:
-            logger.error(f"HTTP error calling {path}: {e}")
+            logger.error(f"HTTP error calling {path}: {type(e).__name__} - {str(e)}")
             return None
         except Exception as e:
-            logger.error(f"Error calling {path}: {e}")
+            logger.error(f"Error calling {path}: {type(e).__name__} - {str(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return None
     
     def _generate_deterministic_seed(self, birth: BirthDetails) -> int:
