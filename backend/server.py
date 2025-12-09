@@ -885,18 +885,19 @@ async def get_chat_session(session_id: str):
         "messages": messages
     }
 
-# ============= NIRO CHAT ENDPOINT (with Orchestrator) =============
+# ============= NIRO CHAT ENDPOINT (Enhanced Orchestrator) =============
 
 @api_router.post("/chat", response_model=OrchestratorChatResponse)
 async def niro_chat(request: OrchestratorChatRequest):
     """
     NIRO AI Vedic Astrology Chat Endpoint
     
-    This endpoint uses the Conversation Orchestrator for:
+    This endpoint uses the Enhanced Conversation Orchestrator for:
     - Session state management
-    - Mode/focus routing
-    - Astro engine integration
-    - LLM response generation
+    - Mode/topic routing with rich taxonomy
+    - Vedic API integration for astro profiles and transits
+    - Topic-specific chart lever mapping
+    - NIRO LLM with structured astro_features
     
     Request body:
     - sessionId: Unique session identifier
@@ -906,15 +907,15 @@ async def niro_chat(request: OrchestratorChatRequest):
     Returns structured response with:
     - reply: { rawText, summary, reasons[], remedies[] }
     - mode: Conversation mode (BIRTH_COLLECTION, PAST_THEMES, FOCUS_READING, etc.)
-    - focus: Focus area (career, relationship, health, or null)
+    - focus: Topic (career, romantic_relationships, money, health_energy, etc.)
     - suggestedActions: Quick reply chips for follow-up
     """
     
     try:
-        logger.info(f"NIRO Orchestrator request - session: {request.sessionId}, action: {request.actionId}")
+        logger.info(f"NIRO Enhanced Orchestrator request - session: {request.sessionId}, action: {request.actionId}")
         
-        # Process message through the conversation orchestrator
-        response = await conversation_orchestrator.process_message(request)
+        # Process message through the enhanced orchestrator
+        response = await enhanced_orchestrator.process_message(request)
         
         # Store message in database for history
         niro_message_doc = {
@@ -924,16 +925,16 @@ async def niro_chat(request: OrchestratorChatRequest):
             "action_id": request.actionId,
             "response": response.model_dump(),
             "mode": response.mode,
-            "focus": response.focus
+            "topic": response.focus  # Store as topic for new schema
         }
         await db.niro_messages.insert_one(niro_message_doc)
         
-        logger.info(f"NIRO Orchestrator response - mode: {response.mode}, focus: {response.focus}")
+        logger.info(f"NIRO Enhanced response - mode: {response.mode}, topic: {response.focus}")
         
         return response
         
     except Exception as e:
-        logger.error(f"NIRO Orchestrator error: {str(e)}", exc_info=True)
+        logger.error(f"NIRO Enhanced Orchestrator error: {str(e)}", exc_info=True)
         
         # Return graceful error response
         from conversation import NiroReply, SuggestedAction
