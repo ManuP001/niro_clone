@@ -78,6 +78,46 @@ class GeminiAgent:
             logger.error(f"Error calling Gemini model: {error_msg}")
             raise
     
+    
+    def extract_json(self, prompt: str) -> Dict[str, Any]:
+        """
+        Call model and extract JSON from response
+        
+        Args:
+            prompt: Prompt requesting JSON output
+            
+        Returns:
+            Parsed JSON dictionary
+        """
+        import json
+        
+        response = self._call_model(self.flash_model, prompt, temperature=0.1)
+        
+        # Clean response
+        response = response.strip()
+        if response.startswith('```json'):
+            response = response[7:]
+        if response.startswith('```'):
+            response = response[3:]
+        if response.endswith('```'):
+            response = response[:-3]
+        response = response.strip()
+        
+        # Parse JSON
+        return json.loads(response)
+    
+    def health_check(self) -> bool:
+        """Check if Gemini API is accessible"""
+        try:
+            # Simple test call
+            self.flash_model.generate_content(
+                "Hello",
+                generation_config=genai.types.GenerationConfig(temperature=0.1, max_output_tokens=10)
+            )
+            return True
+        except Exception:
+            return False
+
     def generate_code(self, user_intent: str, api_docs: str, user_data: Dict[str, Any]) -> str:
         """
         Generate Python code using Gemini 2.5 Pro to fetch astrology data
