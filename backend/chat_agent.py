@@ -219,24 +219,9 @@ Return ONLY the JSON, no markdown, no other text."""
 Keep it concise for fast response. JSON only, no markdown."""
 
         try:
-            # Use Flash model for faster responses (latency optimization)
-            response = self.gemini_agent._call_model(
-                self.gemini_agent.flash_model,  # Use Flash for speed
-                prompt,
-                temperature=0.7
-            )
-            
-            # Clean and parse
-            response = response.strip()
-            if response.startswith('```json'):
-                response = response[7:]
-            if response.startswith('```'):
-                response = response[3:]
-            if response.endswith('```'):
-                response = response[:-3]
-            response = response.strip()
-            
-            result = json.loads(response)
+            # Use router for interpretation with automatic fallback
+            result, provider_used = self.router.extract_json(prompt)
+            logger.info(f"Interpretation used provider: {provider_used.value}")
             
             interpretation = result.get('interpretation', '')
             metadata_dict = result.get('confidence_metadata', {})
@@ -251,7 +236,7 @@ Keep it concise for fast response. JSON only, no markdown."""
             return interpretation, confidence_metadata
             
         except Exception as e:
-            logger.error(f"Interpretation failed: {str(e)}")
+            logger.error(f"Interpretation failed with all providers: {str(e)}")
             
             # Fallback interpretation
             interpretation = "I've analyzed your birth chart. The planetary positions suggest unique patterns in your life path. For a more detailed analysis, please ensure all birth details are accurate."
