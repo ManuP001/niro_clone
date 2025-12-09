@@ -146,11 +146,14 @@ backend:
     file: "/app/backend/astro_client/topics.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented Topic enum with 14 topics. classify_topic() with action_id mapping and keyword detection. TOPIC_CHART_LEVERS mapping houses/planets to topics. Tested career, romantic_relationships topics."
+      - working: true
+        agent: "testing"
+        comment: "Topic classification working correctly. All 14 topics returned via GET /api/chat/topics. Keyword detection working: career, money, health_energy, romantic_relationships. ActionId override working (focus_money overrides career keywords). Minor: Uses 'romantic_relationships' instead of 'relationship' - both acceptable."
 
   - task: "Astro Interpreter"
     implemented: true
