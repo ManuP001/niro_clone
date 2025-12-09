@@ -137,11 +137,14 @@ backend:
     file: "/app/backend/conversation/mode_router.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented route_mode() with rules: 1) No birth details -> BIRTH_COLLECTION, 2) No retro done -> PAST_THEMES, 3) ActionId mapping, 4) Keyword inference for focus. Tested all paths."
+      - working: true
+        agent: "testing"
+        comment: "✅ MODE ROUTING VERIFIED - All routing rules working correctly: 1) BIRTH_COLLECTION mode for new sessions without birth details ✅, 2) PAST_THEMES mode after birth details set but before retro ✅, 3) ActionId routing (focus_career→FOCUS_READING/career, focus_relationship→FOCUS_READING/relationship, daily_guidance→DAILY_GUIDANCE/null) ✅, 4) Keyword inference (love/marriage→relationship focus) ✅. All conversation flow transitions tested and working."
 
   - task: "Astro Engine (Stubbed)"
     implemented: true
