@@ -33,6 +33,15 @@ from chat_models import ChatRequest, ChatResponse, ChatMessage, ChatSession, Cha
 from niro_models import NiroChatRequest, NiroChatResponse
 from niro_agent import NiroChatAgent
 
+# Import the new conversation orchestrator
+from conversation import (
+    ConversationOrchestrator,
+    ChatRequest as OrchestratorChatRequest,
+    ChatResponse as OrchestratorChatResponse,
+    BirthDetails as OrchestratorBirthDetails,
+    InMemorySessionStore
+)
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
