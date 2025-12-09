@@ -200,11 +200,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Updated /api/chat to use EnhancedOrchestrator. Tested: birth details extraction, PAST_THEMES mode, topic classification (career, romantic_relationships), astro profile creation. All working."
+      - working: true
+        agent: "testing"
+        comment: "POST /api/chat endpoint working correctly with Enhanced Orchestrator. All test cases from review request working: birth details extraction, topic classification (career, money, health, romantic_relationships), actionId override, daily guidance mode. Response structure validation passed. **IMPORTANT: Using STUBBED LLM responses** - real Gemini/OpenAI integration needed."
 
   - task: "GET /api/chat/topics Endpoint"
     implemented: true
