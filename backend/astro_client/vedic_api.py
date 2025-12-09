@@ -111,7 +111,8 @@ class VedicAPIClient:
             params['api_key'] = self.api_key
             params['lang'] = params.get('lang', 'en')
             
-            logger.debug(f"Calling API: {full_url} with params: {list(params.keys())}")
+            logger.info(f"Calling VedicAstroAPI: {full_url}")
+            logger.info(f"Params keys: {list(params.keys())}")
             
             # Create a simple client without base_url
             async with httpx.AsyncClient(timeout=30.0) as client:
@@ -129,14 +130,16 @@ class VedicAPIClient:
                     logger.error(f"API error for {full_url}: {data}")
                     return None
                     
-                logger.debug(f"API call successful for {path}")
+                logger.info(f"API call successful for {path}")
                 return data.get('response', {})
             
         except httpx.HTTPError as e:
             logger.error(f"HTTP error calling {path}: {type(e).__name__} - {str(e)}")
+            logger.error(f"Full URL was: {self.base_url}{path}")
             return None
         except Exception as e:
             logger.error(f"Error calling {path}: {type(e).__name__} - {str(e)}")
+            logger.error(f"Full URL was: {self.base_url}{path}")
             import traceback
             logger.error(f"Traceback: {traceback.format_exc()}")
             return None
