@@ -237,6 +237,196 @@ class VedicAPIClient:
         logger.info(f"Generated {len(transits.events)} transit events")
         return transits
     
+    
+    def _build_chart_from_real_data(
+        self,
+        birth: BirthDetails,
+        seed: int,
+        kundli: Dict,
+        ascendant: Dict,
+        sun_sign: Dict,
+        moon_sign: Dict
+    ) -> Dict[str, Any]:
+        """
+        Build chart data combining real API data with stub planetary positions.
+        
+        Real data: ascendant, sun sign, moon sign, nakshatra
+        Stubbed: detailed planetary positions, houses, yogas (endpoints not found yet)
+        """
+        # Get real ascendant info
+        asc_sign = kundli.get('ascendant_sign', ascendant.get('ascendant', 'Aries'))
+        asc_nakshatra = kundli.get('ascendant_nakshatra', 'Ashwini')
+        
+        # Get real moon info
+        moon_rasi = kundli.get('rasi', moon_sign.get('moon_sign', 'Cancer'))
+        moon_nakshatra = kundli.get('nakshatra', 'Pushya')
+        moon_pada = kundli.get('nakshatra_pada', 1)
+        
+        # Get real sun sign
+        sun_rasi = sun_sign.get('sun_sign', 'Leo')
+        
+        # Generate stub planetary positions (will be replaced when we find the right endpoint)
+        random.seed(seed)
+        asc_index = ZODIAC_SIGNS.index(asc_sign) if asc_sign in ZODIAC_SIGNS else 0
+        
+        # Generate planets with some real data
+        planets = {}
+        for i, planet in enumerate(PLANETS):
+            sign_idx = (seed + i * 3) % 12
+            degree = random.uniform(0, 29.99)
+            nakshatra_idx = int((sign_idx * 30 + degree) / 13.33) % 27
+            house = ((sign_idx - asc_index) % 12) + 1
+            
+            # Override Moon position with real data
+            if planet == 'Moon':
+                sign_idx = ZODIAC_SIGNS.index(moon_rasi) if moon_rasi in ZODIAC_SIGNS else sign_idx
+                nakshatra_idx = NAKSHATRAS.index(moon_nakshatra) if moon_nakshatra in NAKSHATRAS else nakshatra_idx
+                house = ((sign_idx - asc_index) % 12) + 1
+                degree = (moon_pada - 1) * 3.33 + random.uniform(0, 3.33)  # Approximate pada position
+            
+            # Override Sun position with real data
+            if planet == 'Sun':
+                sign_idx = ZODIAC_SIGNS.index(sun_rasi) if sun_rasi in ZODIAC_SIGNS else sign_idx
+                house = ((sign_idx - asc_index) % 12) + 1
+            
+            sign = ZODIAC_SIGNS[sign_idx]
+            is_exalted = EXALTATION.get(planet) == sign
+            is_debilitated = DEBILITATION.get(planet) == sign
+            is_own_sign = SIGN_LORDS.get(sign) == planet
+            
+            dignity = "neutral"
+            if is_exalted:
+                dignity = "exalted"
+            elif is_debilitated:
+                dignity = "debilitated"
+            elif is_own_sign:
+                dignity = "own"
+            
+            is_retro = planet in ['Mars', 'Mercury', 'Jupiter', 'Saturn', 'Venus'] and random.random() > 0.7
+            
+            planets[planet] = {
+                'sign': sign,
+                'sign_num': sign_idx + 1,
+                'degree': round(degree, 2),
+                'house': house,
+                'nakshatra': NAKSHATRAS[nakshatra_idx],
+                'nakshatra_lord': NAKSHATRA_LORDS[nakshatra_idx],
+                'nakshatra_pada': (int(degree) % 4) + 1,
+                'retrograde': is_retro,
+                'dignity': dignity,
+                'combust': planet != 'Sun' and abs((seed + i) % 30 - 15) < 8 and random.random() > 0.8
+            }
+        
+        # Generate houses
+        houses = {}
+        for i in range(1, 13):
+            house_sign_idx = (asc_index + i - 1) % 12
+            sign = ZODIAC_SIGNS[house_sign_idx]
+            planets_in_house = [p for p, data in planets.items() if data['house'] == i]
+            
+            houses[str(i)] = {
+                'sign': sign,
+                'lord': SIGN_LORDS[sign],
+                'planets': planets_in_house
+            }
+        
+        # Generate yogas
+        yogas = self._generate_stub_yogas(planets, houses, seed)
+        
+        return {
+            'ascendant': {
+                'sign': asc_sign,
+                'degree': round(random.uniform(0, 30), 2),
+                'nakshatra': asc_nakshatra
+            },
+            'planets': planets,
+            'houses': houses,
+            'yogas': yogas,
+            'real_data_used': {
+                'ascendant': True,
+                'sun_sign': True,
+                'moon_sign': True,
+                'nakshatra': True,
+                'detailed_positions': False,  # Still using approximations
+                'yogas': False  # Still using stub logic
+            }
+        }
+    
+    def _build_dashas_from_real_data(self, dashas_api: Dict, birth: BirthDetails) -> Dict[str, Any]:
+        """
+        Build dasha data from real API response.
+        """
+        mahadasha_planets = dashas_api.get('mahadasha', [])
+        mahadasha_dates = dashas_api.get('mahadasha_order', [])
+        dasha_start = dashas_api.get('dasha_start_date', '')
+        
+        # Build dasha timeline
+        dashas = []
+        now = datetime.utcnow()
+        
+        DASHA_YEARS = {
+            'Ketu': 7, 'Venus': 20, 'Sun': 6, 'Moon': 10, 'Mars': 7,
+            'Rahu': 18, 'Jupiter': 16, 'Saturn': 19, 'Mercury': 17
+        }
+        
+        for i, (planet, end_date_str) in enumerate(zip(mahadasha_planets, mahadasha_dates)):
+            try:
+                # Parse end date (format: "Fri Jun 28 1991")
+                from datetime import datetime as dt
+                end_date = dt.strptime(end_date_str.strip(), "%a %b %d %Y")
+                
+                # Calculate start date from previous end date
+                if i == 0:
+                    # First dasha - use birth date
+                    start_date = datetime(birth.dob.year, birth.dob.month, birth.dob.day)
+                else:
+                    prev_end_str = mahadasha_dates[i-1].strip()
+                    start_date = dt.strptime(prev_end_str, "%a %b %d %Y")
+                
+                years = DASHA_YEARS.get(planet, 10)
+                
+                # Calculate time elapsed/remaining
+                if start_date.date() <= now.date() <= end_date.date():
+                    elapsed = (now - start_date).days / 365.25
+                    remaining = (end_date - now).days / 365.25
+                    is_current = True
+                elif now.date() > end_date.date():
+                    elapsed = years
+                    remaining = 0
+                    is_current = False
+                else:
+                    elapsed = 0
+                    remaining = years
+                    is_current = False
+                
+                dashas.append({
+                    'planet': planet,
+                    'start_date': start_date.date().isoformat(),
+                    'end_date': end_date.date().isoformat(),
+                    'years_total': years,
+                    'years_elapsed': round(elapsed, 2),
+                    'years_remaining': round(remaining, 2),
+                    'is_current': is_current
+                })
+            except Exception as e:
+                logger.warning(f"Error parsing dasha for {planet}: {e}")
+                continue
+        
+        # Find current mahadasha
+        current_maha = next((d for d in dashas if d['is_current']), dashas[0] if dashas else None)
+        
+        # Generate antardasha within current mahadasha
+        if current_maha:
+            antardashas = self._generate_antardashas(current_maha, self._generate_deterministic_seed(birth))
+        else:
+            antardashas = []
+        
+        return {
+            'mahadasha_timeline': dashas,
+            'current_mahadasha': current_maha,
+            'antardashas': antardashas,
+            'real_data_used': True
+        }
     def _generate_stub_chart(self, birth: BirthDetails, seed: int) -> Dict[str, Any]:
         """Generate realistic stub chart data"""
         random.seed(seed)
