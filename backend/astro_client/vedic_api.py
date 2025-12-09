@@ -103,27 +103,34 @@ class VedicAPIClient:
         The API uses GET requests with query parameters including api_key.
         """
         try:
-            client = await self._get_client()
+            # Don't use base_url in client, construct full URL manually
+            # because VedicAstroAPI expects full path
+            full_url = f"{self.base_url}{path}"
+            
             # Add API key to params
             params['api_key'] = self.api_key
             params['lang'] = params.get('lang', 'en')
             
-            # Make GET request
-            response = await client.get(path, params=params)
-            response.raise_for_status()
+            logger.debug(f"Calling API: {full_url} with params: {list(params.keys())}")
             
-            data = response.json()
-            
-            # Check if API returned an error
-            if data.get('message') == 'Not Found':
-                logger.error(f"API endpoint not found: {path}")
-                return None
-            
-            if data.get('status') != 200:
-                logger.error(f"API error for {path}: {data}")
-                return None
+            # Create a simple client without base_url
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(full_url, params=params)
+                response.raise_for_status()
                 
-            return data.get('response', {})
+                data = response.json()
+                
+                # Check if API returned an error
+                if data.get('message') == 'Not Found':
+                    logger.error(f"API endpoint not found: {full_url}")
+                    return None
+                
+                if data.get('status') != 200:
+                    logger.error(f"API error for {full_url}: {data}")
+                    return None
+                    
+                logger.debug(f"API call successful for {path}")
+                return data.get('response', {})
             
         except httpx.HTTPError as e:
             logger.error(f"HTTP error calling {path}: {e}")
