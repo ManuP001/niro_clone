@@ -874,14 +874,18 @@ async def get_chat_session(session_id: str):
         "messages": messages
     }
 
-# ============= NIRO CHAT ENDPOINT =============
+# ============= NIRO CHAT ENDPOINT (with Orchestrator) =============
 
-@api_router.post("/chat", response_model=NiroChatResponse)
-async def niro_chat(request: NiroChatRequest):
+@api_router.post("/chat", response_model=OrchestratorChatResponse)
+async def niro_chat(request: OrchestratorChatRequest):
     """
     NIRO AI Vedic Astrology Chat Endpoint
     
-    This endpoint handles the NIRO chat interface with structured responses.
+    This endpoint uses the Conversation Orchestrator for:
+    - Session state management
+    - Mode/focus routing
+    - Astro engine integration
+    - LLM response generation
     
     Request body:
     - sessionId: Unique session identifier
@@ -889,21 +893,17 @@ async def niro_chat(request: NiroChatRequest):
     - actionId: Optional action ID when user clicks a chip
     
     Returns structured response with:
-    - reply: { summary, reasons[], remedies[] }
-    - mode: Reading mode (FOCUS_READING, PAST_THEMES, DAILY_GUIDANCE, etc.)
+    - reply: { rawText, summary, reasons[], remedies[] }
+    - mode: Conversation mode (BIRTH_COLLECTION, PAST_THEMES, FOCUS_READING, etc.)
     - focus: Focus area (career, relationship, health, or null)
     - suggestedActions: Quick reply chips for follow-up
     """
     
     try:
-        logger.info(f"NIRO chat request - session: {request.sessionId}, action: {request.actionId}")
+        logger.info(f"NIRO Orchestrator request - session: {request.sessionId}, action: {request.actionId}")
         
-        # Process message through NIRO agent
-        response = niro_agent.process_message(
-            session_id=request.sessionId,
-            message=request.message,
-            action_id=request.actionId
-        )
+        # Process message through the conversation orchestrator
+        response = await conversation_orchestrator.process_message(request)
         
         # Store message in database for history
         niro_message_doc = {
@@ -911,20 +911,23 @@ async def niro_chat(request: NiroChatRequest):
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "user_message": request.message,
             "action_id": request.actionId,
-            "response": response.model_dump()
+            "response": response.model_dump(),
+            "mode": response.mode,
+            "focus": response.focus
         }
         await db.niro_messages.insert_one(niro_message_doc)
         
-        logger.info(f"NIRO response - mode: {response.mode}, focus: {response.focus}")
+        logger.info(f"NIRO Orchestrator response - mode: {response.mode}, focus: {response.focus}")
         
         return response
         
     except Exception as e:
-        logger.error(f"NIRO chat error: {str(e)}", exc_info=True)
+        logger.error(f"NIRO Orchestrator error: {str(e)}", exc_info=True)
         
         # Return graceful error response
-        from niro_models import NiroReply, SuggestedAction
+        from conversation import NiroReply, SuggestedAction
         error_reply = NiroReply(
+            rawText="I apologize, but I encountered a momentary cosmic disturbance.",
             summary="I apologize, but I encountered a momentary cosmic disturbance. Please try again.",
             reasons=[
                 "There was a temporary issue processing your request",
@@ -933,7 +936,7 @@ async def niro_chat(request: NiroChatRequest):
             remedies=[]
         )
         
-        return NiroChatResponse(
+        return OrchestratorChatResponse(
             reply=error_reply,
             mode="ERROR",
             focus=None,
@@ -943,6 +946,51 @@ async def niro_chat(request: NiroChatRequest):
                 SuggestedAction(id="focus_relationship", label="Relationships")
             ]
         )
+
+
+# ============= NIRO SESSION MANAGEMENT ENDPOINTS =============
+
+@api_router.get("/chat/session/{session_id}")
+async def get_niro_session(session_id: str):
+    """
+    Get current session state for debugging and monitoring.
+    """
+    state = conversation_orchestrator.get_session_state(session_id)
+    if not state:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    return {
+        "session_id": state.session_id,
+        "mode": state.mode,
+        "focus": state.focus,
+        "has_birth_details": state.birth_details is not None,
+        "has_done_retro": state.has_done_retro,
+        "message_count": state.message_count,
+        "created_at": state.created_at.isoformat(),
+        "updated_at": state.updated_at.isoformat()
+    }
+
+
+@api_router.post("/chat/session/{session_id}/birth-details")
+async def set_niro_birth_details(session_id: str, birth_details: OrchestratorBirthDetails):
+    """
+    Manually set birth details for a session.
+    Useful for pre-populating from user profile.
+    """
+    success = conversation_orchestrator.set_birth_details(session_id, birth_details)
+    if not success:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    return {"success": True, "message": "Birth details updated"}
+
+
+@api_router.delete("/chat/session/{session_id}")
+async def reset_niro_session(session_id: str):
+    """
+    Reset a session to initial state.
+    """
+    success = conversation_orchestrator.reset_session(session_id)
+    return {"success": success, "message": "Session reset" if success else "Session not found"}
 
 # Include the router in the main app
 app.include_router(api_router)
