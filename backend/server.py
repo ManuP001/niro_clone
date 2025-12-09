@@ -66,6 +66,9 @@ indian_city_service = IndianCityService()  # Comprehensive Indian cities databas
 chat_agent = AstroChatAgent()  # Chat-based astrology agent
 niro_agent = NiroChatAgent()  # NIRO chat agent (initialized after dotenv)
 
+# Initialize the conversation orchestrator
+conversation_orchestrator = ConversationOrchestrator()
+
 # Create the main app without a prefix
 app = FastAPI(title="Astro-Trust Engine API", version="1.0.0")
 
