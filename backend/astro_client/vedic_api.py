@@ -29,10 +29,7 @@ from .models import (
 
 logger = logging.getLogger(__name__)
 
-# Configuration
-VEDIC_API_BASE_URL = os.environ.get('VEDIC_API_BASE_URL', 'https://api.vedicastro.com/v1')
-VEDIC_API_KEY = os.environ.get('VEDIC_API_KEY', '')
-VEDIC_API_SECRET = os.environ.get('VEDIC_API_SECRET', '')
+# Configuration - will be read at instantiation time, not module load time
 
 # Constants
 ZODIAC_SIGNS = [
