@@ -141,29 +141,51 @@ class VedicAPIClient:
         """
         Fetch complete astrological profile from Vedic API.
         
-        Makes ONE comprehensive call (or very few calls) to build:
-        - Base natal chart (planets, houses, ascendant)
-        - Dasha timeline (Vimshottari)
-        - Yogas and planetary strengths
+        Uses VedicAstroAPI v3-json endpoints:
+        - /extended-horoscope/extended-kundli-details for detailed birth chart info
+        - /extended-horoscope/find-ascendant for ascendant
+        - /extended-horoscope/find-sun-sign for sun sign  
+        - /extended-horoscope/find-moon-sign for moon sign
+        - /dashas/maha-dasha for dasha timeline
         
-        TODO: Replace stub with real API integration:
-        - Call /chart/full for natal chart
-        - Call /dashas/full for dasha timeline
-        - Parse and map to our models
+        Note: Detailed planetary positions, yogas, and houses are still stubbed
+        as those specific endpoints haven't been found yet.
         """
         logger.info(f"Fetching full profile for {birth.location}, {birth.dob}")
         
-        # Try real API first (TODO: uncomment when ready)
-        # base_chart_raw = await self._post('/chart/full', birth.to_api_format())
-        # dashas_raw = await self._post('/dashas/full', birth.to_api_format())
+        # Prepare API params
+        api_params = {
+            'dob': birth.dob.strftime("%d/%m/%Y"),
+            'tob': birth.tob,
+            'lat': birth.latitude or 28.6139,  # Default to Delhi if not provided
+            'lon': birth.longitude or 77.2090,
+            'tz': birth.timezone
+        }
         
-        # For now, generate stub data
+        # Fetch real data from API
+        kundli_details = await self._get('/extended-horoscope/extended-kundli-details', api_params)
+        ascendant_data = await self._get('/extended-horoscope/find-ascendant', api_params)
+        sun_sign_data = await self._get('/extended-horoscope/find-sun-sign', api_params)
+        moon_sign_data = await self._get('/extended-horoscope/find-moon-sign', api_params)
+        dashas_data = await self._get('/dashas/maha-dasha', api_params)
+        
+        # Check if API calls succeeded
+        use_real_data = all([kundli_details, ascendant_data, sun_sign_data, moon_sign_data, dashas_data])
+        
         seed = self._generate_deterministic_seed(birth)
         random.seed(seed)
         
-        # Generate base chart
-        base_chart_raw = self._generate_stub_chart(birth, seed)
-        dashas_raw = self._generate_stub_dashas(birth, seed)
+        if use_real_data:
+            logger.info("Using REAL data from VedicAstroAPI")
+            # Build chart data combining real and stub data
+            base_chart_raw = self._build_chart_from_real_data(
+                birth, seed, kundli_details, ascendant_data, sun_sign_data, moon_sign_data
+            )
+            dashas_raw = self._build_dashas_from_real_data(dashas_data, birth)
+        else:
+            logger.warning("API calls failed - falling back to stub data")
+            base_chart_raw = self._generate_stub_chart(birth, seed)
+            dashas_raw = self._generate_stub_dashas(birth, seed)
         
         # Parse into our models
         profile = self._parse_profile(
