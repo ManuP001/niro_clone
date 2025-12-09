@@ -874,5 +874,15 @@ class VedicAPIClient:
             self._client = None
 
 
-# Singleton instance
-vedic_api_client = VedicAPIClient()
+# Singleton instance - use lazy initialization
+_vedic_api_client_instance = None
+
+def get_vedic_api_client() -> VedicAPIClient:
+    """Get or create the singleton VedicAPIClient instance"""
+    global _vedic_api_client_instance
+    if _vedic_api_client_instance is None:
+        _vedic_api_client_instance = VedicAPIClient()
+    return _vedic_api_client_instance
+
+# For backward compatibility
+vedic_api_client = get_vedic_api_client()
