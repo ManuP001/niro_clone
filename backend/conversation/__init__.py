@@ -1,5 +1,11 @@
 """
 NIRO Conversation Orchestrator Package
+
+Provides:
+- Conversation state management
+- Mode/topic routing
+- Session storage (in-memory, extensible to Redis/DB)
+- Integration with Vedic API and NIRO LLM
 """
 
 from .models import (
@@ -19,6 +25,7 @@ from .mode_router import ModeRouter
 from .astro_engine import AstroEngine
 from .niro_llm import NiroLLM
 from .orchestrator import ConversationOrchestrator
+from .enhanced_orchestrator import EnhancedOrchestrator, create_enhanced_orchestrator
 
 __all__ = [
     # Models
@@ -39,4 +46,7 @@ __all__ = [
     'AstroEngine',
     'NiroLLM',
     'ConversationOrchestrator',
+    # Enhanced Orchestrator
+    'EnhancedOrchestrator',
+    'create_enhanced_orchestrator',
 ]
