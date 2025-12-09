@@ -11,7 +11,7 @@ TODO: Replace stub implementations with real API calls.
 import os
 import logging
 import httpx
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import date, datetime, timedelta
 import random
 import hashlib
