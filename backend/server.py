@@ -30,6 +30,8 @@ from time_parser import TimeParser
 from city_service import CityService, IndianCityService
 from chat_agent import AstroChatAgent
 from chat_models import ChatRequest, ChatResponse, ChatMessage, ChatSession, ChatRole
+from niro_models import NiroChatRequest, NiroChatResponse
+from niro_agent import niro_agent
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
