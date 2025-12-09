@@ -31,7 +31,7 @@ from city_service import CityService, IndianCityService
 from chat_agent import AstroChatAgent
 from chat_models import ChatRequest, ChatResponse, ChatMessage, ChatSession, ChatRole
 from niro_models import NiroChatRequest, NiroChatResponse
-from niro_agent import niro_agent
+from niro_agent import NiroChatAgent
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -55,6 +55,7 @@ time_parser = TimeParser()  # Smart time parsing
 city_service = CityService()  # City autocomplete with GeoNames
 indian_city_service = IndianCityService()  # Comprehensive Indian cities database
 chat_agent = AstroChatAgent()  # Chat-based astrology agent
+niro_agent = NiroChatAgent()  # NIRO chat agent (initialized after dotenv)
 
 # Create the main app without a prefix
 app = FastAPI(title="Astro-Trust Engine API", version="1.0.0")
