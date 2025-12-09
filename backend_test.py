@@ -704,6 +704,447 @@ class ReportGenerationTester:
             self.log_result("NIRO Chat - Response Schema", False, f"Exception: {str(e)}")
             return False
 
+    def test_niro_birth_collection_mode(self):
+        """Test BIRTH_COLLECTION Mode: Create new session without birth details"""
+        try:
+            session_id = f"test-new-{uuid.uuid4().hex[:8]}"
+            payload = {
+                "sessionId": session_id,
+                "message": "Hello",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Birth Collection Mode", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify mode is BIRTH_COLLECTION
+            if data.get("mode") != "BIRTH_COLLECTION":
+                self.log_result("NIRO Birth Collection Mode", False, 
+                              f"Expected mode 'BIRTH_COLLECTION', got '{data.get('mode')}'", data)
+                return False
+            
+            # Verify focus is null
+            if data.get("focus") is not None:
+                self.log_result("NIRO Birth Collection Mode", False, 
+                              f"Expected focus null, got '{data.get('focus')}'", data)
+                return False
+            
+            # Verify suggested actions include birth collection helpers
+            suggested_actions = data.get("suggestedActions", [])
+            action_ids = [action.get("id") for action in suggested_actions]
+            
+            expected_actions = ["help_dob", "example_format"]
+            found_actions = [action for action in expected_actions if action in action_ids]
+            
+            if len(found_actions) < 1:
+                self.log_result("NIRO Birth Collection Mode", False, 
+                              f"Expected birth collection actions, got {action_ids}", data)
+                return False
+            
+            self.log_result("NIRO Birth Collection Mode", True, 
+                          f"Birth collection mode working correctly with {len(found_actions)} helper actions")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Birth Collection Mode", False, f"Exception: {str(e)}")
+            return False
+
+    def test_niro_set_birth_details(self):
+        """Test Set Birth Details: Use the session management endpoint"""
+        try:
+            session_id = f"test-new-{uuid.uuid4().hex[:8]}"
+            
+            # First create session with initial message
+            initial_payload = {
+                "sessionId": session_id,
+                "message": "Hello NIRO",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=initial_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Set Birth Details - Initial", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Now set birth details via session management endpoint
+            birth_details = {
+                "dob": "1990-08-15",
+                "tob": "14:30",
+                "location": "Mumbai, Maharashtra, India",
+                "latitude": 19.0760,
+                "longitude": 72.8777,
+                "timezone": 5.5
+            }
+            
+            response = self.session.post(
+                f"{BACKEND_URL}/chat/session/{session_id}/birth-details", 
+                json=birth_details, 
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Set Birth Details", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            result = response.json()
+            
+            if not result.get("success"):
+                self.log_result("NIRO Set Birth Details", False, 
+                              "Birth details setting failed", result)
+                return False
+            
+            # Verify session state shows birth details
+            response = self.session.get(f"{BACKEND_URL}/chat/session/{session_id}", timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Set Birth Details - Verify", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            session_data = response.json()
+            
+            if not session_data.get("has_birth_details"):
+                self.log_result("NIRO Set Birth Details", False, 
+                              "Session doesn't show birth details set", session_data)
+                return False
+            
+            self.log_result("NIRO Set Birth Details", True, 
+                          "Birth details set and verified successfully")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Set Birth Details", False, f"Exception: {str(e)}")
+            return False
+
+    def test_niro_past_themes_mode(self):
+        """Test PAST_THEMES Mode: After birth details set, first reading"""
+        try:
+            session_id = f"test-past-{uuid.uuid4().hex[:8]}"
+            
+            # Set birth details first
+            birth_details = {
+                "dob": "1990-08-15",
+                "tob": "14:30",
+                "location": "Mumbai, Maharashtra, India",
+                "latitude": 19.0760,
+                "longitude": 72.8777,
+                "timezone": 5.5
+            }
+            
+            # Create session and set birth details
+            initial_payload = {
+                "sessionId": session_id,
+                "message": "Hello",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=initial_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Past Themes Mode - Setup", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Set birth details
+            response = self.session.post(
+                f"{BACKEND_URL}/chat/session/{session_id}/birth-details", 
+                json=birth_details, 
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Past Themes Mode - Birth Details", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Now send message with birth details already set
+            payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my past",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Past Themes Mode", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify mode is PAST_THEMES
+            if data.get("mode") != "PAST_THEMES":
+                self.log_result("NIRO Past Themes Mode", False, 
+                              f"Expected mode 'PAST_THEMES', got '{data.get('mode')}'", data)
+                return False
+            
+            # Verify focus is null
+            if data.get("focus") is not None:
+                self.log_result("NIRO Past Themes Mode", False, 
+                              f"Expected focus null, got '{data.get('focus')}'", data)
+                return False
+            
+            # Verify suggested actions include focus options
+            suggested_actions = data.get("suggestedActions", [])
+            action_ids = [action.get("id") for action in suggested_actions]
+            
+            expected_actions = ["focus_career", "focus_relationship", "focus_health", "daily_guidance"]
+            found_actions = [action for action in expected_actions if action in action_ids]
+            
+            if len(found_actions) < 2:
+                self.log_result("NIRO Past Themes Mode", False, 
+                              f"Expected focus actions, got {action_ids}", data)
+                return False
+            
+            self.log_result("NIRO Past Themes Mode", True, 
+                          f"Past themes mode working correctly with {len(found_actions)} focus options")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Past Themes Mode", False, f"Exception: {str(e)}")
+            return False
+
+    def test_niro_keyword_inference(self):
+        """Test Keyword Inference: Test focus detection from message"""
+        try:
+            session_id = f"test-keyword-{uuid.uuid4().hex[:8]}"
+            
+            # Set up session with birth details and past themes done
+            birth_details = {
+                "dob": "1990-08-15",
+                "tob": "14:30",
+                "location": "Mumbai, Maharashtra, India",
+                "latitude": 19.0760,
+                "longitude": 72.8777,
+                "timezone": 5.5
+            }
+            
+            # Create session
+            initial_payload = {
+                "sessionId": session_id,
+                "message": "Hello",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=initial_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Keyword Inference - Setup", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Set birth details
+            response = self.session.post(
+                f"{BACKEND_URL}/chat/session/{session_id}/birth-details", 
+                json=birth_details, 
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Keyword Inference - Birth Details", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Send past themes message to mark retro as done
+            past_payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my past themes",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=past_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Keyword Inference - Past Themes", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Now test keyword inference with love/marriage message
+            keyword_payload = {
+                "sessionId": session_id,
+                "message": "I want to know about love and marriage in my life",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=keyword_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Keyword Inference", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify mode is FOCUS_READING
+            if data.get("mode") != "FOCUS_READING":
+                self.log_result("NIRO Keyword Inference", False, 
+                              f"Expected mode 'FOCUS_READING', got '{data.get('mode')}'", data)
+                return False
+            
+            # Verify focus is relationship
+            if data.get("focus") != "relationship":
+                self.log_result("NIRO Keyword Inference", False, 
+                              f"Expected focus 'relationship', got '{data.get('focus')}'", data)
+                return False
+            
+            self.log_result("NIRO Keyword Inference", True, 
+                          "Keyword inference correctly detected 'relationship' focus from love/marriage message")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Keyword Inference", False, f"Exception: {str(e)}")
+            return False
+
+    def test_niro_session_state_endpoint(self):
+        """Test Session State Endpoint: GET /api/chat/session/{session_id}"""
+        try:
+            session_id = f"test-state-{uuid.uuid4().hex[:8]}"
+            
+            # Create session with message
+            payload = {
+                "sessionId": session_id,
+                "message": "Hello NIRO",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Session State - Create", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Get session state
+            response = self.session.get(f"{BACKEND_URL}/chat/session/{session_id}", timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Session State Endpoint", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify required fields
+            required_fields = ["session_id", "has_birth_details", "has_done_retro", "message_count"]
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if missing_fields:
+                self.log_result("NIRO Session State Endpoint", False, 
+                              f"Missing fields: {missing_fields}", data)
+                return False
+            
+            # Verify session_id matches
+            if data.get("session_id") != session_id:
+                self.log_result("NIRO Session State Endpoint", False, 
+                              f"Session ID mismatch: expected {session_id}, got {data.get('session_id')}", data)
+                return False
+            
+            # Verify has_birth_details is boolean
+            if not isinstance(data.get("has_birth_details"), bool):
+                self.log_result("NIRO Session State Endpoint", False, 
+                              "has_birth_details is not boolean", data)
+                return False
+            
+            # Verify has_done_retro is boolean
+            if not isinstance(data.get("has_done_retro"), bool):
+                self.log_result("NIRO Session State Endpoint", False, 
+                              "has_done_retro is not boolean", data)
+                return False
+            
+            # Verify message_count is number
+            if not isinstance(data.get("message_count"), int):
+                self.log_result("NIRO Session State Endpoint", False, 
+                              "message_count is not integer", data)
+                return False
+            
+            self.log_result("NIRO Session State Endpoint", True, 
+                          f"Session state endpoint working correctly - message_count: {data.get('message_count')}")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Session State Endpoint", False, f"Exception: {str(e)}")
+            return False
+
+    def test_niro_session_reset(self):
+        """Test Session Reset: DELETE /api/chat/session/{session_id}"""
+        try:
+            session_id = f"test-reset-{uuid.uuid4().hex[:8]}"
+            
+            # Create session
+            payload = {
+                "sessionId": session_id,
+                "message": "Hello NIRO",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Session Reset - Create", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Verify session exists
+            response = self.session.get(f"{BACKEND_URL}/chat/session/{session_id}", timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Session Reset - Verify Exists", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Reset session
+            response = self.session.delete(f"{BACKEND_URL}/chat/session/{session_id}", timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Session Reset", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            result = response.json()
+            
+            if not result.get("success"):
+                self.log_result("NIRO Session Reset", False, 
+                              "Reset operation failed", result)
+                return False
+            
+            # Verify session is reset (should return 404 or create new)
+            response = self.session.get(f"{BACKEND_URL}/chat/session/{session_id}", timeout=30)
+            
+            # Session should either be 404 (deleted) or have reset state
+            if response.status_code == 404:
+                self.log_result("NIRO Session Reset", True, 
+                              "Session successfully deleted")
+                return True
+            elif response.status_code == 200:
+                # Check if it's a fresh session
+                data = response.json()
+                if data.get("message_count", 0) == 0:
+                    self.log_result("NIRO Session Reset", True, 
+                                  "Session successfully reset to initial state")
+                    return True
+                else:
+                    self.log_result("NIRO Session Reset", False, 
+                                  "Session not properly reset", data)
+                    return False
+            else:
+                self.log_result("NIRO Session Reset", False, 
+                              f"Unexpected response after reset: HTTP {response.status_code}", response.text)
+                return False
+            
+        except Exception as e:
+            self.log_result("NIRO Session Reset", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests including NIRO chat"""
         print("=" * 60)
