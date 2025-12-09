@@ -634,8 +634,61 @@ class ReportGenerationTester:
     def test_niro_chat_daily_guidance_action(self):
         """Test NIRO chat with actionId 'daily_guidance'"""
         try:
+            session_id = f"test_daily_{uuid.uuid4().hex[:8]}"
+            
+            # Set up session with birth details and past themes done
+            birth_details = {
+                "dob": "1990-08-15",
+                "tob": "14:30",
+                "location": "Mumbai, Maharashtra, India",
+                "latitude": 19.0760,
+                "longitude": 72.8777,
+                "timezone": 5.5
+            }
+            
+            # Create session
+            initial_payload = {
+                "sessionId": session_id,
+                "message": "Hello",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=initial_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Daily Guidance Action - Setup", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Set birth details
+            response = self.session.post(
+                f"{BACKEND_URL}/chat/session/{session_id}/birth-details", 
+                json=birth_details, 
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Daily Guidance Action - Birth Details", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Do past themes to mark retro as done
+            past_payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my past themes",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=past_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Daily Guidance Action - Past Themes", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Now test daily_guidance actionId
             payload = {
-                "sessionId": f"test_session_{uuid.uuid4().hex[:8]}",
+                "sessionId": session_id,
                 "message": "What's my daily guidance?",
                 "actionId": "daily_guidance"
             }
