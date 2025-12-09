@@ -1146,24 +1146,37 @@ class ReportGenerationTester:
             return False
 
     def run_all_tests(self):
-        """Run all backend tests including NIRO chat"""
+        """Run all backend tests including NIRO chat orchestrator"""
         print("=" * 60)
-        print("TESTING BACKEND FUNCTIONALITY")
-        print("Report Generation + NIRO Chat API Testing")
+        print("TESTING NIRO CONVERSATION ORCHESTRATOR")
+        print("Comprehensive Backend API Testing")
         print("=" * 60)
         
         tests = [
-            ("Pricing Endpoint", self.test_pricing_endpoint),
+            # Core API Tests
             ("Health Check", self.test_health_check),
+            ("Pricing Endpoint", self.test_pricing_endpoint),
             ("City Search", self.test_city_search),
             ("Time Parser", self.test_time_parser),
-            ("Report Generation Flow", self.test_report_generation_flow),
-            ("NIRO Chat - Basic Career Message", self.test_niro_chat_basic_message),
-            ("NIRO Chat - Focus Career Action", self.test_niro_chat_focus_career_action),
-            ("NIRO Chat - Focus Relationship Action", self.test_niro_chat_focus_relationship_action),
-            ("NIRO Chat - Daily Guidance Action", self.test_niro_chat_daily_guidance_action),
-            ("NIRO Chat - Suggested Actions", self.test_niro_chat_suggested_actions_populated),
-            ("NIRO Chat - Response Schema", self.test_niro_chat_response_schema)
+            
+            # NIRO Orchestrator Tests (as per review request)
+            ("NIRO Birth Collection Mode", self.test_niro_birth_collection_mode),
+            ("NIRO Set Birth Details", self.test_niro_set_birth_details),
+            ("NIRO Past Themes Mode", self.test_niro_past_themes_mode),
+            ("NIRO Focus Career Action", self.test_niro_chat_focus_career_action),
+            ("NIRO Focus Relationship Action", self.test_niro_chat_focus_relationship_action),
+            ("NIRO Keyword Inference", self.test_niro_keyword_inference),
+            ("NIRO Session State Endpoint", self.test_niro_session_state_endpoint),
+            ("NIRO Suggested Actions", self.test_niro_chat_suggested_actions_populated),
+            ("NIRO Response Schema", self.test_niro_chat_response_schema),
+            ("NIRO Session Reset", self.test_niro_session_reset),
+            
+            # Additional NIRO Tests
+            ("NIRO Daily Guidance Action", self.test_niro_chat_daily_guidance_action),
+            ("NIRO Basic Career Message", self.test_niro_chat_basic_message),
+            
+            # Report Generation (existing functionality)
+            ("Report Generation Flow", self.test_report_generation_flow)
         ]
         
         passed = 0
