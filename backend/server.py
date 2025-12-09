@@ -861,6 +861,76 @@ async def get_chat_session(session_id: str):
         "messages": messages
     }
 
+# ============= NIRO CHAT ENDPOINT =============
+
+@api_router.post("/chat", response_model=NiroChatResponse)
+async def niro_chat(request: NiroChatRequest):
+    """
+    NIRO AI Vedic Astrology Chat Endpoint
+    
+    This endpoint handles the NIRO chat interface with structured responses.
+    
+    Request body:
+    - sessionId: Unique session identifier
+    - message: User message or quick reply chip label
+    - actionId: Optional action ID when user clicks a chip
+    
+    Returns structured response with:
+    - reply: { summary, reasons[], remedies[] }
+    - mode: Reading mode (FOCUS_READING, PAST_THEMES, DAILY_GUIDANCE, etc.)
+    - focus: Focus area (career, relationship, health, or null)
+    - suggestedActions: Quick reply chips for follow-up
+    """
+    
+    try:
+        logger.info(f"NIRO chat request - session: {request.sessionId}, action: {request.actionId}")
+        
+        # Process message through NIRO agent
+        response = niro_agent.process_message(
+            session_id=request.sessionId,
+            message=request.message,
+            action_id=request.actionId
+        )
+        
+        # Store message in database for history
+        niro_message_doc = {
+            "session_id": request.sessionId,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "user_message": request.message,
+            "action_id": request.actionId,
+            "response": response.model_dump()
+        }
+        await db.niro_messages.insert_one(niro_message_doc)
+        
+        logger.info(f"NIRO response - mode: {response.mode}, focus: {response.focus}")
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"NIRO chat error: {str(e)}", exc_info=True)
+        
+        # Return graceful error response
+        from niro_models import NiroReply, SuggestedAction
+        error_reply = NiroReply(
+            summary="I apologize, but I encountered a momentary cosmic disturbance. Please try again.",
+            reasons=[
+                "There was a temporary issue processing your request",
+                "The stars will align again shortly"
+            ],
+            remedies=[]
+        )
+        
+        return NiroChatResponse(
+            reply=error_reply,
+            mode="ERROR",
+            focus=None,
+            suggestedActions=[
+                SuggestedAction(id="retry", label="Try again"),
+                SuggestedAction(id="focus_career", label="Career"),
+                SuggestedAction(id="focus_relationship", label="Relationships")
+            ]
+        )
+
 # Include the router in the main app
 app.include_router(api_router)
 
