@@ -248,3 +248,11 @@ Keep it concise for fast response. JSON only, no markdown."""
             )
             
             return interpretation, confidence_metadata
+
+    def get_provider_metrics(self) -> Dict[str, Any]:
+        """Get metrics about provider usage"""
+        return self.router.get_metrics()
+    
+    def health_check(self) -> Dict[str, bool]:
+        """Check health of all providers"""
+        return self.router.health_check()
