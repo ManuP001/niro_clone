@@ -874,15 +874,22 @@ class VedicAPIClient:
             self._client = None
 
 
-# Singleton instance - use lazy initialization
-_vedic_api_client_instance = None
+# Singleton instance - lazy initialization pattern
+class _VedicAPIClientSingleton:
+    """Lazy singleton wrapper for VedicAPIClient"""
+    _instance = None
+    
+    def __call__(self):
+        if self._instance is None:
+            self._instance = VedicAPIClient()
+        return self._instance
 
-def get_vedic_api_client() -> VedicAPIClient:
-    """Get or create the singleton VedicAPIClient instance"""
-    global _vedic_api_client_instance
-    if _vedic_api_client_instance is None:
-        _vedic_api_client_instance = VedicAPIClient()
-    return _vedic_api_client_instance
+_get_client = _VedicAPIClientSingleton()
 
-# For backward compatibility
-vedic_api_client = get_vedic_api_client()
+# Create a proxy object that lazily initializes the client
+class _LazyVedicAPIClient:
+    """Proxy that forwards all attribute access to the real client"""
+    def __getattr__(self, name):
+        return getattr(_get_client(), name)
+
+vedic_api_client = _LazyVedicAPIClient()
