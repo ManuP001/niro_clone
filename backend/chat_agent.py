@@ -1,12 +1,15 @@
 """
 Chat Agent for AstroTrust
-Handles conversational astrology using Gemini LLM
+Handles conversational astrology with multi-provider support
+Uses Gemini (low-cost) first, falls back to OpenAI when needed
 """
 import os
 import json
 import logging
 from typing import Tuple, Dict, Any, Optional
 from gemini_agent import GeminiAgent
+from openai_agent import OpenAIAgent
+from provider_router import ProviderRouter, Provider
 from chat_models import (
     ExtractedData, SubjectData, PlaceData, ChatContext, 
     APITrigger, ConfidenceMetadata, RequestType
@@ -18,10 +21,13 @@ class AstroChatAgent:
     """
     Chat agent for conversational astrology
     Handles NLP extraction, validation, and interpretation
+    Uses provider router for intelligent fallback
     """
     
     def __init__(self):
         self.gemini_agent = GeminiAgent()
+        self.openai_agent = OpenAIAgent()
+        self.router = ProviderRouter(self.gemini_agent, self.openai_agent)
         
     def extract_birth_details(self, user_message: str, conversation_history: list = None) -> ExtractedData:
         """
