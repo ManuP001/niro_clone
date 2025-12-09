@@ -967,19 +967,23 @@ async def get_niro_session(session_id: str):
     """
     Get current session state for debugging and monitoring.
     """
-    state = conversation_orchestrator.get_session_state(session_id)
+    state = enhanced_orchestrator.get_session_state(session_id)
     if not state:
         raise HTTPException(status_code=404, detail="Session not found")
+    
+    # Try to get astro profile info if available
+    astro_info = await enhanced_orchestrator.get_astro_profile(session_id)
     
     return {
         "session_id": state.session_id,
         "mode": state.mode,
-        "focus": state.focus,
+        "topic": state.focus,  # topic stored in focus field
         "has_birth_details": state.birth_details is not None,
         "has_done_retro": state.has_done_retro,
         "message_count": state.message_count,
         "created_at": state.created_at.isoformat(),
-        "updated_at": state.updated_at.isoformat()
+        "updated_at": state.updated_at.isoformat(),
+        "astro_profile": astro_info
     }
 
 
@@ -989,7 +993,7 @@ async def set_niro_birth_details(session_id: str, birth_details: OrchestratorBir
     Manually set birth details for a session.
     Useful for pre-populating from user profile.
     """
-    success = conversation_orchestrator.set_birth_details(session_id, birth_details)
+    success = enhanced_orchestrator.set_birth_details(session_id, birth_details)
     if not success:
         raise HTTPException(status_code=404, detail="Session not found")
     
@@ -1001,8 +1005,36 @@ async def reset_niro_session(session_id: str):
     """
     Reset a session to initial state.
     """
-    success = conversation_orchestrator.reset_session(session_id)
+    success = enhanced_orchestrator.reset_session(session_id)
     return {"success": success, "message": "Session reset" if success else "Session not found"}
+
+
+# ============= NIRO TOPIC TAXONOMY ENDPOINT =============
+
+@api_router.get("/chat/topics")
+async def get_niro_topics():
+    """
+    Get the full topic taxonomy supported by NIRO.
+    """
+    return {
+        "topics": [
+            {"id": Topic.SELF_PSYCHOLOGY.value, "label": "Self & Psychology", "description": "Personality, identity, life purpose"},
+            {"id": Topic.CAREER.value, "label": "Career", "description": "Job, profession, work life"},
+            {"id": Topic.MONEY.value, "label": "Money & Finances", "description": "Income, investments, wealth"},
+            {"id": Topic.ROMANTIC_RELATIONSHIPS.value, "label": "Romantic Relationships", "description": "Dating, love, attraction"},
+            {"id": Topic.MARRIAGE_PARTNERSHIP.value, "label": "Marriage & Partnership", "description": "Spouse, marriage, commitment"},
+            {"id": Topic.FAMILY_HOME.value, "label": "Family & Home", "description": "Parents, children, household"},
+            {"id": Topic.FRIENDS_SOCIAL.value, "label": "Friends & Social", "description": "Friendships, networking, community"},
+            {"id": Topic.LEARNING_EDUCATION.value, "label": "Education", "description": "Studies, exams, learning"},
+            {"id": Topic.HEALTH_ENERGY.value, "label": "Health & Energy", "description": "Physical health, wellness, vitality"},
+            {"id": Topic.SPIRITUALITY.value, "label": "Spirituality", "description": "Inner growth, karma, dharma"},
+            {"id": Topic.TRAVEL_RELOCATION.value, "label": "Travel & Relocation", "description": "Foreign travel, moving, immigration"},
+            {"id": Topic.LEGAL_CONTRACTS.value, "label": "Legal & Contracts", "description": "Court cases, agreements, disputes"},
+            {"id": Topic.DAILY_GUIDANCE.value, "label": "Daily Guidance", "description": "Today's cosmic weather"},
+            {"id": Topic.GENERAL.value, "label": "General", "description": "Overall life guidance"},
+        ]
+    }
+
 
 # Include the router in the main app
 app.include_router(api_router)
