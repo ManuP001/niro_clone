@@ -92,29 +92,45 @@ class VedicAPIClient:
         if self._client is None:
             self._client = httpx.AsyncClient(
                 base_url=self.base_url,
-                timeout=30.0,
-                headers={
-                    'Authorization': f'Bearer {self.api_key}',
-                    'Content-Type': 'application/json'
-                }
+                timeout=30.0
             )
         return self._client
     
-    async def _post(self, path: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    async def _get(self, path: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Low-level HTTP POST helper.
+        Low-level HTTP GET helper for VedicAstroAPI v3-json.
         
-        TODO: Replace with real API call.
-        For now, returns None to signal we should use stub data.
+        The API uses GET requests with query parameters including api_key.
         """
-        # Uncomment when integrating real API:
-        # client = await self._get_client()
-        # response = await client.post(path, json=payload)
-        # response.raise_for_status()
-        # return response.json()
-        
-        logger.debug(f"API call to {path} (STUB - not implemented)")
-        return None
+        try:
+            client = await self._get_client()
+            # Add API key to params
+            params['api_key'] = self.api_key
+            params['lang'] = params.get('lang', 'en')
+            
+            # Make GET request
+            response = await client.get(path, params=params)
+            response.raise_for_status()
+            
+            data = response.json()
+            
+            # Check if API returned an error
+            if data.get('message') == 'Not Found':
+                logger.error(f"API endpoint not found: {path}")
+                return None
+            
+            if data.get('status') != 200:
+                logger.error(f"API error for {path}: {data}")
+                return None
+                
+            return data.get('response', {})
+            
+        except httpx.HTTPError as e:
+            logger.error(f"HTTP error calling {path}: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Error calling {path}: {e}")
+            return None
     
     def _generate_deterministic_seed(self, birth: BirthDetails) -> int:
         """Generate deterministic seed from birth details for consistent fake data"""
