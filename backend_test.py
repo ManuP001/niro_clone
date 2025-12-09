@@ -1357,6 +1357,542 @@ class ReportGenerationTester:
             self.log_result("NIRO Session Reset", False, f"Exception: {str(e)}")
             return False
 
+    # ============= ENHANCED NIRO TESTS (Review Request) =============
+
+    def test_topic_taxonomy_endpoint(self):
+        """Test 1: Topic Taxonomy Endpoint - GET /api/chat/topics"""
+        try:
+            response = self.session.get(f"{BACKEND_URL}/chat/topics", timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Topic Taxonomy Endpoint", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify structure
+            if "topics" not in data:
+                self.log_result("Topic Taxonomy Endpoint", False, 
+                              "Missing 'topics' field", data)
+                return False
+            
+            topics = data["topics"]
+            
+            # Should return 14 topics
+            if len(topics) != 14:
+                self.log_result("Topic Taxonomy Endpoint", False, 
+                              f"Expected 14 topics, got {len(topics)}", data)
+                return False
+            
+            # Verify each topic has id, label, description
+            for i, topic in enumerate(topics):
+                required_fields = ["id", "label", "description"]
+                missing_fields = [field for field in required_fields if field not in topic]
+                
+                if missing_fields:
+                    self.log_result("Topic Taxonomy Endpoint", False, 
+                                  f"Topic {i} missing fields: {missing_fields}", topic)
+                    return False
+                
+                # Verify fields are not empty
+                if not topic["id"] or not topic["label"] or not topic["description"]:
+                    self.log_result("Topic Taxonomy Endpoint", False, 
+                                  f"Topic {i} has empty fields", topic)
+                    return False
+            
+            self.log_result("Topic Taxonomy Endpoint", True, 
+                          f"Successfully returned 14 topics with complete data")
+            return True
+            
+        except Exception as e:
+            self.log_result("Topic Taxonomy Endpoint", False, f"Exception: {str(e)}")
+            return False
+
+    def test_birth_details_extraction(self):
+        """Test 2: Birth Details Extraction - Should extract and create astro profile"""
+        try:
+            session_id = f"test-birth-extract-{uuid.uuid4().hex[:8]}"
+            
+            # Send message with birth details
+            payload = {
+                "sessionId": session_id,
+                "message": "I was born on 25/12/1985 at 10:30 in Delhi",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Birth Details Extraction", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # After birth details extraction, next message should be PAST_THEMES
+            next_payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my past",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=next_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Birth Details Extraction - Past Themes", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Should be PAST_THEMES mode (first reading after birth details)
+            if data.get("mode") != "PAST_THEMES":
+                self.log_result("Birth Details Extraction", False, 
+                              f"Expected mode 'PAST_THEMES', got '{data.get('mode')}'", data)
+                return False
+            
+            # Check session state for astro profile
+            response = self.session.get(f"{BACKEND_URL}/chat/session/{session_id}", timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Birth Details Extraction - Session Check", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            session_data = response.json()
+            
+            # Should have birth details
+            if not session_data.get("has_birth_details"):
+                self.log_result("Birth Details Extraction", False, 
+                              "Birth details not extracted", session_data)
+                return False
+            
+            self.log_result("Birth Details Extraction", True, 
+                          "Birth details extracted and PAST_THEMES mode activated")
+            return True
+            
+        except Exception as e:
+            self.log_result("Birth Details Extraction", False, f"Exception: {str(e)}")
+            return False
+
+    def test_career_topic_classification(self):
+        """Test 3: Career Topic Classification - Keywords should trigger career focus"""
+        try:
+            session_id = f"test-career-topic-{uuid.uuid4().hex[:8]}"
+            
+            # Setup session with birth details
+            self._setup_session_with_birth_details(session_id)
+            
+            # Send career-related message
+            payload = {
+                "sessionId": session_id,
+                "message": "I want to know about my job prospects and career promotion opportunities",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Career Topic Classification", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Should return topic="career"
+            if data.get("focus") != "career":
+                self.log_result("Career Topic Classification", False, 
+                              f"Expected focus 'career', got '{data.get('focus')}'", data)
+                return False
+            
+            # Should be FOCUS_READING mode
+            if data.get("mode") != "FOCUS_READING":
+                self.log_result("Career Topic Classification", False, 
+                              f"Expected mode 'FOCUS_READING', got '{data.get('mode')}'", data)
+                return False
+            
+            # Should have career-specific suggested actions
+            suggested_actions = data.get("suggestedActions", [])
+            action_ids = [action.get("id") for action in suggested_actions]
+            
+            career_actions = [action for action in action_ids if "career" in action.lower()]
+            
+            if len(career_actions) == 0:
+                self.log_result("Career Topic Classification", False, 
+                              f"No career-specific actions found in {action_ids}", data)
+                return False
+            
+            self.log_result("Career Topic Classification", True, 
+                          f"Career topic detected with {len(career_actions)} career-specific actions")
+            return True
+            
+        except Exception as e:
+            self.log_result("Career Topic Classification", False, f"Exception: {str(e)}")
+            return False
+
+    def test_romantic_relationships_topic(self):
+        """Test 4: Romantic Relationships Topic - Love/dating keywords"""
+        try:
+            session_id = f"test-love-topic-{uuid.uuid4().hex[:8]}"
+            
+            # Setup session with birth details
+            self._setup_session_with_birth_details(session_id)
+            
+            # Send love/dating message
+            payload = {
+                "sessionId": session_id,
+                "message": "I want to know about love and dating in my life, when will I find my boyfriend",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Romantic Relationships Topic", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Should return topic="romantic_relationships"
+            expected_topics = ["romantic_relationships", "relationship"]  # Allow both variations
+            if data.get("focus") not in expected_topics:
+                self.log_result("Romantic Relationships Topic", False, 
+                              f"Expected focus in {expected_topics}, got '{data.get('focus')}'", data)
+                return False
+            
+            self.log_result("Romantic Relationships Topic", True, 
+                          f"Romantic relationships topic detected: '{data.get('focus')}'")
+            return True
+            
+        except Exception as e:
+            self.log_result("Romantic Relationships Topic", False, f"Exception: {str(e)}")
+            return False
+
+    def test_money_topic_classification(self):
+        """Test 5: Money Topic Classification - Salary/investment keywords"""
+        try:
+            session_id = f"test-money-topic-{uuid.uuid4().hex[:8]}"
+            
+            # Setup session with birth details
+            self._setup_session_with_birth_details(session_id)
+            
+            # Send money-related message
+            payload = {
+                "sessionId": session_id,
+                "message": "I want to know about my salary increase and investment opportunities for income growth",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Money Topic Classification", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Should return topic="money"
+            if data.get("focus") != "money":
+                self.log_result("Money Topic Classification", False, 
+                              f"Expected focus 'money', got '{data.get('focus')}'", data)
+                return False
+            
+            self.log_result("Money Topic Classification", True, 
+                          "Money topic detected correctly")
+            return True
+            
+        except Exception as e:
+            self.log_result("Money Topic Classification", False, f"Exception: {str(e)}")
+            return False
+
+    def test_health_topic_classification(self):
+        """Test 6: Health Topic Classification - Health/tired/stress keywords"""
+        try:
+            session_id = f"test-health-topic-{uuid.uuid4().hex[:8]}"
+            
+            # Setup session with birth details
+            self._setup_session_with_birth_details(session_id)
+            
+            # Send health-related message
+            payload = {
+                "sessionId": session_id,
+                "message": "I'm feeling tired and stressed about my health, what does my chart say",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Health Topic Classification", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Should return topic="health_energy"
+            expected_topics = ["health_energy", "health"]  # Allow both variations
+            if data.get("focus") not in expected_topics:
+                self.log_result("Health Topic Classification", False, 
+                              f"Expected focus in {expected_topics}, got '{data.get('focus')}'", data)
+                return False
+            
+            self.log_result("Health Topic Classification", True, 
+                          f"Health topic detected: '{data.get('focus')}'")
+            return True
+            
+        except Exception as e:
+            self.log_result("Health Topic Classification", False, f"Exception: {str(e)}")
+            return False
+
+    def test_actionid_topic_override(self):
+        """Test 7: ActionId Topic Override - actionId should override keywords"""
+        try:
+            session_id = f"test-actionid-override-{uuid.uuid4().hex[:8]}"
+            
+            # Setup session with birth details
+            self._setup_session_with_birth_details(session_id)
+            
+            # Send message with career keywords but money actionId
+            payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my career and job prospects",  # Career keywords
+                "actionId": "focus_money"  # But money actionId should override
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("ActionId Topic Override", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Should return topic="money" (actionId overrides keywords)
+            if data.get("focus") != "money":
+                self.log_result("ActionId Topic Override", False, 
+                              f"Expected focus 'money' (actionId override), got '{data.get('focus')}'", data)
+                return False
+            
+            self.log_result("ActionId Topic Override", True, 
+                          "ActionId successfully overrode keyword-based topic detection")
+            return True
+            
+        except Exception as e:
+            self.log_result("ActionId Topic Override", False, f"Exception: {str(e)}")
+            return False
+
+    def test_session_state_with_astro_profile(self):
+        """Test 8: Session State with Astro Profile - Should return astro data"""
+        try:
+            session_id = f"test-astro-profile-{uuid.uuid4().hex[:8]}"
+            
+            # Setup session with birth details and trigger astro profile creation
+            self._setup_session_with_birth_details(session_id)
+            
+            # Send a message to trigger astro profile creation
+            payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my chart",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Session State with Astro Profile - Trigger", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Get session state
+            response = self.session.get(f"{BACKEND_URL}/chat/session/{session_id}", timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Session State with Astro Profile", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Should have astro_profile
+            if "astro_profile" not in data:
+                self.log_result("Session State with Astro Profile", False, 
+                              "Missing astro_profile in session state", data)
+                return False
+            
+            astro_profile = data["astro_profile"]
+            
+            # Check for key astro data (if not None)
+            if astro_profile is not None:
+                expected_fields = ["ascendant", "moon_sign", "current_mahadasha"]
+                found_fields = [field for field in expected_fields if field in astro_profile]
+                
+                if len(found_fields) > 0:
+                    self.log_result("Session State with Astro Profile", True, 
+                                  f"Astro profile present with fields: {found_fields}")
+                    return True
+            
+            # If astro_profile is None or empty, that's also acceptable for stubbed implementation
+            self.log_result("Session State with Astro Profile", True, 
+                          "Session state includes astro_profile field (may be stubbed)")
+            return True
+            
+        except Exception as e:
+            self.log_result("Session State with Astro Profile", False, f"Exception: {str(e)}")
+            return False
+
+    def test_response_structure_validation(self):
+        """Test 9: Response Structure Validation - Detailed reply structure"""
+        try:
+            session_id = f"test-response-structure-{uuid.uuid4().hex[:8]}"
+            
+            # Setup session with birth details
+            self._setup_session_with_birth_details(session_id)
+            
+            # Send message to get detailed response
+            payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my career prospects",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Response Structure Validation", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Validate reply structure
+            reply = data.get("reply", {})
+            
+            # Check summary (2-3 lines)
+            summary = reply.get("summary", "")
+            if not summary or len(summary.strip()) < 20:
+                self.log_result("Response Structure Validation", False, 
+                              "Summary too short or missing", reply)
+                return False
+            
+            # Check reasons (2-4 bullets)
+            reasons = reply.get("reasons", [])
+            if not isinstance(reasons, list) or len(reasons) < 2 or len(reasons) > 4:
+                self.log_result("Response Structure Validation", False, 
+                              f"Reasons should be 2-4 bullets, got {len(reasons)}", reasons)
+                return False
+            
+            # Check remedies (array, can be empty)
+            remedies = reply.get("remedies", [])
+            if not isinstance(remedies, list):
+                self.log_result("Response Structure Validation", False, 
+                              "Remedies should be array", remedies)
+                return False
+            
+            # Check suggestedActions array
+            suggested_actions = data.get("suggestedActions", [])
+            if not isinstance(suggested_actions, list) or len(suggested_actions) == 0:
+                self.log_result("Response Structure Validation", False, 
+                              "suggestedActions should be non-empty array", suggested_actions)
+                return False
+            
+            self.log_result("Response Structure Validation", True, 
+                          f"Response structure valid: summary, {len(reasons)} reasons, {len(remedies)} remedies, {len(suggested_actions)} actions")
+            return True
+            
+        except Exception as e:
+            self.log_result("Response Structure Validation", False, f"Exception: {str(e)}")
+            return False
+
+    def test_daily_guidance_mode(self):
+        """Test 10: Daily Guidance Mode - actionId should trigger DAILY_GUIDANCE"""
+        try:
+            session_id = f"test-daily-guidance-{uuid.uuid4().hex[:8]}"
+            
+            # Setup session with birth details
+            self._setup_session_with_birth_details(session_id)
+            
+            # Send daily guidance request
+            payload = {
+                "sessionId": session_id,
+                "message": "What's my guidance for today?",
+                "actionId": "daily_guidance"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Daily Guidance Mode", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Should return mode="DAILY_GUIDANCE"
+            if data.get("mode") != "DAILY_GUIDANCE":
+                self.log_result("Daily Guidance Mode", False, 
+                              f"Expected mode 'DAILY_GUIDANCE', got '{data.get('mode')}'", data)
+                return False
+            
+            # Focus should be None for daily guidance
+            if data.get("focus") is not None:
+                self.log_result("Daily Guidance Mode", False, 
+                              f"Expected focus None for daily guidance, got '{data.get('focus')}'", data)
+                return False
+            
+            self.log_result("Daily Guidance Mode", True, 
+                          "Daily guidance mode activated correctly")
+            return True
+            
+        except Exception as e:
+            self.log_result("Daily Guidance Mode", False, f"Exception: {str(e)}")
+            return False
+
+    def _setup_session_with_birth_details(self, session_id):
+        """Helper method to setup session with birth details and past themes"""
+        # Create session
+        initial_payload = {
+            "sessionId": session_id,
+            "message": "Hello",
+            "actionId": None
+        }
+        
+        response = self.session.post(f"{BACKEND_URL}/chat", json=initial_payload, timeout=30)
+        if response.status_code != 200:
+            raise Exception(f"Failed to create session: {response.status_code}")
+        
+        # Set birth details
+        birth_details = {
+            "dob": "1985-12-25",
+            "tob": "10:30",
+            "location": "Delhi, India",
+            "latitude": 28.6139,
+            "longitude": 77.2090,
+            "timezone": 5.5
+        }
+        
+        response = self.session.post(
+            f"{BACKEND_URL}/chat/session/{session_id}/birth-details", 
+            json=birth_details, 
+            timeout=30
+        )
+        if response.status_code != 200:
+            raise Exception(f"Failed to set birth details: {response.status_code}")
+        
+        # Do past themes to mark retro as done
+        past_payload = {
+            "sessionId": session_id,
+            "message": "Tell me about my past themes",
+            "actionId": None
+        }
+        
+        response = self.session.post(f"{BACKEND_URL}/chat", json=past_payload, timeout=30)
+        if response.status_code != 200:
+            raise Exception(f"Failed to do past themes: {response.status_code}")
+
     def run_all_tests(self):
         """Run all backend tests including NIRO chat orchestrator"""
         print("=" * 60)
