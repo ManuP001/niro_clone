@@ -155,11 +155,14 @@ backend:
     file: "/app/backend/conversation/astro_engine.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented AstroEngine stub with compute_astro_raw() and build_astro_features(). Generates deterministic fake data based on birth details. Ready for real engine integration."
+      - working: true
+        agent: "testing"
+        comment: "✅ ASTRO ENGINE STUB VERIFIED - Astro engine integration working correctly within orchestrator: compute_astro_raw() and build_astro_features() called properly when birth details available, astro features passed to LLM for response generation. Stub generates appropriate data for testing. Ready for real astro engine integration."
 
   - task: "NIRO LLM Module (Stubbed)"
     implemented: true
