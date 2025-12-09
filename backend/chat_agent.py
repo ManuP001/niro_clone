@@ -100,34 +100,18 @@ class AstroChatAgent:
 Return ONLY the JSON, no markdown, no other text."""
 
         try:
-            response = self.gemini_agent._call_model(
-                self.gemini_agent.flash_model,  # Use Flash for faster extraction
-                prompt,
-                temperature=0.1  # Low temperature for consistent extraction
-            )
-            
-            # Clean response
-            response = response.strip()
-            if response.startswith('```json'):
-                response = response[7:]
-            if response.startswith('```'):
-                response = response[3:]
-            if response.endswith('```'):
-                response = response[:-3]
-            response = response.strip()
-            
-            # Parse JSON
-            extracted_json = json.loads(response)
+            # Use router to call with automatic fallback
+            extracted_json, provider_used = self.router.extract_json(prompt)
+            logger.info(f"Extraction used provider: {provider_used.value}")
             
             # Convert to ExtractedData model
             extracted_data = self._json_to_extracted_data(extracted_json)
             
-            logger.info(f"Extraction successful: confidence={extracted_data.confidence_score}")
+            logger.info(f"Extraction successful: confidence={extracted_data.confidence_score}, provider={provider_used.value}")
             return extracted_data
             
         except Exception as e:
-            logger.error(f"Extraction failed: {str(e)}", exc_info=True)
-            logger.error(f"Raw response: {response if 'response' in locals() else 'No response'}")
+            logger.error(f"Extraction failed with all providers: {str(e)}", exc_info=True)
             # Return empty extraction
             return ExtractedData(
                 confidence_score=0.0,
