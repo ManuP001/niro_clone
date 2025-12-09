@@ -778,8 +778,13 @@ async def send_chat_message(request: ChatRequest):
     with open("/tmp/chat_debug.log", "a") as f:
         f.write(f"Calling VedicAPI with: dob={extracted_data.user.date_of_birth}, tob={extracted_data.user.time_of_birth}, lat={bd.latitude}, lon={bd.longitude}\n")
     
+    # Convert date from YYYY-MM-DD to DD/MM/YYYY for VedicAPI
+    from datetime import datetime
+    dob_obj = datetime.strptime(extracted_data.user.date_of_birth, "%Y-%m-%d")
+    dob_formatted = dob_obj.strftime("%d/%m/%Y")
+    
     api_response = vedic_client.get_planet_details(
-        dob=extracted_data.user.date_of_birth.replace('-', '/'),
+        dob=dob_formatted,
         tob=extracted_data.user.time_of_birth or "12:00",
         lat=bd.latitude or 28.6139,  # Default to Delhi if not available
         lon=bd.longitude or 77.2090,
