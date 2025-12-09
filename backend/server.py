@@ -33,13 +33,23 @@ from chat_models import ChatRequest, ChatResponse, ChatMessage, ChatSession, Cha
 from niro_models import NiroChatRequest, NiroChatResponse
 from niro_agent import NiroChatAgent
 
-# Import the new conversation orchestrator
+# Import the conversation orchestrator (both legacy and enhanced)
 from conversation import (
     ConversationOrchestrator,
+    EnhancedOrchestrator,
+    create_enhanced_orchestrator,
     ChatRequest as OrchestratorChatRequest,
     ChatResponse as OrchestratorChatResponse,
     BirthDetails as OrchestratorBirthDetails,
     InMemorySessionStore
+)
+
+# Import astro_client components for direct access
+from astro_client import (
+    Topic,
+    classify_topic,
+    get_astro_profile,
+    NIRO_SYSTEM_PROMPT
 )
 
 ROOT_DIR = Path(__file__).parent
@@ -66,8 +76,9 @@ indian_city_service = IndianCityService()  # Comprehensive Indian cities databas
 chat_agent = AstroChatAgent()  # Chat-based astrology agent
 niro_agent = NiroChatAgent()  # NIRO chat agent (initialized after dotenv)
 
-# Initialize the conversation orchestrator
-conversation_orchestrator = ConversationOrchestrator()
+# Initialize the conversation orchestrators
+conversation_orchestrator = ConversationOrchestrator()  # Legacy orchestrator
+enhanced_orchestrator = create_enhanced_orchestrator()  # New enhanced orchestrator
 
 # Create the main app without a prefix
 app = FastAPI(title="Astro-Trust Engine API", version="1.0.0")
