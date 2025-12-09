@@ -377,11 +377,338 @@ class ReportGenerationTester:
             self.log_result("Report Generation Flow", False, f"Exception: {str(e)}")
             return False
     
+    def test_niro_chat_basic_message(self):
+        """Test NIRO chat with basic message containing 'career'"""
+        try:
+            payload = {
+                "sessionId": f"test_session_{uuid.uuid4().hex[:8]}",
+                "message": "I want to know about my career prospects"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Chat - Basic Career Message", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify response structure
+            required_fields = ["reply", "mode", "focus", "suggestedActions"]
+            missing_fields = [field for field in required_fields if field not in data]
+            
+            if missing_fields:
+                self.log_result("NIRO Chat - Basic Career Message", False, 
+                              f"Missing fields: {missing_fields}", data)
+                return False
+            
+            # Verify reply structure
+            reply = data.get("reply", {})
+            reply_fields = ["summary", "reasons", "remedies"]
+            missing_reply_fields = [field for field in reply_fields if field not in reply]
+            
+            if missing_reply_fields:
+                self.log_result("NIRO Chat - Basic Career Message", False, 
+                              f"Missing reply fields: {missing_reply_fields}", reply)
+                return False
+            
+            # Verify career focus detection
+            focus = data.get("focus")
+            if focus != "career":
+                self.log_result("NIRO Chat - Basic Career Message", False, 
+                              f"Expected focus 'career', got '{focus}'", data)
+                return False
+            
+            # Verify suggestedActions is a list
+            suggested_actions = data.get("suggestedActions", [])
+            if not isinstance(suggested_actions, list):
+                self.log_result("NIRO Chat - Basic Career Message", False, 
+                              "suggestedActions is not a list", data)
+                return False
+            
+            # Verify each action has id and label
+            for action in suggested_actions:
+                if not isinstance(action, dict) or "id" not in action or "label" not in action:
+                    self.log_result("NIRO Chat - Basic Career Message", False, 
+                                  "Invalid action structure", action)
+                    return False
+            
+            self.log_result("NIRO Chat - Basic Career Message", True, 
+                          f"Career focus detected correctly, {len(suggested_actions)} actions returned")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Chat - Basic Career Message", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_niro_chat_focus_career_action(self):
+        """Test NIRO chat with actionId 'focus_career'"""
+        try:
+            payload = {
+                "sessionId": f"test_session_{uuid.uuid4().hex[:8]}",
+                "message": "Tell me more",
+                "actionId": "focus_career"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Chat - Focus Career Action", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify career focus
+            if data.get("focus") != "career":
+                self.log_result("NIRO Chat - Focus Career Action", False, 
+                              f"Expected focus 'career', got '{data.get('focus')}'", data)
+                return False
+            
+            # Verify mode
+            if data.get("mode") != "FOCUS_READING":
+                self.log_result("NIRO Chat - Focus Career Action", False, 
+                              f"Expected mode 'FOCUS_READING', got '{data.get('mode')}'", data)
+                return False
+            
+            # Verify reply content exists
+            reply = data.get("reply", {})
+            if not reply.get("summary") or not reply.get("reasons"):
+                self.log_result("NIRO Chat - Focus Career Action", False, 
+                              "Missing summary or reasons in reply", reply)
+                return False
+            
+            self.log_result("NIRO Chat - Focus Career Action", True, 
+                          "Career-focused response generated correctly")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Chat - Focus Career Action", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_niro_chat_focus_relationship_action(self):
+        """Test NIRO chat with actionId 'focus_relationship'"""
+        try:
+            payload = {
+                "sessionId": f"test_session_{uuid.uuid4().hex[:8]}",
+                "message": "Tell me about relationships",
+                "actionId": "focus_relationship"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Chat - Focus Relationship Action", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify relationship focus
+            if data.get("focus") != "relationship":
+                self.log_result("NIRO Chat - Focus Relationship Action", False, 
+                              f"Expected focus 'relationship', got '{data.get('focus')}'", data)
+                return False
+            
+            # Verify mode
+            if data.get("mode") != "FOCUS_READING":
+                self.log_result("NIRO Chat - Focus Relationship Action", False, 
+                              f"Expected mode 'FOCUS_READING', got '{data.get('mode')}'", data)
+                return False
+            
+            self.log_result("NIRO Chat - Focus Relationship Action", True, 
+                          "Relationship-focused response generated correctly")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Chat - Focus Relationship Action", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_niro_chat_daily_guidance_action(self):
+        """Test NIRO chat with actionId 'daily_guidance'"""
+        try:
+            payload = {
+                "sessionId": f"test_session_{uuid.uuid4().hex[:8]}",
+                "message": "What's my daily guidance?",
+                "actionId": "daily_guidance"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Chat - Daily Guidance Action", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify mode
+            if data.get("mode") != "DAILY_GUIDANCE":
+                self.log_result("NIRO Chat - Daily Guidance Action", False, 
+                              f"Expected mode 'DAILY_GUIDANCE', got '{data.get('mode')}'", data)
+                return False
+            
+            # Focus should be None for daily guidance
+            if data.get("focus") is not None:
+                self.log_result("NIRO Chat - Daily Guidance Action", False, 
+                              f"Expected focus None, got '{data.get('focus')}'", data)
+                return False
+            
+            self.log_result("NIRO Chat - Daily Guidance Action", True, 
+                          "Daily guidance response generated correctly")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Chat - Daily Guidance Action", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_niro_chat_suggested_actions_populated(self):
+        """Test that NIRO chat returns populated suggestedActions array"""
+        try:
+            payload = {
+                "sessionId": f"test_session_{uuid.uuid4().hex[:8]}",
+                "message": "Hello NIRO"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Chat - Suggested Actions", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify suggestedActions exists and is populated
+            suggested_actions = data.get("suggestedActions", [])
+            
+            if not isinstance(suggested_actions, list):
+                self.log_result("NIRO Chat - Suggested Actions", False, 
+                              "suggestedActions is not a list", data)
+                return False
+            
+            if len(suggested_actions) == 0:
+                self.log_result("NIRO Chat - Suggested Actions", False, 
+                              "suggestedActions array is empty", data)
+                return False
+            
+            # Verify each action has required fields
+            for i, action in enumerate(suggested_actions):
+                if not isinstance(action, dict):
+                    self.log_result("NIRO Chat - Suggested Actions", False, 
+                                  f"Action {i} is not a dict", action)
+                    return False
+                
+                if "id" not in action or "label" not in action:
+                    self.log_result("NIRO Chat - Suggested Actions", False, 
+                                  f"Action {i} missing id or label", action)
+                    return False
+                
+                if not action["id"] or not action["label"]:
+                    self.log_result("NIRO Chat - Suggested Actions", False, 
+                                  f"Action {i} has empty id or label", action)
+                    return False
+            
+            self.log_result("NIRO Chat - Suggested Actions", True, 
+                          f"Found {len(suggested_actions)} valid suggested actions")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Chat - Suggested Actions", False, f"Exception: {str(e)}")
+            return False
+    
+    def test_niro_chat_response_schema(self):
+        """Test that NIRO chat response matches expected schema"""
+        try:
+            payload = {
+                "sessionId": f"test_session_{uuid.uuid4().hex[:8]}",
+                "message": "Test message for schema validation"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Chat - Response Schema", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Expected schema validation
+            expected_structure = {
+                "reply": {
+                    "summary": str,
+                    "reasons": list,
+                    "remedies": list
+                },
+                "mode": str,
+                "focus": (str, type(None)),  # Can be string or null
+                "suggestedActions": list
+            }
+            
+            # Validate top-level structure
+            for field, expected_type in expected_structure.items():
+                if field not in data:
+                    self.log_result("NIRO Chat - Response Schema", False, 
+                                  f"Missing field: {field}", data)
+                    return False
+                
+                if field == "focus":
+                    # Focus can be string or None
+                    if data[field] is not None and not isinstance(data[field], str):
+                        self.log_result("NIRO Chat - Response Schema", False, 
+                                      f"Field {field} should be string or null", data[field])
+                        return False
+                elif isinstance(expected_type, dict):
+                    # Nested object validation
+                    if not isinstance(data[field], dict):
+                        self.log_result("NIRO Chat - Response Schema", False, 
+                                      f"Field {field} should be object", data[field])
+                        return False
+                    
+                    # Validate nested fields
+                    for nested_field, nested_type in expected_type.items():
+                        if nested_field not in data[field]:
+                            self.log_result("NIRO Chat - Response Schema", False, 
+                                          f"Missing nested field: {field}.{nested_field}", data[field])
+                            return False
+                        
+                        if not isinstance(data[field][nested_field], nested_type):
+                            self.log_result("NIRO Chat - Response Schema", False, 
+                                          f"Field {field}.{nested_field} wrong type", data[field][nested_field])
+                            return False
+                else:
+                    if not isinstance(data[field], expected_type):
+                        self.log_result("NIRO Chat - Response Schema", False, 
+                                      f"Field {field} wrong type", data[field])
+                        return False
+            
+            # Validate suggestedActions structure
+            for action in data["suggestedActions"]:
+                if not isinstance(action, dict) or "id" not in action or "label" not in action:
+                    self.log_result("NIRO Chat - Response Schema", False, 
+                                  "Invalid suggestedAction structure", action)
+                    return False
+                
+                if not isinstance(action["id"], str) or not isinstance(action["label"], str):
+                    self.log_result("NIRO Chat - Response Schema", False, 
+                                  "suggestedAction id/label not strings", action)
+                    return False
+            
+            self.log_result("NIRO Chat - Response Schema", True, 
+                          "Response schema validation passed")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Chat - Response Schema", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
-        """Run all report generation tests"""
+        """Run all backend tests including NIRO chat"""
         print("=" * 60)
-        print("TESTING REPORT GENERATION FUNCTIONALITY")
-        print("Ensuring no regression from Chat feature implementation")
+        print("TESTING BACKEND FUNCTIONALITY")
+        print("Report Generation + NIRO Chat API Testing")
         print("=" * 60)
         
         tests = [
@@ -389,7 +716,13 @@ class ReportGenerationTester:
             ("Health Check", self.test_health_check),
             ("City Search", self.test_city_search),
             ("Time Parser", self.test_time_parser),
-            ("Report Generation Flow", self.test_report_generation_flow)
+            ("Report Generation Flow", self.test_report_generation_flow),
+            ("NIRO Chat - Basic Career Message", self.test_niro_chat_basic_message),
+            ("NIRO Chat - Focus Career Action", self.test_niro_chat_focus_career_action),
+            ("NIRO Chat - Focus Relationship Action", self.test_niro_chat_focus_relationship_action),
+            ("NIRO Chat - Daily Guidance Action", self.test_niro_chat_daily_guidance_action),
+            ("NIRO Chat - Suggested Actions", self.test_niro_chat_suggested_actions_populated),
+            ("NIRO Chat - Response Schema", self.test_niro_chat_response_schema)
         ]
         
         passed = 0
