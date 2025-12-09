@@ -334,7 +334,3 @@ Keep the response concise but meaningful."""
             focus=focus,
             suggestedActions=suggested_actions
         )
-
-
-# Singleton instance
-niro_agent = NiroChatAgent()
