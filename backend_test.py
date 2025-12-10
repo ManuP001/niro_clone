@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://niro-astrobot.preview.emergentagent.com/api"
+BACKEND_URL = "https://cosmic-niro.preview.emergentagent.com/api"
 
 class ReportGenerationTester:
     def __init__(self):
