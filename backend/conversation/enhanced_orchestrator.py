@@ -35,6 +35,7 @@ from astro_client import (
     get_astro_profile,
     save_astro_profile,
     get_astro_transits,
+    get_or_refresh_transits,
     save_astro_transits,
     classify_topic,
     Topic,
