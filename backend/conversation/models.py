@@ -81,7 +81,10 @@ class ChatResponse(BaseModel):
     mode: str
     focus: Optional[str]
     suggestedActions: List[SuggestedAction]
-    _pipeline_metadata: Optional[Dict[str, Any]] = Field(default=None, exclude=True, description="Internal metadata for logging")
+    
+    class Config:
+        # Allow arbitrary types for internal metadata
+        arbitrary_types_allowed = True
 
 
 class AstroFeatures(BaseModel):
