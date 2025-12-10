@@ -39,48 +39,43 @@ const ChatPage = () => {
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
-    const userMessage = {
+    const userMsg = {
       role: 'user',
       content: inputMessage,
       timestamp: new Date().toISOString()
     };
-
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMsg]);
     setInputMessage('');
     setIsLoading(true);
 
+    let currentSessionId = sessionId;
+    if (!currentSessionId) {
+      currentSessionId = `session-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      setSessionId(currentSessionId);
+    }
+
     try {
-      const response = await axios.post(`${API}/chat/message`, {
-        session_id: sessionId,
-        message: inputMessage
+      const response = await axios.post(`${API}/chat`, {
+        sessionId: currentSessionId,
+        message: userMsg.content,
+        actionId: null
       });
 
-      // Set session ID if new
-      if (!sessionId) {
-        setSessionId(response.data.session_id);
-      }
+      const reply = response.data?.reply || {};
 
-      // Add assistant response
-      const assistantMessage = {
+      const assistantMsg = {
         role: 'assistant',
-        content: response.data.message,
+        content: reply.rawText || '',
         timestamp: new Date().toISOString(),
-        confidence_metadata: response.data.confidence_metadata,
-        extracted_data: response.data.extracted_data
+        niroSummary: reply.summary,
+        niroReasons: reply.reasons,
+        niroRemedies: reply.remedies
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
-
-    } catch (error) {
-      console.error('Chat error:', error);
-      toast.error('Failed to send message');
-      
-      const errorMessage = {
-        role: 'assistant',
-        content: 'I apologize, but I encountered an error. Please try again.',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => [...prev, assistantMsg]);
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
