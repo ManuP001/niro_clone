@@ -67,6 +67,7 @@ class EnhancedOrchestrator:
     ):
         self.session_store = session_store or InMemorySessionStore()
         self.mode_router = mode_router or ModeRouter()
+        self.birth_extractor = HybridBirthDetailsExtractor()
         
         logger.info("EnhancedOrchestrator initialized")
     
