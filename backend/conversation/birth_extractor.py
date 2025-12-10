@@ -31,15 +31,15 @@ class HybridBirthDetailsExtractor:
         # Step 1: Try regex
         regex_result = self._extract_rule_based(text)
         
+        # If regex finds ALL 3 fields (DOB, TOB, location), return immediately without LLM
         if regex_result:
-            confidence = regex_result.get('confidence', 0.0)
             dob = regex_result.get('dob')
             tob = regex_result.get('tob')
             location = regex_result.get('location')
             
-            # If confidence >= 0.9 and all fields exist, return immediately
-            if confidence >= 0.9 and dob and tob and location:
-                logger.info(f"Regex extraction successful (confidence={confidence:.2f})")
+            if dob and tob and location:
+                confidence = regex_result.get('confidence', 0.0)
+                logger.info(f"✅ Regex extracted all fields (confidence={confidence:.2f}) - skipping LLM")
                 return ConvBirthDetails(
                     dob=dob,
                     tob=tob,
@@ -47,25 +47,14 @@ class HybridBirthDetailsExtractor:
                     timezone=regex_result.get('timezone', 5.5)
                 )
         
-        # Step 2: LLM fallback (only if OpenAI key exists and fields missing)
+        # Step 2: LLM fallback (only if OpenAI key exists and any field is missing)
         if self.openai_key:
-            if not regex_result or not (regex_result.get('dob') and regex_result.get('tob') and regex_result.get('location')):
-                logger.info("Attempting LLM extraction fallback")
-                llm_result = self._extract_with_llm(text)
-                if llm_result:
-                    return llm_result
+            logger.info("⚠️ Regex incomplete - attempting LLM extraction fallback")
+            llm_result = self._extract_with_llm(text)
+            if llm_result:
+                return llm_result
         
-        # Step 3: Return best-effort regex or None
-        if regex_result and regex_result.get('dob') and regex_result.get('tob') and regex_result.get('location'):
-            logger.info(f"Returning regex result with confidence={regex_result.get('confidence', 0.0):.2f}")
-            return ConvBirthDetails(
-                dob=regex_result['dob'],
-                tob=regex_result['tob'],
-                location=regex_result['location'],
-                timezone=regex_result.get('timezone', 5.5)
-            )
-        
-        logger.info("Birth details extraction failed")
+        logger.info("❌ Birth details extraction failed")
         return None
     
     def _extract_rule_based(self, text: str) -> Optional[Dict[str, Any]]:
