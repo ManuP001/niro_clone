@@ -145,12 +145,8 @@ class EnhancedOrchestrator:
                     profile = await vedic_api_client.fetch_full_profile(astro_birth, user_id)
                     await save_astro_profile(profile)
                 
-                # Get or fetch transits
-                transits = await get_astro_transits(user_id, now.date())
-                if not transits:
-                    logger.info(f"Fetching new transits for {user_id}")
-                    transits = await vedic_api_client.fetch_transits(astro_birth, now.date(), user_id)
-                    await save_astro_transits(transits)
+                # Get or refresh transits (automatically fetches if stale or missing)
+                transits = await get_or_refresh_transits(user_id, astro_birth, now)
                 
                 # Step 5: Build topic-specific astro_features
                 astro_features = build_astro_features(
