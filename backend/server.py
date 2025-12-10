@@ -934,7 +934,7 @@ async def niro_chat(request: OrchestratorChatRequest):
         # ============= STRUCTURED LOGGING =============
         # Log the full pipeline for observability
         if hasattr(response, '_pipeline_metadata') and response._pipeline_metadata:
-            from logging.niro_logger import (
+            from niro_logging.niro_logger import (
                 log_pipeline_event,
                 summarize_astro_profile,
                 summarize_astro_transits,
