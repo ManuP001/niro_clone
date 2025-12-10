@@ -73,6 +73,7 @@ class ChatRequest(BaseModel):
     sessionId: str = Field(..., description="Session identifier")
     message: str = Field(..., description="User message")
     actionId: Optional[str] = Field(None, description="Action ID from chip click")
+    subjectData: Optional[Dict[str, Any]] = None
 
 
 class ChatResponse(BaseModel):
