@@ -48,8 +48,7 @@ from conversation import (
 from astro_client import (
     Topic,
     classify_topic,
-    get_astro_profile,
-    NIRO_SYSTEM_PROMPT
+    get_astro_profile
 )
 
 ROOT_DIR = Path(__file__).parent
