@@ -1,5 +1,4 @@
-"""
-Enhanced Conversation Orchestrator for NIRO
+"""Enhanced Conversation Orchestrator for NIRO
 
 Integrates:
 - Session state management
@@ -13,6 +12,7 @@ from typing import Dict, Any, List, Optional
 from datetime import datetime, date
 import logging
 import re
+import json
 
 from .models import (
     ConversationState,
@@ -89,6 +89,13 @@ class EnhancedOrchestrator:
         state = self.session_store.get_or_create(request.sessionId)
         state.message_count += 1
         
+        logger.info(
+            "PIPELINE_START: session=%s msg=%r message_count=%s",
+            request.sessionId,
+            request.message,
+            state.message_count
+        )
+        
         # Handle birth details from subjectData or message
         if request.subjectData and request.subjectData.get('birthDetails'):
             bd = request.subjectData['birthDetails']
@@ -144,9 +151,11 @@ class EnhancedOrchestrator:
                     logger.info(f"Fetching new astro profile for {user_id}")
                     profile = await vedic_api_client.fetch_full_profile(astro_birth, user_id)
                     await save_astro_profile(profile)
+                    logger.debug("RAW_ASTRO_PROFILE: %s", profile.model_dump_json()[:5000])
                 
                 # Get or refresh transits (automatically fetches if stale or missing)
                 transits = await get_or_refresh_transits(user_id, astro_birth, now)
+                logger.debug("RAW_ASTRO_TRANSITS: %s", transits.model_dump_json()[:5000])
                 
                 # Step 5: Build topic-specific astro_features
                 astro_features = build_astro_features(
@@ -155,6 +164,11 @@ class EnhancedOrchestrator:
                     mode=mode,
                     topic=topic,
                     now=now
+                )
+                
+                logger.debug(
+                    "ASTRO_FEATURES_SNAPSHOT: %s",
+                    json.dumps(astro_features, default=str)[:5000]
                 )
                 
                 logger.info(f"Built astro_features with {len(astro_features.get('focus_factors', []))} focus factors")
@@ -196,6 +210,14 @@ class EnhancedOrchestrator:
             mode=mode,
             focus=topic,
             suggestedActions=suggested_actions
+        )
+        
+        logger.info(
+            "PIPELINE_END: session=%s final_mode=%s final_focus=%s feature_keys=%s",
+            request.sessionId,
+            mode,
+            topic,
+            list(astro_features.keys()) if astro_features else None
         )
         
         logger.info(f"Response generated: mode={mode}, topic={topic}")

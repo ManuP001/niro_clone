@@ -1,150 +1,118 @@
-"""
-NIRO LLM Module
-
-AI-powered response generation for NIRO Vedic Astrology chat.
-Uses structured astro_features and answers user questions directly.
-"""
+"""NIRO LLM Module with OpenAI and Gemini support"""
 
 import os
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 logger = logging.getLogger(__name__)
 
-NIRO_SYSTEM_PROMPT = '''You are NIRO — a concise, insightful Vedic astrologer.
-
-Your purpose:
-1. Answer ONLY the user's question directly and concisely
-2. Use ONLY the astro_features provided as your astrological data source
-3. If data is missing or inconclusive, state uncertainty instead of guessing
-4. Never generate full reports unless explicitly asked
-5. Use the topic/focus to scope your answer appropriately
-
-MANDATORY RESPONSE STRUCTURE:
-
-SUMMARY:
-[2-3 concise lines directly answering the user's question]
-
-REASONS:
-- [Chart Factor] → [Effect] → [Interpretation]
-- [Chart Factor] → [Effect] → [Interpretation]
-(2-4 bullets maximum, using ONLY provided astro_features)
-
-REMEDIES:
-(Only include if chart shows clear challenge)
-- [Simple remedy 1]
-- [Simple remedy 2]
-
-RULES:
-- Use possibility language: "This phase tends to...", "You may experience..."
-- Never claim certainty: avoid "This will happen"
-- Stay warm, grounded, conversational
-- Be extremely concise
-- Focus on clarity and self-awareness'''
-
 
 class NiroLLMModule:
-    """NIRO LLM Module for generating astrological interpretations."""
+    """
+    NIRO LLM with OpenAI primary and Gemini fallback.
+    Lazy initialization to ensure env vars are loaded.
+    """
     
     def __init__(self):
-        self.gemini_key = os.environ.get('GEMINI_API_KEY')
         self.openai_key = os.environ.get('OPENAI_API_KEY')
-        self.use_real_llm = bool(self.gemini_key or self.openai_key)
-        self.system_prompt = NIRO_SYSTEM_PROMPT
+        self.gemini_key = os.environ.get('GEMINI_API_KEY')
+        self.system_prompt = self._build_system_prompt()
         
-        logger.info(f"NiroLLMModule initialized (real_llm={self.use_real_llm})")
+        logger.info(f"NiroLLMModule initialized (real_llm={bool(self.openai_key or self.gemini_key)})")
     
-    def call_niro_llm(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Generate NIRO response from the payload.
+    def generate_response(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate a response using OpenAI or Gemini"""
+        mode = payload.get('mode', 'FOCUS_READING')
+        topic = payload.get('topic', 'general')
+        astro_features = payload.get('astro_features', {})
         
-        Args:
-            payload: Dict with mode, topic, user_question, astro_features
-                
-        Returns:
-            Dict with rawText, summary, reasons, remedies
-        """
-        mode = payload.get('mode', 'GENERAL_GUIDANCE')
+        has_features = bool(astro_features and astro_features.get('focus_factors'))
+        logger.info(f"Generating NIRO response: mode={mode}, topic={topic}, has_features={has_features}")
+        
+        user_prompt = self._build_user_prompt(payload)
+        return self._call_real_llm(user_prompt)
+    
+    def _build_system_prompt(self) -> str:
+        """Build the system prompt for NIRO"""
+        return """You are NIRO, an AI Vedic astrologer who provides accurate, compassionate insights.
+
+Your responses MUST be structured as:
+
+SUMMARY:
+[One paragraph summarizing the reading]
+
+REASONS:
+- [Factor 1] → [Interpretation] → [Impact on user]
+- [Factor 2] → [Interpretation] → [Impact on user]
+
+REMEDIES:
+- [Actionable remedy 1]
+- [Actionable remedy 2]
+
+Rules:
+1. Use the astro_features provided
+2. If no features, acknowledge missing data
+3. Be specific about planetary positions and dashas
+4. Keep it conversational yet professional
+5. Format using the arrow notation (→) for reasoning
+"""
+    
+    def _build_user_prompt(self, payload: Dict[str, Any]) -> str:
+        """Build the user prompt from payload"""
+        mode = payload.get('mode', 'FOCUS_READING')
         topic = payload.get('topic', 'general')
         user_question = payload.get('user_question', '')
         astro_features = payload.get('astro_features', {})
         
-        logger.info(f"Generating NIRO response: mode={mode}, topic={topic}, has_features={bool(astro_features)}")
+        focus_factors = astro_features.get('focus_factors', [])
+        chart_context = astro_features.get('chart_context', {})
+        timing_windows = astro_features.get('timing_windows', [])
         
-        # Build user prompt
-        user_prompt = self._build_user_prompt(mode, topic, user_question, astro_features)
+        # Build prompt
+        prompt = f"""MODE: {mode}
+TOPIC: {topic}
+USER QUESTION: {user_question}
+
+"""
         
-        # Try real LLM
-        if self.use_real_llm:
-            try:
-                return self._call_real_llm(user_prompt)
-            except Exception as e:
-                logger.warning(f"Real LLM failed: {e}")
+        if focus_factors:
+            prompt += "ASTROLOGICAL FACTORS:\n"
+            for factor in focus_factors:
+                rule_id = factor.get('rule_id', 'Unknown')
+                interpretation = factor.get('interpretation', 'No interpretation')
+                strength = factor.get('strength', 0)
+                prompt += f"- {rule_id} (strength: {strength}): {interpretation}\n"
+            prompt += "\n"
         
-        # Fallback stub
-        return self._generate_stub_response(mode, topic, user_question, astro_features)
-    
-    def _build_user_prompt(self, mode: str, topic: str, user_question: str, astro_features: Dict[str, Any]) -> str:
-        """Build the user prompt with all context for LLM."""
+        if chart_context:
+            prompt += "CHART CONTEXT:\n"
+            for key, value in chart_context.items():
+                prompt += f"- {key}: {value}\n"
+            prompt += "\n"
         
-        # Format focus factors
-        factors_str = ""
-        for factor in astro_features.get('focus_factors', [])[:8]:
-            if factor.get('type') == 'house':
-                factors_str += f"\n  - House {factor.get('house')}: {factor.get('sign')} sign, Lord {factor.get('lord')}"
-            elif factor.get('type') == 'planet':
-                factors_str += f"\n  - {factor.get('planet')}: {factor.get('sign')} ({factor.get('house')}th house), {factor.get('dignity')}"
+        if timing_windows:
+            prompt += "TIMING WINDOWS:\n"
+            for window in timing_windows:
+                prompt += f"- {window.get('window_type', 'Unknown')}: {window.get('description', '')}\n"
+            prompt += "\n"
         
-        # Format key rules
-        rules_str = ""
-        for rule in astro_features.get('key_rules', [])[:5]:
-            rules_str += f"\n  - {rule.get('meaning')}"
+        if not focus_factors and not chart_context:
+            prompt += "NOTE: Astrological data is missing or incomplete. Provide a response acknowledging this.\n"
         
-        # Format transits
-        transits_str = ""
-        for transit in astro_features.get('transits', [])[:5]:
-            transits_str += f"\n  - {transit.get('planet')} {transit.get('event_type')} affecting {transit.get('affected_house')}th house"
-        
-        prompt = f'''CONTEXT:
-Mode: {mode}
-Topic: {topic}
-
-USER QUESTION:
-{user_question}
-
-ASTRO DATA:
-
-Core Chart:
-- Ascendant: {astro_features.get('ascendant', 'N/A')}
-- Moon Sign: {astro_features.get('moon_sign', 'N/A')}
-- Sun Sign: {astro_features.get('sun_sign', 'N/A')}
-
-Current Dasha:
-- Mahadasha: {astro_features.get('mahadasha', {}).get('planet', 'N/A')}
-- Antardasha: {astro_features.get('antardasha', {}).get('planet', 'N/A')}
-
-Topic-Specific Factors:{factors_str}
-
-Key Rules:{rules_str}
-
-Recent Transits:{transits_str}
-
-INSTRUCTIONS:
-- Answer ONLY the user_question above
-- Use ONLY the astro data provided
-- Follow the 3-part structure: SUMMARY, REASONS, REMEDIES
-- Be concise and direct'''
+        logger.debug("LLM_USER_PROMPT: %s", prompt[:5000])
         
         return prompt
     
     def _call_real_llm(self, user_prompt: str) -> Dict[str, Any]:
-        """OpenAI primary, Gemini fallback."""
+        """Call OpenAI or Gemini"""
+        logger.debug("LLM_SYSTEM_PROMPT: %s", self.system_prompt[:2000])
         
-        # OpenAI first
+        # Try OpenAI first
         if self.openai_key:
             try:
                 from openai import OpenAI
                 client = OpenAI(api_key=self.openai_key)
+                
                 response = client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
@@ -154,124 +122,85 @@ INSTRUCTIONS:
                     temperature=0.7,
                     max_tokens=800
                 )
-                return self._parse_llm_response(response.choices[0].message.content)
+                
+                content = response.choices[0].message.content
+                return self._parse_structured_response(content)
+                
             except Exception as e:
-                logger.warning(f"OpenAI failed: {e}")
-
-        # Gemini fallback
+                logger.error(f"OpenAI call failed: {e}")
+        
+        # Fallback to Gemini
         if self.gemini_key:
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=self.gemini_key)
-                model = genai.GenerativeModel('gemini-2.0-flash')
+                model = genai.GenerativeModel('gemini-2.0-flash-exp')
+                
                 full_prompt = f"{self.system_prompt}\n\n{user_prompt}"
                 response = model.generate_content(full_prompt)
-                return self._parse_llm_response(response.text)
+                
+                return self._parse_structured_response(response.text)
+                
             except Exception as e:
-                logger.warning(f"Gemini failed: {e}")
-
-        raise Exception("No LLM available")
+                logger.error(f"Gemini call failed: {e}")
+        
+        # Fallback response
+        return {
+            'rawText': 'Unable to generate response. Please check API configuration.',
+            'summary': 'Service unavailable',
+            'reasons': [],
+            'remedies': []
+        }
     
-    def _parse_llm_response(self, response_text: str) -> Dict[str, Any]:
-        """Parse LLM response into structured format."""
-        summary = ""
+    def _parse_structured_response(self, content: str) -> Dict[str, Any]:
+        """Parse the structured LLM response"""
+        lines = content.strip().split('\n')
+        
+        summary = ''
         reasons = []
         remedies = []
         
         current_section = None
-        lines = response_text.strip().split('\n')
         
         for line in lines:
             line = line.strip()
-            if not line:
-                continue
             
-            lower_line = line.lower()
-            
-            if 'summary' in lower_line and ':' in line:
+            if line.startswith('SUMMARY:'):
                 current_section = 'summary'
-                after = line.split(':', 1)[1].strip()
-                if after:
-                    summary = after
-                continue
-            elif 'reason' in lower_line and ':' in line:
+                summary_text = line.replace('SUMMARY:', '').strip()
+                if summary_text:
+                    summary = summary_text
+            elif line.startswith('REASONS:'):
                 current_section = 'reasons'
-                continue
-            elif 'remed' in lower_line and ':' in line:
+            elif line.startswith('REMEDIES:'):
                 current_section = 'remedies'
-                continue
-            
-            if current_section == 'summary':
-                summary = summary + ' ' + line if summary else line
-            elif current_section == 'reasons':
-                clean = line.lstrip('- •*0123456789.)').strip()
-                if clean and len(clean) > 10:
-                    reasons.append(clean)
-            elif current_section == 'remedies':
-                clean = line.lstrip('- •*0123456789.)').strip()
-                if clean and len(clean) > 10:
-                    remedies.append(clean)
-            elif not current_section and line:
-                summary = summary + ' ' + line if summary else line
-        
-        if not summary:
-            summary = response_text[:300]
-        
-        if not reasons:
-            reasons = ["Based on your chart analysis"]
+            elif line.startswith('-') and current_section == 'reasons':
+                reasons.append(line[1:].strip())
+            elif line.startswith('-') and current_section == 'remedies':
+                remedies.append(line[1:].strip())
+            elif current_section == 'summary' and line:
+                summary += ' ' + line
         
         return {
-            'rawText': response_text,
+            'rawText': content,
             'summary': summary.strip(),
-            'reasons': reasons[:4],
-            'remedies': remedies[:2]
-        }
-    
-    def _generate_stub_response(self, mode: str, topic: str, user_question: str, astro_features: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate stub response when real LLM not available."""
-        logger.warning("Using STUB LLM response")
-        
-        ascendant = astro_features.get('ascendant', 'Aries')
-        moon_sign = astro_features.get('moon_sign', 'Cancer')
-        mahadasha = astro_features.get('mahadasha', {}).get('planet', 'Jupiter')
-        
-        if mode == 'BIRTH_COLLECTION':
-            return {
-                'rawText': 'I need your birth details to provide personalized insights.',
-                'summary': 'To give you accurate astrological guidance, I need your birth details — date, time, and place of birth.',
-                'reasons': [
-                    'Ascendant calculated from birth time → Foundation of your chart',
-                    'Planetary positions from birth date → Shape your life themes'
-                ],
-                'remedies': []
-            }
-        
-        summary = f"With {ascendant} Ascendant and {moon_sign} Moon, your {topic} area is influenced by {mahadasha} Mahadasha."
-        
-        return {
-            'rawText': f"SUMMARY:\n{summary}\n\nREASONS:\n- {ascendant} Ascendant shapes your approach to {topic}\n- {moon_sign} Moon influences emotional patterns\n- Current {mahadasha} period brings specific themes",
-            'summary': summary,
-            'reasons': [
-                f"{ascendant} Ascendant → Your natural approach → Shapes how you handle {topic}",
-                f"{moon_sign} Moon → Emotional foundation → Influences your {topic} decisions",
-                f"{mahadasha} Mahadasha → Current life phase → Brings focus to certain areas"
-            ],
-            'remedies': []
+            'reasons': reasons,
+            'remedies': remedies
         }
 
 
-# Singleton instance - lazy initialization
-class _NiroLLMSingleton:
-    _instance = None
-    
-    def __call__(self):
-        if self._instance is None:
-            self._instance = NiroLLMModule()
-        return self._instance
+# Lazy-initialized singleton
+_niro_llm = None
 
-_get_niro_llm = _NiroLLMSingleton()
+def get_niro_llm() -> NiroLLMModule:
+    """Get or create the NIRO LLM instance"""
+    global _niro_llm
+    if _niro_llm is None:
+        _niro_llm = NiroLLMModule()
+    return _niro_llm
 
 
 def call_niro_llm(payload: Dict[str, Any]) -> Dict[str, Any]:
-    """Convenience function to call NIRO LLM"""
-    return _get_niro_llm().call_niro_llm(payload)
+    """Main entry point for calling NIRO LLM"""
+    llm = get_niro_llm()
+    return llm.generate_response(payload)

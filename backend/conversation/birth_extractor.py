@@ -1,5 +1,4 @@
-"""
-Hybrid Birth Details Extractor
+"""Hybrid Birth Details Extractor
 Credit-optimized: Regex first, LLM fallback only if needed
 """
 
@@ -30,6 +29,7 @@ class HybridBirthDetailsExtractor:
         """
         # Step 1: Try regex
         regex_result = self._extract_rule_based(text)
+        logger.debug("BIRTH_EXTRACTION_REGEX_RESULT: %s", regex_result or "None")
         
         # If regex finds ALL 3 fields (DOB, TOB, location), return immediately without LLM
         if regex_result:
@@ -51,6 +51,7 @@ class HybridBirthDetailsExtractor:
         if self.openai_key:
             logger.info("⚠️ Regex incomplete - attempting LLM extraction fallback")
             llm_result = self._extract_with_llm(text)
+            logger.debug("BIRTH_EXTRACTION_LLM_RESULT: %s", llm_result or "None")
             if llm_result:
                 return llm_result
         
