@@ -138,37 +138,38 @@ INSTRUCTIONS:
         return prompt
     
     def _call_real_llm(self, user_prompt: str) -> Dict[str, Any]:
-        """Call actual LLM (Gemini or OpenAI)"""
+        """OpenAI primary, Gemini fallback."""
         
-        # Try Gemini first
+        # OpenAI first
+        if self.openai_key:
+            try:
+                from openai import OpenAI
+                client = OpenAI(api_key=self.openai_key)
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": self.system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    temperature=0.7,
+                    max_tokens=800
+                )
+                return self._parse_llm_response(response.choices[0].message.content)
+            except Exception as e:
+                logger.warning(f"OpenAI failed: {e}")
+
+        # Gemini fallback
         if self.gemini_key:
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=self.gemini_key)
                 model = genai.GenerativeModel('gemini-2.0-flash')
-                
                 full_prompt = f"{self.system_prompt}\n\n{user_prompt}"
                 response = model.generate_content(full_prompt)
                 return self._parse_llm_response(response.text)
             except Exception as e:
                 logger.warning(f"Gemini failed: {e}")
-        
-        # OpenAI fallback
-        if self.openai_key:
-            from openai import OpenAI
-            client = OpenAI(api_key=self.openai_key)
-            
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.7,
-                max_tokens=800
-            )
-            return self._parse_llm_response(response.choices[0].message.content)
-        
+
         raise Exception("No LLM available")
     
     def _parse_llm_response(self, response_text: str) -> Dict[str, Any]:
