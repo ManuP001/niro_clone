@@ -223,7 +223,8 @@ class EnhancedOrchestrator:
         )
         
         # Attach pipeline metadata for logging (not serialized to API response)
-        response._pipeline_metadata = {
+        # Use object.__setattr__ to bypass Pydantic validation
+        object.__setattr__(response, '_pipeline_metadata', {
             "topic_classification": {
                 "source": topic_classification.source if topic_classification else "unknown",
                 "topic": topic,
@@ -236,7 +237,7 @@ class EnhancedOrchestrator:
             "astro_features": astro_features,
             "llm_payload": payload,
             "llm_response": llm_response
-        }
+        })
         
         logger.info(f"Response generated: mode={mode}, topic={topic}")
         return response
