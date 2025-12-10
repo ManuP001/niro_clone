@@ -222,6 +222,22 @@ class EnhancedOrchestrator:
             suggestedActions=suggested_actions
         )
         
+        # Attach pipeline metadata for logging (not serialized to API response)
+        response._pipeline_metadata = {
+            "topic_classification": {
+                "source": topic_classification.source if topic_classification else "unknown",
+                "topic": topic,
+                "secondary_topics": topic_classification.secondary_topics if topic_classification else [],
+                "confidence": topic_classification.confidence if topic_classification else 0.0,
+                "needs_clarification": topic_classification.needs_clarification if topic_classification else False
+            },
+            "astro_profile": profile,
+            "astro_transits": transits,
+            "astro_features": astro_features,
+            "llm_payload": payload,
+            "llm_response": llm_response
+        }
+        
         logger.info(f"Response generated: mode={mode}, topic={topic}")
         return response
     
