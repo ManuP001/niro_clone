@@ -38,7 +38,7 @@ from .topics import (
     get_chart_levers
 )
 from .interpreter import build_astro_features
-from .niro_llm import NiroLLMModule, call_niro_llm, NIRO_SYSTEM_PROMPT
+from .niro_llm import NiroLLMModule, call_niro_llm
 
 __all__ = [
     # Models
