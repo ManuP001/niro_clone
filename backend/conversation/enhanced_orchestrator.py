@@ -220,66 +220,8 @@ class EnhancedOrchestrator:
         )
     
     def _extract_birth_details(self, message: str) -> Optional[ConvBirthDetails]:
-        """Try to extract birth details from a message."""
-        date_patterns = [
-            r'(\d{1,2})[/-](\d{1,2})[/-](\d{4})',
-            r'(\d{4})[/-](\d{1,2})[/-](\d{1,2})',
-        ]
-        
-        time_patterns = [
-            r'(\d{1,2}):(\d{2})\s*(am|pm)?',
-            r'(\d{1,2})\s*(am|pm)',
-        ]
-        
-        location_patterns = [
-            r'(?:born in|from|at|in)\s+([A-Z][a-zA-Z]+(?:[\s,]+[A-Z][a-zA-Z]+)*)',
-        ]
-        
-        dob = None
-        tob = None
-        location = None
-        
-        for pattern in date_patterns:
-            match = re.search(pattern, message, re.IGNORECASE)
-            if match:
-                groups = match.groups()
-                if len(groups[0]) == 4:
-                    dob = f"{groups[0]}-{groups[1].zfill(2)}-{groups[2].zfill(2)}"
-                else:
-                    dob = f"{groups[2]}-{groups[1].zfill(2)}-{groups[0].zfill(2)}"
-                break
-        
-        for pattern in time_patterns:
-            match = re.search(pattern, message, re.IGNORECASE)
-            if match:
-                groups = match.groups()
-                hour = int(groups[0])
-                minute = int(groups[1]) if len(groups) > 1 and groups[1] and groups[1].isdigit() else 0
-                meridiem = groups[-1].lower() if groups[-1] and groups[-1].lower() in ['am', 'pm'] else None
-                
-                if meridiem == 'pm' and hour != 12:
-                    hour += 12
-                elif meridiem == 'am' and hour == 12:
-                    hour = 0
-                
-                tob = f"{hour:02d}:{minute:02d}"
-                break
-        
-        for pattern in location_patterns:
-            match = re.search(pattern, message, re.IGNORECASE)
-            if match:
-                location = match.group(1).strip()
-                break
-        
-        if dob and tob and location:
-            logger.info(f"Extracted: dob={dob}, tob={tob}, location={location}")
-            return ConvBirthDetails(
-                dob=dob,
-                tob=tob,
-                location=location
-            )
-        
-        return None
+        """Extract birth details using the hybrid extractor (regex-first, LLM fallback)."""
+        return self.birth_extractor.extract(message)
     
     def _build_suggested_actions(self, mode: str, topic: str) -> List[SuggestedAction]:
         """Build suggested follow-up actions based on mode and topic."""
