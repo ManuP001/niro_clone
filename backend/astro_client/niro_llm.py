@@ -506,10 +506,27 @@ Be concise, warm, and chart-grounded.'''
         }
 
 
-# Singleton instance
-niro_llm = NiroLLMModule()
+# Singleton instance - lazy initialization pattern
+class _NiroLLMSingleton:
+    """Lazy singleton wrapper for NiroLLMModule"""
+    _instance = None
+    
+    def __call__(self):
+        if self._instance is None:
+            self._instance = NiroLLMModule()
+        return self._instance
+
+_get_niro_llm = _NiroLLMSingleton()
+
+# Create a proxy object that lazily initializes the LLM module
+class _LazyNiroLLM:
+    """Proxy that forwards all attribute access to the real LLM module"""
+    def __getattr__(self, name):
+        return getattr(_get_niro_llm(), name)
+
+niro_llm = _LazyNiroLLM()
 
 
 def call_niro_llm(payload: Dict[str, Any]) -> Dict[str, Any]:
     """Convenience function to call NIRO LLM"""
-    return niro_llm.call_niro_llm(payload)
+    return _get_niro_llm().call_niro_llm(payload)
