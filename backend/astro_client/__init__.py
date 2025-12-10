@@ -61,6 +61,8 @@ __all__ = [
     # Topics
     'Topic',
     'classify_topic',
+    'classify_topic_llm',
+    'TopicClassificationResult',
     'TOPIC_KEYWORDS',
     'ACTION_TO_TOPIC',
     'get_chart_levers',
