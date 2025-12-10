@@ -3,6 +3,14 @@ Advanced Prompt Templates for Astro-Trust Engine
 Implements anti-hallucination, gender-neutral, data-driven interpretations
 """
 
+KERNEL_INSTRUCTIONS = """
+You are AstroTrust, an AI astrologer.
+Use ONLY the ASTRO_DATA provided.
+Avoid fatalistic language or deterministic claims.
+Avoid vague Barnum statements; tie every statement to specific astro factors.
+Default to concise, clear explanations unless the user explicitly requests depth.
+"""
+
 def build_user_context(user_data: dict) -> str:
     """Build gender-neutral, data-driven user context"""
     
@@ -27,14 +35,14 @@ def build_user_context(user_data: dict) -> str:
 """
     
     if occupation:
-        context += f"- Occupation: {occupation}\\n"
+        context += f"- Occupation: {occupation}\n"
     else:
-        context += "- Occupation: Not specified (remain occupation-neutral in analysis)\\n"
+        context += "- Occupation: Not specified (remain occupation-neutral in analysis)\n"
     
     if relationship_status:
-        context += f"- Relationship Status: {relationship_status}\\n"
+        context += f"- Relationship Status: {relationship_status}\n"
     else:
-        context += "- Relationship Status: Not specified (avoid assumptions about relationships)\\n"
+        context += "- Relationship Status: Not specified (avoid assumptions about relationships)\n"
     
     context += f"""
 **CRITICAL INSTRUCTIONS:**
@@ -51,7 +59,9 @@ def build_user_context(user_data: dict) -> str:
 def get_retro_check_prompt() -> str:
     """Prompt for The Retro-Check - Past verification report"""
     
-    return """**REPORT TYPE: THE RETRO-CHECK (Past Verification)**
+    return f"""{KERNEL_INSTRUCTIONS}
+
+**REPORT TYPE: THE RETRO-CHECK (Past Verification)**
 
 **OBJECTIVE:**
 Analyze the user's most dominant planetary transits from the past 18-24 months and hypothesize how these likely manifested in real life. This is a RETRODICTIVE analysis for verification purposes.
@@ -94,30 +104,21 @@ Analyze the user's most dominant planetary transits from the past 18-24 months a
 
 ### **Accuracy Check**
 Please reflect on these predictions. The more accurate this retro-analysis is, the more confidence you can have in future predictions using the same methodology.
-
-**TONE:** Professional, data-driven, specific. Use phrases like:
-- "Based on [planet] transiting your [house], you likely experienced..."
-- "This transit has an 85% correlation with..."
-- "The period between [dates] was probably characterized by..."
-
-**AVOID:** 
-- Generic statements that could apply to anyone
-- Vague language without dates or percentages
-- Assumptions about gender, occupation, or family structure
 """
 
 
 def get_yearly_prediction_advanced_prompt() -> str:
     """Advanced yearly prediction prompt with new structure"""
     
-    return """**REPORT TYPE: YEARLY PREDICTION 2026 (Advanced Structure)**
+    return f"""{KERNEL_INSTRUCTIONS}
+
+**REPORT TYPE: YEARLY PREDICTION 2026 (Advanced Structure)**
 
 **CRITICAL ANTI-BARNUM RULES:**
 1. **The "Because Rule":** Every prediction MUST state WHY, referencing specific astrological factors
 2. **Date Precision:** Use tight date ranges (e.g., "April 15 - May 30, 2026")
 3. **Probability Scores:** Include likelihood percentages (e.g., "85% probability")
 4. **Specific Headings:** Avoid generic titles; use data-driven, specific sub-headings
-5. **No Flattery:** Focus on diagnosis, vulnerabilities, and actionable insights
 
 ---
 
@@ -312,16 +313,6 @@ def get_yearly_prediction_advanced_prompt() -> str:
 **Monthly (on specific dates):**
 - [Date]: [Practice]
 - [Date]: [Practice]
-
----
-
-**FINAL TONE CHECK:**
-- Every prediction includes a \"Because\" statement
-- Every date range is specific (not \"mid-year\" but \"June 10-July 5\")
-- Every claim has a probability or severity score
-- No generic Barnum statements
-- No assumptions about gender, family role, or occupation
-- Professional, data-driven, empowering but brutally honest
 """
 
 
@@ -331,7 +322,7 @@ def get_love_marriage_advanced_prompt() -> str:
     return """**REPORT TYPE: LOVE & MARRIAGE ANALYSIS**
 
 Follow the same principles as Yearly Prediction:
-- Use \"Because Rule\" for all claims
+- Use "Because Rule" for all claims
 - Specific date ranges
 - Probability scores
 - Gender-neutral unless user data specifies otherwise
@@ -373,7 +364,7 @@ def get_career_job_advanced_prompt() -> str:
     return """**REPORT TYPE: CAREER & JOB SUCCESS ANALYSIS**
 
 Follow the same principles as Yearly Prediction:
-- Use \"Because Rule\" for all claims  
+- Use "Because Rule" for all claims  
 - Specific date ranges
 - Probability scores
 - Occupation-neutral unless user specifies
