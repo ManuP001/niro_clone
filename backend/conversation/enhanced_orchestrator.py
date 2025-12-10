@@ -36,7 +36,10 @@ from astro_client import (
     get_astro_profile,
     save_astro_profile,
     classify_topic,
+    classify_topic_llm,
+    TopicClassificationResult,
     Topic,
+    ACTION_TO_TOPIC,
     build_astro_features,
     call_niro_llm
 )
