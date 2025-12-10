@@ -31,6 +31,8 @@ from .storage import (
 from .topics import (
     Topic,
     classify_topic,
+    classify_topic_llm,
+    TopicClassificationResult,
     TOPIC_KEYWORDS,
     ACTION_TO_TOPIC,
     get_chart_levers
