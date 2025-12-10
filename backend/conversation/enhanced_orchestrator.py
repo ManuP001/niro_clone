@@ -113,18 +113,48 @@ class EnhancedOrchestrator:
             action_id=request.actionId
         )
         
-        # Classify topic (richer taxonomy)
-        topic = classify_topic(
-            user_message=request.message,
-            action_id=request.actionId,
-            current_topic=state.focus  # Use focus as current topic
-        )
+        # Classify topic with priority:
+        # 1. Explicit action ID (chip click) overrides everything
+        # 2. LLM-based classification
+        # 3. Fallback to keyword-based classification
+        
+        topic_classification: TopicClassificationResult = None
+        
+        if request.actionId and request.actionId in ACTION_TO_TOPIC:
+            # Hard override from chip click
+            explicit_topic = ACTION_TO_TOPIC[request.actionId]
+            if explicit_topic:  # Some actions like "deep_dive" have None
+                topic = explicit_topic
+                topic_classification = TopicClassificationResult(
+                    topic=topic,
+                    secondary_topics=[],
+                    confidence=1.0,
+                    needs_clarification=False,
+                    source="chip"
+                )
+            else:
+                # Preserve current topic for actions like deep_dive
+                topic = state.focus or Topic.GENERAL.value
+                topic_classification = await classify_topic_llm(
+                    user_message=request.message,
+                    last_topic=state.focus
+                )
+        else:
+            # Use LLM classification
+            topic_classification = await classify_topic_llm(
+                user_message=request.message,
+                last_topic=state.focus
+            )
+            topic = topic_classification.topic
         
         # Update state
         state.mode = ConversationMode(mode)
         state.focus = topic  # Store topic in focus field
         
-        logger.info(f"Routed to mode={mode}, topic={topic}")
+        logger.info(
+            f"Routed to mode={mode}, topic={topic} "
+            f"(source={topic_classification.source}, confidence={topic_classification.confidence:.2f})"
+        )
         
         # Step 4: Ensure astro profile and transits (if birth details available)
         astro_features = {}
