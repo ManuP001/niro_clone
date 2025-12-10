@@ -399,3 +399,199 @@ def get_suggested_topics_for_mode(mode: str) -> List[str]:
         Topic.MONEY.value,
         Topic.DAILY_GUIDANCE.value
     ]
+
+
+
+# ============================================================================
+# LLM-BASED TOPIC CLASSIFICATION
+# ============================================================================
+
+import os
+import json
+from openai import AsyncOpenAI
+from pydantic import BaseModel as PydanticBaseModel, Field
+
+# Initialize OpenAI client for topic classification
+_openai_client = None
+
+def get_openai_client():
+    """Get or create OpenAI client for LLM topic classification"""
+    global _openai_client
+    if _openai_client is None:
+        api_key = os.environ.get('OPENAI_API_KEY', os.environ.get('EMERGENT_LLM_KEY', ''))
+        _openai_client = AsyncOpenAI(api_key=api_key)
+    return _openai_client
+
+
+class TopicClassificationResult(PydanticBaseModel):
+    """Result of LLM-based topic classification"""
+    topic: str = Field(description="Primary topic (one of the allowed topic strings)")
+    secondary_topics: List[str] = Field(default_factory=list, description="0-2 secondary topics")
+    confidence: float = Field(description="Confidence score 0.0-1.0")
+    needs_clarification: bool = Field(default=False, description="Whether user message is ambiguous")
+    source: str = Field(default="llm", description="Classification source: llm, fallback, or chip")
+
+
+# Allowed topics for LLM classification
+ALLOWED_TOPICS = [t.value for t in Topic]
+
+# System prompt for topic classification
+TOPIC_CLASSIFICATION_PROMPT = f"""You are a topic classifier for NIRO, an AI Vedic astrologer.
+
+Your job is to classify the user's message into one primary topic and optionally 0-2 secondary topics.
+
+**Allowed Topics:**
+{', '.join(ALLOWED_TOPICS)}
+
+**Classification Rules:**
+1. Choose the MOST relevant primary topic based on the user's explicit question or concern
+2. If the message touches on multiple areas, add up to 2 secondary topics
+3. Set confidence based on how clear the user's intent is:
+   - 0.9-1.0: Very clear, specific question
+   - 0.7-0.9: Clear topic but some ambiguity
+   - 0.5-0.7: Somewhat ambiguous, multiple interpretations possible
+   - Below 0.5: Very vague or unclear
+
+4. Set needs_clarification=true if:
+   - The message is too vague to classify reliably
+   - Multiple topics are equally relevant
+   - The user asks multiple unrelated questions
+
+**Examples:**
+- "Will I get a promotion this year?" → career (1.0)
+- "I want to know about my love life" → romantic_relationships (0.95)
+- "Tell me about my career and relationships" → career (0.8), secondary: [romantic_relationships]
+- "What does my chart say?" → general (0.6), needs_clarification=true
+- "I'm feeling lost in life" → self_psychology (0.75)
+- "When should I invest in property?" → money (0.9), secondary: [family_home]
+
+Return ONLY a valid JSON object with these exact keys:
+{{
+  "topic": "<primary_topic>",
+  "secondary_topics": ["<topic1>", "<topic2>"],
+  "confidence": <float>,
+  "needs_clarification": <bool>
+}}"""
+
+
+async def classify_topic_llm(
+    user_message: str,
+    last_topic: Optional[str] = None,
+) -> TopicClassificationResult:
+    """
+    Use GPT-5 to classify the user message into topics.
+    
+    Args:
+        user_message: The user's current message
+        last_topic: Optional previous topic for context
+        
+    Returns:
+        TopicClassificationResult with primary topic, secondary topics, confidence, etc.
+    """
+    try:
+        client = get_openai_client()
+        
+        # Build user message with context
+        user_prompt = f"User message: {user_message}"
+        if last_topic:
+            user_prompt = f"Previous topic: {last_topic}\n\n{user_prompt}"
+        
+        # Call GPT-5 for classification
+        response = await client.chat.completions.create(
+            model="gpt-4o",  # Using GPT-4o as GPT-5 alias
+            messages=[
+                {"role": "system", "content": TOPIC_CLASSIFICATION_PROMPT},
+                {"role": "user", "content": user_prompt}
+            ],
+            temperature=0.3,
+            max_tokens=200,
+            response_format={"type": "json_object"}
+        )
+        
+        # Parse response
+        result_text = response.choices[0].message.content
+        result_dict = json.loads(result_text)
+        
+        # Validate topic is in allowed list
+        primary_topic = result_dict.get('topic', Topic.GENERAL.value)
+        if primary_topic not in ALLOWED_TOPICS:
+            logger.warning(f"LLM returned invalid topic '{primary_topic}', using fallback")
+            return classify_topic_fallback(user_message, last_topic)
+        
+        # Validate secondary topics
+        secondary = result_dict.get('secondary_topics', [])
+        secondary = [t for t in secondary if t in ALLOWED_TOPICS][:2]
+        
+        result = TopicClassificationResult(
+            topic=primary_topic,
+            secondary_topics=secondary,
+            confidence=result_dict.get('confidence', 0.8),
+            needs_clarification=result_dict.get('needs_clarification', False),
+            source="llm"
+        )
+        
+        logger.info(f"LLM classified topic: {result.topic} (confidence: {result.confidence:.2f})")
+        return result
+        
+    except Exception as e:
+        logger.error(f"LLM topic classification failed: {e}")
+        # Fall back to keyword-based classification
+        return classify_topic_fallback(user_message, last_topic)
+
+
+def classify_topic_fallback(
+    user_message: str,
+    last_topic: Optional[str] = None
+) -> TopicClassificationResult:
+    """
+    Fallback to keyword-based classification if LLM fails.
+    
+    Uses the existing keyword classifier and wraps result in TopicClassificationResult.
+    """
+    try:
+        # Use existing keyword-based classifier
+        topic = classify_topic(user_message, last_topic)
+        
+        # Determine confidence based on keyword matches
+        msg_lower = user_message.lower()
+        keyword_counts = {}
+        
+        for t, keywords in TOPIC_KEYWORDS.items():
+            count = sum(1 for kw in keywords if kw in msg_lower)
+            if count > 0:
+                keyword_counts[t] = count
+        
+        # Calculate confidence
+        if not keyword_counts:
+            confidence = 0.5  # No keywords matched, low confidence
+        else:
+            max_count = max(keyword_counts.values())
+            total_count = sum(keyword_counts.values())
+            if total_count == max_count:
+                confidence = 0.85  # Clear single topic
+            else:
+                confidence = 0.65  # Multiple topics detected
+        
+        # Get secondary topics
+        sorted_topics = sorted(keyword_counts.items(), key=lambda x: x[1], reverse=True)
+        secondary = [t for t, _ in sorted_topics[1:3] if t != topic]
+        
+        return TopicClassificationResult(
+            topic=topic,
+            secondary_topics=secondary,
+            confidence=confidence,
+            needs_clarification=(confidence < 0.6),
+            source="fallback"
+        )
+        
+    except Exception as e:
+        logger.error(f"Fallback classification failed: {e}")
+        # Ultimate fallback to GENERAL
+        return TopicClassificationResult(
+            topic=Topic.GENERAL.value,
+            secondary_topics=[],
+            confidence=0.5,
+            needs_clarification=True,
+            source="fallback"
+        )
+
