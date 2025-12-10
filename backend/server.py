@@ -931,6 +931,41 @@ async def niro_chat(request: OrchestratorChatRequest):
         
         logger.info(f"NIRO Enhanced response - mode: {response.mode}, topic: {response.focus}")
         
+        # ============= STRUCTURED LOGGING =============
+        # Log the full pipeline for observability
+        if hasattr(response, '_pipeline_metadata') and response._pipeline_metadata:
+            from logging.niro_logger import (
+                log_pipeline_event,
+                summarize_astro_profile,
+                summarize_astro_transits,
+                summarize_astro_features,
+                summarize_llm_payload,
+                summarize_llm_response
+            )
+            
+            metadata = response._pipeline_metadata
+            
+            pipeline_log = {
+                "timestamp": datetime.now(timezone.utc).isoformat() + 'Z',
+                "session_id": request.sessionId,
+                "user_id": request.sessionId,  # Using session as user ID for now
+                "user_message": request.message[:200],
+                "action_id": request.actionId,
+                "mode": response.mode,
+                "topic_classification": metadata.get('topic_classification', {}),
+                "astro_profile": summarize_astro_profile(metadata.get('astro_profile')),
+                "astro_transits": summarize_astro_transits(metadata.get('astro_transits')),
+                "astro_features_summary": summarize_astro_features(metadata.get('astro_features')),
+                "llm_payload_summary": summarize_llm_payload(
+                    response.mode,
+                    response.focus or "unknown",
+                    bool(metadata.get('astro_features'))
+                ),
+                "llm_response_summary": summarize_llm_response(metadata.get('llm_response'))
+            }
+            
+            log_pipeline_event(pipeline_log)
+        
         return response
         
     except Exception as e:
