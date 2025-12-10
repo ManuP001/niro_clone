@@ -25,6 +25,7 @@ from .models import (
 )
 from .session_store import SessionStore, InMemorySessionStore
 from .mode_router import ModeRouter
+from .birth_extractor import HybridBirthDetailsExtractor
 
 # Import from astro_client package
 from astro_client import (
