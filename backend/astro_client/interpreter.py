@@ -90,8 +90,8 @@ def build_astro_features(
         # Key rules firing
         "key_rules": _extract_key_rules(profile, transits, topic, key_factors_names),
         
-        # Filtered transits relevant to topic
-        "transits": _filter_transits_for_topic(transits, relevant_houses, today),
+        # Filtered transits relevant to topic (with timeframe filtering)
+        "transits": _filter_transits_for_topic(transits, relevant_houses, today, timeframe_hint),
         
         # Planetary strengths (filtered to relevant planets)
         "planetary_strengths": _get_planetary_strengths(profile, relevant_planets),
@@ -99,9 +99,8 @@ def build_astro_features(
         # Yogas (filtered to topic-relevant)
         "yogas": _filter_yogas_for_topic(profile.yogas, topic),
         
-        # Time-based analysis
-        "past_events": _analyze_past_events(profile, transits, topic, today) if mode in ["PAST_THEMES", "FOCUS_READING"] else [],
-        "timing_windows": _analyze_timing_windows(profile, transits, topic, today),
+        # Time-based analysis (with timeframe filtering)
+        "timing_windows": _analyze_timing_windows(profile, transits, topic, today, timeframe_hint),
     }
     
     logger.debug(f"Built features with {len(features['focus_factors'])} focus factors, {len(features['transits'])} transits")
