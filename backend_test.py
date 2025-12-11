@@ -1893,6 +1893,385 @@ class ReportGenerationTester:
         if response.status_code != 200:
             raise Exception(f"Failed to do past themes: {response.status_code}")
 
+    def test_niro_llm_real_openai_integration(self):
+        """Test NIRO LLM Module with REAL OpenAI GPT-4-turbo (not stubs)"""
+        try:
+            session_id = f"test_real_llm_{uuid.uuid4().hex[:8]}"
+            
+            # Set up session with birth details and past themes done
+            birth_details = {
+                "dob": "1990-08-15",
+                "tob": "14:30",
+                "location": "Mumbai, Maharashtra, India",
+                "latitude": 19.0760,
+                "longitude": 72.8777,
+                "timezone": 5.5
+            }
+            
+            # Create session
+            initial_payload = {
+                "sessionId": session_id,
+                "message": "Hello",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=initial_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Real LLM - Setup", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Set birth details
+            response = self.session.post(
+                f"{BACKEND_URL}/chat/session/{session_id}/birth-details", 
+                json=birth_details, 
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Real LLM - Birth Details", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Do past themes to mark retro as done
+            past_payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my past themes",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=past_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Real LLM - Past Themes", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Check backend logs for STUB messages (should NOT be present)
+            import subprocess
+            try:
+                log_output = subprocess.check_output(
+                    ["tail", "-n", "100", "/var/log/supervisor/backend.out.log"],
+                    stderr=subprocess.STDOUT,
+                    text=True
+                )
+                
+                if "Using STUB LLM response" in log_output:
+                    self.log_result("NIRO Real LLM Integration", False, 
+                                  "Backend logs show STUB responses - real LLM not being used", log_output[-500:])
+                    return False
+                    
+            except Exception as e:
+                print(f"   Warning: Could not check backend logs: {e}")
+            
+            # Test career reading with real LLM
+            career_payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my career prospects and professional growth",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=career_payload, timeout=45)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Real LLM Integration", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify response structure
+            reply = data.get("reply", {})
+            if not reply.get("summary") or not reply.get("reasons") or not reply.get("remedies"):
+                self.log_result("NIRO Real LLM Integration", False, 
+                              "Missing summary, reasons, or remedies in reply", reply)
+                return False
+            
+            # Verify career focus detection
+            if data.get("focus") != "career":
+                self.log_result("NIRO Real LLM Integration", False, 
+                              f"Expected focus 'career', got '{data.get('focus')}'", data)
+                return False
+            
+            # Verify response quality (real LLM should provide detailed content)
+            summary = reply.get("summary", "")
+            reasons = reply.get("reasons", [])
+            remedies = reply.get("remedies", [])
+            
+            # Check for meaningful content (not generic stubs)
+            if len(summary) < 50:
+                self.log_result("NIRO Real LLM Integration", False, 
+                              "Summary too short - may be stub response", summary)
+                return False
+            
+            if len(reasons) < 2:
+                self.log_result("NIRO Real LLM Integration", False, 
+                              "Too few reasons - may be stub response", reasons)
+                return False
+            
+            if len(remedies) < 2:
+                self.log_result("NIRO Real LLM Integration", False, 
+                              "Too few remedies - may be stub response", remedies)
+                return False
+            
+            # Check for astrological context in response
+            full_response = reply.get("rawText", "")
+            astrological_keywords = ["planet", "house", "dasha", "transit", "vedic", "jupiter", "saturn", "mars", "venus"]
+            found_keywords = [kw for kw in astrological_keywords if kw.lower() in full_response.lower()]
+            
+            if len(found_keywords) < 2:
+                self.log_result("NIRO Real LLM Integration", False, 
+                              f"Response lacks astrological context. Found keywords: {found_keywords}", full_response[:200])
+                return False
+            
+            self.log_result("NIRO Real LLM Integration", True, 
+                          f"Real OpenAI GPT-4-turbo integration working. Response quality: {len(summary)} chars summary, {len(reasons)} reasons, {len(remedies)} remedies, astrological keywords: {found_keywords}")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Real LLM Integration", False, f"Exception: {str(e)}")
+            return False
+
+    def test_enhanced_orchestrator_real_llm_flow(self):
+        """Test Enhanced Orchestrator with Real LLM - Full Flow"""
+        try:
+            session_id = f"test_enhanced_flow_{uuid.uuid4().hex[:8]}"
+            
+            # Test different topics with real LLM
+            test_cases = [
+                {
+                    "message": "I want to know about my health and energy levels",
+                    "expected_focus": "health_energy",
+                    "description": "Health reading"
+                },
+                {
+                    "message": "Tell me about romantic relationships and love in my life",
+                    "expected_focus": "romantic_relationships", 
+                    "description": "Relationship reading"
+                },
+                {
+                    "message": "What about my money and financial situation?",
+                    "expected_focus": "money",
+                    "description": "Financial reading"
+                }
+            ]
+            
+            # Set up session with birth details
+            birth_details = {
+                "dob": "1985-12-25",
+                "tob": "10:30",
+                "location": "Delhi, India",
+                "latitude": 28.6139,
+                "longitude": 77.2090,
+                "timezone": 5.5
+            }
+            
+            # Create session
+            initial_payload = {
+                "sessionId": session_id,
+                "message": "Hello NIRO",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=initial_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Enhanced Orchestrator Real LLM - Setup", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Set birth details
+            response = self.session.post(
+                f"{BACKEND_URL}/chat/session/{session_id}/birth-details", 
+                json=birth_details, 
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                self.log_result("Enhanced Orchestrator Real LLM - Birth Details", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Do past themes first
+            past_payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my past themes",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=past_payload, timeout=45)
+            
+            if response.status_code != 200:
+                self.log_result("Enhanced Orchestrator Real LLM - Past Themes", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Test each topic
+            successful_tests = 0
+            for test_case in test_cases:
+                payload = {
+                    "sessionId": session_id,
+                    "message": test_case["message"],
+                    "actionId": None
+                }
+                
+                response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=45)
+                
+                if response.status_code != 200:
+                    print(f"   {test_case['description']} failed: HTTP {response.status_code}")
+                    continue
+                
+                data = response.json()
+                
+                # Verify focus detection
+                if data.get("focus") != test_case["expected_focus"]:
+                    print(f"   {test_case['description']} focus mismatch: expected {test_case['expected_focus']}, got {data.get('focus')}")
+                    continue
+                
+                # Verify mode
+                if data.get("mode") != "FOCUS_READING":
+                    print(f"   {test_case['description']} mode mismatch: expected FOCUS_READING, got {data.get('mode')}")
+                    continue
+                
+                # Verify response quality
+                reply = data.get("reply", {})
+                if not reply.get("summary") or len(reply.get("summary", "")) < 30:
+                    print(f"   {test_case['description']} poor summary quality")
+                    continue
+                
+                if len(reply.get("reasons", [])) < 2:
+                    print(f"   {test_case['description']} insufficient reasons")
+                    continue
+                
+                print(f"   ✅ {test_case['description']} passed")
+                successful_tests += 1
+            
+            if successful_tests >= 2:  # At least 2 out of 3 should pass
+                self.log_result("Enhanced Orchestrator Real LLM Flow", True, 
+                              f"Enhanced orchestrator working with real LLM. {successful_tests}/{len(test_cases)} topic tests passed")
+                return True
+            else:
+                self.log_result("Enhanced Orchestrator Real LLM Flow", False, 
+                              f"Only {successful_tests}/{len(test_cases)} topic tests passed")
+                return False
+            
+        except Exception as e:
+            self.log_result("Enhanced Orchestrator Real LLM Flow", False, f"Exception: {str(e)}")
+            return False
+
+    def test_post_chat_endpoint_real_llm(self):
+        """Test POST /api/chat Endpoint with Real LLM - Complete Conversation Flow"""
+        try:
+            session_id = f"test_post_chat_{uuid.uuid4().hex[:8]}"
+            
+            # Test actionId override with real LLM
+            test_actions = [
+                {"actionId": "focus_money", "expected_focus": "money", "description": "Money focus override"},
+                {"actionId": "focus_career", "expected_focus": "career", "description": "Career focus override"},
+                {"actionId": "daily_guidance", "expected_mode": "DAILY_GUIDANCE", "description": "Daily guidance mode"}
+            ]
+            
+            # Set up session with birth details
+            birth_details = {
+                "dob": "1992-03-10",
+                "tob": "16:45",
+                "location": "Bangalore, Karnataka, India",
+                "latitude": 12.9716,
+                "longitude": 77.5946,
+                "timezone": 5.5
+            }
+            
+            # Create session
+            initial_payload = {
+                "sessionId": session_id,
+                "message": "Hello",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=initial_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("POST Chat Real LLM - Setup", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Set birth details
+            response = self.session.post(
+                f"{BACKEND_URL}/chat/session/{session_id}/birth-details", 
+                json=birth_details, 
+                timeout=30
+            )
+            
+            if response.status_code != 200:
+                self.log_result("POST Chat Real LLM - Birth Details", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Do past themes first
+            past_payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my past themes",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=past_payload, timeout=45)
+            
+            if response.status_code != 200:
+                self.log_result("POST Chat Real LLM - Past Themes", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Test each actionId
+            successful_actions = 0
+            for action_test in test_actions:
+                payload = {
+                    "sessionId": session_id,
+                    "message": "Tell me more",
+                    "actionId": action_test["actionId"]
+                }
+                
+                response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=45)
+                
+                if response.status_code != 200:
+                    print(f"   {action_test['description']} failed: HTTP {response.status_code}")
+                    continue
+                
+                data = response.json()
+                
+                # Check expected focus or mode
+                if "expected_focus" in action_test:
+                    if data.get("focus") != action_test["expected_focus"]:
+                        print(f"   {action_test['description']} focus mismatch: expected {action_test['expected_focus']}, got {data.get('focus')}")
+                        continue
+                
+                if "expected_mode" in action_test:
+                    if data.get("mode") != action_test["expected_mode"]:
+                        print(f"   {action_test['description']} mode mismatch: expected {action_test['expected_mode']}, got {data.get('mode')}")
+                        continue
+                
+                # Verify response structure and quality
+                reply = data.get("reply", {})
+                if not reply.get("summary") or len(reply.get("summary", "")) < 20:
+                    print(f"   {action_test['description']} poor response quality")
+                    continue
+                
+                print(f"   ✅ {action_test['description']} passed")
+                successful_actions += 1
+            
+            if successful_actions >= 2:  # At least 2 out of 3 should pass
+                self.log_result("POST Chat Endpoint Real LLM", True, 
+                              f"POST /api/chat endpoint working with real LLM. {successful_actions}/{len(test_actions)} action tests passed")
+                return True
+            else:
+                self.log_result("POST Chat Endpoint Real LLM", False, 
+                              f"Only {successful_actions}/{len(test_actions)} action tests passed")
+                return False
+            
+        except Exception as e:
+            self.log_result("POST Chat Endpoint Real LLM", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests including NIRO chat orchestrator"""
         print("=" * 60)
