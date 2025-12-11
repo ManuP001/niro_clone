@@ -8,7 +8,7 @@ from typing import Dict, Any, List, Optional
 import logging
 import os
 
-from .models import NiroReply, NiroLLMPayload
+from .models import NiroReply
 
 logger = logging.getLogger(__name__)
 
