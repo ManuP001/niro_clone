@@ -153,7 +153,7 @@ class HybridBirthDetailsExtractor:
             client = OpenAI(api_key=self.openai_key)
             
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=EXTRACTION_MODEL_NAME,
                 messages=[
                     {"role": "system", "content": "Extract birth details ONLY. Return STRICT JSON."},
                     {"role": "user", "content": text}
