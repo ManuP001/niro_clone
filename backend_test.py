@@ -377,10 +377,10 @@ class ReportGenerationTester:
             self.log_result("Report Generation Flow", False, f"Exception: {str(e)}")
             return False
     
-    def test_niro_chat_basic_message(self):
-        """Test NIRO chat with basic message containing 'career'"""
+    def test_niro_llm_real_api_verification(self):
+        """Test NIRO LLM with REAL OpenAI API - Verify no stub responses"""
         try:
-            session_id = f"test_basic_{uuid.uuid4().hex[:8]}"
+            session_id = f"test_real_llm_{uuid.uuid4().hex[:8]}"
             
             # Set up session with birth details and past themes done
             birth_details = {
@@ -402,7 +402,7 @@ class ReportGenerationTester:
             response = self.session.post(f"{BACKEND_URL}/chat", json=initial_payload, timeout=30)
             
             if response.status_code != 200:
-                self.log_result("NIRO Basic Career Message - Setup", False, 
+                self.log_result("NIRO Real LLM Verification - Setup", False, 
                               f"HTTP {response.status_code}", response.text)
                 return False
             
@@ -414,7 +414,7 @@ class ReportGenerationTester:
             )
             
             if response.status_code != 200:
-                self.log_result("NIRO Basic Career Message - Birth Details", False, 
+                self.log_result("NIRO Real LLM Verification - Birth Details", False, 
                               f"HTTP {response.status_code}", response.text)
                 return False
             
@@ -428,20 +428,21 @@ class ReportGenerationTester:
             response = self.session.post(f"{BACKEND_URL}/chat", json=past_payload, timeout=30)
             
             if response.status_code != 200:
-                self.log_result("NIRO Basic Career Message - Past Themes", False, 
+                self.log_result("NIRO Real LLM Verification - Past Themes", False, 
                               f"HTTP {response.status_code}", response.text)
                 return False
             
-            # Now test career message
+            # Now test career message with REAL LLM
             payload = {
                 "sessionId": session_id,
-                "message": "I want to know about my career prospects"
+                "message": "Tell me about my career prospects",
+                "actionId": "focus_career"
             }
             
             response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
             
             if response.status_code != 200:
-                self.log_result("NIRO Chat - Basic Career Message", False, 
+                self.log_result("NIRO Real LLM Verification", False, 
                               f"HTTP {response.status_code}", response.text)
                 return False
             
@@ -452,7 +453,7 @@ class ReportGenerationTester:
             missing_fields = [field for field in required_fields if field not in data]
             
             if missing_fields:
-                self.log_result("NIRO Chat - Basic Career Message", False, 
+                self.log_result("NIRO Real LLM Verification", False, 
                               f"Missing fields: {missing_fields}", data)
                 return False
             
@@ -462,37 +463,63 @@ class ReportGenerationTester:
             missing_reply_fields = [field for field in reply_fields if field not in reply]
             
             if missing_reply_fields:
-                self.log_result("NIRO Chat - Basic Career Message", False, 
+                self.log_result("NIRO Real LLM Verification", False, 
                               f"Missing reply fields: {missing_reply_fields}", reply)
                 return False
+            
+            # CRITICAL: Check for stub responses
+            summary = reply.get("summary", "")
+            raw_text = reply.get("rawText", "")
+            
+            # Check for stub indicators
+            stub_indicators = [
+                "Unable to generate response",
+                "Service unavailable", 
+                "Please check API configuration",
+                "Using STUB LLM response"
+            ]
+            
+            for indicator in stub_indicators:
+                if indicator in summary or indicator in raw_text:
+                    self.log_result("NIRO Real LLM Verification", False, 
+                                  f"STUB RESPONSE DETECTED: '{indicator}' found in response", reply)
+                    return False
             
             # Verify career focus detection
             focus = data.get("focus")
             if focus != "career":
-                self.log_result("NIRO Chat - Basic Career Message", False, 
+                self.log_result("NIRO Real LLM Verification", False, 
                               f"Expected focus 'career', got '{focus}'", data)
                 return False
             
-            # Verify suggestedActions is a list
-            suggested_actions = data.get("suggestedActions", [])
-            if not isinstance(suggested_actions, list):
-                self.log_result("NIRO Chat - Basic Career Message", False, 
-                              "suggestedActions is not a list", data)
+            # Verify summary has meaningful content (not just generic text)
+            if len(summary) < 50:
+                self.log_result("NIRO Real LLM Verification", False, 
+                              f"Summary too short (likely stub): '{summary}'", reply)
                 return False
             
-            # Verify each action has id and label
-            for action in suggested_actions:
-                if not isinstance(action, dict) or "id" not in action or "label" not in action:
-                    self.log_result("NIRO Chat - Basic Career Message", False, 
-                                  "Invalid action structure", action)
-                    return False
+            # Verify reasons array has content
+            reasons = reply.get("reasons", [])
+            if len(reasons) == 0:
+                self.log_result("NIRO Real LLM Verification", False, 
+                              "No reasons provided (likely stub response)", reply)
+                return False
             
-            self.log_result("NIRO Chat - Basic Career Message", True, 
-                          f"Career focus detected correctly, {len(suggested_actions)} actions returned")
+            # Check for astrological content in summary
+            astro_keywords = ["planet", "house", "dasha", "transit", "vedic", "astro", "jupiter", "saturn", "mars", "venus", "mercury", "sun", "moon"]
+            has_astro_content = any(keyword.lower() in summary.lower() for keyword in astro_keywords)
+            
+            if not has_astro_content:
+                self.log_result("NIRO Real LLM Verification", False, 
+                              f"No astrological content detected in summary: '{summary}'", reply)
+                return False
+            
+            self.log_result("NIRO Real LLM Verification", True, 
+                          f"REAL LLM working! Career reading with {len(reasons)} reasons, astrological content confirmed")
             return True
             
         except Exception as e:
-            self.log_result("NIRO Chat - Basic Career Message", False, f"Exception: {str(e)}")
+            self.log_result("NIRO Real LLM Verification", False, f"Exception: {str(e)}")
             return False
     
     def test_niro_chat_focus_career_action(self):
