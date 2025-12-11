@@ -28,6 +28,7 @@ from .models import (
 from .session_store import SessionStore, InMemorySessionStore
 from .mode_router import ModeRouter
 from .birth_extractor import HybridBirthDetailsExtractor
+from .timeframe_classifier import classify_timeframe
 
 # Import from astro_client package (go up one level: ..astro_client)
 from ..astro_client import (
