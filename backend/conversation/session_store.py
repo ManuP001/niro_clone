@@ -96,7 +96,7 @@ class InMemorySessionStore(SessionStore):
         if state is None:
             state = ConversationState(
                 session_id=session_id,
-                mode=ConversationMode.BIRTH_COLLECTION
+                mode=ConversationMode.NEED_BIRTH_DETAILS
             )
             self.set(session_id, state)
             logger.info(f"Created new session {session_id}")
