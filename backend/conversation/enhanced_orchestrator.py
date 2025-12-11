@@ -221,9 +221,6 @@ class EnhancedOrchestrator:
         suggested_actions = self._build_suggested_actions(mode, topic)
         
         # Update state
-        if mode == ConversationMode.PAST_THEMES.value:
-            state.has_done_retro = True
-        
         self.session_store.set(request.sessionId, state)
         
         # Step 8: Build and return response
