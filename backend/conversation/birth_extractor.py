@@ -11,6 +11,9 @@ from .models import BirthDetails as ConvBirthDetails
 
 logger = logging.getLogger(__name__)
 
+# Model constant - using gpt-4-turbo for structured extraction (temperature=0)
+EXTRACTION_MODEL_NAME = "gpt-4-turbo"
+
 
 class HybridBirthDetailsExtractor:
     """
