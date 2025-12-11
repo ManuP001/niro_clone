@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ArrowLeft, Send, Mic, Share2, Pause, Play } from 'lucide-react';
 import { chatMessages, quickQuestions } from '../../data/mockData';
+import { BACKEND_URL } from '../../config';
 
 const ChatScreen = () => {
   const [messages, setMessages] = useState(chatMessages);
