@@ -30,8 +30,8 @@ from .mode_router import ModeRouter
 from .birth_extractor import HybridBirthDetailsExtractor
 from .timeframe_classifier import classify_timeframe
 
-# Import from astro_client package (go up one level: ..astro_client)
-from ..astro_client import (
+# Import from astro_client package (use absolute imports for compatibility)
+from backend.astro_client import (
     BirthDetails as AstroBirthDetails,
     AstroProfile,
     AstroTransits,
@@ -45,7 +45,7 @@ from ..astro_client import (
     build_astro_features,
     call_niro_llm
 )
-from ..astro_client.vedic_api import vedic_api_client
+from backend.astro_client.vedic_api import vedic_api_client
 
 logger = logging.getLogger(__name__)
 
