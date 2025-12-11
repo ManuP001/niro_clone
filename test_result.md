@@ -253,7 +253,10 @@ test_plan:
     - "NIRO LLM Module"
     - "Enhanced Orchestrator"
     - "POST /api/chat Endpoint (Enhanced)"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "NIRO LLM Module"
+    - "Enhanced Orchestrator"
+    - "POST /api/chat Endpoint (Enhanced)"
   test_all: false
   test_priority: "high_first"
 
