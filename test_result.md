@@ -191,7 +191,7 @@ backend:
     file: "/app/backend/conversation/enhanced_orchestrator.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
@@ -199,6 +199,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "Enhanced Orchestrator working correctly. All modes functional: BIRTH_COLLECTION, PAST_THEMES, FOCUS_READING, DAILY_GUIDANCE. Session management working. Birth details extraction and astro profile creation working. Response structure validation passed. Minor: Some tests expect null focus but system returns topic names (acceptable design choice)."
+      - working: "NA"
+        agent: "main"
+        comment: "Ready for retesting with real OpenAI GPT-4-turbo integration. Previous tests were with stubbed responses."
 
   - task: "POST /api/chat Endpoint (Enhanced)"
     implemented: true
