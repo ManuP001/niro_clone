@@ -190,11 +190,11 @@ backend:
 
   - task: "Enhanced Orchestrator"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/conversation/enhanced_orchestrator.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
@@ -205,6 +205,9 @@ backend:
       - working: "NA"
         agent: "main"
         comment: "Ready for retesting with real OpenAI GPT-4-turbo integration. Previous tests were with stubbed responses."
+      - working: false
+        agent: "testing"
+        comment: "Enhanced Orchestrator flow working but LLM integration failing. Topic classification works (career, money, health_energy, romantic_relationships detected correctly). Astro profile creation works. Session management works. However, all LLM calls return stub responses due to invalid OpenAI API key and Gemini quota exceeded. Core orchestration functional but LLM responses are not real."
 
   - task: "POST /api/chat Endpoint (Enhanced)"
     implemented: true
