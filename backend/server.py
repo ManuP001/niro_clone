@@ -22,23 +22,23 @@ from backend.models import (
     FollowUpQuestion, FollowUpResponse,
     PriceConfig, PriceUpdate, ReportType, PaymentStatus
 )
-from .gemini_agent import GeminiAgent
-from .sandbox_executor import get_sandbox_executor
-from .pdf_generator import AstroPrescriptionPDF
-from .prompt_templates import build_code_generation_prompt
-from .vedic_api_client import VedicAstroClient
-from .gemini_astro_calculator import GeminiAstroCalculator
-from .advanced_prompts import build_user_context
-from .visual_data_extractor import VisualDataExtractor
-from .time_parser import TimeParser
-from .city_service import CityService, IndianCityService
-from .chat_agent import AstroChatAgent
-from .chat_models import ChatRequest, ChatResponse, ChatMessage, ChatSession, ChatRole
-from .niro_models import NiroChatRequest, NiroChatResponse
-from .niro_agent import NiroChatAgent
+from backend.gemini_agent import GeminiAgent
+from backend.sandbox_executor import get_sandbox_executor
+from backend.pdf_generator import AstroPrescriptionPDF
+from backend.prompt_templates import build_code_generation_prompt
+from backend.vedic_api_client import VedicAstroClient
+from backend.gemini_astro_calculator import GeminiAstroCalculator
+from backend.advanced_prompts import build_user_context
+from backend.visual_data_extractor import VisualDataExtractor
+from backend.time_parser import TimeParser
+from backend.city_service import CityService, IndianCityService
+from backend.chat_agent import AstroChatAgent
+from backend.chat_models import ChatRequest, ChatResponse, ChatMessage, ChatSession, ChatRole
+from backend.niro_models import NiroChatRequest, NiroChatResponse
+from backend.niro_agent import NiroChatAgent
 
 # Import the conversation orchestrator (both legacy and enhanced)
-from .conversation import (
+from backend.conversation import (
     ConversationOrchestrator,
     EnhancedOrchestrator,
     create_enhanced_orchestrator,
@@ -49,7 +49,7 @@ from .conversation import (
 )
 
 # Import astro_client components for direct access
-from .astro_client import (
+from backend.astro_client import (
     Topic,
     classify_topic,
     get_astro_profile
