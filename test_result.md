@@ -211,11 +211,11 @@ backend:
 
   - task: "POST /api/chat Endpoint (Enhanced)"
     implemented: true
-    working: true
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
@@ -223,6 +223,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "POST /api/chat endpoint working correctly with Enhanced Orchestrator. All test cases from review request working: birth details extraction, topic classification (career, money, health, romantic_relationships), actionId override, daily guidance mode. Response structure validation passed. **IMPORTANT: Using STUBBED LLM responses** - real Gemini/OpenAI integration needed."
+      - working: false
+        agent: "testing"
+        comment: "POST /api/chat endpoint functional but LLM integration broken. API endpoint responds correctly (200 OK), topic classification works, actionId overrides work (focus_money, focus_career, daily_guidance), response structure maintained. However, all responses contain stub data: 'Unable to generate response. Please check API configuration.' Real GPT-4-turbo integration not working due to invalid API keys."
 
   - task: "GET /api/chat/topics Endpoint"
     implemented: true
