@@ -325,16 +325,18 @@ def _get_aspecting_houses(from_house: int) -> List[int]:
 def _filter_transits_for_topic(
     transits: AstroTransits,
     relevant_houses: List[int],
-    today: date
+    today: date,
+    timeframe_hint: Dict[str, any] = None
 ) -> List[Dict[str, Any]]:
     """
-    Filter transits to those relevant to the topic.
+    Filter transits to those relevant to the topic and timeframe.
     """
     filtered = []
     
-    # Time windows
-    past_cutoff = today - timedelta(days=180)  # Past 6 months
-    future_cutoff = today + timedelta(days=365)  # Next 12 months
+    # Time windows based on timeframe hint
+    horizon_months = timeframe_hint.get('horizon_months', 12) if timeframe_hint else 12
+    past_cutoff = today - timedelta(days=30)  # Past month for context
+    future_cutoff = today + timedelta(days=int(horizon_months * 30))  # Based on timeframe
     
     for event in transits.events:
         # Check if within relevant time window
