@@ -273,19 +273,13 @@ class EnhancedOrchestrator:
         """Build suggested follow-up actions based on mode and topic."""
         actions = []
         
-        if mode == ConversationMode.BIRTH_COLLECTION.value:
+        if mode == ConversationMode.NEED_BIRTH_DETAILS.value:
             actions = [
                 SuggestedAction(id='help_dob', label='How to find my birth time?'),
                 SuggestedAction(id='example_format', label='Show example format'),
             ]
-        elif mode == ConversationMode.PAST_THEMES.value:
-            actions = [
-                SuggestedAction(id='focus_career', label='Career insights'),
-                SuggestedAction(id='focus_relationship', label='Relationships'),
-                SuggestedAction(id='focus_money', label='Money & finances'),
-                SuggestedAction(id='focus_health', label='Health'),
-            ]
-        elif mode == ConversationMode.FOCUS_READING.value:
+        elif mode == ConversationMode.NORMAL_READING.value:
+            # Topic-specific actions
             if topic == Topic.CAREER.value:
                 actions = [
                     SuggestedAction(id='ask_timing', label='Best timing for changes'),
@@ -299,12 +293,14 @@ class EnhancedOrchestrator:
                     SuggestedAction(id='focus_career', label='Ask about career'),
                 ]
             else:
+                # Default actions for general reading
                 actions = [
                     SuggestedAction(id='focus_career', label='Career'),
                     SuggestedAction(id='focus_relationship', label='Relationships'),
                     SuggestedAction(id='focus_money', label='Money'),
                 ]
         else:
+            # Fallback actions
             actions = [
                 SuggestedAction(id='focus_career', label='Career'),
                 SuggestedAction(id='focus_relationship', label='Relationships'),
