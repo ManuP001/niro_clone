@@ -158,7 +158,7 @@ class EnhancedOrchestrator:
         transits = None
         astro_features = {}
         
-        if state.birth_details and mode != ConversationMode.BIRTH_COLLECTION.value:
+        if state.birth_details and mode != ConversationMode.NEED_BIRTH_DETAILS.value:
             try:
                 # Convert conversation birth details to astro format
                 astro_birth = self._convert_birth_details(state.birth_details)
@@ -178,13 +178,18 @@ class EnhancedOrchestrator:
                 transits = await get_or_refresh_transits(user_id, astro_birth, now)
                 logger.debug("RAW_ASTRO_TRANSITS: %s", transits.model_dump_json()[:5000])
                 
-                # Step 5: Build topic-specific astro_features
+                # Classify timeframe from user question
+                timeframe = classify_timeframe(request.message)
+                niro_logger.info(f"[TIMEFRAME] detected={timeframe['description']} horizon_months={timeframe['horizon_months']}")
+                
+                # Step 5: Build topic-specific astro_features with timeframe hint
                 astro_features = build_astro_features(
                     profile=profile,
                     transits=transits,
                     mode=mode,
                     topic=topic,
-                    now=now
+                    now=now,
+                    timeframe_hint=timeframe
                 )
                 
                 logger.debug(
