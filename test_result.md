@@ -173,7 +173,7 @@ backend:
     file: "/app/backend/astro_client/niro_llm.py"
     stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
@@ -187,6 +187,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "CRITICAL: Real LLM integration FAILED. OpenAI API returns 401 'Incorrect API key provided' error. Gemini API returns 429 'quota exceeded' error. System falling back to stub responses: 'Unable to generate response. Please check API configuration.' Backend logs confirm both APIs failing. NIRO is NOT using real GPT-4-turbo as intended."
+      - working: "NA"
+        agent: "main"
+        comment: "FIXED: Updated OpenAI API key with valid sk-proj- key provided by user. Backend restarted. Ready for retesting with new valid API key."
 
   - task: "Enhanced Orchestrator"
     implemented: true
