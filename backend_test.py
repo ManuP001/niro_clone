@@ -2299,6 +2299,160 @@ class ReportGenerationTester:
             self.log_result("POST Chat Endpoint Real LLM", False, f"Exception: {str(e)}")
             return False
 
+    def test_niro_health_reading_real_llm(self):
+        """Test NIRO Health Reading with Real LLM"""
+        try:
+            session_id = f"test_health_{uuid.uuid4().hex[:8]}"
+            
+            # Set up session with birth details and past themes done
+            birth_details = {
+                "dob": "1990-08-15",
+                "tob": "14:30",
+                "location": "Mumbai, Maharashtra, India",
+                "latitude": 19.0760,
+                "longitude": 72.8777,
+                "timezone": 5.5
+            }
+            
+            # Create session and set birth details
+            initial_payload = {"sessionId": session_id, "message": "Hello", "actionId": None}
+            response = self.session.post(f"{BACKEND_URL}/chat", json=initial_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Health Reading - Setup", False, f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Set birth details
+            response = self.session.post(f"{BACKEND_URL}/chat/session/{session_id}/birth-details", json=birth_details, timeout=30)
+            if response.status_code != 200:
+                self.log_result("NIRO Health Reading - Birth Details", False, f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Do past themes
+            past_payload = {"sessionId": session_id, "message": "Tell me about my past themes", "actionId": None}
+            response = self.session.post(f"{BACKEND_URL}/chat", json=past_payload, timeout=30)
+            if response.status_code != 200:
+                self.log_result("NIRO Health Reading - Past Themes", False, f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Test health reading
+            payload = {
+                "sessionId": session_id,
+                "message": "How is my health looking?",
+                "actionId": "focus_health_energy"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Health Reading", False, f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            reply = data.get("reply", {})
+            
+            # Check for stub responses
+            summary = reply.get("summary", "")
+            stub_indicators = ["Unable to generate response", "Service unavailable", "Please check API configuration"]
+            
+            for indicator in stub_indicators:
+                if indicator in summary:
+                    self.log_result("NIRO Health Reading", False, f"STUB RESPONSE: '{indicator}' found", reply)
+                    return False
+            
+            # Verify health focus and meaningful content
+            if data.get("focus") != "health_energy":
+                self.log_result("NIRO Health Reading", False, f"Expected focus 'health_energy', got '{data.get('focus')}'", data)
+                return False
+            
+            if len(summary) < 50 or len(reply.get("reasons", [])) == 0:
+                self.log_result("NIRO Health Reading", False, "Insufficient content in health reading", reply)
+                return False
+            
+            self.log_result("NIRO Health Reading", True, "Real health-focused astrological reading generated")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Health Reading", False, f"Exception: {str(e)}")
+            return False
+
+    def test_niro_relationship_reading_real_llm(self):
+        """Test NIRO Relationship Reading with Real LLM"""
+        try:
+            session_id = f"test_relationship_{uuid.uuid4().hex[:8]}"
+            
+            # Set up session with birth details and past themes done
+            birth_details = {
+                "dob": "1990-08-15",
+                "tob": "14:30",
+                "location": "Mumbai, Maharashtra, India",
+                "latitude": 19.0760,
+                "longitude": 72.8777,
+                "timezone": 5.5
+            }
+            
+            # Create session and set birth details
+            initial_payload = {"sessionId": session_id, "message": "Hello", "actionId": None}
+            response = self.session.post(f"{BACKEND_URL}/chat", json=initial_payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Relationship Reading - Setup", False, f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Set birth details
+            response = self.session.post(f"{BACKEND_URL}/chat/session/{session_id}/birth-details", json=birth_details, timeout=30)
+            if response.status_code != 200:
+                self.log_result("NIRO Relationship Reading - Birth Details", False, f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Do past themes
+            past_payload = {"sessionId": session_id, "message": "Tell me about my past themes", "actionId": None}
+            response = self.session.post(f"{BACKEND_URL}/chat", json=past_payload, timeout=30)
+            if response.status_code != 200:
+                self.log_result("NIRO Relationship Reading - Past Themes", False, f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Test relationship reading
+            payload = {
+                "sessionId": session_id,
+                "message": "What about my romantic relationships?",
+                "actionId": "focus_romantic_relationships"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("NIRO Relationship Reading", False, f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            reply = data.get("reply", {})
+            
+            # Check for stub responses
+            summary = reply.get("summary", "")
+            stub_indicators = ["Unable to generate response", "Service unavailable", "Please check API configuration"]
+            
+            for indicator in stub_indicators:
+                if indicator in summary:
+                    self.log_result("NIRO Relationship Reading", False, f"STUB RESPONSE: '{indicator}' found", reply)
+                    return False
+            
+            # Verify relationship focus and meaningful content
+            if data.get("focus") != "romantic_relationships":
+                self.log_result("NIRO Relationship Reading", False, f"Expected focus 'romantic_relationships', got '{data.get('focus')}'", data)
+                return False
+            
+            if len(summary) < 50 or len(reply.get("reasons", [])) == 0:
+                self.log_result("NIRO Relationship Reading", False, "Insufficient content in relationship reading", reply)
+                return False
+            
+            self.log_result("NIRO Relationship Reading", True, "Real relationship-focused astrological reading generated")
+            return True
+            
+        except Exception as e:
+            self.log_result("NIRO Relationship Reading", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests focusing on REAL OpenAI GPT-4-turbo integration"""
         print("=" * 80)
