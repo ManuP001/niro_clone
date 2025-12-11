@@ -262,13 +262,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "NIRO LLM Module"
-    - "Enhanced Orchestrator"
-    - "POST /api/chat Endpoint (Enhanced)"
-  stuck_tasks: 
-    - "NIRO LLM Module"
-    - "Enhanced Orchestrator"
-    - "POST /api/chat Endpoint (Enhanced)"
+    - "Astro Client Models"
+    - "Vedic API Client"
+    - "Astro Storage Layer"
+    - "Astro Interpreter"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
