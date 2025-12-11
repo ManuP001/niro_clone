@@ -173,7 +173,7 @@ backend:
     file: "/app/backend/astro_client/niro_llm.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
@@ -181,6 +181,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "NIRO LLM Module working with **STUBBED responses**. Response structure validation passed: summary (2-3 lines), reasons (2-4 bullets), remedies array, suggestedActions array. Backend logs show 'Using STUB LLM response - replace with real LLM'. Real Gemini/OpenAI integration needed for production."
+      - working: "NA"
+        agent: "main"
+        comment: "Integrated REAL OpenAI API with GPT-4-turbo model. Updated .env with user's OpenAI API key. Changed model from gpt-4o-mini to gpt-4-turbo for better quality responses. Increased max_tokens to 1500 for more detailed readings. Backend restarted successfully. Ready for testing with real LLM."
 
   - task: "Enhanced Orchestrator"
     implemented: true
