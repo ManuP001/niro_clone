@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+# Add parent directory to path to support relative imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from dotenv import load_dotenv
@@ -5,13 +10,12 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
-from pathlib import Path
 import time
 from typing import List, Optional
 from datetime import datetime, timezone
 
 # Import our custom modules
-from .models import (
+from backend.models import (
     User, UserCreate,
     Transaction, TransactionCreate, MockPaymentVerify,
     Report, ReportRequest, ReportResponse, ReportStatus,
