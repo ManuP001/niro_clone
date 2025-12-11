@@ -6,7 +6,7 @@ for frontend visualization (charts, timelines, heatmaps)
 import re
 from typing import Dict, List, Any
 from datetime import datetime, timedelta
-from models import VisualData
+from .models import VisualData
 
 class VisualDataExtractor:
     """Extract visual data from reports for chart generation"""

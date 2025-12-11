@@ -11,30 +11,30 @@ from typing import List, Optional
 from datetime import datetime, timezone
 
 # Import our custom modules
-from models import (
+from .models import (
     User, UserCreate,
     Transaction, TransactionCreate, MockPaymentVerify,
     Report, ReportRequest, ReportResponse, ReportStatus,
     FollowUpQuestion, FollowUpResponse,
     PriceConfig, PriceUpdate, ReportType, PaymentStatus
 )
-from gemini_agent import GeminiAgent
-from sandbox_executor import get_sandbox_executor
-from pdf_generator import AstroPrescriptionPDF
-from prompt_templates import build_code_generation_prompt
-from vedic_api_client import VedicAstroClient
-from gemini_astro_calculator import GeminiAstroCalculator
-from advanced_prompts import build_user_context
-from visual_data_extractor import VisualDataExtractor
-from time_parser import TimeParser
-from city_service import CityService, IndianCityService
-from chat_agent import AstroChatAgent
-from chat_models import ChatRequest, ChatResponse, ChatMessage, ChatSession, ChatRole
-from niro_models import NiroChatRequest, NiroChatResponse
-from niro_agent import NiroChatAgent
+from .gemini_agent import GeminiAgent
+from .sandbox_executor import get_sandbox_executor
+from .pdf_generator import AstroPrescriptionPDF
+from .prompt_templates import build_code_generation_prompt
+from .vedic_api_client import VedicAstroClient
+from .gemini_astro_calculator import GeminiAstroCalculator
+from .advanced_prompts import build_user_context
+from .visual_data_extractor import VisualDataExtractor
+from .time_parser import TimeParser
+from .city_service import CityService, IndianCityService
+from .chat_agent import AstroChatAgent
+from .chat_models import ChatRequest, ChatResponse, ChatMessage, ChatSession, ChatRole
+from .niro_models import NiroChatRequest, NiroChatResponse
+from .niro_agent import NiroChatAgent
 
 # Import the conversation orchestrator (both legacy and enhanced)
-from conversation import (
+from .conversation import (
     ConversationOrchestrator,
     EnhancedOrchestrator,
     create_enhanced_orchestrator,
@@ -45,7 +45,7 @@ from conversation import (
 )
 
 # Import astro_client components for direct access
-from astro_client import (
+from .astro_client import (
     Topic,
     classify_topic,
     get_astro_profile
@@ -53,6 +53,9 @@ from astro_client import (
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Ensure workspace-local logs directory exists for runtime logs
+(ROOT_DIR / "logs").mkdir(parents=True, exist_ok=True)
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -65,7 +68,7 @@ ASTRO_CALC_SOURCE = os.environ.get('ASTRO_CALCULATION_SOURCE', 'vedic_api')
 # Initialize core components
 gemini_agent = GeminiAgent()
 sandbox_executor = get_sandbox_executor(use_docker=True)  # Use Docker for production
-pdf_generator = AstroPrescriptionPDF(output_dir="/app/backend/reports")
+pdf_generator = AstroPrescriptionPDF(output_dir=str(ROOT_DIR / "reports"))
 vedic_client = VedicAstroClient()  # VedicAstroAPI client (accurate)
 gemini_calculator = GeminiAstroCalculator()  # Gemini LLM calculator (experimental)
 visual_extractor = VisualDataExtractor()  # Visual data extraction for charts

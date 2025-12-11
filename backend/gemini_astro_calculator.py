@@ -6,7 +6,7 @@ This should be used for experimentation only, not production.
 import os
 import logging
 from typing import Dict, Any, Tuple
-from gemini_agent import GeminiAgent
+from .gemini_agent import GeminiAgent
 
 logger = logging.getLogger(__name__)
 

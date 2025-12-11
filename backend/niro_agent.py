@@ -8,7 +8,7 @@ import logging
 from typing import List, Optional, Tuple
 from datetime import datetime
 
-from niro_models import NiroReply, SuggestedAction, NiroChatResponse
+from .niro_models import NiroReply, SuggestedAction, NiroChatResponse
 
 logger = logging.getLogger(__name__)
 

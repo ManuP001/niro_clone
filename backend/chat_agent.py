@@ -7,10 +7,10 @@ import os
 import json
 import logging
 from typing import Tuple, Dict, Any, Optional
-from gemini_agent import GeminiAgent
-from openai_agent import OpenAIAgent
-from provider_router import ProviderRouter, Provider
-from chat_models import (
+from .gemini_agent import GeminiAgent
+from .openai_agent import OpenAIAgent
+from .provider_router import ProviderRouter, Provider
+from .chat_models import (
     ExtractedData, SubjectData, PlaceData, ChatContext, 
     APITrigger, ConfidenceMetadata, RequestType
 )

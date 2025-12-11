@@ -11,6 +11,8 @@ Integrates:
 from typing import Dict, Any, List, Optional
 from datetime import datetime, date
 import logging
+import os
+from pathlib import Path
 import re
 import json
 
@@ -27,8 +29,8 @@ from .session_store import SessionStore, InMemorySessionStore
 from .mode_router import ModeRouter
 from .birth_extractor import HybridBirthDetailsExtractor
 
-# Import from astro_client package
-from astro_client import (
+# Import from astro_client package (go up one level: ..astro_client)
+from ..astro_client import (
     BirthDetails as AstroBirthDetails,
     AstroProfile,
     AstroTransits,
@@ -42,9 +44,22 @@ from astro_client import (
     build_astro_features,
     call_niro_llm
 )
-from astro_client.vedic_api import vedic_api_client
+from ..astro_client.vedic_api import vedic_api_client
 
 logger = logging.getLogger(__name__)
+
+# NIRO pipeline logger (separate file handler)
+# Use workspace-local logs directory at repo root: <repo>/logs
+repo_root = Path(__file__).resolve().parents[2]
+logs_dir = repo_root / "logs"
+logs_dir.mkdir(parents=True, exist_ok=True)
+niro_logger = logging.getLogger("niro_pipeline")
+niro_logger.setLevel(logging.INFO)
+if not niro_logger.handlers:
+    handler = logging.FileHandler(logs_dir / "niro_pipeline.log")
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    niro_logger.addHandler(handler)
 
 
 class EnhancedOrchestrator:
@@ -84,6 +99,7 @@ class EnhancedOrchestrator:
         """
         logger.info(f"Processing message for session {request.sessionId}")
         now = datetime.utcnow()
+        niro_logger.info(f"[START] session={request.sessionId} message='{request.message}'")
         
         # Step 1: Load or create session state
         state = self.session_store.get_or_create(request.sessionId)
@@ -113,6 +129,7 @@ class EnhancedOrchestrator:
             if extracted_details:
                 state.birth_details = extracted_details
                 logger.info(f"Extracted birth details from message for session {request.sessionId}")
+                niro_logger.info(f"[BIRTH EXTRACTION] extracted={bool(state.birth_details)}\ndetails={state.birth_details}")
         
         # Step 2: Route mode
         mode = self.mode_router.route_mode(
@@ -133,6 +150,7 @@ class EnhancedOrchestrator:
         state.focus = topic
         
         logger.info(f"Routed to mode={mode}, topic={topic}")
+        niro_logger.info(f"[ROUTING] mode={mode} topic={topic}")
         
         # Step 4: Ensure astro profile and transits (if birth details available)
         profile = None
@@ -146,6 +164,7 @@ class EnhancedOrchestrator:
                 user_id = request.sessionId
                 
                 # Get or fetch profile
+                niro_logger.info("[PROFILE] fetching or loading cached profile")
                 profile = await get_astro_profile(user_id)
                 if not profile:
                     logger.info(f"Fetching new astro profile for {user_id}")
@@ -154,6 +173,7 @@ class EnhancedOrchestrator:
                     logger.debug("RAW_ASTRO_PROFILE: %s", profile.model_dump_json()[:5000])
                 
                 # Get or refresh transits (automatically fetches if stale or missing)
+                niro_logger.info("[TRANSITS] fetching or loading cached transits")
                 transits = await get_or_refresh_transits(user_id, astro_birth, now)
                 logger.debug("RAW_ASTRO_TRANSITS: %s", transits.model_dump_json()[:5000])
                 
@@ -172,6 +192,7 @@ class EnhancedOrchestrator:
                 )
                 
                 logger.info(f"Built astro_features with {len(astro_features.get('focus_factors', []))} focus factors")
+                niro_logger.info(f"[ASTRO FEATURES] built keys={list(astro_features.keys())}\nfocus_factors={astro_features.get('focus_factors')}")
                 
             except Exception as e:
                 logger.error(f"Error building astro features: {e}", exc_info=True)
@@ -185,8 +206,10 @@ class EnhancedOrchestrator:
             'session_id': request.sessionId,
             'timestamp': now.isoformat() + 'Z'
         }
-        
+        niro_logger.info(f"[LLM INPUT] payload={llm_payload}")
+
         llm_response = call_niro_llm(llm_payload)
+        niro_logger.info(f"[LLM OUTPUT] reply={llm_response}")
         
         # Step 7: Build suggested actions
         suggested_actions = self._build_suggested_actions(mode, topic)
@@ -221,6 +244,7 @@ class EnhancedOrchestrator:
         )
         
         logger.info(f"Response generated: mode={mode}, topic={topic}")
+        niro_logger.info(f"[END] session={request.sessionId}")
         return response
     
     def _convert_birth_details(self, conv_birth: ConvBirthDetails) -> AstroBirthDetails:
