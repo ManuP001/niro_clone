@@ -18,13 +18,14 @@ const ChatScreen = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim()) return;
     
+    const userMessage = input.trim();
     const newMessage = {
       id: messages.length + 1,
       type: 'user',
-      message: input,
+      message: userMessage,
       timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
     };
     
@@ -32,17 +33,46 @@ const ChatScreen = () => {
     setInput('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId: sessionId,
+          message: userMessage,
+          actionId: null,
+          subjectData: null
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response');
+      }
+
+      const data = await response.json();
+      const aiMessage = data.reply?.rawText || data.reply?.summary || 'Sorry, I could not process your request.';
+      
       const aiResponse = {
         id: messages.length + 2,
         type: 'ai',
-        message: 'Based on your birth chart analysis, I can see interesting planetary alignments affecting this area of your life. The current transit suggests a period of growth and transformation. Would you like me to elaborate on specific aspects?',
+        message: aiMessage,
         timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
       };
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorResponse = {
+        id: messages.length + 2,
+        type: 'ai',
+        message: 'Sorry, I encountered an error. Please try again.',
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+      };
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
       setIsTyping(false);
-    }, 2000);
+    }
   };
 
   return (
