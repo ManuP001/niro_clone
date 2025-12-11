@@ -37,7 +37,6 @@ __all__ = [
     'ChatRequest',
     'ChatResponse',
     'AstroFeatures',
-    'NiroLLMPayload',
     # Components
     'SessionStore',
     'InMemorySessionStore',
