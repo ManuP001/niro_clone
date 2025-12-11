@@ -114,13 +114,13 @@ USER QUESTION: {user_question}
                 client = OpenAI(api_key=self.openai_key)
                 
                 response = client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model="gpt-4-turbo",
                     messages=[
                         {"role": "system", "content": self.system_prompt},
                         {"role": "user", "content": user_prompt}
                     ],
                     temperature=0.7,
-                    max_tokens=800
+                    max_tokens=1500
                 )
                 
                 content = response.choices[0].message.content
