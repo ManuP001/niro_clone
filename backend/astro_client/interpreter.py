@@ -28,7 +28,8 @@ def build_astro_features(
     transits: AstroTransits,
     mode: str,
     topic: str,
-    now: datetime = None
+    now: datetime = None,
+    timeframe_hint: Dict[str, any] = None
 ) -> Dict[str, Any]:
     """
     Build topic-specific astro features for NIRO LLM.
@@ -40,9 +41,10 @@ def build_astro_features(
     Args:
         profile: User's AstroProfile (natal chart + dashas)
         transits: Current transits data
-        mode: Conversation mode (PAST_THEMES, FOCUS_READING, etc.)
+        mode: Conversation mode (NEED_BIRTH_DETAILS, NORMAL_READING)
         topic: Topic being discussed (career, money, etc.)
         now: Current datetime (default: utcnow)
+        timeframe_hint: Timeframe classification result (from classify_timeframe)
         
     Returns:
         Dict with structured astro features for LLM
@@ -50,7 +52,11 @@ def build_astro_features(
     now = now or datetime.utcnow()
     today = now.date()
     
-    logger.info(f"Building astro features: mode={mode}, topic={topic}")
+    # Default timeframe: 12 months if not provided
+    if timeframe_hint is None:
+        timeframe_hint = {"type": "default", "value": 12, "horizon_months": 12}
+    
+    logger.info(f"Building astro features: mode={mode}, topic={topic}, timeframe={timeframe_hint.get('horizon_months', 12)} months")
     
     # Get relevant chart levers for this topic
     levers = get_chart_levers(topic)
