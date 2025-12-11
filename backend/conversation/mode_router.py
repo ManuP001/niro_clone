@@ -1,6 +1,7 @@
 """
 Mode Router for NIRO Conversation
-Determines the conversation mode and focus based on state and user input.
+Determines the conversation mode based on birth details availability.
+Simplified to 2-mode system: NEED_BIRTH_DETAILS or NORMAL_READING.
 """
 
 from typing import Tuple, Optional, Set
@@ -14,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 class ModeRouter:
     """
-    Routes conversation to appropriate mode and focus based on:
-    - Current conversation state
-    - User message content
+    Routes conversation to appropriate mode based on:
+    - Birth details availability (complete or incomplete)
+    - User message content for focus detection
     - Action ID from quick reply chips
     """
     
@@ -63,15 +64,8 @@ class ModeRouter:
         'deep_dive': None,  # Keep current focus
     }
     
-    # Action ID to mode mapping
-    ACTION_TO_MODE = {
-        'daily_guidance': ConversationMode.DAILY_GUIDANCE,
-        'past_themes': ConversationMode.PAST_THEMES,
-        'general_guidance': ConversationMode.GENERAL_GUIDANCE,
-    }
-    
     def __init__(self):
-        logger.info("ModeRouter initialized")
+        logger.info("ModeRouter initialized (2-mode system: NEED_BIRTH_DETAILS / NORMAL_READING)")
     
     def route_mode(
         self,
@@ -81,6 +75,10 @@ class ModeRouter:
     ) -> Tuple[str, Optional[str]]:
         """
         Determine mode and focus for the current turn.
+        
+        Simplified logic:
+        - If birth_details is missing or incomplete -> NEED_BIRTH_DETAILS
+        - Else -> NORMAL_READING
         
         Args:
             state: Current conversation state
@@ -92,49 +90,61 @@ class ModeRouter:
         """
         logger.debug(f"Routing: current_mode={state.mode}, action_id={action_id}")
         
-        # Rule 1: If birth_details is missing -> BIRTH_COLLECTION
-        if state.birth_details is None:
-            logger.info("No birth details -> BIRTH_COLLECTION mode")
-            return ConversationMode.BIRTH_COLLECTION.value, None
+        # Rule 1: If birth_details is missing or incomplete -> NEED_BIRTH_DETAILS
+        if not self._has_complete_birth_details(state):
+            logger.info("Birth details missing/incomplete -> NEED_BIRTH_DETAILS mode")
+            return ConversationMode.NEED_BIRTH_DETAILS.value, None
         
-        # Rule 2: If retro analysis hasn't been done -> PAST_THEMES (first reading)
-        if not state.has_done_retro:
-            logger.info("Retro not done -> PAST_THEMES mode")
-            return ConversationMode.PAST_THEMES.value, None
+        # Rule 2: Birth details complete -> NORMAL_READING
+        # Now determine focus from action_id or message content
         
-        # Rule 3: Check actionId for explicit mode/focus
-        if action_id:
-            # Check for mode override
-            if action_id in self.ACTION_TO_MODE:
-                mode = self.ACTION_TO_MODE[action_id].value
-                focus = state.focus  # Keep existing focus
-                logger.info(f"Action {action_id} -> mode={mode}, focus={focus}")
-                return mode, focus
+        # Check actionId for explicit focus
+        if action_id and action_id in self.ACTION_TO_FOCUS:
+            focus = self.ACTION_TO_FOCUS[action_id]
+            if focus is None and action_id == 'deep_dive':
+                focus = state.focus  # Keep current focus for deep dive
             
-            # Check for focus override
-            if action_id in self.ACTION_TO_FOCUS:
-                focus = self.ACTION_TO_FOCUS[action_id]
-                if focus is None and action_id == 'deep_dive':
-                    focus = state.focus  # Keep current focus for deep dive
-                
-                if focus:
-                    logger.info(f"Action {action_id} -> FOCUS_READING, focus={focus}")
-                    return ConversationMode.FOCUS_READING.value, focus
+            if focus:
+                logger.info(f"Action {action_id} -> NORMAL_READING, focus={focus}")
+                return ConversationMode.NORMAL_READING.value, focus
         
-        # Rule 4: Infer focus from message keywords
+        # Infer focus from message keywords
         inferred_focus = self._infer_focus_from_message(user_message)
         
         if inferred_focus:
             logger.info(f"Inferred focus from message: {inferred_focus}")
-            return ConversationMode.FOCUS_READING.value, inferred_focus
+            return ConversationMode.NORMAL_READING.value, inferred_focus
         
-        # Rule 5: Keep previous focus if exists, else GENERAL_GUIDANCE
+        # Keep previous focus if exists, else None (general reading)
         if state.focus:
             logger.info(f"Keeping previous focus: {state.focus}")
-            return ConversationMode.FOCUS_READING.value, state.focus
+            return ConversationMode.NORMAL_READING.value, state.focus
         
-        logger.info("No specific focus -> GENERAL_GUIDANCE mode")
-        return ConversationMode.GENERAL_GUIDANCE.value, None
+        logger.info("No specific focus -> NORMAL_READING mode (general)")
+        return ConversationMode.NORMAL_READING.value, None
+    
+    def _has_complete_birth_details(self, state: ConversationState) -> bool:
+        """
+        Check if birth details are complete (has dob, tob, and location).
+        
+        Args:
+            state: Current conversation state
+            
+        Returns:
+            True if all required fields present, False otherwise
+        """
+        if state.birth_details is None:
+            return False
+        
+        bd = state.birth_details
+        has_dob = bool(bd.dob)
+        has_tob = bool(bd.tob)
+        has_location = bool(bd.location)
+        
+        complete = has_dob and has_tob and has_location
+        logger.debug(f"Birth details check: dob={has_dob}, tob={has_tob}, location={has_location} -> complete={complete}")
+        
+        return complete
     
     def _infer_focus_from_message(self, message: str) -> Optional[str]:
         """
@@ -177,8 +187,4 @@ class ModeRouter:
     
     def should_collect_birth_details(self, state: ConversationState) -> bool:
         """Check if we need to collect birth details"""
-        return state.birth_details is None
-    
-    def should_do_retro(self, state: ConversationState) -> bool:
-        """Check if we should do retrograde/past themes analysis"""
-        return state.birth_details is not None and not state.has_done_retro
+        return not self._has_complete_birth_details(state)

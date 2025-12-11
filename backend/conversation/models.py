@@ -11,12 +11,9 @@ import uuid
 
 
 class ConversationMode(str, Enum):
-    """Conversation modes for NIRO chat"""
-    BIRTH_COLLECTION = "BIRTH_COLLECTION"
-    PAST_THEMES = "PAST_THEMES"
-    FOCUS_READING = "FOCUS_READING"
-    GENERAL_GUIDANCE = "GENERAL_GUIDANCE"
-    DAILY_GUIDANCE = "DAILY_GUIDANCE"
+    """Simplified conversation modes for NIRO chat"""
+    NEED_BIRTH_DETAILS = "NEED_BIRTH_DETAILS"
+    NORMAL_READING = "NORMAL_READING"
 
 
 class FocusArea(str, Enum):
@@ -41,10 +38,9 @@ class BirthDetails(BaseModel):
 class ConversationState(BaseModel):
     """State model for a conversation session"""
     session_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    mode: ConversationMode = Field(default=ConversationMode.BIRTH_COLLECTION)
+    mode: ConversationMode = Field(default=ConversationMode.NEED_BIRTH_DETAILS)
     focus: Optional[str] = Field(None, description="Current focus area")
     birth_details: Optional[BirthDetails] = Field(None)
-    has_done_retro: bool = Field(default=False, description="Whether retrograde analysis has been done")
     message_count: int = Field(default=0)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
@@ -99,15 +95,5 @@ class AstroFeatures(BaseModel):
     transits: List[Dict[str, Any]] = Field(default_factory=list)
     planetary_strengths: List[Dict[str, Any]] = Field(default_factory=list)
     yogas: List[Dict[str, Any]] = Field(default_factory=list)
-    focus_factors: List[Dict[str, Any]] = Field(default_factory=list)
-    past_events: List[Dict[str, Any]] = Field(default_factory=list)
     timing_windows: List[Dict[str, Any]] = Field(default_factory=list)
-    key_rules: List[str] = Field(default_factory=list)
-
-
-class NiroLLMPayload(BaseModel):
-    """Payload for the NIRO LLM module"""
-    mode: str
-    focus: Optional[str]
-    user_question: str
-    astro_features: Dict[str, Any]
+    focus_factors: List[Dict[str, Any]] = Field(default_factory=list)
