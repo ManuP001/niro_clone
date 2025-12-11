@@ -7,6 +7,7 @@ const ChatScreen = () => {
   const [messages, setMessages] = useState(chatMessages);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [sessionId] = useState(() => `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
