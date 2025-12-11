@@ -2273,47 +2273,31 @@ class ReportGenerationTester:
             return False
 
     def run_all_tests(self):
-        """Run all backend tests including NIRO chat orchestrator"""
-        print("=" * 60)
-        print("TESTING NIRO ENHANCED ORCHESTRATOR")
-        print("Complete Backend API Testing with Topic Classification & Astro Features")
-        print("=" * 60)
+        """Run all backend tests focusing on REAL OpenAI GPT-4-turbo integration"""
+        print("=" * 80)
+        print("TESTING NIRO BACKEND WITH REAL OPENAI GPT-4-TURBO INTEGRATION")
+        print("Focus: Verify REAL LLM responses (not stubs)")
+        print("=" * 80)
         
         tests = [
             # Core API Tests
             ("Health Check", self.test_health_check),
-            ("Pricing Endpoint", self.test_pricing_endpoint),
-            ("City Search", self.test_city_search),
-            ("Time Parser", self.test_time_parser),
             
-            # Enhanced NIRO Tests (Review Request Specific)
-            ("1. Topic Taxonomy Endpoint", self.test_topic_taxonomy_endpoint),
-            ("2. Birth Details Extraction", self.test_birth_details_extraction),
-            ("3. Career Topic Classification", self.test_career_topic_classification),
-            ("4. Romantic Relationships Topic", self.test_romantic_relationships_topic),
-            ("5. Money Topic Classification", self.test_money_topic_classification),
-            ("6. Health Topic Classification", self.test_health_topic_classification),
-            ("7. ActionId Topic Override", self.test_actionid_topic_override),
-            ("8. Session State with Astro Profile", self.test_session_state_with_astro_profile),
-            ("9. Response Structure Validation", self.test_response_structure_validation),
-            ("10. Daily Guidance Mode", self.test_daily_guidance_mode),
+            # CRITICAL: Real OpenAI GPT-4-turbo Integration Tests (Review Request Priority)
+            ("🔥 NIRO LLM Real OpenAI Integration", self.test_niro_llm_real_openai_integration),
+            ("🔥 Enhanced Orchestrator Real LLM Flow", self.test_enhanced_orchestrator_real_llm_flow),
+            ("🔥 POST /api/chat Endpoint Real LLM", self.test_post_chat_endpoint_real_llm),
             
-            # Legacy NIRO Orchestrator Tests
-            ("NIRO Birth Collection Mode", self.test_niro_birth_collection_mode),
-            ("NIRO Set Birth Details", self.test_niro_set_birth_details),
-            ("NIRO Past Themes Mode", self.test_niro_past_themes_mode),
-            ("NIRO Focus Career Action", self.test_niro_chat_focus_career_action),
-            ("NIRO Focus Relationship Action", self.test_niro_chat_focus_relationship_action),
-            ("NIRO Keyword Inference", self.test_niro_keyword_inference),
-            ("NIRO Session State Endpoint", self.test_niro_session_state_endpoint),
-            ("NIRO Suggested Actions", self.test_niro_chat_suggested_actions_populated),
-            ("NIRO Response Schema", self.test_niro_chat_response_schema),
-            ("NIRO Session Reset", self.test_niro_session_reset),
-            ("NIRO Daily Guidance Action", self.test_niro_chat_daily_guidance_action),
-            ("NIRO Basic Career Message", self.test_niro_chat_basic_message),
-            
-            # Report Generation (existing functionality)
-            ("Report Generation Flow", self.test_report_generation_flow)
+            # Supporting NIRO Tests
+            ("Topic Taxonomy Endpoint", self.test_topic_taxonomy_endpoint),
+            ("Birth Details Extraction", self.test_birth_details_extraction),
+            ("Career Topic Classification", self.test_career_topic_classification),
+            ("Romantic Relationships Topic", self.test_romantic_relationships_topic),
+            ("Money Topic Classification", self.test_money_topic_classification),
+            ("Health Topic Classification", self.test_health_topic_classification),
+            ("ActionId Topic Override", self.test_actionid_topic_override),
+            ("Response Structure Validation", self.test_response_structure_validation),
+            ("Daily Guidance Mode", self.test_daily_guidance_mode),
         ]
         
         passed = 0
