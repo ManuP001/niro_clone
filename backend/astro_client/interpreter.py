@@ -480,13 +480,17 @@ def _analyze_timing_windows(
     profile: AstroProfile,
     transits: AstroTransits,
     topic: str,
-    today: date
+    today: date,
+    timeframe_hint: Dict[str, any] = None
 ) -> List[Dict[str, Any]]:
     """
-    Identify favorable and challenging timing windows.
+    Identify favorable and challenging timing windows based on timeframe.
     """
     windows = []
-    future_end = today + timedelta(days=545)  # ~18 months
+    
+    # Use timeframe hint for window selection, default to 12 months
+    horizon_months = timeframe_hint.get('horizon_months', 12) if timeframe_hint else 12
+    future_end = today + timedelta(days=int(horizon_months * 30))
     
     # Get relevant houses
     levers = get_chart_levers(topic)
