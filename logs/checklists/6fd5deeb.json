@@ -1,0 +1,18 @@
+{
+  "request_id": "6fd5deeb",
+  "timestamp": "2025-12-18T09:43:14.891674Z",
+  "user_input": "I want to know about my job prospects and career promotion opportunities",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your job prospects and promotion opportunities look moderately favorable, with a higher probability of meaningful progress during the highlighted supportive windows. Expect the strongest chances for role enhancement, recognition, or a step-up in responsibilities within those future timing periods, rather than immediate, sudden changes."
+  }
+}

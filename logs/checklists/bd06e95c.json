@@ -1,0 +1,18 @@
+{
+  "request_id": "bd06e95c",
+  "timestamp": "2025-12-18T09:42:45.300441Z",
+  "user_input": "I was born on 25/12/1985 at 10:30 in Delhi",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart suggests a thoughtful, determined personality with strong potential in communication, analysis, and leadership, alongside deep emotional intensity and a need for meaningful relationships and inner stability."
+  }
+}

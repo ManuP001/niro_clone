@@ -1,0 +1,18 @@
+{
+  "request_id": "06cc1540",
+  "timestamp": "2025-12-18T09:45:16.915536Z",
+  "user_input": "Tell me about my past themes",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your past shows strong themes of responsibility, emotional depth, and repeated \u201crestructuring phases\u201d in relationships, home, and self-identity. You likely went through cycles of intense growth where you had to mature faster than others and redefine who you are."
+  }
+}

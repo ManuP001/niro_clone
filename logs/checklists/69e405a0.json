@@ -1,0 +1,18 @@
+{
+  "request_id": "69e405a0",
+  "timestamp": "2025-12-18T09:05:18.802224Z",
+  "user_input": "Tell me about my past",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your past likely shows a pattern of early responsibility, emotional intensity, and repeated \u201crestarts\u201d in life, with strong themes around family, self\u2011identity, and learning through relationships and inner struggle."
+  }
+}

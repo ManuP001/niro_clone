@@ -1,0 +1,18 @@
+{
+  "request_id": "bcd845c7",
+  "timestamp": "2025-12-18T09:43:16.373473Z",
+  "user_input": "Hello",
+  "topic": "general",
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

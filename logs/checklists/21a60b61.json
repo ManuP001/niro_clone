@@ -1,0 +1,18 @@
+{
+  "request_id": "21a60b61",
+  "timestamp": "2025-12-18T09:44:03.754859Z",
+  "user_input": "I want to know about my salary increase and investment opportunities for income growth",
+  "topic": "money",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "From mid-2025 through late 2027, the probability of salary growth and new income streams looks elevated, with especially promising windows for investments and side-income experiments. The strongest window for a noticeable salary jump and/or role upgrade appears between October 2025 and March 2026, with another supportive phase from May 2027 to early 2028."
+  }
+}

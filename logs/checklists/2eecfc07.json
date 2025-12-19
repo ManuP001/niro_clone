@@ -1,0 +1,18 @@
+{
+  "request_id": "2eecfc07",
+  "timestamp": "2025-12-18T09:44:38.400523Z",
+  "user_input": "Tell me about my career and job prospects",
+  "topic": "money",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_money",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart suggests a solid potential for financial stability through consistent effort, skill-building, and gradual growth. Career changes and upgrades are likely to come in phases rather than sudden windfalls, with good scope for specialization and eventually more authority or independence."
+  }
+}

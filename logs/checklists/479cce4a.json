@@ -1,0 +1,18 @@
+{
+  "request_id": "479cce4a",
+  "timestamp": "2025-12-18T09:41:30.336057Z",
+  "user_input": "Tell me about my career prospects and professional growth",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart shows steady, skill-based career growth with good potential for leadership or specialist roles over time. Progress may feel slower in the early/mid phase of life, but persistence and upgrading your skills can bring solid, respected status and financial stability later."
+  }
+}

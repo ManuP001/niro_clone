@@ -1,0 +1,25 @@
+{
+  "request_id": "cbb54f36",
+  "timestamp": "2025-12-18T09:24:25.906200Z",
+  "user_input": "which month did this situation happen in?",
+  "topic": "legal_contracts",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.8955,
+    "lon": 76.6066,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Based on the chart signals, this situation most likely happened around **September**, with some probability it extended into early **October**."
+  }
+}

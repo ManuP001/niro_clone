@@ -1,0 +1,5 @@
+bash
+
+export OPENAI_API_KEY="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"
+
+

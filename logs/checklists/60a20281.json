@@ -1,0 +1,18 @@
+{
+  "request_id": "60a20281",
+  "timestamp": "2025-12-18T09:07:41.259890Z",
+  "user_input": "Tell me about my career prospects",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "You have solid potential for a meaningful, growth\u2011oriented career, especially where analytical skill, communication, and steady responsibility are involved. Progress may feel gradual rather than instant, but long\u2011term stability and respect are very likely if you stay consistent and keep upgrading your skills."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "request_id": "81ae671f",
+  "timestamp": "2025-12-17T17:15:00.764464Z",
+  "user_input": "tell me about my career, how will it evolve in the next 3 months",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1985-10-10",
+    "tob": "10:47",
+    "location": "Dehradun, Uttarakhand, India",
+    "lat": 30.3165,
+    "lon": 78.0322,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "In the next 3 months your career is likely to feel transitional: some pressure and extra responsibility, but also clear chances to improve skills, visibility, and future prospects if you stay disciplined and proactive."
+  }
+}

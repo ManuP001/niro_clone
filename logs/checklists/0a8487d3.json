@@ -1,0 +1,25 @@
+{
+  "request_id": "0a8487d3",
+  "timestamp": "2025-12-18T09:26:32.327755Z",
+  "user_input": "will it be favourable for me to do the same job as I've been doing in the past or re-invent myself with new skills and start something new?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.8955,
+    "lon": 76.6066,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Both paths are possible, but the chart leans slightly in favor of **re\u2011inventing yourself with new skills and gradually transitioning** rather than staying exactly as you are. The most supportive window to explore and build something new looks to be **over the next 1\u20133 years**, with a reassessment point around the end of that period."
+  }
+}

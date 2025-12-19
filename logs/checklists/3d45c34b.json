@@ -1,0 +1,25 @@
+{
+  "request_id": "3d45c34b",
+  "timestamp": "2025-12-18T09:13:01.751436Z",
+  "user_input": "why are you giving me predictions for 2025? We're already about to start 2026. Please tell me about 2026",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.8955,
+    "lon": 76.6066,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your career focus in 2026 is likely to be on stabilizing and consolidating recent changes rather than dramatic new shifts, with a particularly important window for practical progress between March and August 2026."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "request_id": "377f5fce",
+  "timestamp": "2025-12-17T17:18:30.298492Z",
+  "user_input": "How will my relationship with my husband evolve his details are - Manu Pant/ 10:47am, Dehradun, 10-10-1985",
+  "topic": "romantic_relationships",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1985-10-10",
+    "tob": "18:35",
+    "location": "Delhi, Delhi, India",
+    "lat": 28.6139,
+    "lon": 77.209,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your relationship with your husband is likely to deepen through more emotional honesty, shared responsibilities, and some karmic lessons around communication and expectations over the next 3\u20135 years, with notable turning points in 2026\u20132027 and again around 2030."
+  }
+}

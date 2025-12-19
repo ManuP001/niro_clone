@@ -1,0 +1,18 @@
+{
+  "request_id": "1bb73f24",
+  "timestamp": "2025-12-18T09:04:40.812895Z",
+  "user_input": "What about my money and financial situation?",
+  "topic": "money",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart shows steady, skill-based earning potential with phases of both growth and pressure. Money is likely to improve through disciplined effort, learning, and strategic planning rather than sudden windfalls."
+  }
+}

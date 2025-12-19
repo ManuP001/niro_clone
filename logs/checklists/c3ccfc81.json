@@ -1,0 +1,18 @@
+{
+  "request_id": "c3ccfc81",
+  "timestamp": "2025-12-18T09:06:35.039053Z",
+  "user_input": "I want to know about my salary increase and investment opportunities for income growth",
+  "topic": "money",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "There is a moderate-to-strong probability of salary growth and better investment opportunities, especially if you act strategically from mid\u20112025 to late\u20112027. The most favorable window for noticeable income uplift and long\u2011term investments appears between October 2025 and March 2027."
+  }
+}

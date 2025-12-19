@@ -1,0 +1,30 @@
+{
+  "stage": "api_profile",
+  "session_id": "test_session_123",
+  "timestamp": "2025-12-13T09:01:27.797802Z",
+  "coverage": {
+    "ok": 1,
+    "missing": 13,
+    "missing_keys": [
+      "birth_details.dob",
+      "birth_details.tob",
+      "birth_details.location",
+      "moon_sign",
+      "sun_sign",
+      "planets",
+      "houses",
+      "current_mahadasha.planet",
+      "current_mahadasha.start_date",
+      "current_mahadasha.end_date",
+      "current_antardasha.planet",
+      "current_antardasha.start_date",
+      "current_antardasha.end_date"
+    ],
+    "present_keys": [
+      "ascendant"
+    ]
+  },
+  "snapshot": {
+    "ascendant": "Aries"
+  }
+}

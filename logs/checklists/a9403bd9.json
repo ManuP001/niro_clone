@@ -1,0 +1,18 @@
+{
+  "request_id": "a9403bd9",
+  "timestamp": "2025-12-18T09:07:57.188505Z",
+  "user_input": "What's my guidance for today?",
+  "topic": "daily_guidance",
+  "mode": "NORMAL_READING",
+  "action_id": "daily_guidance",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Today favors steady, grounded effort, clear communication, and small but meaningful progress. Go slowly, be practical, and prioritize honest conversations and health routines."
+  }
+}

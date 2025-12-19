@@ -1,0 +1,18 @@
+{
+  "request_id": "1817ab0d",
+  "timestamp": "2025-12-18T09:05:11.213713Z",
+  "user_input": "I was born on 25/12/1985 at 10:30 in Delhi",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart suggests a capable, ambitious person with strong leadership potential, deep emotions beneath a controlled exterior, and a life path focused on balancing career success, relationships, and inner peace."
+  }
+}

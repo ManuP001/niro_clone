@@ -1,0 +1,18 @@
+{
+  "request_id": "d3461f3f",
+  "timestamp": "2025-12-18T09:42:25.546085Z",
+  "user_input": "Tell me about my past themes",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your past likely shows strong themes of responsibility from a young age, deep emotional intensity in relationships, and repeated lessons around self-worth, boundaries, and independence\u2014especially in family and love matters."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "request_id": "e4b7fb42",
+  "timestamp": "2025-12-18T09:12:08.700254Z",
+  "user_input": "My name is Sharad Harjai. I was born on 24/01/1986 at 06:32 am in Rohtak, Haryana. I want to know if this is a good time for me to search for a job or start a business.",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.8955,
+    "lon": 76.6066,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "From now through late 2026 looks moderately supportive for **job search**, while **starting a business becomes significantly more favorable from mid\u20112025 onward**, with the best momentum building between **Oct 2025 \u2013 Dec 2026**. You can explore both, but job looks slightly safer in the next 6\u20139 months."
+  }
+}

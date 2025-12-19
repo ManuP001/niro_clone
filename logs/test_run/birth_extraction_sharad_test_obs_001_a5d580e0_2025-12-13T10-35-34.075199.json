@@ -1,0 +1,11 @@
+{
+  "extracted": true,
+  "method": "regex",
+  "confidence": 0.95,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Rohtak, Haryana",
+    "confidence": 0.95
+  }
+}

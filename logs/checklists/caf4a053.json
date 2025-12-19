@@ -1,0 +1,25 @@
+{
+  "request_id": "caf4a053",
+  "timestamp": "2025-12-18T09:09:34.538985Z",
+  "user_input": "Tell me about my career prospects",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_career",
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "10:30",
+    "location": "New Delhi, India",
+    "lat": 28.6139,
+    "lon": 77.209,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "You have a career chart that favors steady growth, specialization, and eventual leadership, but it asks for patience, consistent upskilling, and conscious work\u2013life boundaries. Your best prospects lie in roles where analysis, communication, and problem\u2011solving meet responsibility and service."
+  }
+}

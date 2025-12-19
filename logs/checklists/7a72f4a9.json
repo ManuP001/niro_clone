@@ -1,0 +1,25 @@
+{
+  "request_id": "7a72f4a9",
+  "timestamp": "2025-12-18T09:13:34.868004Z",
+  "user_input": "is job better or starting a business for me in 2026?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.8955,
+    "lon": 76.6066,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "For 2026, a job looks moderately more favorable than starting a business, especially for stability and growth. Entrepreneurship may become more viable after late 2027, so reassessing around then would be wise."
+  }
+}

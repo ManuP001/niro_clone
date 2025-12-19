@@ -1,0 +1,25 @@
+{
+  "request_id": "e7e1b72d",
+  "timestamp": "2025-12-18T09:03:30.497890Z",
+  "user_input": "Tell me about my career prospects",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_career",
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "10:30",
+    "location": "New Delhi, India",
+    "lat": 28.6139,
+    "lon": 77.209,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "You\u2019re likely to have a career that evolves through distinct phases, with strong potential for growth when you lean into your unique skills, adaptability, and willingness to keep learning. Leadership or specialist roles can emerge over time, especially if you stay flexible about industry and location."
+  }
+}

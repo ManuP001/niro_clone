@@ -1,0 +1,18 @@
+{
+  "request_id": "802212f0",
+  "timestamp": "2025-12-18T09:06:15.189323Z",
+  "user_input": "I want to know about love and dating in my life, when will I find my boyfriend",
+  "topic": "romantic_relationships",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "There is a strong probability of meaningful romantic developments and a potential boyfriend entering your life between **March 2026 and February 2027**, with a secondary supportive window around **late 2027 to mid\u20112028**."
+  }
+}

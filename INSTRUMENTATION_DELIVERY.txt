@@ -1,0 +1,122 @@
+INSTRUMENTATION DELIVERY SUMMARY
+═════════════════════════════════════════════════════════════════════════════
+
+✓ OBJECTIVE COMPLETE: Data coverage observability added to NIRO pipeline
+
+FILES CHANGED:
+─────────────────────────────────────────────────────────────────────────────
+
+1. backend/observability/__init__.py (NEW)
+   - Module initialization with public API exports
+   
+2. backend/observability/data_coverage.py (NEW - 371 lines)
+   Core implementation:
+   ✓ get_path(obj, path) - Safe dotted/indexed path accessor
+   ✓ check_required(obj, required_paths) - Path existence validator
+   ✓ validate_api_profile(profile) - Validates Vedic API profile data
+   ✓ validate_api_transits(transits) - Validates transit data completeness
+   ✓ validate_astro_features(features) - Validates LLM-ready features
+   ✓ _write_snapshot() - Creates minimal JSON snapshots on missing data
+   ✓ _get_snapshot() - Safe snapshot generator (no secrets)
+   
+   Defined Required Paths:
+   ✓ REQUIRED_PROFILE_PATHS (14 fields)
+   ✓ REQUIRED_TRANSITS_PATHS (4 fields)
+   ✓ REQUIRED_FEATURES_PATHS (9 fields)
+
+3. backend/conversation/enhanced_orchestrator.py (MODIFIED)
+   Added imports:
+   ✓ validate_api_profile
+   ✓ validate_api_transits
+   ✓ validate_astro_features
+   
+   Added instrumentation (no logic changes):
+   ✓ After profile fetch: coverage validation + [DATA COVERAGE] log
+   ✓ After transits fetch: coverage validation + [DATA COVERAGE] log
+   ✓ After astro_features build: coverage validation + [DATA COVERAGE] log
+
+EXAMPLE LOG OUTPUT:
+─────────────────────────────────────────────────────────────────────────────
+
+[DATA COVERAGE] session=user_abc123 stage=api_profile ok=14 missing=0 missing_keys=[]
+
+[DATA COVERAGE] session=user_abc123 stage=api_transits ok=4 missing=0 missing_keys=[]
+
+[DATA COVERAGE] session=user_abc123 stage=astro_features ok=9 missing=0 missing_keys=[]
+
+With missing data:
+[DATA COVERAGE] session=user_def456 stage=api_profile ok=10 missing=4 \
+  missing_keys=['birth_details.dob', 'current_mahadasha.planet', ...]
+
+EXAMPLE SNAPSHOT FILE PATH:
+─────────────────────────────────────────────────────────────────────────────
+
+/app/logs/api_snapshot_api_profile_user_abc123_2025-12-13T09-15-30.json
+
+Content (minimal, no secrets):
+{
+  "stage": "api_profile",
+  "session_id": "user_abc123",
+  "timestamp": "2025-12-13T09:15:30.123456Z",
+  "coverage": {
+    "ok": 10,
+    "missing": 4,
+    "missing_keys": ["birth_details.dob", "planets"],
+    "present_keys": ["ascendant", "moon_sign", "sun_sign", ...]
+  },
+  "snapshot": {
+    "ascendant": "Aries",
+    "moon_sign": "Taurus",
+    "planets": "<list with 9 items>",
+    "planets_sample": ["Sun in Capricorn", "Moon in Taurus", ...]
+  }
+}
+
+VALIDATION COVERAGE:
+─────────────────────────────────────────────────────────────────────────────
+
+✓ Profile (AstroProfile):
+  - Birth details: dob, tob, location
+  - Core signs: ascendant, moon_sign, sun_sign
+  - Planetary data: planets list, houses list
+  - Dasha timing: mahadasha & antardasha (planet, start/end dates)
+
+✓ Transits (AstroTransits):
+  - Events list presence
+  - Transit details: planet, affected_house, start_date
+  - First 3 transit samples captured in snapshot
+
+✓ Features (Dict):
+  - LLM-ready signs and dashas
+  - Focus factors list
+  - Filtered transits for topic
+  - Topic context captured
+
+TESTING:
+─────────────────────────────────────────────────────────────────────────────
+
+Test file: test_data_coverage.py
+✓ get_path() - Dotted and indexed path access
+✓ check_required() - Field presence validation
+✓ validate_api_profile() - Profile data coverage
+✓ validate_api_transits() - Transit data coverage
+✓ validate_astro_features() - Feature completeness
+✓ Snapshot creation - Missing data detection
+
+All tests PASSED ✓
+
+CONSTRAINTS MET:
+─────────────────────────────────────────────────────────────────────────────
+
+✓ No business logic modified
+✓ No prompts changed
+✓ No API calls modified
+✓ No astro_features builder changed
+✓ No crash on missing data (graceful None handling)
+✓ Logging only (no side effects on responses)
+✓ Minimal snapshots (no raw payloads, no secrets)
+✓ Structured [DATA COVERAGE] log format
+✓ Snapshot files created only when missing > 0
+✓ Path-based validation (works with Pydantic models and dicts)
+
+═════════════════════════════════════════════════════════════════════════════

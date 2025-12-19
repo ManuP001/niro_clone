@@ -1,0 +1,25 @@
+{
+  "request_id": "07fd8639",
+  "timestamp": "2025-12-18T09:41:01.414266Z",
+  "user_input": "Tell me about my career prospects",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_career",
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "10:30",
+    "location": "New Delhi, India",
+    "lat": 28.6139,
+    "lon": 77.209,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart suggests a career path with good long\u2011term growth, especially where communication, analysis, and people-skills are central. You\u2019re likely to experience phases of sharp progress after some initial effort, with a strong possibility of leadership or specialist roles over time."
+  }
+}
