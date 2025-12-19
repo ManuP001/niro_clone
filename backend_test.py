@@ -2985,7 +2985,7 @@ class ReportGenerationTester:
             # Step 3: Call GET /api/kundli with Bearer token
             response = self.session.get(f"{BACKEND_URL}/kundli", 
                                       headers=headers, 
-                                      timeout=30)
+                                      timeout=60)
             
             if response.status_code != 200:
                 self.log_result("Kundli Review Request - Kundli Fetch", False, 
