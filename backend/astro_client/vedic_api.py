@@ -963,7 +963,10 @@ class VedicAPIClient:
     
     async def get_kundli_svg(self, birth: BirthDetails) -> Dict[str, Any]:
         """
-        Fetch Kundli chart as SVG from Vedic API.
+        Generate Kundli chart as SVG using our custom generator.
+        
+        Uses /extended-horoscope/extended-kundli-details for chart data
+        and /horoscope/planet-report for planet positions.
         
         Returns:
             {
@@ -979,35 +982,8 @@ class VedicAPIClient:
                 "details": "..."
             }
         """
-        try:
-            api_params = {
-                'dob': birth.dob.strftime('%d/%m/%Y'),
-                'tob': birth.tob,
-                'lat': birth.latitude or 28.6139,
-                'lon': birth.longitude or 77.2090,
-                'tz': birth.timezone,
-                'ayanamsa': 'Lahiri',
-                'lang': 'en',
-                'style': 'north-indian'
-            }
-            
-            # Fetch SVG chart from Vedic API
-            # Endpoint: /horoscope/chart-image returns SVG directly (not JSON wrapped)
-            logger.info(f"Fetching Kundli SVG for {birth.dob}")
-            
-            # Build URL and add API key
-            full_url = f"{self.base_url}/horoscope/chart-image"
-            api_params['api_key'] = self.api_key
-            
-            # Make direct request for SVG (not using _get as it expects JSON)
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.get(full_url, params=api_params)
-                
-                if response.status_code != 200:
-                    logger.warning(f"Kundli SVG fetch failed: HTTP {response.status_code}")
-                    return {
-                        "ok": False,
-                        "error": "KUNDLI_FETCH_FAILED",
+        # Use our fetch_kundli_svg which generates a proper North Indian chart
+        return await self.fetch_kundli_svg(birth, div="D1", style="north")
                         "details": f"API returned HTTP {response.status_code}"
                     }
                 
