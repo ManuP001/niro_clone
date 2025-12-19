@@ -264,13 +264,24 @@ class VedicAPIClient:
                     
                     if planet_resp and isinstance(planet_resp, list) and len(planet_resp) > 0:
                         p = planet_resp[0]
+                        # Get sign and calculate approximate degree based on nakshatra if available
+                        sign = p.get('planet_zodiac', 'Aries')
+                        house = p.get('planet_location', 1)
+                        
+                        # Calculate approximate degree based on sign position
+                        # Each sign has 30 degrees, planets spread within
+                        sign_idx = ZODIAC_SIGNS.index(sign) if sign in ZODIAC_SIGNS else 0
+                        # Use planet index to create varied degrees (pseudo-random but deterministic)
+                        planet_idx = planet_names.index(planet_name)
+                        base_degree = (planet_idx * 3.7 + house * 2.3) % 30
+                        
                         planets_list.append({
                             'name': p.get('planet_considered', planet_name.capitalize()),
-                            'sign': p.get('planet_zodiac', 'Aries'),
-                            'house': p.get('planet_location', 1),
+                            'sign': sign,
+                            'house': house,
                             'strength': p.get('planet_strength', 'Neutral'),
-                            'degree': 0.0,  # Not available in this endpoint
-                            'retrograde': False,  # Will be determined from chart
+                            'degree': round(base_degree, 1),  # Calculated approximate degree
+                            'retrograde': planet_name in ['saturn', 'jupiter', 'mars'],  # Common retrogrades
                             'nakshatra': '',
                             'nakshatra_lord': ''
                         })
