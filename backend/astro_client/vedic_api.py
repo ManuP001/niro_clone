@@ -766,44 +766,144 @@ class VedicAPIClient:
         
         return AstroProfile(**profile_data)
     
-    def _generate_kundli_svg(self, kundli_data: Dict[str, Any], birth: BirthDetails, style: str = "north") -> str:
+    def _generate_kundli_svg(self, kundli_data: Dict[str, Any], birth: BirthDetails, style: str = "north", planets_data: List[Dict] = None) -> str:
         """
         Generate SVG representation of Kundli from API data.
         
-        Creates a basic North/South Indian style birth chart SVG.
+        Creates a proper North Indian style birth chart SVG with:
+        - Classic diamond house layout
+        - Planet positions in correct houses
+        - House numbers
+        - Professional styling matching traditional Kundli charts
         """
         asc_sign = kundli_data.get('ascendant_sign', 'Aries')
-        asc_degree = kundli_data.get('ascendant_degree', 0)
         
-        # Create SVG container
-        width, height = 500, 500
+        # Planet abbreviations
+        PLANET_ABBR = {
+            'Sun': 'Su', 'Moon': 'Mo', 'Mars': 'Ma', 'Mercury': 'Me',
+            'Jupiter': 'Ju', 'Venus': 'Ve', 'Saturn': 'Sa', 'Rahu': 'Ra', 'Ketu': 'Ke'
+        }
+        
+        # Group planets by house
+        planets_by_house = {i: [] for i in range(1, 13)}
+        if planets_data:
+            for p in planets_data:
+                house = p.get('house', 1)
+                name = p.get('name', '')
+                abbr = PLANET_ABBR.get(name, name[:2])
+                if 1 <= house <= 12:
+                    planets_by_house[house].append(abbr)
+        
+        # SVG dimensions
+        width, height = 500, 550
+        cx, cy = 250, 275  # Center of chart
+        size = 200  # Half-size of the outer square
+        
+        # Colors matching reference image
+        bg_color = "#FFF8E7"  # Light cream/yellow
+        line_color = "#8B4513"  # Brown
+        text_color = "#B22222"  # Dark red/maroon
+        
         svg_parts = [
+            f'<?xml version="1.0" encoding="UTF-8"?>',
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
-            '<defs><style>.kundli-text {{ font-family: Arial, sans-serif; font-size: 12px; }} .kundli-title {{ font-weight: bold; font-size: 14px; }} .planet-name {{ fill: #333; }} .sign-name {{ fill: #666; }}</style></defs>',
-            '<rect width="100%" height="100%" fill="#ffffff" stroke="#000" stroke-width="2"/>',
+            f'<defs>',
+            f'  <style>',
+            f'    .house-num {{ font-family: Arial, sans-serif; font-size: 14px; fill: {text_color}; }}',
+            f'    .planet {{ font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: {text_color}; }}',
+            f'    .title {{ font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #333; }}',
+            f'    .subtitle {{ font-family: Arial, sans-serif; font-size: 12px; fill: #666; }}',
+            f'  </style>',
+            f'</defs>',
+            # Background
+            f'<rect width="100%" height="100%" fill="{bg_color}"/>',
             # Title
-            f'<text x="{width/2}" y="20" text-anchor="middle" class="kundli-title">Birth Chart - Kundli</text>',
-            # Ascendant info
-            f'<text x="10" y="50" class="kundli-text"><tspan class="planet-name">Ascendant:</tspan> <tspan class="sign-name">{asc_sign}</tspan></text>',
-            f'<text x="10" y="70" class="kundli-text"><tspan class="planet-name">Degree:</tspan> <tspan>{asc_degree:.2f}°</tspan></text>',
-            # Birth details
-            f'<text x="10" y="100" class="kundli-text"><tspan class="planet-name">DOB:</tspan> {birth.dob}</text>',
-            f'<text x="10" y="120" class="kundli-text"><tspan class="planet-name">TOB:</tspan> {birth.tob}</text>',
-            f'<text x="10" y="140" class="kundli-text"><tspan class="planet-name">Location:</tspan> {birth.location}</text>',
-            # Chart visualization area
-            '<circle cx="250" cy="280" r="100" fill="none" stroke="#999" stroke-width="1"/>',
-            '<circle cx="250" cy="280" r="80" fill="none" stroke="#999" stroke-width="1"/>',
-            '<line x1="250" y1="180" x2="250" y2="380" stroke="#999" stroke-width="1"/>',
-            '<line x1="150" y1="280" x2="350" y2="280" stroke="#999" stroke-width="1"/>',
-            # House labels (simplified)
-            '<text x="250" y="175" text-anchor="middle" class="kundli-text" font-size="10">I</text>',
-            '<text x="360" y="285" text-anchor="start" class="kundli-text" font-size="10">IV</text>',
-            '<text x="250" y="395" text-anchor="middle" class="kundli-text" font-size="10">VII</text>',
-            '<text x="140" y="285" text-anchor="end" class="kundli-text" font-size="10">X</text>',
-            # Source note
-            f'<text x="10" y="{height-10}" class="kundli-text" font-size="10" fill="#999">Generated from VedicAstroAPI</text>',
-            '</svg>'
+            f'<text x="{cx}" y="30" text-anchor="middle" class="title">Birth Chart (Rashi Chart)</text>',
         ]
+        
+        # Chart frame with rounded corners
+        frame_x, frame_y = cx - size - 20, cy - size - 20
+        frame_w, frame_h = (size + 20) * 2, (size + 20) * 2
+        svg_parts.append(f'<rect x="{frame_x}" y="{frame_y}" width="{frame_w}" height="{frame_h}" fill="#FDF5E6" stroke="{line_color}" stroke-width="3" rx="10"/>')
+        
+        # North Indian Kundli layout - outer square with diagonals and inner diamond
+        # Outer square corners
+        top_left = (cx - size, cy - size)
+        top_right = (cx + size, cy + size - 2*size)  # Actually top-right
+        bottom_right = (cx + size, cy + size)
+        bottom_left = (cx - size, cy + size)
+        
+        # Draw outer square
+        svg_parts.append(f'<rect x="{cx-size}" y="{cy-size}" width="{size*2}" height="{size*2}" fill="none" stroke="{line_color}" stroke-width="2"/>')
+        
+        # Draw main diagonals
+        svg_parts.append(f'<line x1="{cx-size}" y1="{cy-size}" x2="{cx+size}" y2="{cy+size}" stroke="{line_color}" stroke-width="2"/>')
+        svg_parts.append(f'<line x1="{cx+size}" y1="{cy-size}" x2="{cx-size}" y2="{cy+size}" stroke="{line_color}" stroke-width="2"/>')
+        
+        # Draw inner diamond (connects midpoints of outer square sides)
+        mid_top = (cx, cy - size)
+        mid_right = (cx + size, cy)
+        mid_bottom = (cx, cy + size)
+        mid_left = (cx - size, cy)
+        
+        svg_parts.append(f'<line x1="{mid_top[0]}" y1="{mid_top[1]}" x2="{mid_right[0]}" y2="{mid_right[1]}" stroke="{line_color}" stroke-width="2"/>')
+        svg_parts.append(f'<line x1="{mid_right[0]}" y1="{mid_right[1]}" x2="{mid_bottom[0]}" y2="{mid_bottom[1]}" stroke="{line_color}" stroke-width="2"/>')
+        svg_parts.append(f'<line x1="{mid_bottom[0]}" y1="{mid_bottom[1]}" x2="{mid_left[0]}" y2="{mid_left[1]}" stroke="{line_color}" stroke-width="2"/>')
+        svg_parts.append(f'<line x1="{mid_left[0]}" y1="{mid_left[1]}" x2="{mid_top[0]}" y2="{mid_top[1]}" stroke="{line_color}" stroke-width="2"/>')
+        
+        # House positions for North Indian chart (house number -> coordinates for text)
+        # In North Indian chart, House 1 (Lagna) is at the top center diamond
+        house_positions = {
+            1: (cx, cy - size//2 - 20),           # Top center (Lagna)
+            2: (cx - size//2 - 20, cy - size//2 - 20),  # Top-left triangle
+            3: (cx - size + 30, cy - 30),         # Left-top triangle
+            4: (cx - size//2 - 20, cy),           # Left center
+            5: (cx - size + 30, cy + 30),         # Left-bottom triangle
+            6: (cx - size//2 - 20, cy + size//2 + 20),  # Bottom-left triangle
+            7: (cx, cy + size//2 + 20),           # Bottom center
+            8: (cx + size//2 + 20, cy + size//2 + 20),  # Bottom-right triangle
+            9: (cx + size - 30, cy + 30),         # Right-bottom triangle
+            10: (cx + size//2 + 20, cy),          # Right center
+            11: (cx + size - 30, cy - 30),        # Right-top triangle
+            12: (cx + size//2 + 20, cy - size//2 - 20),  # Top-right triangle
+        }
+        
+        # Planet positions (offset from house number position)
+        planet_positions = {
+            1: (cx, cy - size//2 + 10),
+            2: (cx - size//2, cy - size//2 + 10),
+            3: (cx - size + 50, cy - 10),
+            4: (cx - size//2, cy + 15),
+            5: (cx - size + 50, cy + 50),
+            6: (cx - size//2, cy + size//2 - 10),
+            7: (cx, cy + size//2 - 10),
+            8: (cx + size//2, cy + size//2 - 10),
+            9: (cx + size - 50, cy + 50),
+            10: (cx + size//2, cy + 15),
+            11: (cx + size - 50, cy - 10),
+            12: (cx + size//2, cy - size//2 + 10),
+        }
+        
+        # Draw house numbers and planets
+        for house_num in range(1, 13):
+            # House number
+            hx, hy = house_positions[house_num]
+            svg_parts.append(f'<text x="{hx}" y="{hy}" text-anchor="middle" class="house-num">{house_num}</text>')
+            
+            # Planets in this house
+            planets = planets_by_house.get(house_num, [])
+            if planets:
+                px, py = planet_positions[house_num]
+                planets_str = ' '.join(planets)
+                svg_parts.append(f'<text x="{px}" y="{py}" text-anchor="middle" class="planet">{planets_str}</text>')
+        
+        # Add "As" (Ascendant) marker in house 1
+        svg_parts.append(f'<text x="{cx}" y="{cy - 10}" text-anchor="middle" class="planet">As</text>')
+        
+        # Footer note
+        svg_parts.append(f'<text x="{cx}" y="{height - 20}" text-anchor="middle" class="subtitle">Houses numbered 1-12 • Planets shown in their respective houses</text>')
+        
+        svg_parts.append('</svg>')
         
         return '\n'.join(svg_parts)
     
