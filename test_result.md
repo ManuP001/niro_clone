@@ -256,7 +256,7 @@ backend:
 
   - task: "Kundli API Endpoint"
     implemented: true
-    working: false
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
@@ -274,6 +274,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "EXTERNAL API QUOTA EXCEEDED: Kundli API endpoint structure and authentication working correctly. Full test flow successful: ✅ POST /api/auth/identify (user creation with Bearer token), ✅ POST /api/profile/ (birth details: name, dob=1990-01-15, tob=10:30, location=Mumbai, lat=19.08, lon=72.88), ✅ GET /api/kundli with Bearer token authentication. However, Vedic API returning 402 'out of api calls - renew subscription'. Backend logs confirm quota exceeded. Code functionality verified - this is external dependency issue requiring API subscription renewal."
+      - working: true
+        agent: "testing"
+        comment: "✅ KUNDLI API WITH NEW VEDIC KEY CONFIRMED WORKING: Tested exact review request flow with new Vedic API key. ✅ POST /api/auth/identify with 'newkundlitest@example.com' → user registered successfully ✅ POST /api/profile/ with birth details (name='Test User', dob='1990-01-15', tob='10:30', location='Mumbai', lat=19.08, lon=72.88) → profile complete ✅ GET /api/kundli with Bearer token → returns valid response: ok=true, SVG=7114 bytes (starts with <?xml), structured.planets=9 planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu), structured.houses=12 houses (1-12). Backend logs show successful Vedic API calls (HTTP 200). New API key working perfectly - quota issue resolved."
 
   - task: "Checklist API Endpoints"
     implemented: true
