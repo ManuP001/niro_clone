@@ -793,7 +793,7 @@ class VedicAPIClient:
         Generate SVG representation of Kundli from API data.
         
         Creates a proper North Indian style birth chart SVG with:
-        - Classic diamond house layout
+        - Classic diamond house layout with visible dark lines
         - Planet positions in correct houses
         - House numbers
         - Professional styling matching traditional Kundli charts
@@ -823,7 +823,7 @@ class VedicAPIClient:
         
         # Colors matching reference image
         bg_color = "#FFF8E7"  # Light cream/yellow
-        line_color = "#8B4513"  # Brown
+        line_color = "#3b2f2f"  # Dark brown for strong visibility
         text_color = "#B22222"  # Dark red/maroon
         
         svg_parts = [
@@ -855,12 +855,12 @@ class VedicAPIClient:
         bottom_right = (cx + size, cy + size)
         bottom_left = (cx - size, cy + size)
         
-        # Draw outer square
-        svg_parts.append(f'<rect x="{cx-size}" y="{cy-size}" width="{size*2}" height="{size*2}" fill="none" stroke="{line_color}" stroke-width="2"/>')
+        # Draw outer square (darker, thicker lines for visibility)
+        svg_parts.append(f'<rect x="{cx-size}" y="{cy-size}" width="{size*2}" height="{size*2}" fill="none" stroke="{line_color}" stroke-width="2.5"/>')
         
-        # Draw main diagonals
-        svg_parts.append(f'<line x1="{cx-size}" y1="{cy-size}" x2="{cx+size}" y2="{cy+size}" stroke="{line_color}" stroke-width="2"/>')
-        svg_parts.append(f'<line x1="{cx+size}" y1="{cy-size}" x2="{cx-size}" y2="{cy+size}" stroke="{line_color}" stroke-width="2"/>')
+        # Draw main diagonals (darker, thicker lines for visibility)
+        svg_parts.append(f'<line x1="{cx-size}" y1="{cy-size}" x2="{cx+size}" y2="{cy+size}" stroke="{line_color}" stroke-width="2.5"/>')
+        svg_parts.append(f'<line x1="{cx+size}" y1="{cy-size}" x2="{cx-size}" y2="{cy+size}" stroke="{line_color}" stroke-width="2.5"/>')
         
         # Draw inner diamond (connects midpoints of outer square sides)
         mid_top = (cx, cy - size)
@@ -868,10 +868,10 @@ class VedicAPIClient:
         mid_bottom = (cx, cy + size)
         mid_left = (cx - size, cy)
         
-        svg_parts.append(f'<line x1="{mid_top[0]}" y1="{mid_top[1]}" x2="{mid_right[0]}" y2="{mid_right[1]}" stroke="{line_color}" stroke-width="2"/>')
-        svg_parts.append(f'<line x1="{mid_right[0]}" y1="{mid_right[1]}" x2="{mid_bottom[0]}" y2="{mid_bottom[1]}" stroke="{line_color}" stroke-width="2"/>')
-        svg_parts.append(f'<line x1="{mid_bottom[0]}" y1="{mid_bottom[1]}" x2="{mid_left[0]}" y2="{mid_left[1]}" stroke="{line_color}" stroke-width="2"/>')
-        svg_parts.append(f'<line x1="{mid_left[0]}" y1="{mid_left[1]}" x2="{mid_top[0]}" y2="{mid_top[1]}" stroke="{line_color}" stroke-width="2"/>')
+        svg_parts.append(f'<line x1="{mid_top[0]}" y1="{mid_top[1]}" x2="{mid_right[0]}" y2="{mid_right[1]}" stroke="{line_color}" stroke-width="2.5"/>')
+        svg_parts.append(f'<line x1="{mid_right[0]}" y1="{mid_right[1]}" x2="{mid_bottom[0]}" y2="{mid_bottom[1]}" stroke="{line_color}" stroke-width="2.5"/>')
+        svg_parts.append(f'<line x1="{mid_bottom[0]}" y1="{mid_bottom[1]}" x2="{mid_left[0]}" y2="{mid_left[1]}" stroke="{line_color}" stroke-width="2.5"/>')
+        svg_parts.append(f'<line x1="{mid_left[0]}" y1="{mid_left[1]}" x2="{mid_top[0]}" y2="{mid_top[1]}" stroke="{line_color}" stroke-width="2.5"/>')
         
         # House positions for North Indian chart (house number -> coordinates for text)
         # In North Indian chart, House 1 (Lagna) is at the top center diamond
