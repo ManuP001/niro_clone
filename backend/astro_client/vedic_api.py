@@ -462,8 +462,30 @@ class VedicAPIClient:
             logger.info("[KUNDLI_SVG] Fetching kundli data from /extended-horoscope/extended-kundli-details...")
             kundli_data = await self._get('/extended-horoscope/extended-kundli-details', api_params)
             
-            # Generate SVG representation from kundli data
-            svg = self._generate_kundli_svg(kundli_data, birth, style)
+            # Fetch planet positions for chart
+            planets_list = []
+            planet_names = ['sun', 'moon', 'mars', 'mercury', 'jupiter', 'venus', 'saturn', 'rahu', 'ketu']
+            
+            for planet_name in planet_names:
+                try:
+                    params = api_params.copy()
+                    params['planet'] = planet_name
+                    planet_resp = await self._get('/horoscope/planet-report', params)
+                    
+                    if planet_resp and isinstance(planet_resp, list) and len(planet_resp) > 0:
+                        p = planet_resp[0]
+                        planets_list.append({
+                            'name': p.get('planet_considered', planet_name.capitalize()),
+                            'sign': p.get('planet_zodiac', 'Aries'),
+                            'house': p.get('planet_location', 1),
+                        })
+                except Exception as e:
+                    logger.warning(f"[KUNDLI_SVG] Could not fetch planet report for {planet_name}: {e}")
+            
+            logger.info(f"[KUNDLI_SVG] Fetched {len(planets_list)} planet positions for SVG")
+            
+            # Generate SVG representation from kundli data with planets
+            svg = self._generate_kundli_svg(kundli_data, birth, style, planets_list)
             
             # Enforce maximum SVG size (500KB)
             svg_size = len(svg)
