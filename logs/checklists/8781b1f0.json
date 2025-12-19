@@ -1,0 +1,18 @@
+{
+  "request_id": "8781b1f0",
+  "timestamp": "2025-12-19T12:07:45.357275Z",
+  "user_input": "What's my guidance for today?",
+  "topic": "daily_guidance",
+  "mode": "NORMAL_READING",
+  "action_id": "daily_guidance",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Today favors clear communication, small but meaningful progress in work, and consciously balancing emotions with practicality. It\u2019s a good day to act on one or two priorities rather than spreading yourself thin."
+  }
+}
