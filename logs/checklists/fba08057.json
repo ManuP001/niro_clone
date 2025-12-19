@@ -1,0 +1,18 @@
+{
+  "request_id": "fba08057",
+  "timestamp": "2025-12-19T12:01:09.392986Z",
+  "user_input": "Tell me about my past themes",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your past shows strong themes of emotional intensity, responsibility toward family, and repeated cycles of pressure and rebuilding, especially around security, self-worth, and relationships. You likely felt \u201colder than your age,\u201d carrying burdens early, but also developed deep insight and resilience."
+  }
+}

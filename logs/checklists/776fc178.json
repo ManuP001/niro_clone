@@ -1,0 +1,25 @@
+{
+  "request_id": "776fc178",
+  "timestamp": "2025-12-19T12:00:48.853436Z",
+  "user_input": "Tell me about my career prospects",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_career",
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "10:30",
+    "location": "New Delhi, India",
+    "lat": 28.6139,
+    "lon": 77.209,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart suggests a steadily improving career with good potential for authority, specialization, and eventual financial stability, provided you stay disciplined and flexible during periods of change."
+  }
+}

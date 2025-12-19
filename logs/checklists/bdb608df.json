@@ -1,0 +1,18 @@
+{
+  "request_id": "bdb608df",
+  "timestamp": "2025-12-19T12:03:46.738043Z",
+  "user_input": "I was born on 25/12/1985 at 10:30 in Delhi",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart suggests a thoughtful, ambitious personality with strong potential in leadership, communication, and structured work, along with a deep emotional side that seeks stability in relationships and home life. Life themes revolve around responsibility, career growth, and learning to balance control with trust and emotional openness."
+  }
+}

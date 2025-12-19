@@ -1,0 +1,18 @@
+{
+  "request_id": "f9aecab6",
+  "timestamp": "2025-12-19T12:05:06.937703Z",
+  "user_input": "I want to know about my salary increase and investment opportunities for income growth",
+  "topic": "money",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "You\u2019re reasonably likely to see salary improvement and better investment openings, especially between mid\u20112025 and late\u20112027. The strongest window for tangible income growth and upgrading your financial structure looks to be mid\u20112026 to mid\u20112027, with groundwork starting earlier."
+  }
+}

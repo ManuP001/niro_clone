@@ -1,0 +1,18 @@
+{
+  "request_id": "74ba10cf",
+  "timestamp": "2025-12-19T12:03:28.304598Z",
+  "user_input": "Tell me about my past themes",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your past themes likely center around intense inner growth through emotional challenges, family/karmic responsibilities, and repeated lessons in relationships, self-worth, and boundaries. These experiences probably pushed you toward greater emotional maturity, spiritual insight, and a stronger sense of who you are."
+  }
+}

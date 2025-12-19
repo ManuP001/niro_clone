@@ -1,0 +1,18 @@
+{
+  "request_id": "701d3a31",
+  "timestamp": "2025-12-19T12:02:19.543352Z",
+  "user_input": "Tell me about my career prospects and professional growth",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart shows steady but non-linear career growth, with strong potential for leadership or specialist roles over time. Progress may feel slower early on, but persistence, skill-building, and strategic networking are likely to pay off in the long run."
+  }
+}

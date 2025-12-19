@@ -1,0 +1,18 @@
+{
+  "request_id": "4f988f80",
+  "timestamp": "2025-12-19T12:03:07.122985Z",
+  "user_input": "Tell me about romantic relationships and love in my life",
+  "topic": "romantic_relationships",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "You\u2019re likely to experience love as something intense, transformative, and deeply karmic. Relationships may not be simple or \u201clight,\u201d but over time they can bring profound emotional growth, stronger boundaries, and a more mature, stable approach to partnership."
+  }
+}

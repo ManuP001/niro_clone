@@ -1,0 +1,18 @@
+{
+  "request_id": "fcac45e9",
+  "timestamp": "2025-12-19T12:06:18.527733Z",
+  "user_input": "Tell me about my career and job prospects",
+  "topic": "money",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_money",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "You have solid potential for gradual financial stability and a career that rewards consistency, learning, and service. Growth is likely to come through steady effort, skill-building, and working with people or information rather than sudden windfalls."
+  }
+}

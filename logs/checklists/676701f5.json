@@ -1,0 +1,25 @@
+{
+  "request_id": "676701f5",
+  "timestamp": "2025-12-19T12:02:04.536214Z",
+  "user_input": "Tell me about my career prospects",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_career",
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "10:30",
+    "location": "New Delhi, India",
+    "lat": 28.6139,
+    "lon": 77.209,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart suggests a career path with steady growth, strong problem\u2011solving ability, and potential for leadership over time, especially in fields requiring analysis, responsibility, and long-term commitment."
+  }
+}

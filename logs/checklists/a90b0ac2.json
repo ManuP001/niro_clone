@@ -1,0 +1,18 @@
+{
+  "request_id": "a90b0ac2",
+  "timestamp": "2025-12-19T12:02:32.887549Z",
+  "user_input": "Tell me about my past themes",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your past likely revolved around intense transformation, responsibility and pressure in work/education, and deep emotional lessons around relationships, self-worth, and family roots. These themes seem to have pushed you toward maturity, inner strength, and a more authentic sense of self."
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "request_id": "34472f1f",
+  "timestamp": "2025-12-19T12:04:45.141270Z",
+  "user_input": "Tell me about my past themes",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your past shows repeating themes around responsibility vs. freedom, deep emotional intensity in relationships, and periodic turning points that pushed you to grow faster than you felt ready for. Much of your journey seems to be about learning boundaries, self-worth, and trusting your own path rather than others\u2019 expectations."
+  }
+}

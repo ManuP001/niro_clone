@@ -1,0 +1,18 @@
+{
+  "request_id": "a6042a12",
+  "timestamp": "2025-12-19T12:01:40.725056Z",
+  "user_input": "Tell me about romantic relationships and love in my life",
+  "topic": "romantic_relationships",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Love in your life is likely to be intense, emotionally deep, and somewhat transformative, with phases of strong attachment, inner conflict, and eventual maturity. Relationships may push you to grow, redefine your boundaries, and learn a more balanced, self\u2011respecting way of loving."
+  }
+}
