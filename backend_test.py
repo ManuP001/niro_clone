@@ -2772,6 +2772,158 @@ class ReportGenerationTester:
             self.log_result("NIRO Relationship Reading", False, f"Exception: {str(e)}")
             return False
 
+    def test_kundli_api_with_new_vedic_key(self):
+        """Test Kundli API endpoint with new Vedic API key - Review Request"""
+        try:
+            # Step 1: Register user with specific email from review request
+            register_payload = {
+                "identifier": "newkundlitest@example.com"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/auth/identify", json=register_payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Kundli API New Key - User Registration", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            auth_data = response.json()
+            token = auth_data.get("token")
+            user_id = auth_data.get("user_id")
+            
+            if not token:
+                self.log_result("Kundli API New Key - User Registration", False, 
+                              "No token received", auth_data)
+                return False
+            
+            self.log_result("Kundli API New Key - User Registration", True, 
+                          f"User registered: {user_id}")
+            
+            # Step 2: Complete profile with specific birth details from review request
+            profile_payload = {
+                "name": "Test User",
+                "dob": "1990-01-15",
+                "tob": "10:30",
+                "location": "Mumbai",
+                "birth_place_lat": 19.08,
+                "birth_place_lon": 72.88,
+                "birth_place_tz": 5.5
+            }
+            
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.session.post(f"{BACKEND_URL}/profile/", 
+                                       json=profile_payload, 
+                                       headers=headers, 
+                                       timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Kundli API New Key - Profile Creation", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            profile_result = response.json()
+            if not profile_result.get("ok") or not profile_result.get("profile_complete"):
+                self.log_result("Kundli API New Key - Profile Creation", False, 
+                              "Profile not completed", profile_result)
+                return False
+            
+            self.log_result("Kundli API New Key - Profile Creation", True, 
+                          "Birth details saved successfully")
+            
+            # Step 3: Fetch Kundli chart with Bearer token
+            response = self.session.get(f"{BACKEND_URL}/kundli", 
+                                      headers=headers, 
+                                      timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Kundli API New Key", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            kundli_data = response.json()
+            
+            # Verify ok: true
+            if not kundli_data.get("ok"):
+                error_msg = kundli_data.get("message", "Unknown error")
+                self.log_result("Kundli API New Key", False, 
+                              f"Kundli fetch failed: {error_msg}", kundli_data)
+                return False
+            
+            # Verify SVG field contains valid SVG
+            svg_content = kundli_data.get("svg", "")
+            if not svg_content:
+                self.log_result("Kundli API New Key", False, 
+                              "No SVG content returned", kundli_data)
+                return False
+            
+            # Check if SVG starts with <?xml or <svg
+            if not (svg_content.startswith("<?xml") or svg_content.startswith("<svg")):
+                self.log_result("Kundli API New Key", False, 
+                              f"Invalid SVG format - starts with: {svg_content[:50]}", kundli_data)
+                return False
+            
+            # Verify profile field has user info
+            profile = kundli_data.get("profile", {})
+            if not profile.get("name") or not profile.get("dob") or not profile.get("location"):
+                self.log_result("Kundli API New Key", False, 
+                              "Incomplete profile data", profile)
+                return False
+            
+            # Verify structured data
+            structured = kundli_data.get("structured", {})
+            
+            # Verify structured.planets has 9 planets
+            planets = structured.get("planets", [])
+            expected_planets = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"]
+            
+            if len(planets) != 9:
+                self.log_result("Kundli API New Key", False, 
+                              f"Expected 9 planets, got {len(planets)}", planets)
+                return False
+            
+            # Check planet names
+            planet_names = [p.get("name", "") for p in planets]
+            missing_planets = [p for p in expected_planets if p not in planet_names]
+            
+            if missing_planets:
+                self.log_result("Kundli API New Key", False, 
+                              f"Missing planets: {missing_planets}", planet_names)
+                return False
+            
+            # Verify structured.houses has 12 houses
+            houses = structured.get("houses", [])
+            if len(houses) != 12:
+                self.log_result("Kundli API New Key", False, 
+                              f"Expected 12 houses, got {len(houses)}", houses)
+                return False
+            
+            # Verify house numbers 1-12
+            house_numbers = [h.get("house", 0) for h in houses]
+            expected_houses = list(range(1, 13))
+            
+            if sorted(house_numbers) != expected_houses:
+                self.log_result("Kundli API New Key", False, 
+                              f"Invalid house numbers: {house_numbers}", houses)
+                return False
+            
+            # Log full response structure for review
+            print(f"\n=== KUNDLI API RESPONSE STRUCTURE ===")
+            print(f"ok: {kundli_data.get('ok')}")
+            print(f"svg: {len(svg_content)} bytes, starts with: {svg_content[:20]}...")
+            print(f"profile: {profile}")
+            print(f"structured.planets: {len(planets)} planets - {planet_names}")
+            print(f"structured.houses: {len(houses)} houses")
+            print(f"source: {kundli_data.get('source', {})}")
+            print(f"=====================================\n")
+            
+            self.log_result("Kundli API New Key", True, 
+                          f"✅ Kundli data fetched correctly! SVG: {len(svg_content)} bytes, Planets: {len(planets)}, Houses: {len(houses)}")
+            return True
+            
+        except Exception as e:
+            self.log_result("Kundli API New Key", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests focusing on CRITICAL FEATURES from review request"""
         print("=" * 80)
