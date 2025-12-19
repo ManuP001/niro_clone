@@ -2924,6 +2924,204 @@ class ReportGenerationTester:
             self.log_result("Kundli API New Key", False, f"Exception: {str(e)}")
             return False
 
+    def test_kundli_api_endpoint_specific_review_request(self):
+        """Test Kundli API Endpoint - Specific Review Request Requirements"""
+        try:
+            # Step 1: Create user with specific email from review request
+            register_payload = {
+                "identifier": "kundli-fix-test@example.com"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/auth/identify", json=register_payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Kundli Review Request - User Registration", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            auth_data = response.json()
+            token = auth_data.get("token")
+            user_id = auth_data.get("user_id")
+            
+            if not token:
+                self.log_result("Kundli Review Request - User Registration", False, 
+                              "No token received", auth_data)
+                return False
+            
+            self.log_result("Kundli Review Request - User Registration", True, 
+                          f"User registered: {user_id}")
+            
+            # Step 2: Create profile with exact birth details from review request
+            profile_payload = {
+                "name": "Fix Test User",
+                "dob": "1990-01-15",
+                "tob": "10:30",
+                "location": "Mumbai",
+                "birth_place_lat": 19.08,
+                "birth_place_lon": 72.88,
+                "birth_place_tz": 5.5
+            }
+            
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.session.post(f"{BACKEND_URL}/profile/", 
+                                       json=profile_payload, 
+                                       headers=headers, 
+                                       timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Kundli Review Request - Profile Creation", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            profile_result = response.json()
+            if not profile_result.get("ok") or not profile_result.get("profile_complete"):
+                self.log_result("Kundli Review Request - Profile Creation", False, 
+                              "Profile not completed", profile_result)
+                return False
+            
+            self.log_result("Kundli Review Request - Profile Creation", True, 
+                          "Birth details saved successfully")
+            
+            # Step 3: Call GET /api/kundli with Bearer token
+            response = self.session.get(f"{BACKEND_URL}/kundli", 
+                                      headers=headers, 
+                                      timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Kundli Review Request - Kundli Fetch", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            kundli_data = response.json()
+            
+            # Verify basic response structure
+            if not kundli_data.get("ok"):
+                error_msg = kundli_data.get("message", "Unknown error")
+                self.log_result("Kundli Review Request - Kundli Fetch", False, 
+                              f"Kundli fetch failed: {error_msg}", kundli_data)
+                return False
+            
+            # CRITICAL VERIFICATION 1: SVG contains proper North Indian chart layout
+            svg_content = kundli_data.get("svg", "")
+            if not svg_content:
+                self.log_result("Kundli Review Request - SVG Content", False, 
+                              "No SVG content received", kundli_data)
+                return False
+            
+            # Check for North Indian chart indicators
+            north_indian_indicators = ["house", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]
+            planet_abbreviations = ["Su", "Mo", "Ma", "Me", "Ju", "Ve", "Sa", "Ra", "Ke"]
+            
+            svg_lower = svg_content.lower()
+            found_houses = sum(1 for indicator in north_indian_indicators if indicator in svg_lower)
+            found_planets = sum(1 for planet in planet_abbreviations if planet.lower() in svg_lower)
+            
+            if found_houses < 8:  # Should find most house numbers
+                self.log_result("Kundli Review Request - North Indian Layout", False, 
+                              f"Only found {found_houses} house indicators in SVG", {"svg_length": len(svg_content)})
+                return False
+            
+            if found_planets < 5:  # Should find most planet abbreviations
+                self.log_result("Kundli Review Request - Planet Abbreviations", False, 
+                              f"Only found {found_planets} planet abbreviations in SVG", {"svg_length": len(svg_content)})
+                return False
+            
+            self.log_result("Kundli Review Request - SVG Chart Layout", True, 
+                          f"North Indian chart layout confirmed - SVG size: {len(svg_content)} bytes, houses: {found_houses}, planets: {found_planets}")
+            
+            # CRITICAL VERIFICATION 2: structured.planets has 9 planets with DIFFERENT signs and houses
+            structured = kundli_data.get("structured", {})
+            planets = structured.get("planets", [])
+            
+            if len(planets) != 9:
+                self.log_result("Kundli Review Request - Planets Count", False, 
+                              f"Expected 9 planets, got {len(planets)}", planets)
+                return False
+            
+            # Check for different signs and houses
+            planet_signs = [p.get("sign") for p in planets if p.get("sign")]
+            planet_houses = [p.get("house") for p in planets if p.get("house")]
+            
+            unique_signs = len(set(planet_signs))
+            unique_houses = len(set(planet_houses))
+            
+            if unique_signs < 3:  # Should have at least 3 different signs
+                self.log_result("Kundli Review Request - Planet Signs Diversity", False, 
+                              f"Only {unique_signs} unique signs found, expected more diversity", planet_signs)
+                return False
+            
+            if unique_houses < 3:  # Should have at least 3 different houses
+                self.log_result("Kundli Review Request - Planet Houses Diversity", False, 
+                              f"Only {unique_houses} unique houses found, expected more diversity", planet_houses)
+                return False
+            
+            self.log_result("Kundli Review Request - Planets Signs/Houses", True, 
+                          f"9 planets with {unique_signs} unique signs and {unique_houses} unique houses")
+            
+            # CRITICAL VERIFICATION 3: structured.planets has DIFFERENT degrees for each planet
+            planet_degrees = [p.get("degree") for p in planets if p.get("degree") is not None]
+            
+            if len(planet_degrees) != 9:
+                self.log_result("Kundli Review Request - Planet Degrees Count", False, 
+                              f"Expected 9 planet degrees, got {len(planet_degrees)}", planet_degrees)
+                return False
+            
+            # Check that not all degrees are 0.0 or the same
+            non_zero_degrees = [d for d in planet_degrees if d != 0.0]
+            unique_degrees = len(set(planet_degrees))
+            
+            if len(non_zero_degrees) < 5:  # At least 5 planets should have non-zero degrees
+                self.log_result("Kundli Review Request - Planet Degrees Non-Zero", False, 
+                              f"Only {len(non_zero_degrees)} planets have non-zero degrees", planet_degrees)
+                return False
+            
+            if unique_degrees < 5:  # Should have at least 5 different degree values
+                self.log_result("Kundli Review Request - Planet Degrees Diversity", False, 
+                              f"Only {unique_degrees} unique degree values found", planet_degrees)
+                return False
+            
+            self.log_result("Kundli Review Request - Planet Degrees", True, 
+                          f"9 planets with {unique_degrees} unique degrees, {len(non_zero_degrees)} non-zero")
+            
+            # CRITICAL VERIFICATION 4: structured.houses has 12 houses with DIFFERENT signs
+            houses = structured.get("houses", [])
+            
+            if len(houses) != 12:
+                self.log_result("Kundli Review Request - Houses Count", False, 
+                              f"Expected 12 houses, got {len(houses)}", houses)
+                return False
+            
+            house_signs = [h.get("sign") for h in houses if h.get("sign")]
+            unique_house_signs = len(set(house_signs))
+            
+            if unique_house_signs < 8:  # Should have at least 8 different signs across 12 houses
+                self.log_result("Kundli Review Request - House Signs Diversity", False, 
+                              f"Only {unique_house_signs} unique house signs found", house_signs)
+                return False
+            
+            self.log_result("Kundli Review Request - Houses Signs", True, 
+                          f"12 houses with {unique_house_signs} unique signs")
+            
+            # Report actual data received
+            print("\n=== ACTUAL DATA RECEIVED ===")
+            print(f"Planets ({len(planets)}):")
+            for i, planet in enumerate(planets):
+                print(f"  {i+1}. {planet.get('name', 'Unknown')} - Sign: {planet.get('sign', 'Unknown')}, House: {planet.get('house', 'Unknown')}, Degree: {planet.get('degree', 'Unknown')}")
+            
+            print(f"\nHouses ({len(houses)}):")
+            for i, house in enumerate(houses):
+                print(f"  House {house.get('house', i+1)}: Sign: {house.get('sign', 'Unknown')}, Lord: {house.get('lord', 'Unknown')}")
+            
+            print(f"\nSVG Chart: {len(svg_content)} bytes, starts with: {svg_content[:100]}...")
+            
+            self.log_result("Kundli Review Request - Complete Verification", True, 
+                          "All review request requirements verified successfully")
+            return True
+            
+        except Exception as e:
+            self.log_result("Kundli Review Request - Complete Verification", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests focusing on CRITICAL FEATURES from review request"""
         print("=" * 80)
