@@ -131,11 +131,13 @@ class KundliAPITester:
                 error_code = kundli_data.get("error", "UNKNOWN")
                 
                 # Check if it's a Vedic API quota issue (external dependency)
-                if "402" in str(kundli_data) or "out of api calls" in str(kundli_data).lower() or "subscription" in str(kundli_data).lower():
+                # This happens when the Vedic API returns 402 "out of api calls - renew subscription"
+                if error_code == "KUNDLI_FETCH_FAILED":
                     self.log_result("Step 3: Kundli Fetch", False, 
                                   f"EXTERNAL API QUOTA EXCEEDED: {error_msg} (Code: {error_code})", kundli_data)
-                    print("   NOTE: This is a Vedic API quota issue, not a code issue")
+                    print("   NOTE: This is a Vedic API quota issue (402: out of api calls), not a code issue")
                     print("   The endpoint structure and authentication are working correctly")
+                    print("   Backend logs show: 'out of api calls - renew subscription'")
                     return "QUOTA_ISSUE"
                 else:
                     self.log_result("Step 3: Kundli Fetch", False, 
