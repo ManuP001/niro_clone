@@ -134,7 +134,7 @@ tail -f /tmp/frontend_server.log
 ## ⚙️ Environment Variables
 
 ```bash
-VEDIC_API_KEY=325a213f-91fe-5e28-8e89-4308a15075a1
+VEDIC_API_KEY=repo-init-3
 ```
 
 (Already set in startup scripts)
