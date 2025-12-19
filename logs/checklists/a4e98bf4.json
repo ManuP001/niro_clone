@@ -1,0 +1,18 @@
+{
+  "request_id": "a4e98bf4",
+  "timestamp": "2025-12-19T12:07:08.458967Z",
+  "user_input": "Tell me about my career and job prospects",
+  "topic": "money",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_money",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart suggests a steady, skill-based career with gradual financial growth rather than overnight success. You\u2019re likely to do best in roles where you solve practical problems, manage systems or people, and build long-term stability."
+  }
+}

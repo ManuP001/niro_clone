@@ -1,0 +1,18 @@
+{
+  "request_id": "9214e28f",
+  "timestamp": "2025-12-19T12:07:03.204660Z",
+  "user_input": "What's my guidance for today?",
+  "topic": "daily_guidance",
+  "mode": "NORMAL_READING",
+  "action_id": "daily_guidance",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Today favors steady, practical action and clear communication. Move slowly but consistently, and avoid impulsive decisions or harsh words."
+  }
+}

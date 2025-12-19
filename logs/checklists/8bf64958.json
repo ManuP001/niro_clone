@@ -1,0 +1,18 @@
+{
+  "request_id": "8bf64958",
+  "timestamp": "2025-12-19T12:06:58.514965Z",
+  "user_input": "Tell me about my past themes",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your past themes likely center around intensity in relationships, deep emotional transformation, responsibility and pressure in family/home matters, and a strong pull toward learning, travel, or spiritual/philosophical growth. You may also have repeatedly faced power dynamics, control issues, or sudden changes that pushed you to grow up faster than others."
+  }
+}
