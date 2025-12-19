@@ -668,16 +668,24 @@ class VedicAPIClient:
                     strength_score=self._parse_strength_to_score(p.get('strength', 0.5))
                 ))
         
-        # Parse houses from kundli data (derive from planets + ascendant)
+        # Parse houses from kundli data (derive from ascendant)
         houses_list = []
         asc_sign = kundli.get('ascendant_sign', 'Aries')
+        asc_idx = ZODIAC_SIGNS.index(asc_sign) if asc_sign in ZODIAC_SIGNS else 0
+        
         for i in range(1, 13):
+            # Calculate sign for each house based on ascendant
+            # House 1 = Ascendant sign, House 2 = next sign, etc.
+            house_sign_idx = (asc_idx + i - 1) % 12
+            house_sign = ZODIAC_SIGNS[house_sign_idx]
+            house_lord = SIGN_LORDS.get(house_sign, '')
+            
             # Get planets in this house
             planets_in_house = [p.planet for p in planets_list if p.house == i]
             houses_list.append(HouseData(
                 house_num=i,
-                sign=asc_sign,  # TODO: Calculate actual sign for each house
-                sign_lord='',  # TODO: Get from API or calculate
+                sign=house_sign,
+                sign_lord=house_lord,
                 planets=planets_in_house,
                 aspects_from=[]
             ))
