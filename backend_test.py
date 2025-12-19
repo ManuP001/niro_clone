@@ -2934,6 +2934,7 @@ class ReportGenerationTester:
         tests = [
             # CRITICAL FEATURES (Review Request Priority)
             ("🚨 CRITICAL: Kundli API Endpoint", self.test_kundli_api_endpoint),
+            ("🚨 NEW VEDIC KEY: Kundli API with New Key", self.test_kundli_api_with_new_vedic_key),
             ("🚨 CRITICAL: Checklist API Endpoint", self.test_checklist_api_endpoint),
             
             # Core API Tests
