@@ -80,9 +80,10 @@ class KundliAPITester:
                 "name": "Test User",
                 "dob": "1990-01-15",
                 "tob": "10:30",
-                "city": "Mumbai",
-                "lat": 19.08,
-                "lon": 72.88
+                "location": "Mumbai",
+                "birth_place_lat": 19.08,
+                "birth_place_lon": 72.88,
+                "birth_place_tz": 5.5
             }
             
             headers = {"Authorization": f"Bearer {token}"}
