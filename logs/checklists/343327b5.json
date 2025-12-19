@@ -1,0 +1,18 @@
+{
+  "request_id": "343327b5",
+  "timestamp": "2025-12-19T12:07:27.212674Z",
+  "user_input": "Tell me about my career prospects",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Your chart suggests a career path with steady long\u2011term growth, good leadership potential, and periods of meaningful change rather than sudden instability. You\u2019re likely to do best in roles that value responsibility, strategy, and consistent effort over flashy short\u2011term wins."
+  }
+}
