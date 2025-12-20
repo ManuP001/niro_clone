@@ -1376,7 +1376,7 @@ async def get_kundli(authorization: Optional[str] = Header(None)):
         structured_data = {
             "ascendant": {
                 "sign": astro_profile.ascendant or "Unknown",
-                "degree": 0.0,
+                "degree": astro_profile.ascendant_degree if hasattr(astro_profile, 'ascendant_degree') else 0.0,
                 "house": 1
             },
             "houses": [

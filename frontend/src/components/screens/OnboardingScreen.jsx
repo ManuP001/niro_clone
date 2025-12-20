@@ -258,10 +258,6 @@ const OnboardingScreen = ({ token, onComplete }) => {
         </form>
       </div>
 
-      {/* Footer */}
-      <div className="absolute bottom-4 text-center text-xs text-gray-500">
-        <p>Your birth details help us provide personalized insights</p>
-      </div>
     </div>
   );
 };

@@ -273,7 +273,13 @@ const ChatScreen = ({ token, userId }) => {
                     : 'max-w-[85%] sm:max-w-[70%] bg-gray-100 text-gray-900 rounded-bl-md'
                 }`}
               >
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                <div className="text-sm leading-relaxed">
+                  {msg.message.split(/\n\s*\n/).map((paragraph, idx) => (
+                    <p key={idx} className="mb-3 whitespace-pre-wrap">
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
                 <p className={`text-[10px] mt-2 ${msg.type === 'user' ? 'text-emerald-100' : 'text-gray-500'}`}>
                   {msg.timestamp}
                 </p>

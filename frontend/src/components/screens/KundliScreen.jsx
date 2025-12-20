@@ -73,7 +73,7 @@ const KundliScreen = ({ token, userId }) => {
   const getSafeHtml = (svgString) => {
     const clean = DOMPurify.sanitize(svgString, {
       ALLOWED_TAGS: ['svg', 'g', 'path', 'circle', 'rect', 'text', 'line', 'polygon', 'polyline', 'defs', 'style', 'tspan', 'image'],
-      ALLOWED_ATTR: ['id', 'class', 'style', 'cx', 'cy', 'r', 'x', 'y', 'width', 'height', 'fill', 'stroke', 'stroke-width', 'viewBox', 'd', 'transform', 'points', 'href', 'font-size', 'text-anchor', 'dominant-baseline', 'data-name']
+      ALLOWED_ATTR: ['id', 'class', 'style', 'cx', 'cy', 'r', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'width', 'height', 'fill', 'stroke', 'stroke-width', 'viewBox', 'd', 'transform', 'points', 'href', 'font-size', 'text-anchor', 'dominant-baseline', 'data-name', 'rx', 'ry', 'xmlns', 'version']
     });
     return clean;
   };

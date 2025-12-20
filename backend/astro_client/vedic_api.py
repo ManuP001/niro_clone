@@ -36,6 +36,73 @@ from .models import (
 
 logger = logging.getLogger(__name__)
 
+# ============ NAKSHATRA DEFINITIONS ============
+NAKSHATRAS = [
+    'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashirsha', 'Ardra',
+    'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni',
+    'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
+    'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishtha', 'Shatabhisha',
+    'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'
+]
+
+NAKSHATRA_ALIASES = {
+    'purvabhadra': 'Purva Bhadrapada',
+    'uttarabhadra': 'Uttara Bhadrapada',
+    'purvaphalguni': 'Purva Phalguni',
+    'uttaraphalguni': 'Uttara Phalguni',
+    'purvashadha': 'Purva Ashadha',
+    'uttarashadha': 'Uttara Ashadha',
+    'mrigashirsha': 'Mrigashirsha',
+}
+
+def calculate_degree_from_nakshatra(nakshatra: str, pada: int = 2) -> float:
+    """
+    Calculate approximate degree from nakshatra and pada.
+    
+    Vedic Astrology Facts:
+    - Each nakshatra spans 13°20' (13.333°)
+    - Each pada spans 3°20' (3.333°)
+    - There are 27 nakshatras covering 360°
+    
+    Args:
+        nakshatra: Name of the nakshatra (e.g., "PurvaBhadra")
+        pada: Pada number (1-4), defaults to 2 (middle)
+    
+    Returns:
+        Degree within the zodiac sign (0-30)
+    """
+    if not nakshatra:
+        return 15.0  # Default to middle of sign
+    
+    # Normalize nakshatra name
+    nakshatra_clean = nakshatra.strip().lower().replace(' ', '')
+    
+    # Try to find in NAKSHATRAS
+    nakshatra_idx = -1
+    for i, n in enumerate(NAKSHATRAS):
+        if n.lower().replace(' ', '') == nakshatra_clean:
+            nakshatra_idx = i
+            break
+    
+    if nakshatra_idx == -1:
+        logger.warning(f"Unknown nakshatra: {nakshatra}. Using middle position 15.0°")
+        return 15.0  # Default if not found
+    
+    # Calculate absolute degree (0-360)
+    nakshatra_degree = 13.333333  # 13°20' per nakshatra
+    pada_degree = 3.333333        # 3°20' per pada
+    
+    # Start degree of this nakshatra
+    abs_degree = nakshatra_idx * nakshatra_degree
+    # Add pada offset (middle of the pada for best approximation)
+    abs_degree += (pada - 1) * pada_degree + (pada_degree / 2)
+    
+    # Convert to degree within sign (0-30)
+    degree_in_sign = abs_degree % 30
+    
+    return round(degree_in_sign, 1)
+
+
 # Configuration - will be read at instantiation time, not module load time
 
 
@@ -615,14 +682,20 @@ class VedicAPIClient:
         sun_data = base_chart.get('planets', {}).get('Sun', {})
         asc_data = base_chart.get('ascendant', {})
         
+        # Calculate ascendant degree from nakshatra if not provided or is 0
+        asc_degree = asc_data.get('degree', None)
+        asc_nakshatra = asc_data.get('nakshatra', 'Ashwini')
+        if asc_degree is None or asc_degree == 0:
+            asc_degree = calculate_degree_from_nakshatra(asc_nakshatra)
+        
         return AstroProfile(
             user_id=user_id,
             birth_details=birth,
             base_chart_raw=base_chart,
             dashas_raw=dashas,
             ascendant=asc_data.get('sign', 'Aries'),
-            ascendant_degree=asc_data.get('degree', 0),
-            ascendant_nakshatra=asc_data.get('nakshatra', 'Ashwini'),
+            ascendant_degree=asc_degree,
+            ascendant_nakshatra=asc_nakshatra,
             moon_sign=moon_data.get('sign', 'Cancer'),
             moon_nakshatra=moon_data.get('nakshatra', 'Pushya'),
             sun_sign=sun_data.get('sign', 'Leo'),
@@ -756,8 +829,13 @@ class VedicAPIClient:
         )
         
         # Get ascendant details
-        asc_degree = kundli.get('ascendant_degree', 0)
+        asc_degree = kundli.get('ascendant_degree', None)
         asc_nakshatra = kundli.get('ascendant_nakshatra', 'Ashwini')
+        
+        # Calculate degree from nakshatra if not provided or is 0
+        if asc_degree is None or asc_degree == 0:
+            asc_degree = calculate_degree_from_nakshatra(asc_nakshatra, kundli.get('nakshatra_pada', 2))
+            logger.info(f"[PARSE] Calculated ascendant degree {asc_degree}° from nakshatra {asc_nakshatra}")
         
         # Get Moon and Sun details
         moon_planet = next((p for p in planets_list if p.planet == 'Moon'), None)

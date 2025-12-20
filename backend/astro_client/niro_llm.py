@@ -227,11 +227,19 @@ class NiroLLMModule:
         # Call LLM
         response = self._call_real_llm(mode, topic, user_prompt)
         
-        # Validate quality
-        is_high_quality, quality_flag = self.quality_validator.validate(response, user_question)
+        # Validate quality (with error handling to ensure quality checks don't break response generation)
+        try:
+            is_high_quality, quality_flag = self.quality_validator.validate(response, user_question)
+        except Exception as e:
+            logger.error(f"Quality validation error: {e}. Proceeding without quality check.")
+            is_high_quality = True  # Assume high quality if validation fails
+            quality_flag = "validation_error"
         
-        # Log quality metrics
-        self.quality_validator.log_quality_metrics(response, quality_flag, attempt)
+        # Log quality metrics (with error handling)
+        try:
+            self.quality_validator.log_quality_metrics(response, quality_flag, attempt)
+        except Exception as e:
+            logger.error(f"Quality logging error: {e}")
         
         # If low quality and we have regeneration attempts left, try again
         if not is_high_quality and attempt < self.MAX_REGENERATION_ATTEMPTS:
@@ -253,7 +261,10 @@ class NiroLLMModule:
         
         # Final quality log
         final_flag = "regenerated" if attempt > 0 else quality_flag
-        self.quality_validator.log_quality_metrics(response, final_flag, attempt)
+        try:
+            self.quality_validator.log_quality_metrics(response, final_flag, attempt)
+        except Exception as e:
+            logger.error(f"Quality logging error on final log: {e}")
         
         return response
     
