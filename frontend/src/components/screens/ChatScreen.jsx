@@ -11,6 +11,45 @@ const WELCOME_MESSAGE = {
   isWelcome: true,
 };
 
+// Format AI response text for readability
+const formatAIResponse = (text) => {
+  if (!text) return '';
+
+  // Strip accidental rawText: prefix
+  let formatted = text.replace(/^rawText\s*:\s*/i, '').trim();
+
+  // Normalize newlines and handle spacing
+  formatted = formatted.replace(/\r\n/g, '\n');
+  
+  // Ensure proper spacing between paragraphs
+  // Split on double newlines or explicit paragraph markers
+  const paragraphs = formatted.split(/\n\n+/);
+  
+  // Join with double newlines for readability
+  formatted = paragraphs
+    .map(para => {
+      // Process each paragraph
+      let processed = para.trim();
+      
+      // Convert bullet points for proper display
+      if (processed.includes('•')) {
+        processed = processed.split('\n').map(line => {
+          // Preserve bullet formatting
+          if (line.trim().startsWith('•')) {
+            return line.trim();
+          }
+          return line.trim();
+        }).join('\n');
+      }
+      
+      return processed;
+    })
+    .filter(para => para.length > 0)
+    .join('\n\n');
+
+  return formatted;
+};
+
 const WhyAnswerSection = ({ reasons = [], timingWindows = [], dataGaps = [] }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -210,13 +249,17 @@ const ChatScreen = ({ token, userId }) => {
         localStorage.setItem('lastRequestId', data.requestId);
       }
       
-      // IMPROVEMENT #3: Only show core answer in main bubble, keep reasons for "Why this answer"
-      const aiMessage = data.reply?.summary || data.reply?.rawText || 'Sorry, I could not process your request.';
+      // IMPROVEMENT #3: Select best available message (summary > remedies > rawText)
+      // and format for readability
+      let selectedMessage = data.reply?.summary || data.reply?.remedies || data.reply?.rawText || 'Sorry, I could not process your request.';
+      
+      // Format the message for readability
+      const formattedMessage = formatAIResponse(selectedMessage);
       
       const aiResponse = {
         id: messages.length + 2,
         type: 'ai',
-        message: aiMessage,  // Clean message - no reasons/remedies in main bubble
+        message: formattedMessage,  // Formatted, clean message - no rawText prefix
         timestamp: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
         reasons: data.reply?.reasons || [],
         remedies: data.reply?.remedies || [],

@@ -1,6 +1,215 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, MapPin } from 'lucide-react';
+import { ChevronDown, MapPin, X } from 'lucide-react';
 import { BACKEND_URL } from '../../config';
+
+// Custom Date Picker Modal Component
+const DatePickerModal = ({ isOpen, onClose, onSet, currentValue }) => {
+  const currentDate = currentValue ? new Date(currentValue) : new Date();
+  const [day, setDay] = useState(currentDate.getDate());
+  const [month, setMonth] = useState(currentDate.getMonth());
+  const [year, setYear] = useState(currentDate.getFullYear());
+
+  const currentYear = new Date().getFullYear();
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i).sort((a, b) => a - b);
+
+  const handleSet = () => {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    onSet(dateStr);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
+      <div className="w-full sm:w-96 bg-white rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 shadow-xl">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900">Select Date of Birth</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          {/* Day Dropdown */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Day</label>
+            <select
+              value={day}
+              onChange={(e) => setDay(parseInt(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
+            >
+              {days.map((d) => (
+                <option key={d} value={d}>{String(d).padStart(2, '0')}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Month Dropdown */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Month</label>
+            <select
+              value={month}
+              onChange={(e) => setMonth(parseInt(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
+            >
+              {months.map((m, idx) => (
+                <option key={idx} value={idx}>{m}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Year Dropdown */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
+            <select
+              value={year}
+              onChange={(e) => setYear(parseInt(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
+            >
+              {years.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSet}
+            className="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors"
+          >
+            Set Date
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Custom Time Picker Modal Component
+const TimePickerModal = ({ isOpen, onClose, onSet, currentValue }) => {
+  const currentTime = currentValue ? currentValue.split(':') : ['12', '00'];
+  const [hour, setHour] = useState(parseInt(currentTime[0]) || 12);
+  const [minute, setMinute] = useState(parseInt(currentTime[1]) || 0);
+  const [period, setPeriod] = useState(hour >= 12 ? 'PM' : 'AM');
+
+  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
+  const minutes = Array.from({ length: 60 }, (_, i) => i);
+
+  const handleSet = () => {
+    let hour24 = hour;
+    if (period === 'AM' && hour === 12) hour24 = 0;
+    else if (period === 'PM' && hour !== 12) hour24 = hour + 12;
+    
+    const timeStr = `${String(hour24).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    onSet(timeStr);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
+      <div className="w-full sm:w-96 bg-white rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 shadow-xl">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900">Select Time of Birth</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="flex gap-4 mb-8">
+          {/* Hour Dropdown */}
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Hour</label>
+            <select
+              value={hour}
+              onChange={(e) => setHour(parseInt(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
+            >
+              {hours.map((h) => (
+                <option key={h} value={h}>{String(h).padStart(2, '0')}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Minute Dropdown */}
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Minute</label>
+            <select
+              value={minute}
+              onChange={(e) => setMinute(parseInt(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none"
+            >
+              {minutes.map((m) => (
+                <option key={m} value={m}>{String(m).padStart(2, '0')}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* AM/PM Toggle */}
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Period</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setPeriod('AM')}
+                className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+                  period === 'AM'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                AM
+              </button>
+              <button
+                type="button"
+                onClick={() => setPeriod('PM')}
+                className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
+                  period === 'PM'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                PM
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSet}
+            className="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition-colors"
+          >
+            Set Time
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const OnboardingScreen = ({ token, onComplete }) => {
   const [formData, setFormData] = useState({
@@ -17,6 +226,8 @@ const OnboardingScreen = ({ token, onComplete }) => {
   const [placeSuggestions, setPlaceSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
   const suggestionsRef = useRef(null);
 
   // Handle location search with debounce
@@ -145,7 +356,7 @@ const OnboardingScreen = ({ token, onComplete }) => {
       </div>
 
       {/* Form container */}
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm pb-8">
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Name */}
           <div>
@@ -163,35 +374,36 @@ const OnboardingScreen = ({ token, onComplete }) => {
             />
           </div>
 
-          {/* Date of Birth */}
+          {/* Date of Birth - Custom Picker */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Date of Birth
             </label>
-            <input
-              type="date"
-              name="dob"
-              value={formData.dob}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-base"
-              required
-            />
-            <p className="text-xs text-gray-500 mt-1">Format: YYYY-MM-DD</p>
+            <button
+              type="button"
+              onClick={() => setShowDatePicker(true)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-left bg-white hover:bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+            >
+              <span className={formData.dob ? 'text-gray-900' : 'text-gray-500'}>
+                {formData.dob || 'Select date (YYYY-MM-DD)'}
+              </span>
+            </button>
           </div>
 
-          {/* Time of Birth */}
+          {/* Time of Birth - Custom Picker */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Time of Birth (approx)
             </label>
-            <input
-              type="time"
-              name="tob"
-              value={formData.tob}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-base"
-              required
-            />
+            <button
+              type="button"
+              onClick={() => setShowTimePicker(true)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-left bg-white hover:bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+            >
+              <span className={formData.tob ? 'text-gray-900' : 'text-gray-500'}>
+                {formData.tob || 'Select time (HH:MM)'}
+              </span>
+            </button>
           </div>
 
           {/* Location with Autocomplete */}
@@ -258,6 +470,21 @@ const OnboardingScreen = ({ token, onComplete }) => {
         </form>
       </div>
 
+      {/* Date Picker Modal */}
+      <DatePickerModal
+        isOpen={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSet={(dateStr) => setFormData((prev) => ({ ...prev, dob: dateStr }))}
+        currentValue={formData.dob}
+      />
+
+      {/* Time Picker Modal */}
+      <TimePickerModal
+        isOpen={showTimePicker}
+        onClose={() => setShowTimePicker(false)}
+        onSet={(timeStr) => setFormData((prev) => ({ ...prev, tob: timeStr }))}
+        currentValue={formData.tob}
+      />
     </div>
   );
 };
