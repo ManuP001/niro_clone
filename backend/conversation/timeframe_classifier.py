@@ -31,7 +31,58 @@ def classify_timeframe(user_question: str) -> Dict[str, any]:
     """
     question_lower = user_question.lower()
     
-    # Patterns for different timeframes (most specific first)
+    # PAST timeframe patterns - check these first!
+    past_patterns = [
+        # Past months
+        (r'(last|past|previous)\s+(\d+)(-|\s+to\s+)?(\d+)?\s+months?', {"type": "past_months", "pattern": True}),
+        (r'(last|past|previous)\s+month', {"type": "past_months", "value": 1, "horizon_months": -1}),
+        (r'(last|past|previous)\s+few\s+months', {"type": "past_months", "value": 3, "horizon_months": -3}),
+        (r'(last|past|previous)\s+several\s+months', {"type": "past_months", "value": 6, "horizon_months": -6}),
+        # Past years
+        (r'(last|past|previous)\s+(\d+)(-|\s+to\s+)?(\d+)?\s+years?', {"type": "past_years", "pattern": True}),
+        (r'(last|past|previous)\s+year', {"type": "past_years", "value": 1, "horizon_months": -12}),
+        (r'(last|past|previous)\s+few\s+years', {"type": "past_years", "value": 2, "horizon_months": -24}),
+        # Generic past indicators
+        (r'(what happened|what has happened|how did|why did)', {"type": "past", "value": 12, "horizon_months": -12}),
+        (r'(in the past|historically|recently)', {"type": "past", "value": 6, "horizon_months": -6}),
+        (r'(ago|back when|since then)', {"type": "past", "value": 12, "horizon_months": -12}),
+    ]
+    
+    for pattern, result_template in past_patterns:
+        match = re.search(pattern, question_lower)
+        if match:
+            if result_template.get("pattern"):
+                # Extract numeric values from pattern
+                groups = match.groups()
+                value = None
+                for g in groups:
+                    if g and g.isdigit():
+                        value = int(g)
+                        break
+                
+                if value:
+                    result_type = result_template["type"]
+                    if result_type == "past_months":
+                        horizon_months = -value
+                    elif result_type == "past_years":
+                        horizon_months = -value * 12
+                    else:
+                        horizon_months = -12
+                    
+                    return {
+                        "type": result_type,
+                        "value": value,
+                        "horizon_months": horizon_months,
+                        "description": f"Past {value} {'months' if 'month' in result_type else 'years'}",
+                        "time_direction": "past"
+                    }
+            else:
+                result = result_template.copy()
+                result["description"] = f"Past timeframe"
+                result["time_direction"] = "past"
+                return result
+    
+    # FUTURE timeframe patterns (most specific first)
     patterns = [
         # Days
         (r'(this|next)\s+week', {"type": "weeks", "value": 1, "horizon_months": 0.25}),
