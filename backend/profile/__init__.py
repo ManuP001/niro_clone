@@ -189,6 +189,7 @@ async def get_welcome_message(authorization: Optional[str] = Header(None)):
         sun_sign = None
         
         # Try to get chart data from Vedic API using birth details
+        # Using lightweight fetch_basic_chart_info (single API call) instead of full profile
         try:
             # Build birth details from profile
             birth = BirthDetails(
@@ -200,16 +201,16 @@ async def get_welcome_message(authorization: Optional[str] = Header(None)):
                 timezone=profile.get('birth_place_tz', 5.5)
             )
             
-            # Fetch full astro profile from Vedic API with actual chart data
-            astro_profile = await vedic_api_client.fetch_full_profile(birth, user_id)
+            # Fetch BASIC chart info (single API call) for welcome message
+            chart_info = await vedic_api_client.fetch_basic_chart_info(birth)
             
-            if astro_profile:
-                ascendant = astro_profile.ascendant
-                moon_sign = astro_profile.moon_sign
-                sun_sign = astro_profile.sun_sign
-                logger.info(f"Fetched astro profile for welcome: ascendant={ascendant}, moon={moon_sign}, sun={sun_sign}")
+            if chart_info:
+                ascendant = chart_info.get('ascendant')
+                moon_sign = chart_info.get('moon_sign')
+                sun_sign = chart_info.get('sun_sign')
+                logger.info(f"Fetched basic chart for welcome: ascendant={ascendant}, moon={moon_sign}, sun={sun_sign}")
         except Exception as e:
-            logger.debug(f"Could not fetch astro profile for welcome message: {e}")
+            logger.debug(f"Could not fetch chart info for welcome message: {e}")
             # Continue without chart data - will use defaults
         
         # Log welcome generation
