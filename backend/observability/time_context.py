@@ -27,7 +27,33 @@ def infer_time_context(user_message: str) -> TimeContext:
     
     msg_lower = user_message.lower()
     
-    # Future indicators (higher priority)
+    # Past indicators - check BEFORE future to catch "last X months/years"
+    past_patterns = [
+        r"\blast\s+(?:\d+\s+)?(?:year|month|week|day)s?",  # last 6 months, last year, etc.
+        r"\bpast\s+(?:\d+\s+)?(?:year|month|week|day)s?",  # past 6 months, past year, etc.
+        r"\bprevious\s+(?:\d+\s+)?(?:year|month|week|day)s?",  # previous 6 months, etc.
+        r"\b(?:\d+)\s*-\s*(?:\d+)\s+months?\s+(?:ago|back)",  # 6-12 months ago
+        r"\bin\s+(?:the\s+)?(?:last|past)\b",  # in the last, in the past
+        r"\bin\s+20[0-1][0-9]",  # in 2000-2019
+        r"\bwhat\s+happened\b",
+        r"\bwhy\s+did\b",
+        r"\bhow\s+did\b",
+        r"\bwas\b.*\s+reason",
+        r"\bhappened\b",
+        r"\bhistory\b",
+        r"\bretrospective\b",
+        r"\blooking\s+back\b",
+        r"\bago\b",
+        r"\bback\s+(?:then|when)\b",
+        r"\brecent(?:ly)?\b",
+        r"\bsince\s+(?:then|that|last)\b",
+    ]
+    
+    for pattern in past_patterns:
+        if re.search(pattern, msg_lower):
+            return "past"
+    
+    # Future indicators (check after past)
     future_patterns = [
         r"\bwill\b",
         r"\bshould i\b",
