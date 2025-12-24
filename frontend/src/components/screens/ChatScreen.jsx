@@ -136,18 +136,26 @@ const formatAIResponse = (text) => {
   return formatted.trim();
 };
 
-const WhyAnswerSection = ({ reasons = [], timingWindows = [], dataGaps = [] }) => {
+// Trust Widget Component - Clean "Why this answer" section
+const TrustWidget = ({ trustWidget, timingWindows = [] }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Filter empty data gaps - only show non-empty gaps
-  const filteredGaps = Array.isArray(dataGaps) 
-    ? dataGaps.filter(gap => gap && gap !== 'none' && gap.trim() !== '')
-    : [];
+  // Check if we have valid content
+  const drivers = trustWidget?.drivers || [];
+  const confidence = trustWidget?.confidence || 'Medium';
+  const timeWindow = trustWidget?.time_window;
 
   // Only show if there's actual content
-  if (!reasons?.length && !timingWindows?.length && !filteredGaps?.length) {
+  if (!drivers?.length && !timeWindow) {
     return null;
   }
+
+  // Confidence color mapping
+  const confidenceColors = {
+    'High': 'bg-emerald-100 text-emerald-700',
+    'Medium': 'bg-amber-100 text-amber-700',
+    'Low': 'bg-gray-100 text-gray-600'
+  };
 
   return (
     <div className="flex justify-start mb-4">
@@ -157,48 +165,41 @@ const WhyAnswerSection = ({ reasons = [], timingWindows = [], dataGaps = [] }) =
           className="w-full px-4 py-2 flex items-center justify-between hover:bg-emerald-100 transition-colors active:bg-emerald-100"
         >
           <span className="text-sm font-medium text-emerald-700">Why this answer</span>
-          {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-emerald-600" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-emerald-600" />
-          )}
+          <div className="flex items-center gap-2">
+            {/* Confidence Badge */}
+            <span className={`text-xs px-2 py-0.5 rounded-full ${confidenceColors[confidence]}`}>
+              {confidence}
+            </span>
+            {isExpanded ? (
+              <ChevronUp className="w-4 h-4 text-emerald-600" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-emerald-600" />
+            )}
+          </div>
         </button>
         
         {isExpanded && (
           <div className="px-4 py-3 border-t border-emerald-200 space-y-3">
-            {reasons?.length > 0 && (
+            {/* Time Window Chip */}
+            {timeWindow && (
+              <div className="mb-2">
+                <span className="inline-block text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
+                  🕐 {timeWindow}
+                </span>
+              </div>
+            )}
+            
+            {/* Human-readable drivers */}
+            {drivers?.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-emerald-900 mb-2">Reasons</p>
-                <ul className="space-y-1">
-                  {reasons.map((reason, idx) => (
+                <p className="text-xs font-semibold text-emerald-900 mb-2">Key Influences</p>
+                <ul className="space-y-2">
+                  {drivers.map((driver, idx) => (
                     <li key={idx} className="text-xs text-emerald-800 leading-relaxed">
-                      • {reason}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {timingWindows?.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-emerald-900 mb-2">Timing Windows</p>
-                <ul className="space-y-1">
-                  {timingWindows.map((window, idx) => (
-                    <li key={idx} className="text-xs text-emerald-800">
-                      • {window.period}: {window.nature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {filteredGaps?.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-orange-700 mb-2">Data Gaps</p>
-                <ul className="space-y-1">
-                  {filteredGaps.map((gap, idx) => (
-                    <li key={idx} className="text-xs text-orange-600">
-                      • {gap}
+                      <span className="font-medium">• {driver.label}</span>
+                      {driver.impact && (
+                        <span className="text-emerald-600 ml-1">→ {driver.impact}</span>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -207,6 +208,84 @@ const WhyAnswerSection = ({ reasons = [], timingWindows = [], dataGaps = [] }) =
           </div>
         )}
       </div>
+    </div>
+  );
+};
+
+// Micro-Feedback Component
+const MicroFeedback = ({ responseId, sessionId, onFeedback }) => {
+  const [submitted, setSubmitted] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+
+  const handleFeedback = async (value) => {
+    if (submitted) return;
+    
+    setFeedback(value);
+    setSubmitted(true);
+    
+    // Send feedback to backend
+    try {
+      await fetch(`${BACKEND_URL}/api/chat/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          response_id: responseId,
+          session_id: sessionId,
+          feedback: value
+        })
+      });
+    } catch (err) {
+      console.error('Failed to submit feedback:', err);
+    }
+    
+    if (onFeedback) onFeedback(value);
+  };
+
+  if (submitted) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
+        <span>Thanks for your feedback!</span>
+        <span>{feedback === 'positive' ? '👍' : '👎'}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 mt-2 text-xs">
+      <span className="text-gray-500">Does this feel accurate?</span>
+      <button
+        onClick={() => handleFeedback('positive')}
+        className="p-1.5 hover:bg-emerald-100 rounded-full transition-colors"
+        title="Yes, accurate"
+      >
+        👍
+      </button>
+      <button
+        onClick={() => handleFeedback('negative')}
+        className="p-1.5 hover:bg-red-100 rounded-full transition-colors"
+        title="Not quite"
+      >
+        👎
+      </button>
+    </div>
+  );
+};
+
+// Next Step Chips Component
+const NextStepChips = ({ chips, onChipClick }) => {
+  if (!chips?.length) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2 mt-3">
+      {chips.map((chip) => (
+        <button
+          key={chip.id}
+          onClick={() => onChipClick(chip)}
+          className="text-xs px-3 py-1.5 bg-white border border-emerald-200 text-emerald-700 rounded-full hover:bg-emerald-50 hover:border-emerald-300 transition-colors shadow-sm"
+        >
+          {chip.label}
+        </button>
+      ))}
     </div>
   );
 };
@@ -220,6 +299,7 @@ const ChatScreen = ({ token, userId }) => {
   const [suggestedQuestions, setSuggestedQuestions] = useState([]);
   const [lastAiQuestion, setLastAiQuestion] = useState(null);
   const [typewriterIndex, setTypewriterIndex] = useState(-1);
+  const [nextStepChips, setNextStepChips] = useState([]);
   const messagesEndRef = useRef(null);
 
   // Get messages from global store
