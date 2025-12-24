@@ -483,6 +483,18 @@ const ChatScreen = ({ token, userId }) => {
         setLastAiQuestion(extractedQuestion);
       }
       
+      // Update from conversation state if available
+      if (data.conversationState?.last_ai_question) {
+        setLastAiQuestion(data.conversationState.last_ai_question);
+      }
+      
+      // Set next step chips from response
+      if (data.nextStepChips?.length > 0) {
+        setNextStepChips(data.nextStepChips);
+      } else {
+        setNextStepChips([]);
+      }
+      
       const aiResponse = {
         id: messages.length + 2,
         type: 'ai',
@@ -492,7 +504,11 @@ const ChatScreen = ({ token, userId }) => {
         remedies: data.reply?.remedies || [],
         timingWindows: data.reading_pack?.timing_windows || [],
         dataGaps: data.reading_pack?.data_gaps || [],
-        requestId: data.requestId
+        requestId: data.requestId,
+        // New UX fields
+        trustWidget: data.trustWidget,
+        showFeedback: data.showFeedback || false,
+        nextStepChips: data.nextStepChips || []
       };
       // Add AI response to store
       addMessage(userId, aiResponse);
