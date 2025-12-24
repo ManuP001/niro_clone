@@ -181,7 +181,6 @@ async def get_welcome_message(authorization: Optional[str] = Header(None)):
         from backend.astro_client.models import BirthDetails
         from backend.astro_client.vedic_api import vedic_api_client
         from backend.welcome_traits import create_welcome_message
-        from backend.observability.pipeline_logger import get_pipeline_logger
         
         name = profile.get('name', 'Friend')
         ascendant = None
