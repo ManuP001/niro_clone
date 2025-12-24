@@ -36,7 +36,7 @@ class BirthDetails(BaseModel):
 
 
 class ConversationState(BaseModel):
-    """State model for a conversation session"""
+    """State model for a conversation session - includes lightweight memory"""
     session_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     mode: ConversationMode = Field(default=ConversationMode.NEED_BIRTH_DETAILS)
     focus: Optional[str] = Field(None, description="Current focus area")
@@ -45,6 +45,12 @@ class ConversationState(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     metadata: Dict[str, Any] = Field(default_factory=dict)
+    
+    # Lightweight Memory Fields (for UX upgrades)
+    current_topic: Optional[str] = Field(None, description="Current conversation topic")
+    last_ai_question: Optional[str] = Field(None, description="Last question asked by AI")
+    last_user_intent: Optional[str] = Field(None, description="Last detected user intent")
+    last_ai_response_id: Optional[str] = Field(None, description="ID of last AI response for feedback")
 
     class Config:
         use_enum_values = True
@@ -54,6 +60,19 @@ class SuggestedAction(BaseModel):
     """Quick reply action chip"""
     id: str = Field(..., description="Action identifier")
     label: str = Field(..., description="Display label for the chip")
+
+
+class TrustDriver(BaseModel):
+    """Human-readable driver for Trust Widget"""
+    label: str = Field(..., description="Human-readable label (e.g., 'Moon phase influence')")
+    impact: Optional[str] = Field(None, description="Brief impact description")
+
+
+class TrustWidget(BaseModel):
+    """Trust Widget data for 'Why this answer' section"""
+    drivers: List[TrustDriver] = Field(default_factory=list, description="Top 2-3 human-readable drivers")
+    confidence: str = Field(default="Medium", description="Confidence level: Low/Medium/High")
+    time_window: Optional[str] = Field(None, description="Time window chip if available")
 
 
 class NiroReply(BaseModel):
@@ -79,6 +98,12 @@ class ChatResponse(BaseModel):
     focus: Optional[str]
     suggestedActions: List[SuggestedAction]
     requestId: Optional[str] = None  # Checklist report ID
+    
+    # New UX fields
+    trustWidget: Optional[TrustWidget] = Field(None, description="Trust Widget data")
+    nextStepChips: List[SuggestedAction] = Field(default_factory=list, description="Context-aware next step chips")
+    showFeedback: bool = Field(default=False, description="Whether to show micro-feedback buttons")
+    conversationState: Optional[Dict[str, Any]] = Field(None, description="Current conversation state for frontend")
     
     class Config:
         # Allow arbitrary types for internal metadata
