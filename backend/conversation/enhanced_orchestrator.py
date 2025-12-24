@@ -171,6 +171,56 @@ class EnhancedOrchestrator:
             state.message_count
         )
         
+        # === UX UPGRADE: SHORT REPLY DETECTION ===
+        # Check if this is a short reply that needs context resolution
+        original_message = request.message
+        clarifying_response = None
+        
+        if is_short_reply(request.message):
+            resolved_msg, confidence, clarifying_question = resolve_short_reply(
+                message=request.message,
+                last_ai_question=state.last_ai_question,
+                current_topic=state.current_topic,
+                last_user_intent=state.last_user_intent
+            )
+            
+            niro_logger.info(f"[SHORT_REPLY] detected='{request.message}' resolved='{resolved_msg}' confidence={confidence}")
+            
+            # If confidence is low, return clarifying question
+            if confidence < 0.5 and clarifying_question:
+                # Generate clarifying options
+                options = generate_clarifying_options(state.current_topic, state.last_ai_question)
+                
+                # Return clarifying response
+                clarifying_reply = NiroReply(
+                    rawText=clarifying_question,
+                    summary=clarifying_question,
+                    reasons=[],
+                    remedies=[]
+                )
+                
+                clarifying_actions = [
+                    SuggestedAction(id=opt['id'], label=opt['label'])
+                    for opt in options
+                ]
+                
+                return ChatResponse(
+                    reply=clarifying_reply,
+                    mode=state.mode.value if hasattr(state.mode, 'value') else str(state.mode),
+                    focus=state.current_topic,
+                    suggestedActions=clarifying_actions,
+                    nextStepChips=clarifying_actions,  # Show options as chips too
+                    showFeedback=False,
+                    conversationState={
+                        "current_topic": state.current_topic,
+                        "last_ai_question": clarifying_question,
+                        "message_count": state.message_count
+                    }
+                )
+            
+            # Use resolved message for processing
+            request.message = resolved_msg
+        
         # Handle birth details from subjectData or message
         extraction_method = "none"
         extracted = False
