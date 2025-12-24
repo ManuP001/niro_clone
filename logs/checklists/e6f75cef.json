@@ -1,0 +1,18 @@
+{
+  "request_id": "e6f75cef",
+  "timestamp": "2025-12-24T20:07:32.096090Z",
+  "user_input": "I've also been told to feed a cow every Sunday. Should I do that?",
+  "topic": "spirituality",
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}
