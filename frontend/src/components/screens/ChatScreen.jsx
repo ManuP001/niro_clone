@@ -208,51 +208,49 @@ const ChatScreen = ({ token, userId }) => {
           return;
         }
 
-        // Check if already shown in this session (to prevent duplicates)
-        if (sessionStorage.getItem('niro_welcome_shown')) {
-          setWelcomeLoaded(true);
-          return;
-        }
-
-        // Fetch personalized welcome from backend
+        // Fetch personalized welcome from backend if authenticated
         if (token && userId) {
-          const response = await fetch(`${BACKEND_URL}/api/profile/welcome`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
+          try {
+            const response = await fetch(`${BACKEND_URL}/api/profile/welcome`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+            });
 
-          if (response.ok) {
-            const data = await response.json();
-            if (data.ok && data.welcome_message) {
-              // NEW FORMAT: welcome_message (string) + suggested_questions (array)
-              const messageText = data.welcome_message;
-              const questions = data.suggested_questions || [];
-              
-              const welcomeMessage = {
-                id: 'welcome',
-                type: 'ai',
-                message: messageText,
-                timestamp: 'Welcome',
-                isWelcome: true,
-              };
-              // Store in global store for persistence
-              setMessages(userId, [welcomeMessage]);
-              setSuggestedQuestions(questions);
-              sessionStorage.setItem('niro_welcome_shown', 'true');
-              setWelcomeLoaded(true);
-              return;
+            if (response.ok) {
+              const data = await response.json();
+              if (data.ok && data.welcome_message) {
+                // NEW FORMAT: welcome_message (string) + suggested_questions (array)
+                const messageText = data.welcome_message;
+                const questions = data.suggested_questions || [];
+                
+                const welcomeMessage = {
+                  id: 'welcome',
+                  type: 'ai',
+                  message: messageText,
+                  timestamp: 'Welcome',
+                  isWelcome: true,
+                };
+                // Store in global store for persistence
+                setMessages(userId, [welcomeMessage]);
+                setSuggestedQuestions(questions);
+                setWelcomeLoaded(true);
+                return;
+              }
             }
+          } catch (apiErr) {
+            console.error('Error fetching personalized welcome:', apiErr);
           }
         }
       } catch (err) {
         console.error('Error loading welcome message:', err);
       }
 
-      // Fallback: use generic welcome
-      setMessages(userId, [WELCOME_MESSAGE]);
-      sessionStorage.setItem('niro_welcome_shown', 'true');
+      // Fallback: always show generic welcome if no personalized message was loaded
+      if (messages.length === 0) {
+        setMessages(userId, [WELCOME_MESSAGE]);
+      }
       setWelcomeLoaded(true);
     };
 
