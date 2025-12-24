@@ -62,6 +62,17 @@ from backend.observability.pipeline_logger import (
 )
 from backend.observability.time_context import infer_time_context
 
+# Import UX utilities
+from .ux_utils import (
+    is_short_reply,
+    resolve_short_reply,
+    generate_clarifying_options,
+    generate_next_step_chips,
+    build_trust_widget,
+    should_show_feedback,
+    extract_ai_question
+)
+
 logger = logging.getLogger(__name__)
 
 # NIRO pipeline logger (separate file handler)
