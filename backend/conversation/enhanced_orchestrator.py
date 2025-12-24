@@ -173,9 +173,6 @@ class EnhancedOrchestrator:
         
         # === UX UPGRADE: SHORT REPLY DETECTION ===
         # Check if this is a short reply that needs context resolution
-        original_message = request.message
-        clarifying_response = None
-        
         if is_short_reply(request.message):
             resolved_msg, confidence, clarifying_question = resolve_short_reply(
                 message=request.message,
