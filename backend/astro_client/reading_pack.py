@@ -310,7 +310,7 @@ def build_reading_pack(
     for signal in scored_signals:
         if len(final_signals) >= 6:
             break
-        if signal['score'] >= 0.55 or len(final_signals) < 2:
+        if signal['score'] >= 0.45 or len(final_signals) < 4:  # Lower threshold, keep at least 4 signals
             final_signals.append(signal)
     
     # Reindex signal IDs sequentially (S1, S2, ...)
