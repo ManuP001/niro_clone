@@ -1278,6 +1278,53 @@ async def get_niro_topics():
     }
 
 
+# ============= MICRO-FEEDBACK ENDPOINT =============
+
+class FeedbackRequest(BaseModel):
+    """Request model for micro-feedback"""
+    response_id: str = Field(..., description="ID of the AI response being rated")
+    session_id: str = Field(..., description="Session identifier")
+    feedback: str = Field(..., description="Feedback value: 'positive' or 'negative'")
+    message_preview: Optional[str] = Field(None, description="Preview of the message being rated")
+
+
+@api_router.post("/chat/feedback")
+async def submit_feedback(request: FeedbackRequest):
+    """
+    Submit micro-feedback for an AI response.
+    
+    Used to collect "Does this feel accurate?" feedback (👍/👎).
+    """
+    import logging
+    feedback_logger = logging.getLogger("niro_feedback")
+    
+    # Log feedback
+    feedback_logger.info(
+        f"[FEEDBACK] response_id={request.response_id} "
+        f"session_id={request.session_id} "
+        f"feedback={request.feedback} "
+        f"preview={request.message_preview[:50] if request.message_preview else 'N/A'}"
+    )
+    
+    # Store in database (optional - for analytics)
+    try:
+        feedback_doc = {
+            "response_id": request.response_id,
+            "session_id": request.session_id,
+            "feedback": request.feedback,
+            "message_preview": request.message_preview,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        await db.niro_feedback.insert_one(feedback_doc)
+    except Exception as e:
+        logger.warning(f"Could not store feedback in database: {e}")
+    
+    return {
+        "success": True,
+        "message": f"Thank you for your feedback!"
+    }
+
+
 # ============= KUNDLI ENDPOINT =============
 
 @api_router.get("/kundli")
