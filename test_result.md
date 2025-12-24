@@ -338,6 +338,66 @@ backend:
         agent: "testing"
         comment: "CRITICAL FEATURE CONFIRMED WORKING: Both HTML and JSON formats functional. HTML endpoint returns 8562 bytes of structured report, JSON endpoint returns complete metadata with proper structure (ok=true, request_id, user_input, birth_details, api_calls, reading_pack, llm, final). RequestId generation from chat requests working correctly. User-reported failure resolved."
 
+  - task: "Chat UX Upgrades - Conversation State & Short Reply Detection"
+    implemented: true
+    working: true
+    file: "/app/backend/conversation/enhanced_orchestrator.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ CONVERSATION STATE & SHORT REPLY DETECTION WORKING: Tested conversation state tracking with current_topic, message_count, and last_ai_question fields. Short reply detection successfully resolves 'yes' against conversation context. Message count increments correctly (1→2). Response length substantial (841 chars) indicating proper context resolution. All conversationState fields present and valid in API response."
+
+  - task: "Chat UX Upgrades - Trust Widget Response"
+    implemented: true
+    working: true
+    file: "/app/backend/conversation/ux_utils.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TRUST WIDGET RESPONSE WORKING: Trust widget contains human-readable drivers array (no S1/S2 signal IDs), confidence level (Low/Medium/High), and optional time_window. Tested with career question - returns 1 driver with clean label, confidence=Medium. All signal IDs properly removed from driver labels. Trust widget structure validates correctly."
+
+  - task: "Chat UX Upgrades - Next Step Chips"
+    implemented: true
+    working: true
+    file: "/app/backend/conversation/ux_utils.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ NEXT STEP CHIPS WORKING: Returns nextStepChips array with 5 valid chips. Each chip has required id and label fields with non-empty values. Chips are context-aware and topic-specific. Structure validation passed - all chips are proper objects with string id/label pairs."
+
+  - task: "Chat UX Upgrades - Feedback Endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ FEEDBACK ENDPOINT WORKING: POST /api/chat/feedback accepts response_id, session_id, and feedback (positive/negative). Returns success=true with thank you message. Both positive and negative feedback submissions tested successfully. Endpoint validates correctly and stores feedback data."
+
+  - task: "Chat UX Upgrades - Conversation State in Response"
+    implemented: true
+    working: true
+    file: "/app/backend/conversation/enhanced_orchestrator.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ CONVERSATION STATE IN RESPONSE WORKING: All chat responses include conversationState with current_topic, message_count, and last_ai_question (when applicable). Topic detection working (career topic identified correctly). Message count tracking functional. State persistence across conversation turns verified."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"

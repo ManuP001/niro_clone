@@ -1,0 +1,18 @@
+{
+  "request_id": "896d5bce",
+  "timestamp": "2025-12-24T21:14:09.612490Z",
+  "user_input": "What's my guidance for today?",
+  "topic": "daily_guidance",
+  "mode": "NORMAL_READING",
+  "action_id": "daily_guidance",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}
