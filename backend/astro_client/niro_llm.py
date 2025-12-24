@@ -722,6 +722,16 @@ For compare questions: state which option is better + why + when to reassess.
             result['remedies'] = []
             result['data_gaps'] = []
         
+        # POST-PROCESSING: Strip any signal IDs [S1], [S2], etc. from rawText
+        # These should ONLY appear in reasons, not in the main message
+        import re
+        if result.get('rawText'):
+            # Remove [S1], [S2], [S3], etc. patterns from rawText
+            result['rawText'] = re.sub(r'\s*\[S\d+\]\s*', ' ', result['rawText'])
+            # Clean up any double spaces
+            result['rawText'] = re.sub(r'  +', ' ', result['rawText'])
+            result['rawText'] = result['rawText'].strip()
+        
         # Clean up data_gaps - only include if non-empty
         if not result.get('data_gaps'):
             result.pop('data_gaps', None)
