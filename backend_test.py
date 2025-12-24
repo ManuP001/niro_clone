@@ -4017,7 +4017,21 @@ class ReportGenerationTester:
         print("Priority: Kundli API & Checklist API (User Reported Failures)")
         print("=" * 80)
         
+    def run_all_tests(self):
+        """Run all backend tests focusing on CRITICAL FEATURES from review request"""
+        print("=" * 80)
+        print("TESTING NIRO BACKEND - CRITICAL FEATURES FOCUS")
+        print("Priority: Chat UX Upgrades & Critical Features")
+        print("=" * 80)
+        
         tests = [
+            # NEW UX UPGRADE TESTS (Review Request Priority)
+            ("🎨 UX UPGRADE: Conversation State & Short Reply", self.test_chat_ux_conversation_state_and_short_reply),
+            ("🎨 UX UPGRADE: Trust Widget Response", self.test_chat_ux_trust_widget_response),
+            ("🎨 UX UPGRADE: Next Step Chips", self.test_chat_ux_next_step_chips),
+            ("🎨 UX UPGRADE: Feedback Endpoint", self.test_chat_ux_feedback_endpoint),
+            ("🎨 UX UPGRADE: Conversation State in Response", self.test_chat_ux_conversation_state_in_response),
+            
             # CRITICAL FEATURES (Review Request Priority - Chat Fixes)
             ("🚨 REVIEW REQUEST: Welcome Message Endpoint Fix", self.test_welcome_message_endpoint_fix),
             ("🚨 REVIEW REQUEST: Chat Endpoint Fix", self.test_chat_endpoint_fix),
