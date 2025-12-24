@@ -1,0 +1,18 @@
+{
+  "request_id": "a7f043ef",
+  "timestamp": "2025-12-24T19:55:04.456104Z",
+  "user_input": "Will it be better to start a business or find a job?",
+  "topic": "career",
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}
