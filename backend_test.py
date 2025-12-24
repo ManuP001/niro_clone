@@ -3511,6 +3511,7 @@ class ReportGenerationTester:
             # CRITICAL FEATURES (Review Request Priority - Chat Fixes)
             ("🚨 REVIEW REQUEST: Welcome Message Endpoint Fix", self.test_welcome_message_endpoint_fix),
             ("🚨 REVIEW REQUEST: Chat Endpoint Fix", self.test_chat_endpoint_fix),
+            ("🚨 NEW REVIEW REQUEST: Chat Response Formatting Verification", self.test_chat_response_formatting_verification),
             
             # CRITICAL FEATURES (Previous Review Request Priority)
             ("🚨 REVIEW REQUEST: Kundli API Specific Requirements", self.test_kundli_api_endpoint_specific_review_request),
