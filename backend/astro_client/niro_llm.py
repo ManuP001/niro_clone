@@ -749,7 +749,7 @@ data_gaps:
             for line in lines:
                 stripped = line.strip()
                 
-                # Skip empty lines
+                # Skip empty lines but keep them for paragraph breaks
                 if not stripped:
                     clean_lines.append('')
                     continue
@@ -758,22 +758,33 @@ data_gaps:
                 if stripped.startswith(('- ', '• ', '* ')) and '→' in stripped:
                     continue
                 
-                # Skip lines that are just "(empty)" 
-                if stripped.lower() in ['(empty)', 'empty', '(none)', 'none']:
+                # Skip lines that are just "(empty)" or variations
+                if stripped.lower() in ['(empty)', 'empty', '(none)', 'none', '- (empty)', '• (empty)', '* (empty)']:
                     continue
                     
                 # Skip lines starting with signal IDs [S1], [S2]
                 if re.match(r'^\[S\d+\]', stripped):
                     continue
                 
-                # Skip bullet points that look like structured reasons (contain arrow or signal pattern)
+                # Handle bullet points
                 if stripped.startswith(('- ', '• ', '* ')):
                     bullet_content = stripped[2:].strip()
-                    # If bullet starts with planet/house pattern followed by arrow, skip
-                    if re.match(r'^[A-Z][a-z]+ in (the )?\d+(st|nd|rd|th) house\s*→', bullet_content):
-                        continue
-                    # If bullet contains "→" it's likely a reason
+                    
+                    # Skip if bullet contains "→" (it's a reason)
                     if '→' in bullet_content:
+                        continue
+                    
+                    # Skip if bullet starts with signal ID
+                    if re.match(r'^\[S\d+\]', bullet_content):
+                        continue
+                    
+                    # Skip if it's "(empty)"
+                    if bullet_content.lower() in ['(empty)', 'empty', '(none)', 'none']:
+                        continue
+                    
+                    # For long paragraphs starting with bullets, convert to plain text
+                    if len(bullet_content) > 100:
+                        clean_lines.append(bullet_content)
                         continue
                 
                 # Keep this line
@@ -785,6 +796,10 @@ data_gaps:
             # Remove any remaining [S1], [S2], etc. patterns
             result['rawText'] = re.sub(r'\s*\[S\d+\]\s*', ' ', result['rawText'])
             
+            # Remove any remaining (empty) patterns
+            result['rawText'] = re.sub(r'\n\s*\(empty\)\s*\n', '\n', result['rawText'], flags=re.IGNORECASE)
+            result['rawText'] = re.sub(r'[•\-\*]\s*\(empty\)', '', result['rawText'], flags=re.IGNORECASE)
+            
             # Clean up multiple newlines and spaces
             result['rawText'] = re.sub(r'\n{3,}', '\n\n', result['rawText'])
             result['rawText'] = re.sub(r'  +', ' ', result['rawText'])
@@ -793,6 +808,10 @@ data_gaps:
         # Clean up data_gaps - only include if non-empty
         if not result.get('data_gaps'):
             result.pop('data_gaps', None)
+        
+        # Clean up remedies - remove "(empty)" entries
+        if result.get('remedies'):
+            result['remedies'] = [r for r in result['remedies'] if r.lower() not in ['(empty)', 'empty', '(none)', 'none']]
         
         return result
 
