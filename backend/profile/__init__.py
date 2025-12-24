@@ -215,14 +215,7 @@ async def get_welcome_message(authorization: Optional[str] = Header(None)):
         
         # Log welcome generation
         try:
-            pipeline_logger = get_pipeline_logger()
-            pipeline_logger.log_event({
-                "event_type": "WELCOME",
-                "user_id": user_id,
-                "ascendant": ascendant,
-                "moon": moon_sign,
-                "sun": sun_sign
-            })
+            logger.info(f"Generating welcome message for user {user_id}")
         except Exception as e:
             logger.debug(f"Could not log welcome event: {e}")
         
