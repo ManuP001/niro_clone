@@ -101,9 +101,39 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
-user_problem_statement: "Build complete NIRO backend with Vedic API integration, topic classification, chart lever mapping, and NIRO LLM with system prompt"
+user_problem_statement: "Test two specific fixes for the NIRO chat application: 1) Welcome Message Endpoint (POST /api/profile/welcome) should be fast and return personalized message with astrological traits, 2) Chat Endpoint (POST /api/chat) should return proper rawText without error messages"
 
 backend:
+  - task: "Welcome Message Endpoint Fix"
+    implemented: true
+    working: true
+    file: "/app/backend/profile/__init__.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL: Welcome endpoint failing with 500 Internal Server Error. Issue identified: invalid OpenAI model 'gpt-5.1' causing API timeouts, and missing import 'backend.niro_logging.pipeline_logger' causing import errors."
+      - working: true
+        agent: "testing"
+        comment: "✅ WELCOME MESSAGE ENDPOINT FIX CONFIRMED WORKING: Fixed OpenAI model from 'gpt-5.1' to 'gpt-4-turbo' and resolved import error. Tested complete flow: user registration → profile creation → welcome endpoint call. Returns personalized message (170 chars) with astrological content (warm-hearted, confident, disciplined traits). Response time: 824ms (FAST - single API call). Welcome message format: 'Hey Test User. I've looked at your chart. I see someone who's warm-hearted, confident, and disciplined—there's a grounded calm in that. What would you like to explore?' Includes suggested_questions array."
+
+  - task: "Chat Endpoint Fix"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL: Chat endpoint timing out due to invalid OpenAI model 'gpt-5.1' causing API failures."
+      - working: true
+        agent: "testing"
+        comment: "✅ CHAT ENDPOINT FIX CONFIRMED WORKING: Fixed OpenAI model configuration. Tested with authenticated user session and message 'should I start a business or a job?'. Returns proper response structure: reply.rawText contains meaningful business/job advice (877 chars), no error messages detected, reply.summary is empty string (acceptable), response addresses the business vs job question appropriately. Response includes proper focus='career', mode='NORMAL_READING', and suggestedActions array. No 'Sorry, I encountered an error' messages found."
+
   - task: "Astro Client Models"
     implemented: true
     working: true
