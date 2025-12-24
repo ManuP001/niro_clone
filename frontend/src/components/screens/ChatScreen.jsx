@@ -586,7 +586,7 @@ const ChatScreen = ({ token, userId }) => {
 
       {/* Messages Container - Scrollable */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.map((msg) => (
+        {messages.map((msg, msgIndex) => (
           <div key={msg.id}>
             <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
@@ -608,15 +608,44 @@ const ChatScreen = ({ token, userId }) => {
                 <p className={`text-[10px] mt-2 ${msg.type === 'user' ? 'text-emerald-100' : 'text-gray-500'}`}>
                   {msg.timestamp}
                 </p>
+                
+                {/* Micro-feedback for AI messages that should show it */}
+                {msg.type === 'ai' && msg.showFeedback && (
+                  <MicroFeedback 
+                    responseId={msg.requestId || msg.id}
+                    sessionId={sessionId}
+                  />
+                )}
               </div>
             </div>
             
-            {msg.type === 'ai' && (msg.reasons?.length > 0 || msg.dataGaps?.length > 0 || msg.timingWindows?.length > 0) && (
-              <WhyAnswerSection 
-                reasons={msg.reasons} 
+            {/* Trust Widget (replaces old WhyAnswerSection) */}
+            {msg.type === 'ai' && msg.trustWidget && (
+              <TrustWidget 
+                trustWidget={msg.trustWidget}
                 timingWindows={msg.timingWindows}
-                dataGaps={msg.dataGaps}
               />
+            )}
+            
+            {/* Fallback to old WhyAnswerSection if no trustWidget but has reasons */}
+            {msg.type === 'ai' && !msg.trustWidget && (msg.reasons?.length > 0) && (
+              <TrustWidget 
+                trustWidget={{
+                  drivers: msg.reasons.map(r => ({ label: r.replace(/\[S\d+\]\s*/g, ''), impact: null })),
+                  confidence: 'Medium',
+                  time_window: msg.timingWindows?.[0]?.period || null
+                }}
+              />
+            )}
+            
+            {/* Next Step Chips - show only for the last AI message */}
+            {msg.type === 'ai' && msgIndex === messages.length - 1 && nextStepChips.length > 0 && (
+              <div className="flex justify-start mt-2">
+                <NextStepChips 
+                  chips={nextStepChips}
+                  onChipClick={handleNextStepChip}
+                />
+              </div>
             )}
             
             {/* Render suggested questions under welcome message */}
