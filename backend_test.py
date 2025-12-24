@@ -1385,6 +1385,515 @@ class ReportGenerationTester:
             self.log_result("NIRO Session Reset", False, f"Exception: {str(e)}")
             return False
 
+    def test_chat_ux_conversation_state_and_short_reply(self):
+        """Test conversation state and short-reply detection"""
+        try:
+            # Step 1: Create user and profile with birth details
+            register_payload = {
+                "identifier": "ux-test@example.com"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/auth/identify", json=register_payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("UX Test - User Registration", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            auth_data = response.json()
+            token = auth_data.get("token")
+            
+            # Create profile with birth details
+            profile_payload = {
+                "name": "UX Test User",
+                "dob": "1990-05-15",
+                "tob": "14:30",
+                "location": "Mumbai",
+                "birth_place_lat": 19.08,
+                "birth_place_lon": 72.88,
+                "birth_place_tz": 5.5
+            }
+            
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.session.post(f"{BACKEND_URL}/profile/", 
+                                       json=profile_payload, 
+                                       headers=headers, 
+                                       timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("UX Test - Profile Creation", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Step 2: Send a message like "tell me about career"
+            session_id = f"ux-test-{uuid.uuid4().hex[:8]}"
+            career_payload = {
+                "sessionId": session_id,
+                "message": "tell me about career",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", 
+                                       json=career_payload, 
+                                       headers=headers,
+                                       timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("UX Test - Career Message", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            career_data = response.json()
+            
+            # Verify conversationState is present
+            if "conversationState" not in career_data:
+                self.log_result("UX Test - Conversation State", False, 
+                              "Missing conversationState in response", career_data)
+                return False
+            
+            conv_state = career_data["conversationState"]
+            required_state_fields = ["current_topic", "message_count"]
+            missing_state_fields = [field for field in required_state_fields if field not in conv_state]
+            
+            if missing_state_fields:
+                self.log_result("UX Test - Conversation State", False, 
+                              f"Missing state fields: {missing_state_fields}", conv_state)
+                return False
+            
+            # Step 3: Send a short reply "yes" or "continue"
+            short_reply_payload = {
+                "sessionId": session_id,
+                "message": "yes",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", 
+                                       json=short_reply_payload, 
+                                       headers=headers,
+                                       timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("UX Test - Short Reply", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            short_reply_data = response.json()
+            
+            # Verify the system resolved the short reply against context
+            reply_text = short_reply_data.get("reply", {}).get("rawText", "")
+            
+            # Check if the response shows context resolution (should not be generic)
+            if len(reply_text) < 50:
+                self.log_result("UX Test - Short Reply Resolution", False, 
+                              f"Response too short, likely not resolved: '{reply_text}'", short_reply_data)
+                return False
+            
+            # Verify conversationState is updated
+            new_conv_state = short_reply_data.get("conversationState", {})
+            if new_conv_state.get("message_count", 0) <= conv_state.get("message_count", 0):
+                self.log_result("UX Test - Conversation State Update", False, 
+                              "Message count not incremented", new_conv_state)
+                return False
+            
+            self.log_result("UX Test - Conversation State and Short Reply", True, 
+                          f"Short reply resolved correctly, message count: {new_conv_state.get('message_count')}")
+            return True
+            
+        except Exception as e:
+            self.log_result("UX Test - Conversation State and Short Reply", False, f"Exception: {str(e)}")
+            return False
+
+    def test_chat_ux_trust_widget_response(self):
+        """Test Trust Widget response structure"""
+        try:
+            # Create authenticated session
+            register_payload = {
+                "identifier": "trust-widget-test@example.com"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/auth/identify", json=register_payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Trust Widget Test - User Registration", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            auth_data = response.json()
+            token = auth_data.get("token")
+            
+            # Create profile
+            profile_payload = {
+                "name": "Trust Widget User",
+                "dob": "1990-05-15",
+                "tob": "14:30",
+                "location": "Mumbai",
+                "birth_place_lat": 19.08,
+                "birth_place_lon": 72.88,
+                "birth_place_tz": 5.5
+            }
+            
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.session.post(f"{BACKEND_URL}/profile/", 
+                                       json=profile_payload, 
+                                       headers=headers, 
+                                       timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Trust Widget Test - Profile Creation", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Send career-related question
+            session_id = f"trust-test-{uuid.uuid4().hex[:8]}"
+            career_payload = {
+                "sessionId": session_id,
+                "message": "Should I change my career path?",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", 
+                                       json=career_payload, 
+                                       headers=headers,
+                                       timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Trust Widget Test", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify trustWidget is present
+            if "trustWidget" not in data:
+                self.log_result("Trust Widget Test", False, 
+                              "Missing trustWidget in response", data)
+                return False
+            
+            trust_widget = data["trustWidget"]
+            
+            # Verify trustWidget structure
+            required_fields = ["drivers", "confidence"]
+            missing_fields = [field for field in required_fields if field not in trust_widget]
+            
+            if missing_fields:
+                self.log_result("Trust Widget Test", False, 
+                              f"Missing trustWidget fields: {missing_fields}", trust_widget)
+                return False
+            
+            # Verify drivers array
+            drivers = trust_widget.get("drivers", [])
+            if not isinstance(drivers, list):
+                self.log_result("Trust Widget Test", False, 
+                              "drivers is not an array", trust_widget)
+                return False
+            
+            # Check drivers have human-readable labels (no S1/S2 labels)
+            for i, driver in enumerate(drivers):
+                if not isinstance(driver, dict) or "label" not in driver:
+                    self.log_result("Trust Widget Test", False, 
+                                  f"Driver {i} missing label", driver)
+                    return False
+                
+                label = driver["label"]
+                if re.search(r'\[S\d+\]', label):
+                    self.log_result("Trust Widget Test", False, 
+                                  f"Driver contains signal ID: {label}", driver)
+                    return False
+            
+            # Verify confidence level
+            confidence = trust_widget.get("confidence")
+            valid_confidence_levels = ["Low", "Medium", "High"]
+            if confidence not in valid_confidence_levels:
+                self.log_result("Trust Widget Test", False, 
+                              f"Invalid confidence level: {confidence}", trust_widget)
+                return False
+            
+            # Check for time_window (optional)
+            time_window = trust_widget.get("time_window")
+            if time_window is not None and not isinstance(time_window, str):
+                self.log_result("Trust Widget Test", False, 
+                              f"time_window should be string or null: {time_window}", trust_widget)
+                return False
+            
+            self.log_result("Trust Widget Test", True, 
+                          f"Trust widget valid: {len(drivers)} drivers, confidence={confidence}, time_window={time_window}")
+            return True
+            
+        except Exception as e:
+            self.log_result("Trust Widget Test", False, f"Exception: {str(e)}")
+            return False
+
+    def test_chat_ux_next_step_chips(self):
+        """Test Next Step Chips in response"""
+        try:
+            # Create authenticated session
+            register_payload = {
+                "identifier": "chips-test@example.com"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/auth/identify", json=register_payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Next Step Chips Test - User Registration", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            auth_data = response.json()
+            token = auth_data.get("token")
+            
+            # Create profile
+            profile_payload = {
+                "name": "Chips Test User",
+                "dob": "1990-05-15",
+                "tob": "14:30",
+                "location": "Mumbai",
+                "birth_place_lat": 19.08,
+                "birth_place_lon": 72.88,
+                "birth_place_tz": 5.5
+            }
+            
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.session.post(f"{BACKEND_URL}/profile/", 
+                                       json=profile_payload, 
+                                       headers=headers, 
+                                       timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Next Step Chips Test - Profile Creation", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Send message
+            session_id = f"chips-test-{uuid.uuid4().hex[:8]}"
+            payload = {
+                "sessionId": session_id,
+                "message": "What should I focus on in my career?",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", 
+                                       json=payload, 
+                                       headers=headers,
+                                       timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Next Step Chips Test", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify nextStepChips is present
+            if "nextStepChips" not in data:
+                self.log_result("Next Step Chips Test", False, 
+                              "Missing nextStepChips in response", data)
+                return False
+            
+            next_step_chips = data["nextStepChips"]
+            
+            # Verify it's an array
+            if not isinstance(next_step_chips, list):
+                self.log_result("Next Step Chips Test", False, 
+                              "nextStepChips is not an array", next_step_chips)
+                return False
+            
+            # Verify each chip has id and label
+            for i, chip in enumerate(next_step_chips):
+                if not isinstance(chip, dict):
+                    self.log_result("Next Step Chips Test", False, 
+                                  f"Chip {i} is not an object", chip)
+                    return False
+                
+                if "id" not in chip or "label" not in chip:
+                    self.log_result("Next Step Chips Test", False, 
+                                  f"Chip {i} missing id or label", chip)
+                    return False
+                
+                if not chip["id"] or not chip["label"]:
+                    self.log_result("Next Step Chips Test", False, 
+                                  f"Chip {i} has empty id or label", chip)
+                    return False
+            
+            self.log_result("Next Step Chips Test", True, 
+                          f"Found {len(next_step_chips)} valid next step chips")
+            return True
+            
+        except Exception as e:
+            self.log_result("Next Step Chips Test", False, f"Exception: {str(e)}")
+            return False
+
+    def test_chat_ux_feedback_endpoint(self):
+        """Test Feedback Endpoint - POST /api/chat/feedback"""
+        try:
+            feedback_payload = {
+                "response_id": "test-123",
+                "session_id": "test-session",
+                "feedback": "positive",
+                "message_preview": "This is a test message preview"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat/feedback", 
+                                       json=feedback_payload, 
+                                       timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Feedback Endpoint Test", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify success response
+            if not data.get("success"):
+                self.log_result("Feedback Endpoint Test", False, 
+                              "Feedback submission failed", data)
+                return False
+            
+            # Verify message is present
+            if "message" not in data:
+                self.log_result("Feedback Endpoint Test", False, 
+                              "Missing message in response", data)
+                return False
+            
+            # Test with negative feedback
+            negative_payload = {
+                "response_id": "test-456",
+                "session_id": "test-session",
+                "feedback": "negative"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat/feedback", 
+                                       json=negative_payload, 
+                                       timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Feedback Endpoint Test - Negative", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            negative_data = response.json()
+            
+            if not negative_data.get("success"):
+                self.log_result("Feedback Endpoint Test - Negative", False, 
+                              "Negative feedback submission failed", negative_data)
+                return False
+            
+            self.log_result("Feedback Endpoint Test", True, 
+                          "Both positive and negative feedback submissions successful")
+            return True
+            
+        except Exception as e:
+            self.log_result("Feedback Endpoint Test", False, f"Exception: {str(e)}")
+            return False
+
+    def test_chat_ux_conversation_state_in_response(self):
+        """Test conversationState in response structure"""
+        try:
+            # Create authenticated session
+            register_payload = {
+                "identifier": "conv-state-test@example.com"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/auth/identify", json=register_payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Conversation State Test - User Registration", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            auth_data = response.json()
+            token = auth_data.get("token")
+            
+            # Create profile
+            profile_payload = {
+                "name": "Conv State User",
+                "dob": "1990-05-15",
+                "tob": "14:30",
+                "location": "Mumbai",
+                "birth_place_lat": 19.08,
+                "birth_place_lon": 72.88,
+                "birth_place_tz": 5.5
+            }
+            
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.session.post(f"{BACKEND_URL}/profile/", 
+                                       json=profile_payload, 
+                                       headers=headers, 
+                                       timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Conversation State Test - Profile Creation", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Send message with question
+            session_id = f"conv-state-test-{uuid.uuid4().hex[:8]}"
+            payload = {
+                "sessionId": session_id,
+                "message": "What are my career prospects? Should I change jobs?",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", 
+                                       json=payload, 
+                                       headers=headers,
+                                       timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Conversation State Test", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            data = response.json()
+            
+            # Verify conversationState is present
+            if "conversationState" not in data:
+                self.log_result("Conversation State Test", False, 
+                              "Missing conversationState in response", data)
+                return False
+            
+            conv_state = data["conversationState"]
+            
+            # Verify required fields
+            required_fields = ["current_topic", "message_count"]
+            missing_fields = [field for field in required_fields if field not in conv_state]
+            
+            if missing_fields:
+                self.log_result("Conversation State Test", False, 
+                              f"Missing conversationState fields: {missing_fields}", conv_state)
+                return False
+            
+            # Verify current_topic is set
+            current_topic = conv_state.get("current_topic")
+            if not current_topic:
+                self.log_result("Conversation State Test", False, 
+                              "current_topic is empty", conv_state)
+                return False
+            
+            # Verify message_count is a number
+            message_count = conv_state.get("message_count")
+            if not isinstance(message_count, int) or message_count <= 0:
+                self.log_result("Conversation State Test", False, 
+                              f"Invalid message_count: {message_count}", conv_state)
+                return False
+            
+            # Check for last_ai_question if there was a question in the response
+            reply_text = data.get("reply", {}).get("rawText", "")
+            if "?" in reply_text:
+                last_ai_question = conv_state.get("last_ai_question")
+                if not last_ai_question:
+                    self.log_result("Conversation State Test", False, 
+                                  "Missing last_ai_question despite question in response", conv_state)
+                    return False
+            
+            self.log_result("Conversation State Test", True, 
+                          f"conversationState valid: topic={current_topic}, count={message_count}")
+            return True
+            
+        except Exception as e:
+            self.log_result("Conversation State Test", False, f"Exception: {str(e)}")
+            return False
+
     # ============= CRITICAL FEATURES TESTING (Review Request) =============
 
     def test_welcome_message_endpoint_fix(self):
