@@ -495,6 +495,21 @@ CRITICAL: The rawText message must be 100% HUMAN and CONVERSATIONAL - NO signal 
 For timing questions: emphasize specific dates and windows.
 For compare questions: state which option is better + why + when to reassess.
 
+⚠️ MANDATORY OUTPUT FORMAT (you MUST follow this exact format):
+```
+rawText: [Your conversational message here - NO [S1], [S2] references!]
+
+reasons:
+- [S1] Signal interpretation → Impact
+- [S2] Another signal → Impact
+
+remedies:
+- [Actionable remedy if applicable]
+
+data_gaps:
+- [Only if blocking - otherwise write "(empty)"]
+```
+
 """
         
         # Add signals
