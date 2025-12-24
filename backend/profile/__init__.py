@@ -147,18 +147,22 @@ async def get_welcome_message(authorization: Optional[str] = Header(None)):
     Uses user's birth chart data (ascendant, moon, sun) to generate
     3 personalized strengths based on Vedic astrology traits.
     
+    Returns NEW response format with welcome_message (string) + suggested_questions (list).
+    
     Headers:
     Authorization: Bearer <token>
     
     Response:
     {
       "ok": true,
-      "welcome": {
-        "message": "Hey Sharad. I've looked at your chart. You come across as...",
-        "title": "Welcome, Sharad!",
-        "subtitle": "Your chart is ready.",
-        "bullets": ["• Grounded", "• Emotionally intelligent", "• Confident"]
-      }
+      "welcome_message": "Hey Sharad. I've looked at your chart. You come across as...",
+      "suggested_questions": [
+        "What career path aligns with my chart?",
+        "What about my relationships?",
+        "When is a good time for new ventures?",
+        "How can I leverage my strengths?",
+        "What should I focus on in the next 30 days?"
+      ]
     }
     """
     try:
@@ -177,6 +181,7 @@ async def get_welcome_message(authorization: Optional[str] = Header(None)):
         from backend.astro_client.models import BirthDetails
         from backend.astro_client.vedic_api import vedic_api_client
         from backend.welcome_traits import create_welcome_message
+        from backend.niro_logging.pipeline_logger import get_pipeline_logger
         
         name = profile.get('name', 'Friend')
         ascendant = None
@@ -207,12 +212,38 @@ async def get_welcome_message(authorization: Optional[str] = Header(None)):
             logger.debug(f"Could not fetch astro profile for welcome message: {e}")
             # Continue without chart data - will use defaults
         
+        # Log welcome generation
+        try:
+            pipeline_logger = get_pipeline_logger()
+            pipeline_logger.log_event({
+                "event_type": "WELCOME",
+                "user_id": user_id,
+                "ascendant": ascendant,
+                "moon": moon_sign,
+                "sun": sun_sign
+            })
+        except Exception as e:
+            logger.debug(f"Could not log welcome event: {e}")
+        
         # Generate welcome message with actual kundli data
         welcome = create_welcome_message(name, ascendant, moon_sign, sun_sign)
         
+        # Extract the warm message text (without legacy fields)
+        welcome_message = welcome.get('message', f"Welcome, {name}! Your chart is ready.")
+        
+        # Generate suggested questions based on chart
+        suggested_questions = [
+            "What does my Sun sign reveal about my core essence?",
+            "How can I leverage my Moon sign strengths in relationships?",
+            "What career path aligns with my chart?",
+            "When is a good time for new ventures?",
+            "What should I focus on in the next 30 days?"
+        ]
+        
         return {
             "ok": True,
-            "welcome": welcome
+            "welcome_message": welcome_message,
+            "suggested_questions": suggested_questions
         }
     except HTTPException:
         raise

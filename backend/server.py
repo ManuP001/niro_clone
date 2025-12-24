@@ -84,9 +84,14 @@ load_dotenv(ROOT_DIR / '.env')
 (ROOT_DIR / "logs").mkdir(parents=True, exist_ok=True)
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+mongo_url = os.getenv('MONGO_URL')
+if not mongo_url:
+    print("WARNING: MONGO_URL not set; MongoDB features disabled")
+    client = None
+    db = None
+else:
+    client = AsyncIOMotorClient(mongo_url)
+    db = client[os.getenv('DB_NAME', 'default_db')]
 
 # Configuration for calculation source (must be set before initialization)
 ASTRO_CALC_SOURCE = os.environ.get('ASTRO_CALCULATION_SOURCE', 'vedic_api')
@@ -1602,5 +1607,6 @@ app.add_middleware(
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    client.close()
+    if client is not None:
+        client.close()
     logger.info("Application shutdown")
