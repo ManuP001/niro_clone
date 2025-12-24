@@ -722,13 +722,56 @@ For compare questions: state which option is better + why + when to reassess.
             result['remedies'] = []
             result['data_gaps'] = []
         
-        # POST-PROCESSING: Strip any signal IDs [S1], [S2], etc. from rawText
-        # These should ONLY appear in reasons, not in the main message
+        # POST-PROCESSING: Clean up rawText to remove any structured content
         import re
         if result.get('rawText'):
-            # Remove [S1], [S2], [S3], etc. patterns from rawText
+            raw = result['rawText']
+            
+            # Split into lines for processing
+            lines = raw.split('\n')
+            clean_lines = []
+            
+            for line in lines:
+                stripped = line.strip()
+                
+                # Skip empty lines
+                if not stripped:
+                    clean_lines.append('')
+                    continue
+                
+                # Skip bullet point lines that contain "→" (these are reasons/remedies)
+                if stripped.startswith(('- ', '• ', '* ')) and '→' in stripped:
+                    continue
+                
+                # Skip lines that are just "(empty)" 
+                if stripped.lower() in ['(empty)', 'empty', '(none)', 'none']:
+                    continue
+                    
+                # Skip lines starting with signal IDs [S1], [S2]
+                if re.match(r'^\[S\d+\]', stripped):
+                    continue
+                
+                # Skip bullet points that look like structured reasons (contain arrow or signal pattern)
+                if stripped.startswith(('- ', '• ', '* ')):
+                    bullet_content = stripped[2:].strip()
+                    # If bullet starts with planet/house pattern followed by arrow, skip
+                    if re.match(r'^[A-Z][a-z]+ in (the )?\d+(st|nd|rd|th) house\s*→', bullet_content):
+                        continue
+                    # If bullet contains "→" it's likely a reason
+                    if '→' in bullet_content:
+                        continue
+                
+                # Keep this line
+                clean_lines.append(line)
+            
+            # Rejoin and clean up
+            result['rawText'] = '\n'.join(clean_lines)
+            
+            # Remove any remaining [S1], [S2], etc. patterns
             result['rawText'] = re.sub(r'\s*\[S\d+\]\s*', ' ', result['rawText'])
-            # Clean up any double spaces
+            
+            # Clean up multiple newlines and spaces
+            result['rawText'] = re.sub(r'\n{3,}', '\n\n', result['rawText'])
             result['rawText'] = re.sub(r'  +', ' ', result['rawText'])
             result['rawText'] = result['rawText'].strip()
         
