@@ -1,0 +1,25 @@
+{
+  "request_id": "d616e532",
+  "timestamp": "2025-12-24T21:19:51.733613Z",
+  "user_input": "car\n\nContext: The assistant previously asked: Would you like to delve deeper into specific countries or types of investments that might align well with your astrological outlook?\n\nreasons:\n\nremedies:\nConsider researching markets and investment opportunities abroad that align with your career or financial goals\n\ndata_gaps:",
+  "topic": "money",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.8955,
+    "lon": 76.6066,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}
