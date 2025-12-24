@@ -80,24 +80,6 @@ def infer_time_context(user_message: str) -> TimeContext:
         if re.search(pattern, msg_lower):
             return "future"
     
-    # Past indicators
-    past_patterns = [
-        r"\blast\s+(?:year|month|week|day)",
-        r"\bin\s+20[0-1][0-9]",  # in 2000-2019
-        r"\bwhat\s+happened\b",
-        r"\bwhy\s+did\b",
-        r"\bhow\s+did\b",
-        r"\bwas\b.*\s+reason",
-        r"\bpast\b",
-        r"\bhistory\b",
-        r"\bretrospective\b",
-        r"\blooking\s+back\b",
-    ]
-    
-    for pattern in past_patterns:
-        if re.search(pattern, msg_lower):
-            return "past"
-    
     # Present indicators
     present_patterns = [
         r"\bright\s+now\b",
