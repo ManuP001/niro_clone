@@ -134,6 +134,18 @@ backend:
         agent: "testing"
         comment: "✅ CHAT ENDPOINT FIX CONFIRMED WORKING: Fixed OpenAI model configuration. Tested with authenticated user session and message 'should I start a business or a job?'. Returns proper response structure: reply.rawText contains meaningful business/job advice (877 chars), no error messages detected, reply.summary is empty string (acceptable), response addresses the business vs job question appropriately. Response includes proper focus='career', mode='NORMAL_READING', and suggestedActions array. No 'Sorry, I encountered an error' messages found."
 
+  - task: "Chat Response Formatting Verification"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ CHAT RESPONSE FORMATTING VERIFICATION COMPLETE: Tested exact review request flow: 1) POST /api/auth/identify with 'formattest@example.com' → user registered successfully, 2) POST /api/profile/ with birth details (name='Format Test', dob='1990-05-15', tob='14:30', location='Mumbai', lat=19.08, lon=72.88) → profile complete, 3) POST /api/profile/welcome → returns personalized message, 4) POST /api/chat with message 'Should I start a business?' → CRITICAL VERIFICATION PASSED: rawText does NOT contain bullet points with arrows (→), does NOT contain signal IDs [S1], [S2], [S3], is pure conversational text (paragraphs, not lists). The reply.reasons array is properly separated from rawText content. Duplicate content removal working correctly - structured data belongs in reasons array, conversational text in rawText."
+
   - task: "Astro Client Models"
     implemented: true
     working: true
