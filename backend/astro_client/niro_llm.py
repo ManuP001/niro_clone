@@ -488,13 +488,12 @@ INTENT: {intent}
 USER_QUESTION: {user_question}
 
 INSTRUCTIONS:
-Your primary job is to directly answer the USER_QUESTION using ONLY the signals below.
-Use the new format with clear rawText section (conversational, no headers) and structured reasons/remedies/data_gaps.
-For timing questions: emphasize TIMING_WINDOWS and specific dates.
+Your primary job is to directly answer the USER_QUESTION using the astrological signals below.
+CRITICAL: The rawText message must be 100% HUMAN and CONVERSATIONAL - NO signal IDs like [S1], [S2]!
+- rawText: Write naturally, like talking to a friend. Mention planets/houses in plain English.
+- reasons: Put signal IDs ONLY here (e.g., "[S1] Venus in 5th → creativity")
+For timing questions: emphasize specific dates and windows.
 For compare questions: state which option is better + why + when to reassess.
-Use probability language. Never claim certainty.
-Reference signal IDs in REASONS: [S1] → interpretation → impact
-Keep the main message (rawText) warm and natural - NO mechanical sections like "SUMMARY:" or "REASONS:" in the message itself.
 
 """
         
