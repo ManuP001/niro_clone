@@ -73,10 +73,16 @@ const formatAIResponse = (text) => {
   // Strip section labels (SUMMARY:, REASONS:, etc.)
   formatted = formatted.replace(/^(SUMMARY|REASONS|REMEDIES|DATA_GAPS|ANSWER):\s*/gmi, '').trim();
 
+  // Strip signal IDs [S1], [S2], etc. from the message - these belong in "Why this answer"
+  formatted = formatted.replace(/\s*\[S\d+\]\s*/g, ' ');
+  
+  // Clean up double spaces
+  formatted = formatted.replace(/  +/g, ' ');
+
   // Normalize newlines and handle spacing
   formatted = formatted.replace(/\r\n/g, '\n');
   
-  return formatted;
+  return formatted.trim();
 };
 
 const WhyAnswerSection = ({ reasons = [], timingWindows = [], dataGaps = [] }) => {
