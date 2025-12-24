@@ -3322,6 +3322,184 @@ class ReportGenerationTester:
             self.log_result("Kundli Review Request - Complete Verification", False, f"Exception: {str(e)}")
             return False
 
+    def test_chat_response_formatting_verification(self):
+        """Test chat response formatting to verify duplicate content is removed"""
+        try:
+            # Step 1: Create test user
+            register_payload = {
+                "identifier": "formattest@example.com"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/auth/identify", json=register_payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Chat Response Formatting - User Registration", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            auth_data = response.json()
+            token = auth_data.get("token")
+            user_id = auth_data.get("user_id")
+            
+            if not token:
+                self.log_result("Chat Response Formatting - User Registration", False, 
+                              "No token received", auth_data)
+                return False
+            
+            self.log_result("Chat Response Formatting - User Registration", True, 
+                          f"User registered: {user_id}")
+            
+            # Step 2: Create profile with birth details
+            profile_payload = {
+                "name": "Format Test",
+                "dob": "1990-05-15",
+                "tob": "14:30",
+                "location": "Mumbai",
+                "birth_place_lat": 19.08,
+                "birth_place_lon": 72.88,
+                "birth_place_tz": 5.5
+            }
+            
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.session.post(f"{BACKEND_URL}/profile/", 
+                                       json=profile_payload, 
+                                       headers=headers, 
+                                       timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Chat Response Formatting - Profile Creation", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            profile_result = response.json()
+            if not profile_result.get("ok") or not profile_result.get("profile_complete"):
+                self.log_result("Chat Response Formatting - Profile Creation", False, 
+                              "Profile not completed", profile_result)
+                return False
+            
+            self.log_result("Chat Response Formatting - Profile Creation", True, 
+                          "Birth details saved successfully")
+            
+            # Step 3: Test welcome endpoint
+            response = self.session.post(f"{BACKEND_URL}/profile/welcome", 
+                                       headers=headers, 
+                                       timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Chat Response Formatting - Welcome Test", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            welcome_data = response.json()
+            
+            if not welcome_data.get("ok"):
+                self.log_result("Chat Response Formatting - Welcome Test", False, 
+                              f"Welcome failed: {welcome_data.get('message')}", welcome_data)
+                return False
+            
+            self.log_result("Chat Response Formatting - Welcome Test", True, 
+                          "Welcome endpoint working correctly")
+            
+            # Step 4: Test chat response with specific verification
+            session_id = f"format_test_{uuid.uuid4().hex[:8]}"
+            
+            chat_payload = {
+                "sessionId": session_id,
+                "message": "Should I start a business?"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", 
+                                       json=chat_payload, 
+                                       headers=headers, 
+                                       timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Chat Response Formatting - Chat Test", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            chat_data = response.json()
+            
+            # Print full response structure for verification
+            print("\n" + "="*60)
+            print("FULL CHAT RESPONSE STRUCTURE:")
+            print("="*60)
+            print(json.dumps(chat_data, indent=2))
+            print("="*60)
+            
+            # CRITICAL VERIFICATION: Check rawText formatting
+            reply = chat_data.get("reply", {})
+            raw_text = reply.get("rawText", "")
+            reasons = reply.get("reasons", [])
+            
+            # Check that rawText does NOT contain bullet points with arrows
+            arrow_patterns = ["→", "->", "=>"]
+            has_arrows = any(pattern in raw_text for pattern in arrow_patterns)
+            
+            if has_arrows:
+                self.log_result("Chat Response Formatting - Arrow Check", False, 
+                              f"rawText contains arrows (→): {raw_text[:200]}...", reply)
+                return False
+            
+            # Check that rawText does NOT contain signal IDs like [S1], [S2], [S3]
+            import re
+            signal_pattern = r'\[S\d+\]'
+            has_signal_ids = bool(re.search(signal_pattern, raw_text))
+            
+            if has_signal_ids:
+                self.log_result("Chat Response Formatting - Signal ID Check", False, 
+                              f"rawText contains signal IDs [S1], [S2], etc.: {raw_text[:200]}...", reply)
+                return False
+            
+            # Check that rawText is conversational (paragraphs, not lists)
+            bullet_patterns = ["- ", "• ", "* ", "1. ", "2. ", "3. "]
+            has_bullet_points = any(pattern in raw_text for pattern in bullet_patterns)
+            
+            if has_bullet_points:
+                self.log_result("Chat Response Formatting - Bullet Point Check", False, 
+                              f"rawText contains bullet points: {raw_text[:200]}...", reply)
+                return False
+            
+            # Verify that reasons array SHOULD contain the structured data
+            if not reasons or len(reasons) == 0:
+                self.log_result("Chat Response Formatting - Reasons Check", False, 
+                              "Reasons array is empty - structured data should be here", reply)
+                return False
+            
+            # Check that reasons contain the signal IDs and arrows (where they belong)
+            reasons_text = " ".join(reasons) if isinstance(reasons, list) else str(reasons)
+            reasons_have_structure = any(pattern in reasons_text for pattern in arrow_patterns + ["[S", "house", "planet"])
+            
+            if not reasons_have_structure:
+                print(f"WARNING: Reasons array may not contain expected astrological structure: {reasons}")
+            
+            # Verify rawText is pure conversational text
+            if len(raw_text) < 50:
+                self.log_result("Chat Response Formatting - Content Length", False, 
+                              f"rawText too short (likely not conversational): {raw_text}", reply)
+                return False
+            
+            # Print specific verification results
+            print("\n" + "="*60)
+            print("FORMATTING VERIFICATION RESULTS:")
+            print("="*60)
+            print(f"✅ rawText length: {len(raw_text)} characters")
+            print(f"✅ No arrows (→) in rawText: {not has_arrows}")
+            print(f"✅ No signal IDs [S1], [S2] in rawText: {not has_signal_ids}")
+            print(f"✅ No bullet points in rawText: {not has_bullet_points}")
+            print(f"✅ Reasons array populated: {len(reasons)} items")
+            print(f"📝 rawText preview: {raw_text[:150]}...")
+            print(f"📝 Reasons preview: {reasons[:2] if reasons else 'None'}")
+            print("="*60)
+            
+            self.log_result("Chat Response Formatting Verification", True, 
+                          f"✅ FORMATTING VERIFIED: rawText is pure conversational text ({len(raw_text)} chars), reasons array contains {len(reasons)} structured items")
+            return True
+            
+        except Exception as e:
+            self.log_result("Chat Response Formatting Verification", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests focusing on CRITICAL FEATURES from review request"""
         print("=" * 80)
