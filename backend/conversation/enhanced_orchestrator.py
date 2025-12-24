@@ -361,16 +361,27 @@ class EnhancedOrchestrator:
                 )
                 
                 # Get or refresh transits (automatically fetches if stale or missing)
+                # Transits are optional - gracefully handle failures
                 niro_logger.info("[TRANSITS] fetching or loading cached transits")
-                transits = await get_or_refresh_transits(user_id, astro_birth, now)
-                logger.debug("RAW_ASTRO_TRANSITS: %s", transits.model_dump_json()[:5000])
+                transits = None
+                transits_coverage = {'ok': 0, 'missing': 0, 'missing_keys': []}
                 
-                # Validate API transits data coverage
-                transits_coverage = validate_api_transits(
-                    transits,
-                    session_id=user_id,
-                    logs_dir=logs_dir
-                )
+                try:
+                    transits = await get_or_refresh_transits(user_id, astro_birth, now)
+                    logger.debug("RAW_ASTRO_TRANSITS: %s", transits.model_dump_json()[:5000])
+                    
+                    # Validate API transits data coverage
+                    transits_coverage = validate_api_transits(
+                        transits,
+                        session_id=user_id,
+                        logs_dir=logs_dir
+                    )
+                except Exception as te:
+                    logger.warning(f"[TRANSITS] Failed to fetch transits (non-blocking): {te}")
+                    niro_logger.info(f"[TRANSITS] Skipping transits due to error: {te}")
+                    # Create empty transits object
+                    from backend.astro_client.models import TransitsData
+                    transits = TransitsData(events=[], data_available=False)
                 
                 log_stage(
                     "API_TRANSITS_RES",
