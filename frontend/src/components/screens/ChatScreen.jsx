@@ -78,24 +78,46 @@ const formatAIResponse = (text) => {
   
   // Split into lines and filter out structured content
   const lines = formatted.split('\n');
-  const cleanLines = lines.filter(line => {
+  const cleanLines = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const trimmed = line.trim();
     
     // Keep empty lines (for paragraph breaks)
-    if (!trimmed) return true;
-    
-    // Remove bullet points containing arrows (→) - these are reasons/remedies
-    if ((trimmed.startsWith('- ') || trimmed.startsWith('• ') || trimmed.startsWith('* ')) && trimmed.includes('→')) {
-      return false;
+    if (!trimmed) {
+      cleanLines.push('');
+      continue;
     }
     
     // Remove "(empty)" lines
-    if (trimmed.toLowerCase() === '(empty)' || trimmed.toLowerCase() === 'empty') {
-      return false;
+    if (trimmed.toLowerCase() === '(empty)' || trimmed.toLowerCase() === 'empty' || 
+        trimmed === '- (empty)' || trimmed === '• (empty)') {
+      continue;
     }
     
-    return true;
-  });
+    // Remove bullet points containing arrows (→) - these are reasons/remedies
+    if ((trimmed.startsWith('- ') || trimmed.startsWith('• ') || trimmed.startsWith('* ')) && trimmed.includes('→')) {
+      continue;
+    }
+    
+    // Convert bullet points at the start of paragraphs to plain text
+    // (removes the bullet but keeps the content)
+    let cleanLine = trimmed;
+    if (cleanLine.startsWith('• ') || cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
+      // Check if this looks like a structured item (short, contains → or signal references)
+      const bulletContent = cleanLine.substring(2).trim();
+      if (bulletContent.includes('→') || bulletContent.match(/^\[S\d+\]/)) {
+        continue; // Skip structured items
+      }
+      // For long paragraphs starting with bullets, remove the bullet
+      if (bulletContent.length > 100) {
+        cleanLine = bulletContent;
+      }
+    }
+    
+    cleanLines.push(cleanLine);
+  }
   
   formatted = cleanLines.join('\n');
   
@@ -105,6 +127,11 @@ const formatAIResponse = (text) => {
 
   // Normalize newlines
   formatted = formatted.replace(/\r\n/g, '\n');
+  
+  // Final cleanup - remove any remaining (empty) patterns
+  formatted = formatted.replace(/\n\s*\(empty\)\s*\n/gi, '\n');
+  formatted = formatted.replace(/•\s*\(empty\)/gi, '');
+  formatted = formatted.replace(/-\s*\(empty\)/gi, '');
   
   return formatted.trim();
 };
