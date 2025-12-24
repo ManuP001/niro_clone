@@ -329,8 +329,12 @@ const ChatScreen = ({ token, userId }) => {
         localStorage.setItem('lastRequestId', data.requestId);
       }
       
-      // Select best available message (summary > remedies > rawText)
-      let selectedMessage = data.reply?.summary || data.reply?.remedies || data.reply?.rawText || 'Sorry, I could not process your request.';
+      // Select best available message (rawText > summary, never use arrays as main message)
+      let selectedMessage = data.reply?.rawText || data.reply?.summary || 'Sorry, I could not process your request.';
+      // Ensure selectedMessage is a string (not an array)
+      if (typeof selectedMessage !== 'string') {
+        selectedMessage = Array.isArray(selectedMessage) ? selectedMessage.join('\n') : String(selectedMessage);
+      }
       
       // Format the message
       const formattedMessage = formatAIResponse(selectedMessage);
