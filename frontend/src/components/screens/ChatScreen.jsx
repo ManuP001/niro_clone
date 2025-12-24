@@ -63,9 +63,12 @@ const RenderMessageText = ({ text }) => {
 // Format AI response text for readability
 const formatAIResponse = (text) => {
   if (!text) return '';
+  
+  // Ensure text is a string
+  let textStr = typeof text === 'string' ? text : (Array.isArray(text) ? text.join('\n') : String(text));
 
   // Strip accidental rawText: prefix
-  let formatted = text.replace(/^rawText\s*:\s*/i, '').trim();
+  let formatted = textStr.replace(/^rawText\s*:\s*/i, '').trim();
 
   // Strip section labels (SUMMARY:, REASONS:, etc.)
   formatted = formatted.replace(/^(SUMMARY|REASONS|REMEDIES|DATA_GAPS|ANSWER):\s*/gmi, '').trim();
