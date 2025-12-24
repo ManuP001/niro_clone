@@ -406,11 +406,14 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Welcome Message Endpoint Fix"
-    - "Chat Endpoint Fix"
+    - "Chat UX Upgrades - Conversation State & Short Reply Detection"
+    - "Chat UX Upgrades - Trust Widget Response"
+    - "Chat UX Upgrades - Next Step Chips"
+    - "Chat UX Upgrades - Feedback Endpoint"
+    - "Chat UX Upgrades - Conversation State in Response"
   stuck_tasks: []
   test_all: false
-  test_priority: "critical_first"
+  test_priority: "ux_upgrades_first"
 
 agent_communication:
   - agent: "testing"
