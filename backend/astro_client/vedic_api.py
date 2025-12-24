@@ -428,6 +428,44 @@ class VedicAPIClient:
     
     # ============ NEW API METHODS ============
     
+    async def fetch_basic_chart_info(self, birth: BirthDetails) -> Dict[str, Any]:
+        """
+        Fetch basic chart info (ascendant, moon sign, sun sign) from Vedic API.
+        
+        This is a LIGHTWEIGHT method that makes only ONE API call.
+        Use this for welcome messages and quick lookups.
+        
+        Returns: dict with keys: ascendant, moon_sign, sun_sign, nakshatra
+        Raises VedicApiError if call fails.
+        """
+        logger.info("[BASIC_CHART] Fetching basic chart info (single API call)...")
+        
+        try:
+            api_params = {
+                'dob': birth.dob.strftime("%d/%m/%Y"),
+                'tob': birth.tob,
+                'lat': birth.latitude or 28.6139,
+                'lon': birth.longitude or 77.2090,
+                'tz': birth.timezone,
+                'ayanamsa': 'Lahiri'
+            }
+            
+            kundli_details = await self._get('/extended-horoscope/extended-kundli-details', api_params)
+            
+            result = {
+                'ascendant': kundli_details.get('ascendant_sign'),
+                'moon_sign': kundli_details.get('rasi'),
+                'sun_sign': kundli_details.get('sun_sign'),
+                'nakshatra': kundli_details.get('nakshatra'),
+            }
+            
+            logger.info(f"[BASIC_CHART] Success: ascendant={result['ascendant']}, moon={result['moon_sign']}, sun={result['sun_sign']}")
+            return result
+            
+        except VedicApiError as e:
+            logger.error(f"[BASIC_CHART] VEDIC API ERROR: {e.error_code}")
+            raise
+    
     async def fetch_planet_details(self, birth: BirthDetails) -> Dict[str, Any]:
         """
         Fetch detailed planetary positions from Vedic API.
