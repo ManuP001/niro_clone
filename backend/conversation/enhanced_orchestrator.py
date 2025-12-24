@@ -637,8 +637,49 @@ class EnhancedOrchestrator:
         # Step 7: Build suggested actions
         suggested_actions = self._build_suggested_actions(mode, topic)
         
-        # Update state
+        # === UX UPGRADES ===
+        
+        # 7a. Extract AI question for conversation memory
+        ai_question = extract_ai_question(llm_response.get('rawText', ''))
+        
+        # 7b. Update conversation state with lightweight memory
+        state.current_topic = topic
+        state.last_ai_question = ai_question
+        state.last_user_intent = intent
+        state.last_ai_response_id = request_id
+        state.updated_at = datetime.utcnow()
+        
+        # Update state in store
         self.session_store.set(request.sessionId, state)
+        
+        # 7c. Build Trust Widget (clean reasons for "Why this answer")
+        trust_widget = build_trust_widget(
+            reasons=llm_response.get('reasons', []),
+            timing_windows=reading_pack.get('timing_windows', []),
+            signal_scores=signal_scores
+        )
+        
+        # 7d. Generate next-step chips
+        next_step_chips = generate_next_step_chips(
+            current_topic=topic,
+            last_ai_question=ai_question,
+            mode=mode,
+            reply_text=llm_response.get('rawText', '')
+        )
+        
+        # 7e. Determine if we should show micro-feedback
+        show_feedback = should_show_feedback(
+            reply_text=llm_response.get('rawText', ''),
+            is_welcome=False,
+            has_emotional_insight='personality' in topic.lower() if topic else False
+        )
+        
+        # Build conversation state for frontend
+        conversation_state_dict = {
+            "current_topic": state.current_topic,
+            "last_ai_question": state.last_ai_question,
+            "message_count": state.message_count
+        }
         
         # Step 8: Build and return response
         reply = NiroReply(
@@ -648,11 +689,21 @@ class EnhancedOrchestrator:
             remedies=llm_response.get('remedies', [])
         )
         
+        # Convert next_step_chips to SuggestedAction objects
+        next_step_actions = [
+            SuggestedAction(id=chip['id'], label=chip['label'])
+            for chip in next_step_chips
+        ]
+        
         response = ChatResponse(
             reply=reply,
             mode=mode,
             focus=topic,
-            suggestedActions=suggested_actions
+            suggestedActions=suggested_actions,
+            trustWidget=trust_widget,
+            nextStepChips=next_step_actions,
+            showFeedback=show_feedback,
+            conversationState=conversation_state_dict
         )
         
         # STAGE I: END - Log completion
