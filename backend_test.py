@@ -1386,6 +1386,206 @@ class ReportGenerationTester:
 
     # ============= CRITICAL FEATURES TESTING (Review Request) =============
 
+    def test_welcome_message_endpoint_fix(self):
+        """Test Welcome Message Endpoint Fix - POST /api/profile/welcome"""
+        try:
+            # Step 1: Register a new user
+            register_payload = {
+                "identifier": "chatfix-test@example.com"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/auth/identify", json=register_payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Welcome Message Fix - User Registration", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            auth_data = response.json()
+            token = auth_data.get("token")
+            user_id = auth_data.get("user_id")
+            
+            if not token:
+                self.log_result("Welcome Message Fix - User Registration", False, 
+                              "No token received", auth_data)
+                return False
+            
+            self.log_result("Welcome Message Fix - User Registration", True, 
+                          f"User registered: {user_id}")
+            
+            # Step 2: Create profile with birth details
+            profile_payload = {
+                "name": "Test User",
+                "dob": "1990-05-15",
+                "tob": "14:30",
+                "location": "Mumbai",
+                "birth_place_lat": 19.08,
+                "birth_place_lon": 72.88,
+                "birth_place_tz": 5.5
+            }
+            
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.session.post(f"{BACKEND_URL}/profile/", 
+                                       json=profile_payload, 
+                                       headers=headers, 
+                                       timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Welcome Message Fix - Profile Creation", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            profile_result = response.json()
+            if not profile_result.get("ok") or not profile_result.get("profile_complete"):
+                self.log_result("Welcome Message Fix - Profile Creation", False, 
+                              "Profile not completed", profile_result)
+                return False
+            
+            self.log_result("Welcome Message Fix - Profile Creation", True, 
+                          "Birth details saved successfully")
+            
+            # Step 3: Call welcome endpoint and measure speed
+            start_time = time.time()
+            response = self.session.post(f"{BACKEND_URL}/profile/welcome", 
+                                       headers=headers, 
+                                       timeout=30)
+            end_time = time.time()
+            response_time = end_time - start_time
+            
+            if response.status_code != 200:
+                self.log_result("Welcome Message Endpoint Fix", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            welcome_data = response.json()
+            
+            # Verify response structure
+            if not welcome_data.get("ok"):
+                self.log_result("Welcome Message Endpoint Fix", False, 
+                              f"Welcome failed: {welcome_data.get('message')}", welcome_data)
+                return False
+            
+            # Verify personalized message exists
+            message = welcome_data.get("message", "")
+            if not message or len(message) < 50:
+                self.log_result("Welcome Message Endpoint Fix", False, 
+                              f"Message too short or missing: '{message}'", welcome_data)
+                return False
+            
+            # Check for astrological traits (ascendant, moon_sign, sun_sign)
+            astro_traits = ["ascendant", "moon", "sun", "sign", "trait"]
+            has_astro_content = any(trait.lower() in message.lower() for trait in astro_traits)
+            
+            if not has_astro_content:
+                self.log_result("Welcome Message Endpoint Fix", False, 
+                              f"No astrological traits detected in message: '{message}'", welcome_data)
+                return False
+            
+            # Verify speed (should be fast - single API call)
+            if response_time > 10.0:  # Allow up to 10 seconds for API call
+                self.log_result("Welcome Message Endpoint Fix", False, 
+                              f"Response too slow: {response_time:.2f}s (expected < 10s)", welcome_data)
+                return False
+            
+            self.log_result("Welcome Message Endpoint Fix", True, 
+                          f"✅ FAST personalized welcome message in {response_time:.2f}s with astrological content")
+            return True
+            
+        except Exception as e:
+            self.log_result("Welcome Message Endpoint Fix", False, f"Exception: {str(e)}")
+            return False
+
+    def test_chat_endpoint_fix(self):
+        """Test Chat Endpoint Fix - POST /api/chat with proper rawText response"""
+        try:
+            # Use the same user session from welcome test
+            register_payload = {
+                "identifier": "chatfix-test@example.com"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/auth/identify", json=register_payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Chat Endpoint Fix - User Registration", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            auth_data = response.json()
+            token = auth_data.get("token")
+            
+            # Create unique session ID
+            session_id = f"chatfix_{uuid.uuid4().hex[:8]}"
+            
+            # Send chat message with authentication
+            chat_payload = {
+                "sessionId": session_id,
+                "message": "should I start a business or a job?",
+                "actionId": None
+            }
+            
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.session.post(f"{BACKEND_URL}/chat", 
+                                       json=chat_payload, 
+                                       headers=headers, 
+                                       timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Chat Endpoint Fix", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            chat_data = response.json()
+            
+            # Verify response structure
+            if "reply" not in chat_data:
+                self.log_result("Chat Endpoint Fix", False, 
+                              "No 'reply' field in response", chat_data)
+                return False
+            
+            reply = chat_data.get("reply", {})
+            
+            # Verify rawText exists and has content
+            raw_text = reply.get("rawText", "")
+            if not raw_text or len(raw_text) < 20:
+                self.log_result("Chat Endpoint Fix", False, 
+                              f"rawText missing or too short: '{raw_text}'", reply)
+                return False
+            
+            # Verify no error messages
+            error_indicators = [
+                "Sorry, I encountered an error",
+                "Unable to generate response",
+                "Service unavailable",
+                "Please check API configuration"
+            ]
+            
+            for error_msg in error_indicators:
+                if error_msg.lower() in raw_text.lower():
+                    self.log_result("Chat Endpoint Fix", False, 
+                                  f"Error message detected in rawText: '{error_msg}'", reply)
+                    return False
+            
+            # Verify summary might be empty but rawText should have content
+            summary = reply.get("summary", "")
+            # Summary can be empty string, that's acceptable
+            
+            # Verify the response is about career/business decision
+            business_keywords = ["business", "job", "career", "work", "profession", "employment"]
+            has_relevant_content = any(keyword.lower() in raw_text.lower() for keyword in business_keywords)
+            
+            if not has_relevant_content:
+                self.log_result("Chat Endpoint Fix", False, 
+                              f"Response doesn't address business/job question: '{raw_text}'", reply)
+                return False
+            
+            self.log_result("Chat Endpoint Fix", True, 
+                          f"✅ Chat response with proper rawText ({len(raw_text)} chars) addressing business/job question")
+            return True
+            
+        except Exception as e:
+            self.log_result("Chat Endpoint Fix", False, f"Exception: {str(e)}")
+            return False
+
     def test_kundli_api_endpoint(self):
         """Test Kundli API Endpoint (GET /api/kundli) - CRITICAL FEATURE"""
         try:
