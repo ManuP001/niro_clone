@@ -1,0 +1,18 @@
+{
+  "request_id": "8098aa88",
+  "timestamp": "2025-12-24T20:10:09.683480Z",
+  "user_input": "I've been advised to eat chicken every week. Should I do that?",
+  "topic": "spirituality",
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}
