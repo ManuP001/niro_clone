@@ -380,8 +380,15 @@ class EnhancedOrchestrator:
                     logger.warning(f"[TRANSITS] Failed to fetch transits (non-blocking): {te}")
                     niro_logger.info(f"[TRANSITS] Skipping transits due to error: {te}")
                     # Create empty transits object
-                    from backend.astro_client.models import TransitsData
-                    transits = TransitsData(events=[], data_available=False)
+                    from backend.astro_client.models import AstroTransits
+                    transits = AstroTransits(
+                        user_id=user_id,
+                        from_date=now.date(),
+                        to_date=now.date(),
+                        events=[],
+                        current_positions=[],
+                        key_dates=[]
+                    )
                 
                 log_stage(
                     "API_TRANSITS_RES",
