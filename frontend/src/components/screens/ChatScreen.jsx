@@ -408,10 +408,47 @@ const ChatScreen = ({ token, userId }) => {
 
   const handleSendChip = (chipText) => {
     setInput(chipText);
+    // Clear next step chips immediately after click
+    setNextStepChips([]);
     // Send immediately
     setTimeout(() => {
       handleSend(chipText);
     }, 0);
+  };
+
+  // Handle next step chip click
+  const handleNextStepChip = (chip) => {
+    // Clear chips immediately
+    setNextStepChips([]);
+    
+    // Map chip ID to actual message
+    const chipMessages = {
+      'career_timing': 'When is the best time for career moves?',
+      'career_action': 'What should I do next in my career?',
+      'career_vs_business': 'Should I do a job or start a business?',
+      'rel_timing': 'When will I find love or meet someone?',
+      'rel_compatibility': 'Am I compatible with my partner?',
+      'rel_action': 'What should I do about my relationship?',
+      'health_timing': 'When is a good time for health decisions?',
+      'health_precautions': 'What health precautions should I take?',
+      'health_wellness': 'How can I improve my wellness?',
+      'fin_timing': 'When is a good time to invest?',
+      'fin_action': 'What should I do about my finances?',
+      'fin_sources': 'What are my best income sources?',
+      'spirit_practices': 'What spiritual practices suit me?',
+      'spirit_guidance': 'Can you give me spiritual guidance?',
+      'spirit_karma': 'Tell me about my karmic patterns',
+      'explore_career': 'Tell me about my career prospects',
+      'explore_relationship': 'Tell me about my relationships',
+      'explore_finance': 'Tell me about my finances',
+      'explore_health': 'Tell me about my health',
+      'explore_timing': 'What are the key timing windows for me?',
+      'switch_topic': 'I\'d like to ask about something else',
+      'continue': 'Tell me more'
+    };
+    
+    const message = chipMessages[chip.id] || chip.label;
+    handleSend(message);
   };
 
   const handleSend = async (messageOverride = null) => {
