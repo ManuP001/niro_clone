@@ -15,6 +15,7 @@ except (ImportError, AttributeError):
 
 from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Header
 from fastapi.responses import FileResponse
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
