@@ -596,13 +596,6 @@ class EnhancedOrchestrator:
         }
         
         # STAGE G: LLM_PROMPT - Log prompt details before calling LLM
-        # Get the actual prompt that will be sent (simplified for logging)
-        llm_prompt_summary = {
-            "model": "niro_llm",
-            "payload_keys": list(llm_payload.keys()),
-            "payload_hash": str(hash(json.dumps(llm_payload, default=str)))[:8],
-        }
-        
         log_stage(
             "LLM_PROMPT",
             request.sessionId,
