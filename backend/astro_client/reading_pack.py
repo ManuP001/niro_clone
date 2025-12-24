@@ -37,15 +37,15 @@ def _score_signal(signal: Dict[str, Any], topic: Optional[str], time_context: st
     time_window = signal.get('time_window')
     evidence = signal.get('evidence', '')
     
-    # Base score by type
+    # Base score by type - more balanced to not over-favor dashas
     base_scores = {
-        'dasha': 0.65,
+        'dasha': 0.55,           # Reduced from 0.65
         'transit': 0.55,
-        'yoga': 0.50,
-        'planet_strength': 0.45,
-        'rule': 0.40
+        'yoga': 0.55,
+        'planet_strength': 0.55,  # Increased from 0.45
+        'rule': 0.50
     }
-    score = base_scores.get(sig_type, 0.40)
+    score = base_scores.get(sig_type, 0.50)
     
     # Adjustment: polarity + topic match
     if polarity == 'supportive' and topic and applies_to in (topic, 'both'):
@@ -59,23 +59,28 @@ def _score_signal(signal: Dict[str, Any], topic: Optional[str], time_context: st
     if time_window and time_context == 'future':
         score += 0.10
     
+    # Adjustment: past context - favor natal chart signals
+    if time_context == 'past':
+        if sig_type in ('planet_strength', 'yoga', 'rule'):
+            score += 0.15  # Natal chart signals more relevant for past analysis
+    
     # Adjustment: strong evidence quality
     if isinstance(evidence, dict) and len(evidence) >= 3:
         score += 0.10
     elif isinstance(evidence, str) and len(evidence) > 50:
         score += 0.10
     
-    # Penalty: vague/incomplete evidence
+    # Penalty: vague/incomplete evidence (reduced penalty)
     if isinstance(evidence, dict):
         missing_fields = [k for k in ['start_date', 'end_date', 'house', 'planet'] if k not in evidence or not evidence[k]]
-        if len(missing_fields) >= 2:
-            score -= 0.20
-    elif isinstance(evidence, str) and len(evidence) < 10:
-        score -= 0.20
+        if len(missing_fields) >= 3:  # Increased threshold from 2 to 3
+            score -= 0.10  # Reduced from 0.20
+    elif isinstance(evidence, str) and len(evidence) < 5:  # Reduced from 10
+        score -= 0.10
     
-    # Penalty: generic applies_to on specific topic
+    # Penalty: generic applies_to on specific topic (reduced)
     if applies_to == 'general' and topic and topic != 'general':
-        score -= 0.15
+        score -= 0.10  # Reduced from 0.15
     
     # Clamp to [0.0, 1.0]
     return max(0.0, min(1.0, score))
