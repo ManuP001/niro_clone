@@ -73,13 +73,37 @@ const formatAIResponse = (text) => {
   // Strip section labels (SUMMARY:, REASONS:, etc.)
   formatted = formatted.replace(/^(SUMMARY|REASONS|REMEDIES|DATA_GAPS|ANSWER):\s*/gmi, '').trim();
 
-  // Strip signal IDs [S1], [S2], etc. from the message - these belong in "Why this answer"
+  // Strip signal IDs [S1], [S2], etc. from the message
   formatted = formatted.replace(/\s*\[S\d+\]\s*/g, ' ');
   
-  // Clean up double spaces
+  // Split into lines and filter out structured content
+  const lines = formatted.split('\n');
+  const cleanLines = lines.filter(line => {
+    const trimmed = line.trim();
+    
+    // Keep empty lines (for paragraph breaks)
+    if (!trimmed) return true;
+    
+    // Remove bullet points containing arrows (→) - these are reasons/remedies
+    if ((trimmed.startsWith('- ') || trimmed.startsWith('• ') || trimmed.startsWith('* ')) && trimmed.includes('→')) {
+      return false;
+    }
+    
+    // Remove "(empty)" lines
+    if (trimmed.toLowerCase() === '(empty)' || trimmed.toLowerCase() === 'empty') {
+      return false;
+    }
+    
+    return true;
+  });
+  
+  formatted = cleanLines.join('\n');
+  
+  // Clean up double spaces and multiple newlines
   formatted = formatted.replace(/  +/g, ' ');
+  formatted = formatted.replace(/\n{3,}/g, '\n\n');
 
-  // Normalize newlines and handle spacing
+  // Normalize newlines
   formatted = formatted.replace(/\r\n/g, '\n');
   
   return formatted.trim();
