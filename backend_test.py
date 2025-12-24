@@ -3330,7 +3330,11 @@ class ReportGenerationTester:
         print("=" * 80)
         
         tests = [
-            # CRITICAL FEATURES (Review Request Priority)
+            # CRITICAL FEATURES (Review Request Priority - Chat Fixes)
+            ("🚨 REVIEW REQUEST: Welcome Message Endpoint Fix", self.test_welcome_message_endpoint_fix),
+            ("🚨 REVIEW REQUEST: Chat Endpoint Fix", self.test_chat_endpoint_fix),
+            
+            # CRITICAL FEATURES (Previous Review Request Priority)
             ("🚨 REVIEW REQUEST: Kundli API Specific Requirements", self.test_kundli_api_endpoint_specific_review_request),
             ("🚨 CRITICAL: Kundli API Endpoint", self.test_kundli_api_endpoint),
             ("🚨 NEW VEDIC KEY: Kundli API with New Key", self.test_kundli_api_with_new_vedic_key),
