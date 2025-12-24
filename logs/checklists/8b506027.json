@@ -1,0 +1,18 @@
+{
+  "request_id": "8b506027",
+  "timestamp": "2025-12-24T19:12:37.385626Z",
+  "user_input": "I want to know about love and dating in my life, when will I find my boyfriend",
+  "topic": "romantic_relationships",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

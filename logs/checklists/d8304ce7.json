@@ -1,0 +1,18 @@
+{
+  "request_id": "d8304ce7",
+  "timestamp": "2025-12-24T19:20:54.124252Z",
+  "user_input": "Hello",
+  "topic": "general",
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}
