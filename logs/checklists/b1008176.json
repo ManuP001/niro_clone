@@ -1,0 +1,18 @@
+{
+  "request_id": "b1008176",
+  "timestamp": "2025-12-24T20:09:27.641591Z",
+  "user_input": "I've also been advised to make donation of white dal to shani mandir every sat. Should I do that?",
+  "topic": "spirituality",
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}
