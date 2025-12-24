@@ -8,6 +8,7 @@ import requests
 import json
 import time
 import uuid
+import re
 from datetime import datetime
 
 # Backend URL from environment
