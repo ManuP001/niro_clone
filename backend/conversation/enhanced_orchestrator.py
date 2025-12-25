@@ -696,7 +696,8 @@ class EnhancedOrchestrator:
         trust_widget = build_trust_widget(
             reasons=llm_response.get('reasons', []),
             timing_windows=reading_pack.get('timing_windows', []),
-            signal_scores=signal_scores
+            signal_scores=signal_scores,
+            time_context=time_context  # Pass time context to adjust timing display
         )
         
         # 7d. Generate next-step chips
