@@ -111,6 +111,15 @@ const CompatibilityScreen = ({ onViewChecklist, onViewCandidateSignals }) => {
               <Plus className="w-4 h-4" />
               Invite Alia to see this report
             </button>
+            
+            {/* Debug: View Candidate Signals */}
+            <button 
+              onClick={handleViewCandidateSignals}
+              className="mt-3 text-xs text-purple-600 font-medium flex items-center gap-1 mx-auto hover:text-purple-700 border border-purple-200 px-3 py-1.5 rounded-full bg-purple-50"
+            >
+              <Bug className="w-3 h-3" />
+              Log all candidate signals
+            </button>
           </div>
         </div>
       </div>
