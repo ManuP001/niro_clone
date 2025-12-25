@@ -249,7 +249,8 @@ def generate_next_step_chips(
 def build_trust_widget(
     reasons: List[str],
     timing_windows: List[Dict[str, Any]],
-    signal_scores: List[float]
+    signal_scores: List[float],
+    time_context: str = "timeless"
 ) -> Dict[str, Any]:
     """
     Build Trust Widget data from raw reasons.
@@ -258,6 +259,7 @@ def build_trust_widget(
         reasons: Raw reasons list (may contain S1, S2 labels)
         timing_windows: Timing window data
         signal_scores: Signal confidence scores
+        time_context: Time context ("past", "present", "future", "timeless")
         
     Returns:
         Trust Widget dict with drivers, confidence, and time_window
@@ -298,14 +300,33 @@ def build_trust_widget(
     else:
         confidence = "Medium"  # Default
     
-    # Extract time window if available
+    # Extract time window based on time_context
     time_window = None
-    if timing_windows:
-        first_window = timing_windows[0]
-        period = first_window.get('period', '')
-        nature = first_window.get('nature', '')
-        if period:
-            time_window = f"{period}" + (f" ({nature})" if nature else "")
+    
+    # For PAST context, don't show "current" or "ongoing" timing - it's not relevant
+    if time_context == "past":
+        # For past questions, timing windows are less relevant
+        # Only show if specifically about the past period
+        time_window = None  # Don't show current dasha for past questions
+        
+    # For PRESENT/TIMELESS context, show current timing
+    elif time_context in ("present", "timeless"):
+        if timing_windows:
+            first_window = timing_windows[0]
+            period = first_window.get('period', '')
+            nature = first_window.get('nature', '')
+            # Skip if it says "ongoing" - that's not helpful
+            if period and 'ongoing' not in period.lower():
+                time_window = f"{period}" + (f" ({nature})" if nature else "")
+                
+    # For FUTURE context, show the relevant future window
+    elif time_context == "future":
+        if timing_windows:
+            first_window = timing_windows[0]
+            period = first_window.get('period', '')
+            nature = first_window.get('nature', '')
+            if period:
+                time_window = f"{period}" + (f" ({nature})" if nature else "")
     
     return {
         "drivers": drivers,
