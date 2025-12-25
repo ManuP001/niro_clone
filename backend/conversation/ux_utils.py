@@ -375,8 +375,39 @@ def humanize_astrological_term(term: str) -> str:
     }
     
     result = term
+    
+    # First, clean up technical rule references like "Rule3 strength 0"
+    import re
+    
+    # Remove "Rule#" patterns - these are internal references
+    result = re.sub(r'Rule\d+\s*', '', result)
+    
+    # Remove "strength #" patterns - convert to more human terms
+    strength_match = re.search(r'strength\s*(\d+)', result.lower())
+    if strength_match:
+        strength = int(strength_match.group(1))
+        if strength >= 70:
+            strength_label = "strongly positioned"
+        elif strength >= 50:
+            strength_label = "moderately positioned"
+        elif strength >= 30:
+            strength_label = "weakly positioned"
+        else:
+            strength_label = "challenged"
+        result = re.sub(r'strength\s*\d+', strength_label, result, flags=re.IGNORECASE)
+    
+    # Remove "S#" signal ID references if they somehow got through
+    result = re.sub(r'\[?S\d+\]?\s*', '', result)
+    
+    # Clean up any leftover technical patterns
+    result = re.sub(r'\(\s*strength:\s*\d+\s*\)', '', result)
+    
+    # Apply word replacements
     for old, new in replacements.items():
         result = result.replace(old, new)
+    
+    # Clean up extra whitespace
+    result = ' '.join(result.split())
     
     return result
 
