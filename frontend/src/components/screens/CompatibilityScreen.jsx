@@ -1,14 +1,19 @@
 import React from 'react';
-import { Share2, ThumbsUp, Plus } from 'lucide-react';
+import { Share2, ThumbsUp, Plus, Bug } from 'lucide-react';
 import { compatibilityData } from '../../data/mockData';
 
-const CompatibilityScreen = ({ onViewChecklist }) => {
+const CompatibilityScreen = ({ onViewChecklist, onViewCandidateSignals }) => {
   const handleViewReport = () => {
     // Get user ID from localStorage or auth state
     const userId = localStorage.getItem('userId') || localStorage.getItem('user_id') || 'test_user';
     // Trigger the checklist view with the user ID
     // This will fetch the latest pipeline trace for this user
     onViewChecklist?.(userId);
+  };
+
+  const handleViewCandidateSignals = () => {
+    const userId = localStorage.getItem('userId') || localStorage.getItem('user_id') || 'test_user';
+    onViewCandidateSignals?.(userId);
   };
 
   return (
