@@ -9,7 +9,7 @@ import json
 import uuid
 import re
 
-BACKEND_URL = "https://source-debut.preview.emergentagent.com/api"
+BACKEND_URL = "https://git-liftoff.preview.emergentagent.com/api"
 
 def test_chat_response_formatting():
     """Test the exact flow from the review request"""
