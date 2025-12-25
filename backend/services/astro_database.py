@@ -232,6 +232,66 @@ class AstroDatabase:
             if row:
                 return PipelineTrace.parse_raw(row[0])
         return None
+    
+    # === CANDIDATE SIGNALS DEBUG METHODS ===
+    
+    async def save_candidate_signals_debug(self, debug_data: Dict[str, Any]) -> str:
+        """Save candidate signals debug data."""
+        run_id = debug_data.get('run_id', '')
+        user_id = debug_data.get('user_id', '')
+        session_id = debug_data.get('session_id', '')
+        user_question = debug_data.get('user_question', '')
+        topic = debug_data.get('topic', '')
+        time_context = debug_data.get('time_context', '')
+        timestamp = debug_data.get('timestamp', datetime.utcnow().isoformat())
+        
+        async with aiosqlite.connect(str(self.db_path)) as db:
+            await db.execute("""
+                INSERT OR REPLACE INTO candidate_signals_debug
+                (run_id, user_id, session_id, user_question, topic, time_context, created_at, data_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                run_id,
+                user_id,
+                session_id,
+                user_question,
+                topic,
+                time_context,
+                timestamp,
+                json.dumps(debug_data)
+            ))
+            await db.commit()
+            logger.info(f"✓ Candidate signals debug saved: {run_id}")
+            return run_id
+    
+    async def get_candidate_signals_debug(self, run_id: str) -> Optional[Dict[str, Any]]:
+        """Load candidate signals debug data by run_id."""
+        async with aiosqlite.connect(str(self.db_path)) as db:
+            cursor = await db.execute(
+                "SELECT data_json FROM candidate_signals_debug WHERE run_id = ?",
+                (run_id,)
+            )
+            row = await cursor.fetchone()
+            if row:
+                return json.loads(row[0])
+        return None
+    
+    async def get_latest_candidate_signals_debug(self, user_id: str = None) -> Optional[Dict[str, Any]]:
+        """Load latest candidate signals debug data."""
+        async with aiosqlite.connect(str(self.db_path)) as db:
+            if user_id:
+                cursor = await db.execute(
+                    "SELECT data_json FROM candidate_signals_debug WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
+                    (user_id,)
+                )
+            else:
+                cursor = await db.execute(
+                    "SELECT data_json FROM candidate_signals_debug ORDER BY created_at DESC LIMIT 1"
+                )
+            row = await cursor.fetchone()
+            if row:
+                return json.loads(row[0])
+        return None
 
 
 # Global instance
