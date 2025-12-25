@@ -4217,6 +4217,9 @@ class ReportGenerationTester:
         print("=" * 80)
         
         tests = [
+            # NEW REVIEW REQUEST TEST (Candidate Signals Debug)
+            ("🚨 NEW REVIEW REQUEST: Candidate Signals Debug Feature", self.test_candidate_signals_debug_feature),
+            
             # NEW UX UPGRADE TESTS (Review Request Priority)
             ("🎨 UX UPGRADE: Conversation State & Short Reply", self.test_chat_ux_conversation_state_and_short_reply),
             ("🎨 UX UPGRADE: Trust Widget Response", self.test_chat_ux_trust_widget_response),
