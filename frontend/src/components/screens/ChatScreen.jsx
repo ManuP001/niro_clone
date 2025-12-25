@@ -623,6 +623,11 @@ const ChatScreen = ({ token, userId }) => {
                   {msg.timestamp}
                 </p>
                 
+                {/* Confidence Badge at end of AI message */}
+                {msg.type === 'ai' && msg.trustWidget?.confidence && (
+                  <ConfidenceBadge confidence={msg.trustWidget.confidence} />
+                )}
+                
                 {/* Micro-feedback for AI messages that should show it */}
                 {msg.type === 'ai' && msg.showFeedback && (
                   <MicroFeedback 
