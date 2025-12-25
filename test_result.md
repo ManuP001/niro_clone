@@ -418,11 +418,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Chat UX Upgrades - Conversation State & Short Reply Detection"
-    - "Chat UX Upgrades - Trust Widget Response"
-    - "Chat UX Upgrades - Next Step Chips"
-    - "Chat UX Upgrades - Feedback Endpoint"
-    - "Chat UX Upgrades - Conversation State in Response"
+    - "Candidate Signals Debug Feature"
   stuck_tasks: []
   test_all: false
   test_priority: "ux_upgrades_first"
