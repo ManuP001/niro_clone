@@ -1,0 +1,25 @@
+{
+  "request_id": "1ad8f7bb",
+  "timestamp": "2025-12-25T12:55:27.402557Z",
+  "user_input": "Yes, please continue with: This is a phase to upskill, network with people you genuinely like, and slowly move toward work that feels meaningful, not just \u201cpractical.\u201d\nIf you had to choose one direction to lean into\u2014more creative/people-oriented work, or more teaching/strategic/knowledge-based work\u2014which one pulls you more right now?",
+  "topic": "daily_guidance",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "14:30",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}
