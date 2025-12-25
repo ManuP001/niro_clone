@@ -214,8 +214,8 @@ const TimePickerModal = ({ isOpen, onClose, onSet, currentValue }) => {
 const OnboardingScreen = ({ token, onComplete }) => {
   const [formData, setFormData] = useState({
     name: '',
-    dob: '',
-    tob: '',
+    dob: '1986-01-24',  // Preset: 24/01/1986
+    tob: '06:32',       // Preset: 06:32 am
     location: '',
     birth_place_lat: null,
     birth_place_lon: null,
