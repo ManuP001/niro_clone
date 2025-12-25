@@ -166,3 +166,59 @@ async def render_pipeline_trace_html(
     """
     
     return {"html": html, "content_type": "text/html"}
+
+
+# === CANDIDATE SIGNALS DEBUG ENDPOINTS ===
+
+@router.get("/candidate-signals/latest")
+async def get_latest_candidate_signals(
+    user_id: Optional[str] = Query(None),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Get the latest candidate signals debug data.
+    
+    Shows ALL candidate signals considered before filtering,
+    useful for understanding why certain signals were kept/dropped.
+    """
+    # Use from query or JWT
+    if not user_id:
+        user_id = None  # Will get latest regardless of user
+    
+    db = await get_astro_db()
+    debug_data = await db.get_latest_candidate_signals_debug(user_id)
+    
+    if not debug_data:
+        raise HTTPException(
+            status_code=404,
+            detail="No candidate signals debug data found"
+        )
+    
+    return {
+        "data": debug_data,
+        "retrieved_at": datetime.utcnow().isoformat()
+    }
+
+
+@router.get("/candidate-signals/{run_id}")
+async def get_candidate_signals_by_run(
+    run_id: str,
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Get candidate signals debug data for a specific run.
+    """
+    db = await get_astro_db()
+    debug_data = await db.get_candidate_signals_debug(run_id)
+    
+    if not debug_data:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Candidate signals debug data for run {run_id} not found"
+        )
+    
+    return {
+        "data": debug_data,
+        "retrieved_at": datetime.utcnow().isoformat()
+    }
+
