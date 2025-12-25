@@ -136,26 +136,44 @@ const formatAIResponse = (text) => {
   return formatted.trim();
 };
 
+// Confidence Badge Component - Shows at end of AI message
+const ConfidenceBadge = ({ confidence }) => {
+  if (!confidence) return null;
+  
+  const confidenceColors = {
+    'High': 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    'Medium': 'bg-amber-100 text-amber-700 border-amber-200',
+    'Low': 'bg-gray-100 text-gray-600 border-gray-200'
+  };
+  
+  const confidenceLabels = {
+    'High': 'High confidence in this reading',
+    'Medium': 'Moderate confidence in this reading',
+    'Low': 'Lower confidence - more details may help'
+  };
+
+  return (
+    <div className="mt-2 pt-2 border-t border-gray-100">
+      <span className={`inline-flex items-center text-[10px] px-2 py-0.5 rounded-full border ${confidenceColors[confidence]}`}>
+        <span className="mr-1">{confidence === 'High' ? '✓' : confidence === 'Medium' ? '○' : '?'}</span>
+        {confidenceLabels[confidence]}
+      </span>
+    </div>
+  );
+};
+
 // Trust Widget Component - Clean "Why this answer" section
 const TrustWidget = ({ trustWidget, timingWindows = [] }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Check if we have valid content
   const drivers = trustWidget?.drivers || [];
-  const confidence = trustWidget?.confidence || 'Medium';
   const timeWindow = trustWidget?.time_window;
 
   // Only show if there's actual content
   if (!drivers?.length && !timeWindow) {
     return null;
   }
-
-  // Confidence color mapping
-  const confidenceColors = {
-    'High': 'bg-emerald-100 text-emerald-700',
-    'Medium': 'bg-amber-100 text-amber-700',
-    'Low': 'bg-gray-100 text-gray-600'
-  };
 
   return (
     <div className="flex justify-start mb-4">
@@ -166,10 +184,6 @@ const TrustWidget = ({ trustWidget, timingWindows = [] }) => {
         >
           <span className="text-sm font-medium text-emerald-700">Why this answer</span>
           <div className="flex items-center gap-2">
-            {/* Confidence Badge */}
-            <span className={`text-xs px-2 py-0.5 rounded-full ${confidenceColors[confidence]}`}>
-              {confidence}
-            </span>
             {isExpanded ? (
               <ChevronUp className="w-4 h-4 text-emerald-600" />
             ) : (
@@ -180,8 +194,8 @@ const TrustWidget = ({ trustWidget, timingWindows = [] }) => {
         
         {isExpanded && (
           <div className="px-4 py-3 border-t border-emerald-200 space-y-3">
-            {/* Time Window Chip */}
-            {timeWindow && (
+            {/* Time Window Chip - only show if contextually relevant */}
+            {timeWindow && !timeWindow.toLowerCase().includes('ongoing') && (
               <div className="mb-2">
                 <span className="inline-block text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
                   🕐 {timeWindow}
