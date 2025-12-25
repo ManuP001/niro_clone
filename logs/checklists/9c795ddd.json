@@ -1,0 +1,25 @@
+{
+  "request_id": "9c795ddd",
+  "timestamp": "2025-12-25T13:07:47.930915Z",
+  "user_input": "Should I start a business or stick with a job?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}
