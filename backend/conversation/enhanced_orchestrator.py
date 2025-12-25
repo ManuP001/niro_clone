@@ -577,6 +577,23 @@ class EnhancedOrchestrator:
             f"top_scores={signal_scores}"
         )
         
+        # === SAVE CANDIDATE SIGNALS DEBUG DATA ===
+        candidate_signals_debug = reading_pack.pop('_candidate_signals_debug', None)
+        if candidate_signals_debug:
+            candidate_signals_debug['run_id'] = request_id
+            candidate_signals_debug['user_id'] = user_id
+            candidate_signals_debug['session_id'] = request.sessionId
+            candidate_signals_debug['user_question'] = request.message
+            
+            # Save to database
+            try:
+                from backend.services.astro_database import get_astro_db
+                db = await get_astro_db()
+                await db.save_candidate_signals_debug(candidate_signals_debug)
+                logger.info(f"[CANDIDATE_SIGNALS] Saved debug data: run_id={request_id}, candidates={candidate_signals_debug['summary']['total_candidates']}")
+            except Exception as e:
+                logger.warning(f"[CANDIDATE_SIGNALS] Failed to save debug data: {e}")
+        
         # Build LLM payload with reading_pack
         llm_payload = {
             'mode': mode,
