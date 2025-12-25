@@ -42,20 +42,48 @@ def get_latest_candidate_signals_debug(user_id: str = None) -> Optional[Dict[str
 
 def _extract_planet_from_signal(signal: Dict[str, Any]) -> str:
     """Extract planet name from signal evidence or claim."""
+    planets = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu']
+    
     evidence = signal.get('evidence', {})
+    
+    # Try evidence.planet first
     if isinstance(evidence, dict):
         planet = evidence.get('planet', '')
         if planet:
+            # Normalize planet name
+            for p in planets:
+                if p.lower() == planet.lower():
+                    return p
             return planet.title()
     
     claim = signal.get('claim', '')
+    
     # Try to extract planet from claim
-    planets = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu']
     for p in planets:
         if p.lower() in claim.lower():
             return p
     
-    return 'Unknown'
+    # For planet_strength type, try to parse the rule ID (e.g., "Rule3" might indicate a specific planet)
+    sig_type = signal.get('type', '')
+    if sig_type == 'planet_strength':
+        # Check if there's house info which might help identify the planet
+        if isinstance(evidence, dict):
+            house = evidence.get('house')
+            # Try to get from any nested structure
+            for key in ['planet_name', 'planet', 'lord', 'significator']:
+                if key in evidence:
+                    val = evidence[key]
+                    for p in planets:
+                        if p.lower() in str(val).lower():
+                            return p
+    
+    # Check applies_to for planet hints
+    applies_to = signal.get('applies_to', '')
+    for p in planets:
+        if p.lower() in applies_to.lower():
+            return p
+    
+    return 'Mixed'  # Instead of 'Unknown', use 'Mixed' for signals without clear planet
 
 
 def _extract_house_from_signal(signal: Dict[str, Any]) -> Optional[int]:
