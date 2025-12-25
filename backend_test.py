@@ -4010,6 +4010,198 @@ class ReportGenerationTester:
             self.log_result("Chat Response Formatting Verification", False, f"Exception: {str(e)}")
             return False
 
+    def test_candidate_signals_debug_feature(self):
+        """Test the new Candidate Signals Debug feature as per review request"""
+        try:
+            # Step 1: Create test user and profile with birth details (DOB: 1986-01-24, TOB: 06:32)
+            register_payload = {
+                "identifier": f"candidate-signals-test-{uuid.uuid4().hex[:8]}@example.com"
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/auth/identify", json=register_payload, timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Candidate Signals Debug - User Registration", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            auth_data = response.json()
+            token = auth_data.get("token")
+            
+            # Create profile with specific birth details from review request
+            profile_payload = {
+                "name": "Candidate Signals Test User",
+                "dob": "1986-01-24",  # DOB from review request
+                "tob": "06:32",       # TOB from review request
+                "location": "Mumbai",
+                "birth_place_lat": 19.08,
+                "birth_place_lon": 72.88,
+                "birth_place_tz": 5.5
+            }
+            
+            headers = {"Authorization": f"Bearer {token}"}
+            response = self.session.post(f"{BACKEND_URL}/profile/", 
+                                       json=profile_payload, 
+                                       headers=headers, 
+                                       timeout=10)
+            
+            if response.status_code != 200:
+                self.log_result("Candidate Signals Debug - Profile Creation", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            # Step 2: Ask TWO different questions to generate candidate signals
+            session_id = f"candidate-signals-{uuid.uuid4().hex[:8]}"
+            
+            # Question 1: "Should I start a business or stick with a job?"
+            question1_payload = {
+                "sessionId": session_id,
+                "message": "Should I start a business or stick with a job?",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", 
+                                       json=question1_payload, 
+                                       headers=headers,
+                                       timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Candidate Signals Debug - Question 1", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            question1_data = response.json()
+            
+            # Question 2: "Tell me about my health and wellbeing"
+            question2_payload = {
+                "sessionId": session_id,
+                "message": "Tell me about my health and wellbeing",
+                "actionId": None
+            }
+            
+            response = self.session.post(f"{BACKEND_URL}/chat", 
+                                       json=question2_payload, 
+                                       headers=headers,
+                                       timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Candidate Signals Debug - Question 2", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            question2_data = response.json()
+            
+            # Step 3: Test candidate signals endpoint GET /api/debug/candidate-signals/latest
+            response = self.session.get(f"{BACKEND_URL}/debug/candidate-signals/latest", 
+                                      headers=headers,
+                                      timeout=30)
+            
+            if response.status_code != 200:
+                self.log_result("Candidate Signals Debug - Endpoint", False, 
+                              f"HTTP {response.status_code}", response.text)
+                return False
+            
+            debug_data = response.json()
+            
+            # Step 4: Verify the response contains required structure
+            if "data" not in debug_data:
+                self.log_result("Candidate Signals Debug - Structure", False, 
+                              "Missing 'data' field in response", debug_data)
+                return False
+            
+            data = debug_data["data"]
+            
+            # Verify candidates array exists
+            if "candidates" not in data:
+                self.log_result("Candidate Signals Debug - Candidates Array", False, 
+                              "Missing 'candidates' array", data)
+                return False
+            
+            candidates = data["candidates"]
+            if not isinstance(candidates, list):
+                self.log_result("Candidate Signals Debug - Candidates Type", False, 
+                              "'candidates' is not a list", candidates)
+                return False
+            
+            # Verify summary exists with required fields
+            if "summary" not in data:
+                self.log_result("Candidate Signals Debug - Summary", False, 
+                              "Missing 'summary' field", data)
+                return False
+            
+            summary = data["summary"]
+            required_summary_fields = ["total_candidates", "kept_count", "dropped_count", "counts_by_planet", "top_10_by_score"]
+            missing_summary_fields = [field for field in required_summary_fields if field not in summary]
+            
+            if missing_summary_fields:
+                self.log_result("Candidate Signals Debug - Summary Fields", False, 
+                              f"Missing summary fields: {missing_summary_fields}", summary)
+                return False
+            
+            # Verify total_candidates > 4 (should have multiple signals)
+            total_candidates = summary.get("total_candidates", 0)
+            if total_candidates <= 4:
+                self.log_result("Candidate Signals Debug - Total Candidates", False, 
+                              f"Expected > 4 candidates, got {total_candidates}", summary)
+                return False
+            
+            # Verify each candidate has required fields
+            required_candidate_fields = ["signal_id", "signal_type", "planet", "house", "score_raw", "score_final", "kept", "kept_reason", "text_human"]
+            
+            for i, candidate in enumerate(candidates[:5]):  # Check first 5 candidates
+                missing_fields = [field for field in required_candidate_fields if field not in candidate]
+                if missing_fields:
+                    self.log_result("Candidate Signals Debug - Candidate Fields", False, 
+                                  f"Candidate {i} missing fields: {missing_fields}", candidate)
+                    return False
+            
+            # Step 5: Verify planet diversity - should show multiple planets, not just Venus/Jupiter
+            counts_by_planet = summary.get("counts_by_planet", {})
+            
+            if len(counts_by_planet) < 3:
+                self.log_result("Candidate Signals Debug - Planet Diversity", False, 
+                              f"Expected multiple planets, got only {list(counts_by_planet.keys())}", counts_by_planet)
+                return False
+            
+            # Check for expected planets (should have more than just Venus/Jupiter)
+            expected_planets = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"]
+            found_planets = list(counts_by_planet.keys())
+            
+            # Should have at least 3 different planets
+            if len(found_planets) < 3:
+                self.log_result("Candidate Signals Debug - Planet Count", False, 
+                              f"Expected at least 3 planets, got {len(found_planets)}: {found_planets}", counts_by_planet)
+                return False
+            
+            # Verify top_10_by_score structure
+            top_10 = summary.get("top_10_by_score", [])
+            if len(top_10) == 0:
+                self.log_result("Candidate Signals Debug - Top 10", False, 
+                              "Empty top_10_by_score array", summary)
+                return False
+            
+            # Check first item in top_10 has required fields
+            if top_10:
+                top_item = top_10[0]
+                required_top_fields = ["signal_id", "planet", "score", "kept"]
+                missing_top_fields = [field for field in required_top_fields if field not in top_item]
+                
+                if missing_top_fields:
+                    self.log_result("Candidate Signals Debug - Top 10 Structure", False, 
+                                  f"Top item missing fields: {missing_top_fields}", top_item)
+                    return False
+            
+            self.log_result("Candidate Signals Debug Feature", True, 
+                          f"✅ ALL REQUIREMENTS VERIFIED: {total_candidates} total candidates, "
+                          f"{summary.get('kept_count', 0)} kept, {summary.get('dropped_count', 0)} dropped, "
+                          f"{len(found_planets)} planets: {found_planets}, "
+                          f"top_10 has {len(top_10)} items")
+            return True
+            
+        except Exception as e:
+            self.log_result("Candidate Signals Debug Feature", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests focusing on CRITICAL FEATURES from review request"""
         print("=" * 80)
