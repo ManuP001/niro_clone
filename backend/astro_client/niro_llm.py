@@ -137,7 +137,7 @@ class ResponseQualityValidator:
         )
 
 # Constant for OpenAI model - using gpt-4-turbo
-OPENAI_MODEL_NAME = "gpt-4-turbo"
+OPENAI_MODEL_NAME = "gpt-5.1"
 
 # ============================================================================
 # CHAT TONE POLICY - Centralized messaging quality rules
