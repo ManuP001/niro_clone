@@ -657,15 +657,7 @@ const ChatScreen = ({ token, userId }) => {
               />
             )}
             
-            {/* Next Step Chips - show only for the last AI message */}
-            {msg.type === 'ai' && msgIndex === messages.length - 1 && nextStepChips.length > 0 && (
-              <div className="flex justify-start mt-2">
-                <NextStepChips 
-                  chips={nextStepChips}
-                  onChipClick={handleNextStepChip}
-                />
-              </div>
-            )}
+            {/* Next Step Chips - REMOVED: Chat already asks follow-up questions inline */}
             
             {/* Render suggested questions under welcome message */}
             {msg.isWelcome && suggestedQuestions.length > 0 && (
