@@ -4,12 +4,98 @@ Constructs a structured "evidence pack" from astro_features that the LLM can fol
 Ensures deterministic, short, and focused output with proper signal linking.
 
 Includes tightened signal scoring to reduce noise and keep only high-quality signals.
+Also captures ALL candidate signals for debug visibility.
 """
 
 from typing import Dict, Any, List, Optional, Literal
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
+
+# Global storage for candidate signals debug (keyed by run_id)
+_candidate_signals_cache: Dict[str, Dict[str, Any]] = {}
+
+
+def get_candidate_signals_debug(run_id: str) -> Optional[Dict[str, Any]]:
+    """Get candidate signals debug data for a specific run."""
+    return _candidate_signals_cache.get(run_id)
+
+
+def get_latest_candidate_signals_debug(user_id: str = None) -> Optional[Dict[str, Any]]:
+    """Get the most recent candidate signals debug data."""
+    if not _candidate_signals_cache:
+        return None
+    
+    # Get the most recent one by timestamp
+    latest = None
+    latest_ts = None
+    for run_id, data in _candidate_signals_cache.items():
+        if user_id and data.get('user_id') != user_id:
+            continue
+        ts = data.get('timestamp')
+        if ts and (latest_ts is None or ts > latest_ts):
+            latest = data
+            latest_ts = ts
+    return latest
+
+
+def _extract_planet_from_signal(signal: Dict[str, Any]) -> str:
+    """Extract planet name from signal evidence or claim."""
+    evidence = signal.get('evidence', {})
+    if isinstance(evidence, dict):
+        planet = evidence.get('planet', '')
+        if planet:
+            return planet.title()
+    
+    claim = signal.get('claim', '')
+    # Try to extract planet from claim
+    planets = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu']
+    for p in planets:
+        if p.lower() in claim.lower():
+            return p
+    
+    return 'Unknown'
+
+
+def _extract_house_from_signal(signal: Dict[str, Any]) -> Optional[int]:
+    """Extract house number from signal evidence."""
+    evidence = signal.get('evidence', {})
+    if isinstance(evidence, dict):
+        house = evidence.get('house')
+        if house:
+            try:
+                return int(house)
+            except (ValueError, TypeError):
+                pass
+    return None
+
+
+def _humanize_signal_text(signal: Dict[str, Any]) -> str:
+    """Generate human-readable text for a signal."""
+    sig_type = signal.get('type', 'rule')
+    claim = signal.get('claim', '')
+    evidence = signal.get('evidence', {})
+    polarity = signal.get('polarity', 'mixed')
+    
+    planet = _extract_planet_from_signal(signal)
+    house = _extract_house_from_signal(signal)
+    
+    if sig_type == 'dasha':
+        period = evidence.get('period', '') if isinstance(evidence, dict) else ''
+        return f"{planet} Dasha period - {polarity} influence"
+    elif sig_type == 'transit':
+        if house:
+            return f"{planet} transiting {house}th house - {polarity} effects"
+        return f"{planet} transit - {polarity} influence"
+    elif sig_type == 'yoga':
+        return f"Yoga formed by {planet} - {claim}"
+    elif sig_type == 'planet_strength':
+        if house:
+            return f"{planet} in {house}th house - strength indicator"
+        return f"{planet} strength/dignity - {polarity}"
+    else:
+        return claim or f"{planet} {sig_type} - {polarity}"
 
 
 def _score_signal(signal: Dict[str, Any], topic: Optional[str], time_context: str, intent: str = 'reflect') -> float:
