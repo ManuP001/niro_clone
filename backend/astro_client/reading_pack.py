@@ -376,34 +376,101 @@ def build_reading_pack(
     
     # 3. Score and filter signals
     scored_signals = []
-    for signal in raw_signals:
-        score = _score_signal(signal, topic, time_context, intent)
-        confidence = _confidence_from_score(score)
-        priority = _priority_from_score(score)
+    for idx, signal in enumerate(raw_signals):
+        score_raw = _score_signal(signal, topic, time_context, intent)
+        confidence = _confidence_from_score(score_raw)
+        priority = _priority_from_score(score_raw)
         
         # Add scoring metadata to signal
-        signal['score'] = round(score, 2)
+        signal['score'] = round(score_raw, 2)
+        signal['score_raw'] = round(score_raw, 2)  # Keep raw score for debug
         signal['confidence'] = confidence
         signal['priority'] = priority
+        signal['original_index'] = idx  # Track original position
         
         scored_signals.append(signal)
     
     # Sort by score descending
     scored_signals.sort(key=lambda s: s['score'], reverse=True)
     
-    # Filter: keep max 6, min 2, drop < 0.55 unless it's the only option
+    # Filter: keep max 6, min 4, drop < 0.45 unless it's the only option
     final_signals = []
+    kept_signal_indices = set()
+    
     for signal in scored_signals:
         if len(final_signals) >= 6:
             break
-        if signal['score'] >= 0.45 or len(final_signals) < 4:  # Lower threshold, keep at least 4 signals
+        if signal['score'] >= 0.45 or len(final_signals) < 4:
             final_signals.append(signal)
+            kept_signal_indices.add(signal['original_index'])
     
     # Reindex signal IDs sequentially (S1, S2, ...)
     for idx, signal in enumerate(final_signals, 1):
         signal['id'] = f'S{idx}'
+        signal['score_final'] = signal['score']
     
     pack['signals'] = final_signals
+    
+    # === CANDIDATE SIGNALS DEBUG CAPTURE ===
+    # Capture ALL candidates with detailed metadata for debug visibility
+    candidate_signals_list = []
+    for idx, signal in enumerate(scored_signals):
+        is_kept = signal['original_index'] in kept_signal_indices
+        kept_reason = None
+        if is_kept:
+            kept_reason = "score >= 0.45" if signal['score'] >= 0.45 else "min_signals_required"
+        else:
+            kept_reason = "score < 0.45 and max_signals_reached"
+        
+        candidate_signals_list.append({
+            'signal_id': f"C{idx + 1}",
+            'final_id': signal.get('id') if is_kept else None,
+            'signal_type': signal.get('type', 'unknown'),
+            'planet': _extract_planet_from_signal(signal),
+            'house': _extract_house_from_signal(signal),
+            'time_direction': time_context,
+            'time_window': signal.get('time_window'),
+            'score_raw': signal.get('score_raw', 0),
+            'score_final': signal.get('score', 0),
+            'kept': is_kept,
+            'kept_reason': kept_reason,
+            'text_human': _humanize_signal_text(signal),
+            'claim': signal.get('claim', ''),
+            'polarity': signal.get('polarity', 'mixed'),
+            'applies_to': signal.get('applies_to', 'general'),
+            'confidence': signal.get('confidence', 'low'),
+            'priority': signal.get('priority', 'P2'),
+        })
+    
+    # Build summary statistics
+    planet_counts = {}
+    type_counts = {}
+    for cs in candidate_signals_list:
+        planet = cs['planet']
+        sig_type = cs['signal_type']
+        planet_counts[planet] = planet_counts.get(planet, 0) + 1
+        type_counts[sig_type] = type_counts.get(sig_type, 0) + 1
+    
+    top_10_by_score = sorted(candidate_signals_list, key=lambda x: x['score_final'], reverse=True)[:10]
+    
+    debug_summary = {
+        'total_candidates': len(candidate_signals_list),
+        'kept_count': len(final_signals),
+        'dropped_count': len(candidate_signals_list) - len(final_signals),
+        'top_10_by_score': [{'signal_id': s['signal_id'], 'planet': s['planet'], 'score': s['score_final'], 'kept': s['kept']} for s in top_10_by_score],
+        'counts_by_planet': planet_counts,
+        'counts_by_type': type_counts,
+    }
+    
+    # Store in cache (will be saved to DB by orchestrator)
+    pack['_candidate_signals_debug'] = {
+        'candidates': candidate_signals_list,
+        'summary': debug_summary,
+        'topic': topic,
+        'time_context': time_context,
+        'intent': intent,
+        'timestamp': datetime.utcnow().isoformat(),
+    }
     
     # 4. Extract timing windows (max 3)
     timing_windows = astro_features.get('timing_windows', [])
@@ -419,7 +486,7 @@ def build_reading_pack(
     logger.info(
         f"Built reading_pack: topic={topic}, time_context={time_context}, intent={intent}, "
         f"signals={len(pack['signals'])}, timing_windows={len(pack['timing_windows'])}, "
-        f"gaps={len(pack['data_gaps'])}"
+        f"gaps={len(pack['data_gaps'])}, total_candidates={len(candidate_signals_list)}"
     )
     
     return pack
