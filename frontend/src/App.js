@@ -156,13 +156,24 @@ function App() {
       case 'panchang':
         return <PanchangScreen />;
       case 'compatibility':
-        return <CompatibilityScreen onViewChecklist={(requestId) => {
-          setChecklistRequestId(requestId);
-          setActiveScreen('checklist');
-        }} />;
+        return <CompatibilityScreen 
+          onViewChecklist={(requestId) => {
+            setChecklistRequestId(requestId);
+            setActiveScreen('checklist');
+          }}
+          onViewCandidateSignals={(userId) => {
+            setCandidateSignalsUserId(userId);
+            setActiveScreen('candidate-signals');
+          }}
+        />;
       case 'checklist':
         return <ChecklistScreen 
           requestId={checklistRequestId} 
+          onBack={() => setActiveScreen('compatibility')} 
+        />;
+      case 'candidate-signals':
+        return <CandidateSignalsScreen 
+          userId={candidateSignalsUserId} 
           onBack={() => setActiveScreen('compatibility')} 
         />;
       default:
