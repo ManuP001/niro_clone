@@ -1,0 +1,25 @@
+{
+  "request_id": "49679bc8",
+  "timestamp": "2025-12-25T08:25:16.814796Z",
+  "user_input": "what happened in my career in 2021 - 2022?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1988-09-30",
+    "tob": "11:30",
+    "location": "Jaipur, Rajasthan, India",
+    "lat": 26.9124,
+    "lon": 75.7873,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

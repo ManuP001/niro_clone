@@ -1,0 +1,18 @@
+{
+  "request_id": "d6ac6af8",
+  "timestamp": "2025-12-25T08:19:20.590751Z",
+  "user_input": "My name is Sharad Harjai. I was born on 24/01/1986 at 06:32 am in Rohtak, Haryana",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}
