@@ -289,16 +289,21 @@ def build_trust_widget(
             })
     
     # Calculate confidence based on signal scores
+    # Adjusted thresholds based on actual signal scoring ranges (0.45-0.70 typical)
     if signal_scores:
         avg_score = sum(signal_scores) / len(signal_scores)
-        if avg_score >= 0.75:
+        num_signals = len(signal_scores)
+        
+        # More signals = higher confidence
+        # Adjust thresholds: most scores are in 0.50-0.70 range
+        if avg_score >= 0.65 or (avg_score >= 0.55 and num_signals >= 4):
             confidence = "High"
-        elif avg_score >= 0.5:
+        elif avg_score >= 0.50 or num_signals >= 3:
             confidence = "Medium"
         else:
             confidence = "Low"
     else:
-        confidence = "Medium"  # Default
+        confidence = "Low"  # No signals = low confidence
     
     # Extract time window based on time_context
     time_window = None
