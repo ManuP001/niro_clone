@@ -9,6 +9,7 @@ import HoroscopeScreen from './components/screens/HoroscopeScreen';
 import PanchangScreen from './components/screens/PanchangScreen';
 import CompatibilityScreen from './components/screens/CompatibilityScreen';
 import ChecklistScreen from './components/screens/ChecklistScreen';
+import CandidateSignalsScreen from './components/screens/CandidateSignalsScreen';
 import BottomNav from './components/BottomNav';
 import { ChatProvider } from './context/ChatContext';
 import { getAuthToken, getCurrentUser, getUserProfile, clearAuthToken } from './utils/auth';
@@ -25,6 +26,7 @@ function App() {
   });
   const [activeScreen, setActiveScreen] = useState('home');
   const [checklistRequestId, setChecklistRequestId] = useState(null);
+  const [candidateSignalsUserId, setCandidateSignalsUserId] = useState(null);
 
   // Check auth status on mount
   useEffect(() => {
