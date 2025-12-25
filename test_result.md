@@ -101,9 +101,21 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
-user_problem_statement: "Test two specific fixes for the NIRO chat application: 1) Welcome Message Endpoint (POST /api/profile/welcome) should be fast and return personalized message with astrological traits, 2) Chat Endpoint (POST /api/chat) should return proper rawText without error messages"
+user_problem_statement: "Test the new Candidate Signals Debug feature: 1) Setup test user and profile with birth details (DOB: 1986-01-24, TOB: 06:32), 2) Ask TWO different questions to generate candidate signals, 3) Test candidate signals endpoint GET /api/debug/candidate-signals/latest, 4) Verify response contains candidates array with ALL signals, summary with total_candidates > 4, kept_count, dropped_count, counts_by_planet showing multiple planets, and top_10_by_score"
 
 backend:
+  - task: "Candidate Signals Debug Feature"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/debug_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ CANDIDATE SIGNALS DEBUG FEATURE CONFIRMED WORKING: Tested complete flow per review request. 1) Created test user with birth details (DOB: 1986-01-24, TOB: 06:32), 2) Asked two different questions ('Should I start a business or stick with a job?' and 'Tell me about my health and wellbeing'), 3) GET /api/debug/candidate-signals/latest endpoint working correctly, 4) Response structure verified: candidates array with 12 total candidates (6 kept, 6 dropped), summary contains all required fields (total_candidates, kept_count, dropped_count, counts_by_planet, top_10_by_score), each candidate has required fields (signal_id, signal_type, planet, house, score_raw, score_final, kept, kept_reason, text_human), top_10_by_score populated with 10 items. Planet data shows Jupiter, Venus, and Unknown planets. NOTE: Some planet extraction showing 'Unknown' - may need Vedic API integration improvement for better planet diversity, but core debug functionality working correctly."
+
   - task: "Welcome Message Endpoint Fix"
     implemented: true
     working: true
