@@ -68,6 +68,20 @@ class AstroDatabase:
                 )
             """)
             
+            # Candidate signals debug table
+            await db.execute("""
+                CREATE TABLE IF NOT EXISTS candidate_signals_debug (
+                    run_id TEXT PRIMARY KEY,
+                    user_id TEXT NOT NULL,
+                    session_id TEXT,
+                    user_question TEXT,
+                    topic TEXT,
+                    time_context TEXT,
+                    created_at TEXT NOT NULL,
+                    data_json TEXT NOT NULL
+                )
+            """)
+            
             await db.commit()
             logger.info("✓ Astro database initialized")
     
