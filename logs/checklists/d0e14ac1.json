@@ -1,0 +1,25 @@
+{
+  "request_id": "d0e14ac1",
+  "timestamp": "2026-01-04T12:12:02.843204Z",
+  "user_input": "Will I make more money through a job or by starting a new business?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.83333,
+    "lon": 76.66667,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

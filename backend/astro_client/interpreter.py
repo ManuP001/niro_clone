@@ -101,10 +101,44 @@ def build_astro_features(
         
         # Time-based analysis (with timeframe filtering)
         "timing_windows": _analyze_timing_windows(profile, transits, topic, today, timeframe_hint),
+        
+        # Full planet positions (for reading_pack signal building)
+        "planets": _get_all_planets_data(profile),
     }
     
-    logger.debug(f"Built features with {len(features['focus_factors'])} focus factors, {len(features['transits'])} transits")
+    logger.debug(f"Built features with {len(features['focus_factors'])} focus factors, {len(features['transits'])} transits, {len(features['planets'])} planets")
     return features
+
+
+def _get_all_planets_data(profile: AstroProfile) -> List[Dict[str, Any]]:
+    """
+    Get all planet positions from the profile for signal building.
+    Returns list of planet data with name, sign, house, retrograde status.
+    """
+    planets_list = []
+    
+    if profile.planets:
+        for planet in profile.planets:
+            # Handle both dict and object formats
+            if isinstance(planet, dict):
+                planets_list.append({
+                    "name": planet.get("name", planet.get("planet", "")),
+                    "sign": planet.get("sign", planet.get("rashi", "")),
+                    "house": planet.get("house", planet.get("bhava", "")),
+                    "degree": planet.get("degree", planet.get("deg", 0)),
+                    "retrograde": planet.get("retrograde", planet.get("retro", False))
+                })
+            else:
+                # Object with attributes
+                planets_list.append({
+                    "name": getattr(planet, "name", getattr(planet, "planet", "")),
+                    "sign": getattr(planet, "sign", getattr(planet, "rashi", "")),
+                    "house": getattr(planet, "house", getattr(planet, "bhava", "")),
+                    "degree": getattr(planet, "degree", getattr(planet, "deg", 0)),
+                    "retrograde": getattr(planet, "retrograde", getattr(planet, "retro", False))
+                })
+    
+    return planets_list
 
 
 def _format_dasha(dasha) -> Dict[str, Any]:

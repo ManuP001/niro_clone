@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, MessageCircle, Star, Calendar, Heart, LogOut, Grid3x3 } from 'lucide-react';
+import { Home, MessageCircle, Star, Calendar, LogOut, Grid3x3, Activity } from 'lucide-react';
 import { navItems } from '../data/mockData';
 
 const iconMap = {
@@ -7,16 +7,16 @@ const iconMap = {
   'message-circle': MessageCircle,
   star: Star,
   calendar: Calendar,
-  heart: Heart,
   kundli: Grid3x3,
+  activity: Activity,
 };
 
 const BottomNav = ({ activeScreen, onNavigate, onLogout }) => {
   const [showLogout, setShowLogout] = useState(false);
 
   return (
-    <div className="bg-white border-t border-gray-100 px-2 py-2 pb-6 relative">
-      <div className="flex justify-around items-center">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-2 py-2 pb-6 z-40 lg:relative lg:bottom-auto">
+      <div className="flex justify-around items-center max-w-[840px] mx-auto">
         {navItems.map((item) => {
           const Icon = iconMap[item.icon];
           const isActive = activeScreen === item.id;

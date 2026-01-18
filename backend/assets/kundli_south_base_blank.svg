@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 520" style="max-width:100%;height:auto;">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#FFFEF5"/>
+  
+  <!-- Title -->
+  <text id="chart_title" x="250" y="28" text-anchor="middle" font-family="Georgia,serif" font-size="18" font-weight="bold" fill="#4A3728">Birth Chart (Rāśi)</text>
+  <text id="asc_label" x="250" y="48" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#9a6b2f">Ascendant: --</text>
+  
+  <!-- Chart Area (starts at y=60) - 4x4 grid, 100px cells -->
+  <g transform="translate(50, 60)">
+    <!-- Outer Border -->
+    <rect x="0" y="0" width="400" height="400" fill="none" stroke="#9a6b2f" stroke-width="2"/>
+    
+    <!-- Vertical Grid Lines -->
+    <line x1="100" y1="0" x2="100" y2="400" stroke="#9a6b2f" stroke-width="1"/>
+    <line x1="200" y1="0" x2="200" y2="400" stroke="#9a6b2f" stroke-width="1"/>
+    <line x1="300" y1="0" x2="300" y2="400" stroke="#9a6b2f" stroke-width="1"/>
+    
+    <!-- Horizontal Grid Lines -->
+    <line x1="0" y1="100" x2="400" y2="100" stroke="#9a6b2f" stroke-width="1"/>
+    <line x1="0" y1="200" x2="400" y2="200" stroke="#9a6b2f" stroke-width="1"/>
+    <line x1="0" y1="300" x2="400" y2="300" stroke="#9a6b2f" stroke-width="1"/>
+    
+    <!-- Center area (2x2 inner cells) - decorative -->
+    <rect x="100" y="100" width="200" height="200" fill="#FFFEF5"/>
+    <text x="200" y="195" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#9a6b2f" opacity="0.4">South Indian</text>
+    <text x="200" y="215" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#9a6b2f" opacity="0.4">Style</text>
+    
+    <!-- Sign 12 (Pisces): Row 0, Col 0 -->
+    <g id="cell_sign_12">
+      <text id="sign12_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign12_planets" transform="translate(50, 40)"></g>
+      <text id="sign12_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+    
+    <!-- Sign 1 (Aries): Row 0, Col 1 -->
+    <g id="cell_sign_1" transform="translate(100, 0)">
+      <text id="sign1_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign1_planets" transform="translate(50, 40)"></g>
+      <text id="sign1_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+    
+    <!-- Sign 2 (Taurus): Row 0, Col 2 -->
+    <g id="cell_sign_2" transform="translate(200, 0)">
+      <text id="sign2_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign2_planets" transform="translate(50, 40)"></g>
+      <text id="sign2_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+    
+    <!-- Sign 3 (Gemini): Row 0, Col 3 -->
+    <g id="cell_sign_3" transform="translate(300, 0)">
+      <text id="sign3_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign3_planets" transform="translate(50, 40)"></g>
+      <text id="sign3_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+    
+    <!-- Sign 4 (Cancer): Row 1, Col 3 -->
+    <g id="cell_sign_4" transform="translate(300, 100)">
+      <text id="sign4_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign4_planets" transform="translate(50, 40)"></g>
+      <text id="sign4_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+    
+    <!-- Sign 5 (Leo): Row 2, Col 3 -->
+    <g id="cell_sign_5" transform="translate(300, 200)">
+      <text id="sign5_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign5_planets" transform="translate(50, 40)"></g>
+      <text id="sign5_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+    
+    <!-- Sign 6 (Virgo): Row 3, Col 3 -->
+    <g id="cell_sign_6" transform="translate(300, 300)">
+      <text id="sign6_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign6_planets" transform="translate(50, 40)"></g>
+      <text id="sign6_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+    
+    <!-- Sign 7 (Libra): Row 3, Col 2 -->
+    <g id="cell_sign_7" transform="translate(200, 300)">
+      <text id="sign7_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign7_planets" transform="translate(50, 40)"></g>
+      <text id="sign7_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+    
+    <!-- Sign 8 (Scorpio): Row 3, Col 1 -->
+    <g id="cell_sign_8" transform="translate(100, 300)">
+      <text id="sign8_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign8_planets" transform="translate(50, 40)"></g>
+      <text id="sign8_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+    
+    <!-- Sign 9 (Sagittarius): Row 3, Col 0 -->
+    <g id="cell_sign_9" transform="translate(0, 300)">
+      <text id="sign9_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign9_planets" transform="translate(50, 40)"></g>
+      <text id="sign9_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+    
+    <!-- Sign 10 (Capricorn): Row 2, Col 0 -->
+    <g id="cell_sign_10" transform="translate(0, 200)">
+      <text id="sign10_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign10_planets" transform="translate(50, 40)"></g>
+      <text id="sign10_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+    
+    <!-- Sign 11 (Aquarius): Row 1, Col 0 -->
+    <g id="cell_sign_11" transform="translate(0, 100)">
+      <text id="sign11_label" x="8" y="18" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f"></text>
+      <g id="sign11_planets" transform="translate(50, 40)"></g>
+      <text id="sign11_asc" x="50" y="90" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-weight="bold" fill="#228B22"></text>
+    </g>
+  </g>
+</svg>

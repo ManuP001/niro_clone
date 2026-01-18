@@ -6,6 +6,7 @@ Integrates:
 - Vedic API for astro profiles and transits
 - Topic classification and chart lever mapping
 - NIRO LLM with structured astro_features
+- Intent Router for astro vs non-astro queries
 """
 
 from typing import Dict, Any, List, Optional
@@ -30,6 +31,8 @@ from .mode_router import ModeRouter
 from .birth_extractor import HybridBirthDetailsExtractor
 from .timeframe_classifier import classify_timeframe
 from .intent import detect_intent_and_context
+from .intent_router import classify_intent, UserIntent, should_use_astro_signals
+from .query_intent_router import route_query, QueryIntent, get_topic_label  # NEW: Multi-topic router
 
 # Import from astro_client package (use absolute imports for compatibility)
 from backend.astro_client import (
@@ -47,7 +50,7 @@ from backend.astro_client import (
     call_niro_llm
 )
 from backend.astro_client.vedic_api import vedic_api_client
-from backend.astro_client.reading_pack import build_reading_pack
+from backend.astro_client.reading_pack import build_reading_pack, build_multi_topic_reading_pack  # NEW: Multi-topic pack
 from backend.observability.data_coverage import (
     validate_api_profile,
     validate_api_transits,
@@ -61,6 +64,9 @@ from backend.observability.pipeline_logger import (
     detect_missing_data_phrases,
 )
 from backend.observability.time_context import infer_time_context
+
+# Import Memory Service (NEW)
+from backend.memory import get_memory_service, MemoryContext
 
 # Import UX utilities
 from .ux_utils import (
@@ -128,10 +134,31 @@ class EnhancedOrchestrator:
         request_id = make_request_id()
         now = datetime.utcnow()
         
-        # Detect intent and time context (lightweight, no LLM)
+        # NEW: Classify user intent (ASTRO_READING vs PRODUCT_HELP vs GENERAL_ADVICE vs SMALL_TALK)
+        intent_classification = classify_intent(request.message)
+        user_intent = intent_classification['intent']
+        is_astro_intent = should_use_astro_signals(user_intent)
+        
+        # NEW: Route query for multi-topic detection
+        query_intent = route_query(request.message)
+        primary_topic = query_intent.primary_topic
+        secondary_topics = query_intent.secondary_topics
+        is_multi_topic = query_intent.is_multi_topic and len(secondary_topics) > 0
+        question_type = query_intent.question_type
+        is_unclear = query_intent.is_unclear  # NEW: Track unclear questions
+        needs_clarification = query_intent.needs_clarification  # NEW: Should ask for clarification
+        
+        # Override time_context from query router if detected
+        time_context_from_router = query_intent.time_context
+        
+        # Detect time context (lightweight, no LLM) - use router's if available
         intent_info = detect_intent_and_context(request.message)
-        time_context = intent_info['time_context']
+        time_context = time_context_from_router if time_context_from_router != 'none' else intent_info['time_context']
         intent = intent_info['intent']
+        
+        # Override is_astro from query router
+        if not query_intent.is_astro:
+            is_astro_intent = False
         
         log_stage(
             "START",
@@ -140,7 +167,15 @@ class EnhancedOrchestrator:
             user_message=safe_truncate(request.message, 300),
             time_context=time_context,
             intent=intent,
-            action_id=request.actionId or "null"
+            user_intent=user_intent.value,
+            is_astro=is_astro_intent,
+            action_id=request.actionId or "null",
+            primary_topic=primary_topic,
+            secondary_topics=secondary_topics,
+            is_multi_topic=is_multi_topic,
+            question_type=question_type,
+            is_unclear=is_unclear,
+            needs_clarification=needs_clarification
         )
         
         # Write input snapshot if debug enabled
@@ -153,38 +188,53 @@ class EnhancedOrchestrator:
                 "actionId": request.actionId,
                 "subjectData": request.subjectData,
                 "time_context": time_context,
+                "user_intent": user_intent.value,
+                "is_astro_intent": is_astro_intent,
             },
             force=False
         )
         
-        logger.info(f"Processing message for session {request.sessionId} request={request_id}")
-        niro_logger.info(f"[START] session={request.sessionId} message='{request.message}'")
+        logger.info(f"Processing message for session {request.sessionId} request={request_id} intent={user_intent.value}")
+        niro_logger.info(f"[START] session={request.sessionId} message='{request.message}' intent={user_intent.value}")
         
         # Step 1: Load or create session state
         state = self.session_store.get_or_create(request.sessionId)
         state.message_count += 1
         
         logger.info(
-            "PIPELINE_START: session=%s msg=%r message_count=%s",
+            "PIPELINE_START: session=%s msg=%r message_count=%s intent=%s",
             request.sessionId,
             request.message,
-            state.message_count
+            state.message_count,
+            user_intent.value
         )
+        
+        # === CHAT QUALITY GUARD: EXPLICIT INTENT CHECK ===
+        # Check if message has explicit user intent that should NOT be treated as short reply
+        # Explicit intents include timeframe words, topic keywords, full questions
+        explicit_intent_patterns = [
+            'what', 'when', 'why', 'how', 'will', 'should', 'can', 'tell me about',
+            'last year', 'next year', 'past', 'future', 'this month', 'next month',
+            'career', 'job', 'relationship', 'marriage', 'health', 'money', 'finance'
+        ]
+        msg_lower = request.message.lower().strip()
+        has_explicit_intent = any(pattern in msg_lower for pattern in explicit_intent_patterns)
         
         # === UX UPGRADE: SHORT REPLY DETECTION ===
         # Check if this is a short reply that needs context resolution
-        if is_short_reply(request.message):
-            resolved_msg, confidence, clarifying_question = resolve_short_reply(
+        # BUT: Explicit user intent overrides short-reply resolution
+        if is_short_reply(request.message) and not has_explicit_intent:
+            resolved_msg, resolution_confidence, clarifying_question = resolve_short_reply(
                 message=request.message,
                 last_ai_question=state.last_ai_question,
                 current_topic=state.current_topic,
                 last_user_intent=state.last_user_intent
             )
             
-            niro_logger.info(f"[SHORT_REPLY] detected='{request.message}' resolved='{resolved_msg}' confidence={confidence}")
+            niro_logger.info(f"[SHORT_REPLY] detected='{request.message}' resolved='{resolved_msg}' confidence={resolution_confidence}")
             
-            # If confidence is low, return clarifying question
-            if confidence < 0.5 and clarifying_question:
+            # If resolution confidence is low, return clarifying question
+            if resolution_confidence < 0.5 and clarifying_question:
                 # Generate clarifying options
                 options = generate_clarifying_options(state.current_topic, state.last_ai_question)
                 
@@ -217,6 +267,49 @@ class EnhancedOrchestrator:
             
             # Use resolved message for processing
             request.message = resolved_msg
+        elif has_explicit_intent:
+            niro_logger.info(f"[EXPLICIT_INTENT] User message has explicit intent, skipping short-reply resolution: '{request.message}'")
+        
+        # === UNCLEAR QUESTION HANDLING ===
+        # If question is unclear/vague and needs clarification, ask instead of forcing an answer
+        if needs_clarification and is_unclear:
+            niro_logger.info(f"[UNCLEAR_QUESTION] Detected unclear question: '{request.message}' - asking for clarification")
+            
+            # Generate contextual clarification question
+            clarification_text = self._generate_clarification_question(
+                message=request.message,
+                last_topic=state.current_topic,
+                last_question=state.last_ai_question
+            )
+            
+            clarifying_reply = NiroReply(
+                rawText=clarification_text,
+                summary=clarification_text,
+                reasons=[],
+                remedies=[]
+            )
+            
+            # Suggest topic options
+            topic_options = [
+                SuggestedAction(id="focus_career", label="Career & Work"),
+                SuggestedAction(id="focus_relationships", label="Relationships"),
+                SuggestedAction(id="focus_health", label="Health & Energy"),
+                SuggestedAction(id="focus_money", label="Money & Finance"),
+            ]
+            
+            return ChatResponse(
+                reply=clarifying_reply,
+                mode=state.mode.value if hasattr(state.mode, 'value') else str(state.mode),
+                focus=state.current_topic,
+                suggestedActions=topic_options,
+                nextStepChips=topic_options,
+                showFeedback=False,
+                conversationState={
+                    "current_topic": state.current_topic,
+                    "last_ai_question": clarification_text,
+                    "message_count": state.message_count
+                }
+            )
         
         # Handle birth details from subjectData or message
         extraction_method = "none"
@@ -329,12 +422,12 @@ class EnhancedOrchestrator:
         features_coverage = {"ok": 0, "missing": 0, "missing_keys": []}  # Default empty coverage
         profile_coverage = {"ok": 0, "missing": 0, "missing_keys": []}  # Default empty coverage
         transits_coverage = {"ok": 0, "missing": 0, "missing_keys": []}  # Default empty coverage
+        user_id = request.sessionId  # Initialize user_id early
         
         if state.birth_details and mode != ConversationMode.NEED_BIRTH_DETAILS.value:
             try:
                 # Convert conversation birth details to astro format
                 astro_birth = self._convert_birth_details(state.birth_details)
-                user_id = request.sessionId
                 
                 # STAGE D: API_REQUEST_PROFILE
                 log_stage(
@@ -559,20 +652,65 @@ class EnhancedOrchestrator:
                 )
         
         # Step 6: Build LLM payload and generate response
-        # First, build the reading pack from astro_features and coverage results
-        reading_pack = build_reading_pack(
+        # Get recent planets from previous answer for diversity
+        recent_planets = getattr(state, 'last_used_planets', []) or []
+        
+        # ================================================================
+        # LOAD MEMORY CONTEXT (NEW - for repetition avoidance)
+        # ================================================================
+        memory_service = get_memory_service()
+        memory_context = memory_service.load_memory_context(user_id, request.sessionId)
+        
+        # Update conversation state with current user message
+        memory_service.update_after_user_message(
+            user_id=user_id,
+            session_id=request.sessionId,
             user_question=request.message,
-            topic=topic,
-            time_context=time_context,
-            astro_features=astro_features,
-            missing_keys=features_coverage.get('missing_keys', []),
-            intent=intent
+            detected_topics=[primary_topic] + secondary_topics,
+            run_id=request_id
         )
+        
+        logger.info(
+            f"[MEMORY] Loaded context: has_prior={memory_context.has_prior_context}, "
+            f"msg_count={memory_context.message_count}, avoid_items={len(memory_context.avoid_repeating)}"
+        )
+        
+        # Build memory_context dict for reading_pack
+        memory_context_dict = memory_context.to_dict()
+        
+        # Build the reading pack from astro_features
+        # Use multi-topic pack if secondary topics detected
+        if is_multi_topic and secondary_topics:
+            logger.info(f"[MULTI_TOPIC] Using multi-topic reading pack: primary={primary_topic}, secondary={secondary_topics}")
+            reading_pack = build_multi_topic_reading_pack(
+                user_question=request.message,
+                primary_topic=primary_topic,
+                secondary_topics=secondary_topics,
+                time_context=time_context,
+                astro_features=astro_features,
+                missing_keys=features_coverage.get('missing_keys', []),
+                intent=intent,
+                recent_planets=recent_planets
+            )
+            topic = primary_topic  # Use primary topic for display
+        else:
+            # Single-topic reading pack (with memory context for repetition penalty)
+            reading_pack = build_reading_pack(
+                user_question=request.message,
+                topic=topic if topic else primary_topic,
+                time_context=time_context,
+                astro_features=astro_features,
+                missing_keys=features_coverage.get('missing_keys', []),
+                intent=intent,
+                recent_planets=recent_planets,
+                memory_context=memory_context_dict  # NEW: Pass memory context
+            )
         
         # Log signal scoring summary
         signal_scores = [s.get('score', 0) for s in reading_pack.get('signals', [])]
         logger.info(
             f"[SIGNAL_SCORING] topic={topic} kept={len(reading_pack.get('signals', []))} "
+            f"is_multi_topic={is_multi_topic} secondary={secondary_topics} "
             f"total_signals_evaluated={sum(1 for s in astro_features.get('focus_factors', []))} "
             f"top_scores={signal_scores}"
         )
@@ -585,31 +723,48 @@ class EnhancedOrchestrator:
             candidate_signals_debug['session_id'] = request.sessionId
             candidate_signals_debug['user_question'] = request.message
             
-            # Save to database
+            # Save to in-memory cache for quick access by debug endpoint
+            from backend.astro_client.reading_pack import store_candidate_signals_debug
+            store_candidate_signals_debug(request_id, candidate_signals_debug)
+            logger.info(f"[CANDIDATE_SIGNALS] Stored in cache: run_id={request_id}, candidates={candidate_signals_debug['summary']['total_candidates']}")
+            
+            # Also save to database for persistence
             try:
                 from backend.services.astro_database import get_astro_db
                 db = await get_astro_db()
                 await db.save_candidate_signals_debug(candidate_signals_debug)
-                logger.info(f"[CANDIDATE_SIGNALS] Saved debug data: run_id={request_id}, candidates={candidate_signals_debug['summary']['total_candidates']}")
+                logger.info(f"[CANDIDATE_SIGNALS] Saved to DB: run_id={request_id}")
             except Exception as e:
-                logger.warning(f"[CANDIDATE_SIGNALS] Failed to save debug data: {e}")
+                logger.warning(f"[CANDIDATE_SIGNALS] Failed to save to DB: {e}")
         
-        # Build LLM payload with reading_pack
+        # Build ULTRA-THIN LLM payload - only essential data for writer model
+        # LLM acts as WRITER only - all reasoning done in backend via reading_pack
         llm_payload = {
-            'mode': mode,
+            'user_question': request.message,
             'topic': topic,
             'time_context': time_context,
-            'intent': intent,
-            'user_question': request.message,
-            'astro_features': astro_features,
-            'reading_pack': reading_pack,
-            'data_coverage': {
-                'profile': profile_coverage if profile_coverage else {},
-                'transits': transits_coverage if transits_coverage else {},
-                'features': features_coverage
+            'question_type': question_type,  # NEW: advice/explanation/prediction/compare/planning
+            # MEMORY CONTEXT (NEW - for avoiding repetition)
+            'memory_context': {
+                'avoid_repeating': memory_context.avoid_repeating[:5],
+                'confirmed_facts': memory_context.confirmed_facts[:3],
+                'last_ai_answer_summary': memory_context.last_ai_answer_summary,
+                'has_prior_context': memory_context.has_prior_context,
             },
-            'session_id': request.sessionId,
-            'timestamp': now.isoformat() + 'Z'
+            # ULTRA-THIN: Only send reading_pack (contains pre-selected drivers)
+            # Do NOT send: astro_features, full signal lists, debug data
+            'reading_pack': {
+                'drivers': reading_pack.get('drivers', []),  # Max 3 pre-selected
+                'primary_drivers': reading_pack.get('primary_drivers', reading_pack.get('drivers', [])),  # NEW
+                'secondary_drivers': reading_pack.get('secondary_drivers', []),  # NEW
+                'primary_topic': reading_pack.get('primary_topic', topic),  # NEW
+                'secondary_topics': reading_pack.get('secondary_topics', []),  # NEW
+                'secondary_dropped': reading_pack.get('secondary_dropped', False),  # NEW
+                'signals': reading_pack.get('signals', [])[:6],  # Max 6 for secondary context
+                'timing_windows': reading_pack.get('timing_windows', [])[:2],  # Max 2
+                'data_gaps': reading_pack.get('data_gaps', []),
+                'allowed_entities': reading_pack.get('allowed_entities', {}),  # NEW
+            }
         }
         
         # STAGE G: LLM_PROMPT - Log prompt details before calling LLM
@@ -620,7 +775,10 @@ class EnhancedOrchestrator:
             model="niro_llm",
             payload_size=len(json.dumps(llm_payload, default=str)),
             topic=topic,
-            mode=mode
+            mode=mode,
+            is_multi_topic=is_multi_topic,
+            secondary_topics=secondary_topics,
+            question_type=question_type
         )
         
         # Log reading pack summary
@@ -706,15 +864,40 @@ class EnhancedOrchestrator:
         state.last_ai_response_id = request_id
         state.updated_at = datetime.utcnow()
         
+        # Track recent planets for diversity in consecutive answers
+        selected_signals = reading_pack.get('signals', [])
+        drivers_from_pack = reading_pack.get('drivers', [])  # NEW: Get pre-selected drivers
+        recent_planets = [s.get('planet', s.get('_planet', '')) for s in selected_signals if s.get('planet') or s.get('_planet')]
+        state.last_used_planets = recent_planets  # Store for next request
+        
         # Update state in store
         self.session_store.set(request.sessionId, state)
         
-        # 7c. Build Trust Widget (clean reasons for "Why this answer")
+        # 7b-2. UPDATE MEMORY AFTER AI RESPONSE (completes the memory cycle)
+        # This saves conclusions to avoid repeating them
+        try:
+            memory_service.update_after_ai_response(
+                user_id=user_id,
+                session_id=request.sessionId,
+                ai_response=llm_response.get('rawText', ''),
+                drivers=drivers_from_pack,
+                topic=topic or 'general'
+            )
+            logger.debug(f"[MEMORY] Updated memory after AI response for session={request.sessionId}")
+        except Exception as mem_err:
+            logger.warning(f"[MEMORY] Failed to update after AI response: {mem_err}")
+        
+        # 7c. Build Trust Widget with pre-selected drivers from reading_pack
+        # For non-astro intents, trust widget will be empty/hidden
         trust_widget = build_trust_widget(
             reasons=llm_response.get('reasons', []),
             timing_windows=reading_pack.get('timing_windows', []),
             signal_scores=signal_scores,
-            time_context=time_context  # Pass time context to adjust timing display
+            time_context=time_context,
+            selected_signals=selected_signals,
+            topic=topic,
+            drivers_from_pack=drivers_from_pack,  # NEW: Pass pre-selected drivers
+            is_astro_intent=is_astro_intent  # NEW: Hide widget for non-astro
         )
         
         # 7d. Generate next-step chips
@@ -736,15 +919,23 @@ class EnhancedOrchestrator:
         conversation_state_dict = {
             "current_topic": state.current_topic,
             "last_ai_question": state.last_ai_question,
-            "message_count": state.message_count
+            "message_count": state.message_count,
+            "user_intent": user_intent.value  # NEW: Include intent for frontend
         }
         
         # Step 8: Build and return response
+        # ULTRA-THIN ARCHITECTURE: reasons come from backend drivers, not LLM
+        backend_reasons = []
+        for driver in drivers_from_pack[:3]:
+            text = driver.get('text_human') or driver.get('claim', '')
+            if text:
+                backend_reasons.append(text)
+        
         reply = NiroReply(
             rawText=llm_response.get('rawText', ''),
-            summary=llm_response.get('summary', ''),
-            reasons=llm_response.get('reasons', []),
-            remedies=llm_response.get('remedies', [])
+            summary='',  # No summary in ultra-thin mode
+            reasons=backend_reasons,  # From backend, not LLM
+            remedies=[]  # No remedies in ultra-thin mode
         )
         
         # Convert next_step_chips to SuggestedAction objects
@@ -860,6 +1051,57 @@ class EnhancedOrchestrator:
             logger.info(f"Set birth details for session {session_id}")
             return True
         return False
+    
+    def _generate_clarification_question(
+        self, 
+        message: str, 
+        last_topic: Optional[str], 
+        last_question: Optional[str]
+    ) -> str:
+        """
+        Generate a friendly clarification question for unclear/vague user input.
+        
+        Args:
+            message: The unclear user message
+            last_topic: Previous conversation topic (if any)
+            last_question: Last question Niro asked (if any)
+        
+        Returns:
+            A friendly clarification question
+        """
+        msg_lower = message.lower().strip()
+        
+        # Handle affirmative responses
+        if msg_lower in ['yes', 'yeah', 'yep', 'sure', 'ok', 'okay', 'yea']:
+            if last_question:
+                return f"Great! Just to make sure I understand - what specifically would you like to explore? I can look at career, relationships, finances, or another area of your chart."
+            else:
+                return "I'd love to help! What area would you like to explore - career, relationships, health, or something else?"
+        
+        # Handle negative responses
+        if msg_lower in ['no', 'nope', 'nah']:
+            return "No problem! What would you like to explore instead? I can look at any aspect of your chart."
+        
+        # Handle vague follow-ups
+        if msg_lower in ['and', 'and?', 'what else', 'more', 'continue']:
+            if last_topic:
+                return f"Would you like me to go deeper on {last_topic}, or explore something different?"
+            else:
+                return "What area would you like me to focus on? Career, relationships, finances, or something else?"
+        
+        # Handle "what about that" type questions
+        if 'that' in msg_lower or 'this' in msg_lower or 'it' in msg_lower:
+            if last_topic:
+                return f"Could you clarify what aspect of {last_topic} you'd like to explore? I want to give you the most relevant insights."
+            else:
+                return "I want to make sure I give you useful insights. Could you tell me a bit more about what you're curious about?"
+        
+        # Handle single-word questions
+        if len(msg_lower.split()) <= 2:
+            return "I'd be happy to help with that! Could you share a bit more about what you'd like to know? For example, are you curious about career, relationships, timing, or something else?"
+        
+        # Default clarification
+        return "I want to give you the most relevant insights. Could you tell me a bit more about what you're curious about - career, relationships, health, finances, or another area?"
     
     def get_session_state(self, session_id: str) -> Optional[ConversationState]:
         """Get current state for a session"""

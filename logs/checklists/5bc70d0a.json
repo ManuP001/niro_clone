@@ -1,0 +1,25 @@
+{
+  "request_id": "5bc70d0a",
+  "timestamp": "2025-12-27T11:26:37.775220Z",
+  "user_input": "How was my love life before marriage?",
+  "topic": "romantic_relationships",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1992-07-15",
+    "tob": "14:30",
+    "location": "Delhi",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

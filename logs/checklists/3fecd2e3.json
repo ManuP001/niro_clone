@@ -1,0 +1,25 @@
+{
+  "request_id": "3fecd2e3",
+  "timestamp": "2026-01-17T07:40:43.161434Z",
+  "user_input": "yes lets explore the time",
+  "topic": "travel_relocation",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1993-05-18",
+    "tob": "02:59",
+    "location": "Hanumangarh, Rajasthan, India",
+    "lat": 29.11,
+    "lon": 74.6,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

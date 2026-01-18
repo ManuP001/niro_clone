@@ -130,6 +130,12 @@ class AuthService:
             else:
                 profile_to_save['birth_place_tz'] = 5.5  # Default to IST
             
+            # Add gender and marital_status (new fields)
+            if 'gender' in profile_data:
+                profile_to_save['gender'] = profile_data['gender']
+            if 'marital_status' in profile_data:
+                profile_to_save['marital_status'] = profile_data['marital_status']
+            
             success = self.profile_store.save_profile(user_id, profile_to_save)
             
             if success:

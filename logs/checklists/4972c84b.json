@@ -1,0 +1,25 @@
+{
+  "request_id": "4972c84b",
+  "timestamp": "2025-12-26T13:26:45.353439Z",
+  "user_input": "what does my remaining life look like?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1958-11-29",
+    "tob": "18:20",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.8955,
+    "lon": 76.6066,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

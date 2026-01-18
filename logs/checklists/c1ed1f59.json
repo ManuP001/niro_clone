@@ -1,0 +1,25 @@
+{
+  "request_id": "c1ed1f59",
+  "timestamp": "2025-12-27T09:01:22.657138Z",
+  "user_input": "What's my career outlook?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "10:30",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

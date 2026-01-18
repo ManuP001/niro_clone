@@ -1,0 +1,25 @@
+{
+  "request_id": "a51f0283",
+  "timestamp": "2026-01-17T07:31:57.359087Z",
+  "user_input": "hi",
+  "topic": null,
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1993-05-18",
+    "tob": "02:00",
+    "location": "Hanumangarh, Rajasthan, India",
+    "lat": 29.11,
+    "lon": 74.6,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "I'd love to help! Could you tell me a bit more about what aspect of 'hi' you'd like to explore?"
+  }
+}

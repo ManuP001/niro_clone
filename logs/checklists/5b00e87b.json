@@ -1,0 +1,25 @@
+{
+  "request_id": "5b00e87b",
+  "timestamp": "2025-12-27T11:36:14.775409Z",
+  "user_input": "Why did my relocation in 2019 not work out?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1978-11-03",
+    "tob": "23:45",
+    "location": "Chennai",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

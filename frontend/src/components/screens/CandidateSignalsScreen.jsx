@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Filter, ChevronDown, ChevronUp, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { Filter, ChevronDown, ChevronUp, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || '';
 
-const CandidateSignalsScreen = ({ userId, onBack }) => {
+const CandidateSignalsScreen = ({ userId }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,7 +19,9 @@ const CandidateSignalsScreen = ({ userId, onBack }) => {
     setError(null);
     
     try {
-      const url = `${BACKEND_URL}/api/debug/candidate-signals/latest${userId ? `?user_id=${userId}` : ''}`;
+      // Always fetch the latest candidate signals (no user filter for debug)
+      // This ensures we see the most recent data regardless of which user generated it
+      const url = `${BACKEND_URL}/api/debug/candidate-signals/latest`;
       const response = await fetch(url);
       
       if (!response.ok) {
@@ -91,12 +93,9 @@ const CandidateSignalsScreen = ({ userId, onBack }) => {
     <div className="h-full bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="bg-white border-b px-4 py-3 flex items-center gap-3">
-        <button onClick={onBack} className="p-1 hover:bg-gray-100 rounded">
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
-        </button>
         <div className="flex-1">
-          <h1 className="text-lg font-semibold text-gray-800">Candidate Signals Debug</h1>
-          <p className="text-xs text-gray-500">All signals considered before filtering</p>
+          <h1 className="text-lg font-semibold text-gray-800">Signal Matching</h1>
+          <p className="text-xs text-gray-500">View all candidate signals from your last query</p>
         </div>
         <button 
           onClick={fetchData} 

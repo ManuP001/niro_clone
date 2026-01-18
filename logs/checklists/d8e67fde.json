@@ -1,0 +1,25 @@
+{
+  "request_id": "d8e67fde",
+  "timestamp": "2025-12-25T18:09:28.568576Z",
+  "user_input": "Tell me about my career",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-01-15",
+    "tob": "10:30",
+    "location": "Mumbai",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "request_id": "864acb8d",
+  "timestamp": "2026-01-18T02:59:09.828699Z",
+  "user_input": "How to decide on picking the package?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": "guide_mode",
+  "birth_details": {
+    "dob": "1985-10-10",
+    "tob": "10:47",
+    "location": "Dehradun, Uttarakhand, India",
+    "lat": 30.33,
+    "lon": 78.06,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

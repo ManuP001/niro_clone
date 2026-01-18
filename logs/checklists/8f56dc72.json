@@ -1,0 +1,18 @@
+{
+  "request_id": "8f56dc72",
+  "timestamp": "2025-12-26T21:39:21.119406Z",
+  "user_input": "Hi",
+  "topic": null,
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "I'd love to help! Could you tell me a bit more about what aspect of 'Hi' you'd like to explore?"
+  }
+}

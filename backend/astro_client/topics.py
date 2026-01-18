@@ -321,11 +321,6 @@ def classify_topic(
     message_lower = user_message.lower()
     words = set(re.findall(r'\b\w+\b', message_lower))
     
-    # Also check for multi-word phrases
-    phrases_to_check = [
-        message_lower  # Full message for phrase matching
-    ]
-    
     # Score each topic
     topic_scores: Dict[str, int] = {}
     
@@ -369,6 +364,151 @@ def get_chart_levers(topic: str) -> Dict[str, List]:
         Dict with houses, planets, divisional_charts, key_factors
     """
     return TOPIC_CHART_LEVERS.get(topic, TOPIC_CHART_LEVERS[Topic.GENERAL.value])
+
+
+def get_topic_houses_and_planets(topic: str) -> tuple:
+    """
+    Get topic-specific houses and planets for signal selection.
+    
+    This is the SINGLE SOURCE OF TRUTH for topic → houses/planets mapping.
+    Used by both interpreter.py and reading_pack.py.
+    
+    Args:
+        topic: Topic string (e.g., 'career', 'family_home')
+        
+    Returns:
+        (houses: List[int], planets: List[str])
+        NOTE: planets list may contain unresolved references like "4th Lord"
+        Use resolve_topic_planets() to get actual planet names for a specific chart.
+    """
+    # Normalize topic name
+    topic_normalized = topic.lower().replace(' ', '_') if topic else ''
+    
+    # Try direct match first
+    levers = TOPIC_CHART_LEVERS.get(topic_normalized)
+    
+    # Try enum value match
+    if not levers:
+        for enum_topic in Topic:
+            if enum_topic.value == topic_normalized:
+                levers = TOPIC_CHART_LEVERS.get(enum_topic.value)
+                break
+    
+    # Try partial match
+    if not levers:
+        for key in TOPIC_CHART_LEVERS:
+            if topic_normalized in key or key in topic_normalized:
+                levers = TOPIC_CHART_LEVERS[key]
+                break
+    
+    # Fallback to general (NO benefic bias - just use general topic levers)
+    if not levers:
+        levers = TOPIC_CHART_LEVERS[Topic.GENERAL.value]
+    
+    houses = levers.get('houses', [1, 5, 9, 10])
+    planets = levers.get('planets', [])
+    
+    return houses, planets
+
+
+# Sign lords for resolving house lords
+SIGN_LORDS_MAP = {
+    'Aries': 'Mars', 'Taurus': 'Venus', 'Gemini': 'Mercury',
+    'Cancer': 'Moon', 'Leo': 'Sun', 'Virgo': 'Mercury',
+    'Libra': 'Venus', 'Scorpio': 'Mars', 'Sagittarius': 'Jupiter',
+    'Capricorn': 'Saturn', 'Aquarius': 'Saturn', 'Pisces': 'Jupiter'
+}
+
+# Valid real planets (not references)
+REAL_PLANETS = {'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'}
+
+
+def resolve_topic_planets(
+    topic_planets: List[str],
+    houses_data: List[Dict],
+    topic_houses: List[int] = None
+) -> List[str]:
+    """
+    Resolve abstract planet references (like "4th Lord", "Lagna Lord") to actual planets.
+    
+    This is CRITICAL for ensuring different birth charts get different drivers for the same question.
+    E.g., "4th Lord" for one chart might be Sun (if 4th house is Leo), 
+    but for another chart it might be Moon (if 4th house is Cancer).
+    
+    Args:
+        topic_planets: List of planet references from TOPIC_CHART_LEVERS 
+                      (e.g., ["Moon", "4th Lord", "Venus"])
+        houses_data: List of house data dicts with 'number'/'house', 'sign', 'lord' keys
+        topic_houses: Optional list of topic-relevant houses for logging
+        
+    Returns:
+        List of resolved real planet names (e.g., ["Moon", "Sun", "Venus"])
+        - Deduped and ordered by relevance
+        - Only contains real planets (Sun-Ketu)
+        - "Transit planets" and unresolvable references are excluded
+    """
+    resolved = []
+    resolution_log = []
+    
+    # Build house → sign/lord lookup
+    house_signs = {}
+    for house_info in houses_data:
+        house_num = house_info.get('number') or house_info.get('house')
+        if house_num:
+            house_num = int(house_num)
+            house_signs[house_num] = {
+                'sign': house_info.get('sign', ''),
+                'lord': house_info.get('lord', '')
+            }
+    
+    for ref in topic_planets:
+        if not ref:
+            continue
+            
+        # Skip "Transit planets" - not a real planet reference
+        if 'Transit' in ref:
+            resolution_log.append(f"{ref} → SKIPPED (transit reference)")
+            continue
+        
+        # Already a real planet?
+        if ref in REAL_PLANETS:
+            if ref not in resolved:
+                resolved.append(ref)
+                resolution_log.append(f"{ref} → {ref} (direct)")
+            continue
+        
+        # Resolve lord references
+        resolved_planet = None
+        
+        if 'Lagna Lord' in ref or '1st Lord' in ref:
+            house_info = house_signs.get(1, {})
+            sign = house_info.get('sign', '')
+            resolved_planet = house_info.get('lord') or SIGN_LORDS_MAP.get(sign)
+            resolution_log.append(f"{ref} → {resolved_planet} (house 1 sign={sign})")
+            
+        elif 'Lord' in ref:
+            # Extract house number from ref (e.g., "4th Lord" → 4, "10th Lord" → 10)
+            import re
+            match = re.search(r'(\d+)', ref)
+            if match:
+                house_num = int(match.group(1))
+                house_info = house_signs.get(house_num, {})
+                sign = house_info.get('sign', '')
+                resolved_planet = house_info.get('lord') or SIGN_LORDS_MAP.get(sign)
+                resolution_log.append(f"{ref} → {resolved_planet} (house {house_num} sign={sign})")
+        
+        # Add resolved planet if valid
+        if resolved_planet and resolved_planet in REAL_PLANETS:
+            if resolved_planet not in resolved:
+                resolved.append(resolved_planet)
+        elif resolved_planet:
+            resolution_log.append(f"WARNING: {ref} resolved to invalid planet '{resolved_planet}'")
+    
+    # Log resolution for debugging
+    logger.info(f"[TOPIC_PLANETS] Resolved: {topic_planets} → {resolved}")
+    logger.debug(f"[TOPIC_PLANETS] Resolution details: {resolution_log}")
+    
+    return resolved
 
 
 def get_suggested_topics_for_mode(mode: str) -> List[str]:

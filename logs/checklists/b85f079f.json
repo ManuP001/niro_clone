@@ -1,0 +1,25 @@
+{
+  "request_id": "b85f079f",
+  "timestamp": "2025-12-26T22:51:25.062597Z",
+  "user_input": "Yes, please continue with: Would you like to explore specific strategies to enhance your career strengths or ways to overcome the challenges you might face?\n\nreasons:\n\nremedies:\n- Focus on building self-confidence and seek environments that value your methodical approach",
+  "topic": "self_psychology",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "14:30",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

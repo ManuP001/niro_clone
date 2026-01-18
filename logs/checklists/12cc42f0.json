@@ -1,0 +1,18 @@
+{
+  "request_id": "12cc42f0",
+  "timestamp": "2026-01-04T09:59:59.947319Z",
+  "user_input": "Tell me more",
+  "topic": "daily_guidance",
+  "mode": "NORMAL_READING",
+  "action_id": "daily_guidance",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

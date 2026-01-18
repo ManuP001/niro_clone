@@ -1,0 +1,18 @@
+{
+  "request_id": "99fbe4a0",
+  "timestamp": "2026-01-06T07:24:52.403425Z",
+  "user_input": "What does my Saturn mahadasha mean for career?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

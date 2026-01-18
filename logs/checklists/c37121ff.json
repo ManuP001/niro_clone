@@ -1,0 +1,25 @@
+{
+  "request_id": "c37121ff",
+  "timestamp": "2026-01-12T12:30:56.189191Z",
+  "user_input": "How was my career in 2022?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Mumbai",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

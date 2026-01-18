@@ -1,0 +1,25 @@
+{
+  "request_id": "53e55261",
+  "timestamp": "2025-12-25T18:28:27.297261Z",
+  "user_input": "What about my health?",
+  "topic": "health_energy",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-01-15",
+    "tob": "10:30",
+    "location": "Mumbai",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

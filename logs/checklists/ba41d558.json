@@ -1,0 +1,18 @@
+{
+  "request_id": "ba41d558",
+  "timestamp": "2026-01-13T20:23:45.369826Z",
+  "user_input": "Tell me about my career prospects and professional growth",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

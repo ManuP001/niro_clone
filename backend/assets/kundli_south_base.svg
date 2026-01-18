@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 520" style="max-width:100%;height:auto;">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#FFFEF5"/>
+  
+  <!-- Title -->
+  <text id="chart_title" x="250" y="28" text-anchor="middle" font-family="Georgia,serif" font-size="18" font-weight="bold" fill="#4A3728">Birth Chart (Rāśi)</text>
+  <text id="asc_label" x="250" y="48" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#9a6b2f">Ascendant: --</text>
+  
+  <!-- Chart Area (starts at y=60) - 4x4 grid, 100px cells -->
+  <g id="chart_area" transform="translate(50, 60)">
+    <!-- Outer Border -->
+    <rect x="0" y="0" width="400" height="400" fill="none" stroke="#9a6b2f" stroke-width="2"/>
+    
+    <!-- Vertical Grid Lines -->
+    <line x1="100" y1="0" x2="100" y2="400" stroke="#9a6b2f" stroke-width="1"/>
+    <line x1="200" y1="0" x2="200" y2="400" stroke="#9a6b2f" stroke-width="1"/>
+    <line x1="300" y1="0" x2="300" y2="400" stroke="#9a6b2f" stroke-width="1"/>
+    
+    <!-- Horizontal Grid Lines -->
+    <line x1="0" y1="100" x2="400" y2="100" stroke="#9a6b2f" stroke-width="1"/>
+    <line x1="0" y1="200" x2="400" y2="200" stroke="#9a6b2f" stroke-width="1"/>
+    <line x1="0" y1="300" x2="400" y2="300" stroke="#9a6b2f" stroke-width="1"/>
+    
+    <!-- Center area (2x2 inner cells) - blank -->
+    <rect x="100" y="100" width="200" height="200" fill="#FFFEF5"/>
+    
+    <!--
+    SOUTH INDIAN SIGN LAYOUT (FIXED - Signs never move)
+    
+    Aries at TOP-LEFT, proceeding CLOCKWISE:
+    
+        [Ar/1]  [Ta/2]  [Ge/3]  [Cn/4]
+        [Pi/12]                 [Le/5]
+        [Aq/11]                 [Vi/6]
+        [Cp/10] [Sg/9]  [Sc/8]  [Li/7]
+    
+    Signs are FIXED. Ascendant is marked INSIDE its sign cell.
+    -->
+    
+    <!-- Sign 1 (Aries): Row 0, Col 0 - TOP LEFT -->
+    <g id="sign_1" data-sign="1" transform="translate(0, 0)">
+      <text id="sign_1_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Ar</text>
+      <g id="sign_1_content" transform="translate(50, 35)"></g>
+    </g>
+    
+    <!-- Sign 2 (Taurus): Row 0, Col 1 -->
+    <g id="sign_2" data-sign="2" transform="translate(100, 0)">
+      <text id="sign_2_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Ta</text>
+      <g id="sign_2_content" transform="translate(50, 35)"></g>
+    </g>
+    
+    <!-- Sign 3 (Gemini): Row 0, Col 2 -->
+    <g id="sign_3" data-sign="3" transform="translate(200, 0)">
+      <text id="sign_3_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Ge</text>
+      <g id="sign_3_content" transform="translate(50, 35)"></g>
+    </g>
+    
+    <!-- Sign 4 (Cancer): Row 0, Col 3 -->
+    <g id="sign_4" data-sign="4" transform="translate(300, 0)">
+      <text id="sign_4_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Cn</text>
+      <g id="sign_4_content" transform="translate(50, 35)"></g>
+    </g>
+    
+    <!-- Sign 5 (Leo): Row 1, Col 3 -->
+    <g id="sign_5" data-sign="5" transform="translate(300, 100)">
+      <text id="sign_5_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Le</text>
+      <g id="sign_5_content" transform="translate(50, 35)"></g>
+    </g>
+    
+    <!-- Sign 6 (Virgo): Row 2, Col 3 -->
+    <g id="sign_6" data-sign="6" transform="translate(300, 200)">
+      <text id="sign_6_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Vi</text>
+      <g id="sign_6_content" transform="translate(50, 35)"></g>
+    </g>
+    
+    <!-- Sign 7 (Libra): Row 3, Col 3 -->
+    <g id="sign_7" data-sign="7" transform="translate(300, 300)">
+      <text id="sign_7_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Li</text>
+      <g id="sign_7_content" transform="translate(50, 35)"></g>
+    </g>
+    
+    <!-- Sign 8 (Scorpio): Row 3, Col 2 -->
+    <g id="sign_8" data-sign="8" transform="translate(200, 300)">
+      <text id="sign_8_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Sc</text>
+      <g id="sign_8_content" transform="translate(50, 35)"></g>
+    </g>
+    
+    <!-- Sign 9 (Sagittarius): Row 3, Col 1 -->
+    <g id="sign_9" data-sign="9" transform="translate(100, 300)">
+      <text id="sign_9_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Sg</text>
+      <g id="sign_9_content" transform="translate(50, 35)"></g>
+    </g>
+    
+    <!-- Sign 10 (Capricorn): Row 3, Col 0 -->
+    <g id="sign_10" data-sign="10" transform="translate(0, 300)">
+      <text id="sign_10_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Cp</text>
+      <g id="sign_10_content" transform="translate(50, 35)"></g>
+    </g>
+    
+    <!-- Sign 11 (Aquarius): Row 2, Col 0 -->
+    <g id="sign_11" data-sign="11" transform="translate(0, 200)">
+      <text id="sign_11_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Aq</text>
+      <g id="sign_11_content" transform="translate(50, 35)"></g>
+    </g>
+    
+    <!-- Sign 12 (Pisces): Row 1, Col 0 -->
+    <g id="sign_12" data-sign="12" transform="translate(0, 100)">
+      <text id="sign_12_label" x="8" y="16" font-family="Arial,sans-serif" font-size="10" fill="#9a6b2f">Pi</text>
+      <g id="sign_12_content" transform="translate(50, 35)"></g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,25 @@
+{
+  "request_id": "6294f849",
+  "timestamp": "2025-12-27T11:22:25.907100Z",
+  "user_input": "How will my career be in 2026?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1992-07-15",
+    "tob": "14:30",
+    "location": "Delhi",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

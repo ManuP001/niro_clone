@@ -1,0 +1,25 @@
+{
+  "request_id": "046ac482",
+  "timestamp": "2025-12-26T13:25:49.040501Z",
+  "user_input": "how has my life been?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1958-11-29",
+    "tob": "18:20",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.8955,
+    "lon": 76.6066,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

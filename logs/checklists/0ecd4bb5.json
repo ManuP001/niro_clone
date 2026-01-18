@@ -1,0 +1,25 @@
+{
+  "request_id": "0ecd4bb5",
+  "timestamp": "2026-01-04T12:40:11.887581Z",
+  "user_input": "Yes, please continue with: Could you share a bit more about what specific aspect of astrology you're curious about?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "10:30",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "request_id": "d6257bdb",
+  "timestamp": "2026-01-04T09:59:43.804627Z",
+  "user_input": "I want to know about my health and energy levels",
+  "topic": "health_energy",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

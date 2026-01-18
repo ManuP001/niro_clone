@@ -1,0 +1,25 @@
+{
+  "request_id": "f46bfd55",
+  "timestamp": "2026-01-04T12:00:17.092757Z",
+  "user_input": "What happened in my career last year? Why did I face those challenges?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1987-09-25",
+    "tob": "11:30",
+    "location": "Pune",
+    "lat": 18.52,
+    "lon": 73.86,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

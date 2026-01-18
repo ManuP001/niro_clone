@@ -1,0 +1,18 @@
+{
+  "request_id": "154b5652",
+  "timestamp": "2026-01-13T20:24:05.779867Z",
+  "user_input": "Tell me more",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_career",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "I want to give you the most relevant insights. Could you tell me a bit more about what you're curious about - career, relationships, health, finances, or another area?"
+  }
+}

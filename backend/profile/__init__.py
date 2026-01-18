@@ -142,12 +142,21 @@ async def update_profile(
 @router.post("/welcome")
 async def get_welcome_message(authorization: Optional[str] = Header(None)):
     """
-    Generate personalized welcome message after onboarding.
+    Generate high-trust, chart-anchored, confidence-aware personalized welcome.
     
-    Uses user's birth chart data (ascendant, moon, sun) to generate
-    3 personalized strengths based on Vedic astrology traits.
+    This is a single-message experience shown immediately after onboarding.
+    Uses dedicated WelcomeMessageBuilder (NOT the normal chat flow).
     
-    Returns NEW response format with welcome_message (string) + suggested_questions (list).
+    Content Structure:
+    A. Introduction (fixed): "Welcome, {name}. I'm Niro, a trained AI astrologer."
+    B. Personality Insight: Based on Moon sign + Ascendant + Lagna lord
+    C. Past Pattern: Only if confidence >= threshold (currently skipped)
+    D. Current Life Phase: Mahadasha/Antardasha insight (actionable)
+    E. Closing Prompt: "What would you like to explore today?"
+    
+    Confidence Guardrails:
+    - Sections are SKIPPED if confidence is low
+    - Silence is better than generic astrology
     
     Headers:
     Authorization: Bearer <token>
@@ -155,14 +164,15 @@ async def get_welcome_message(authorization: Optional[str] = Header(None)):
     Response:
     {
       "ok": true,
-      "welcome_message": "Hey Sharad. I've looked at your chart. You come across as...",
-      "suggested_questions": [
-        "What career path aligns with my chart?",
-        "What about my relationships?",
-        "When is a good time for new ventures?",
-        "How can I leverage my strengths?",
-        "What should I focus on in the next 30 days?"
-      ]
+      "welcome_message": "Welcome, Sharad. I'm Niro, a trained AI astrologer...",
+      "suggested_questions": [...],
+      "confidence_map": {
+        "personality": "high" | "medium" | null,
+        "past_theme": "high" | null,
+        "current_phase": "high" | "medium" | null
+      },
+      "word_count": 150,
+      "sections_included": ["introduction", "personality", "current_phase", "closing"]
     }
     """
     try:
@@ -177,22 +187,28 @@ async def get_welcome_message(authorization: Optional[str] = Header(None)):
         if not profile:
             raise HTTPException(status_code=404, detail="Profile not found")
         
-        # Try to fetch astro profile for chart data
+        # Import dependencies
         from backend.astro_client.models import BirthDetails
         from backend.astro_client.vedic_api import vedic_api_client
-        from backend.welcome_traits import create_welcome_message
+        from backend.conversation.welcome_builder import generate_welcome_message as build_welcome
+        import datetime
         
         name = profile.get('name', 'Friend')
-        ascendant = None
-        moon_sign = None
-        sun_sign = None
+        first_name = name.split()[0] if name else 'Friend'
         
-        # Try to get chart data from Vedic API using birth details
-        # Using lightweight fetch_basic_chart_info (single API call) instead of full profile
+        # Initialize astro_profile dict for WelcomeMessageBuilder
+        astro_profile = {
+            'moon_sign': None,
+            'ascendant': None,
+            'current_mahadasha': {},
+            'current_antardasha': {}
+        }
+        
+        # Fetch FULL astro profile for comprehensive welcome message
         try:
             # Build birth details from profile
             birth = BirthDetails(
-                dob=__import__('datetime').datetime.strptime(profile['dob'], '%Y-%m-%d').date(),
+                dob=datetime.datetime.strptime(profile['dob'], '%Y-%m-%d').date(),
                 tob=profile['tob'],
                 location=profile['location'],
                 latitude=profile.get('birth_place_lat'),
@@ -200,47 +216,92 @@ async def get_welcome_message(authorization: Optional[str] = Header(None)):
                 timezone=profile.get('birth_place_tz', 5.5)
             )
             
-            # Fetch BASIC chart info (single API call) for welcome message
-            chart_info = await vedic_api_client.fetch_basic_chart_info(birth)
+            # Fetch FULL profile (includes dasha data) for welcome message
+            # This gives us moon_sign, ascendant, AND current_mahadasha for phase insights
+            full_profile = await vedic_api_client.fetch_full_profile(birth, user_id=user_id)
             
-            if chart_info:
-                ascendant = chart_info.get('ascendant')
-                moon_sign = chart_info.get('moon_sign')
-                sun_sign = chart_info.get('sun_sign')
-                logger.info(f"Fetched basic chart for welcome: ascendant={ascendant}, moon={moon_sign}, sun={sun_sign}")
+            if full_profile:
+                # Convert AstroProfile to dict for the builder
+                if hasattr(full_profile, 'model_dump'):
+                    astro_profile = full_profile.model_dump()
+                elif hasattr(full_profile, 'dict'):
+                    astro_profile = full_profile.dict()
+                else:
+                    astro_profile = {
+                        'moon_sign': getattr(full_profile, 'moon_sign', None),
+                        'ascendant': getattr(full_profile, 'ascendant', None),
+                        'current_mahadasha': getattr(full_profile, 'current_mahadasha', {}),
+                        'current_antardasha': getattr(full_profile, 'current_antardasha', {})
+                    }
+                
+                logger.info(f"[WELCOME] Fetched full profile: moon={astro_profile.get('moon_sign')}, "
+                           f"asc={astro_profile.get('ascendant')}, "
+                           f"dasha={astro_profile.get('current_mahadasha', {}).get('planet', 'N/A')}")
         except Exception as e:
-            logger.debug(f"Could not fetch chart info for welcome message: {e}")
-            # Continue without chart data - will use defaults
+            logger.warning(f"[WELCOME] Could not fetch full astro profile: {e}")
+            # Continue with empty astro_profile - builder handles gracefully
         
-        # Log welcome generation
-        try:
-            logger.info(f"Generating welcome message for user {user_id}")
-        except Exception as e:
-            logger.debug(f"Could not log welcome event: {e}")
+        # Generate welcome message using dedicated WelcomeMessageBuilder
+        logger.info(f"[WELCOME] Building personalized welcome for user {user_id}")
+        welcome_result = await build_welcome(
+            first_name=first_name,
+            astro_profile=astro_profile,
+            signals=None  # Future: pass reading_pack signals for past theme detection
+        )
         
-        # Generate welcome message with actual kundli data
-        welcome = create_welcome_message(name, ascendant, moon_sign, sun_sign)
-        
-        # Extract the warm message text (without legacy fields)
-        welcome_message = welcome.get('message', f"Welcome, {name}! Your chart is ready.")
-        
-        # Generate suggested questions based on chart
-        suggested_questions = [
-            "What does my Sun sign reveal about my core essence?",
-            "How can I leverage my Moon sign strengths in relationships?",
-            "What career path aligns with my chart?",
-            "When is a good time for new ventures?",
-            "What should I focus on in the next 30 days?"
-        ]
+        # Generate context-aware suggested questions
+        suggested_questions = _generate_suggested_questions(astro_profile)
         
         return {
             "ok": True,
-            "welcome_message": welcome_message,
-            "suggested_questions": suggested_questions
+            "welcome_message": welcome_result['welcome_message'],
+            "suggested_questions": suggested_questions,
+            "confidence_map": welcome_result['confidence_map'],
+            "word_count": welcome_result['word_count'],
+            "sections_included": welcome_result['sections_included']
         }
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in get_welcome_message: {e}")
+        logger.error(f"Error in get_welcome_message: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+def _generate_suggested_questions(astro_profile: dict) -> list:
+    """Generate context-aware suggested questions based on astro profile."""
+    
+    # Base questions that work for everyone
+    questions = [
+        "What career path aligns with my chart?",
+        "What about my relationships?",
+        "What should I focus on right now?"
+    ]
+    
+    # Add phase-specific question if we have dasha data
+    mahadasha = astro_profile.get('current_mahadasha', {})
+    if hasattr(mahadasha, 'model_dump'):
+        mahadasha = mahadasha.model_dump()
+    
+    dasha_planet = mahadasha.get('planet', '') if mahadasha else ''
+    
+    if dasha_planet:
+        # Add a question relevant to their current dasha
+        dasha_questions = {
+            'Sun': "How can I step into more leadership this year?",
+            'Moon': "How can I better honor my emotional needs?",
+            'Mars': "Where should I channel my drive right now?",
+            'Mercury': "What skills should I develop now?",
+            'Jupiter': "What growth opportunities should I pursue?",
+            'Venus': "How can I improve my relationships?",
+            'Saturn': "What foundations should I focus on building?",
+            'Rahu': "What new directions are calling me?",
+            'Ketu': "What should I let go of?"
+        }
+        if dasha_planet in dasha_questions:
+            questions.insert(1, dasha_questions[dasha_planet])
+    
+    # Add timing question
+    questions.append("When is a good time for new ventures?")
+    
+    return questions[:5]  # Return max 5 questions
 

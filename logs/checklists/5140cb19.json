@@ -1,0 +1,18 @@
+{
+  "request_id": "5140cb19",
+  "timestamp": "2026-01-12T12:32:59.005573Z",
+  "user_input": "What should I do with my life?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 460 480" style="max-width: 100%; height: auto;">
+  <rect width="100%" height="100%" fill="#FDF5E6"/>
+  
+  <!-- Title -->
+  <text x="230" y="25" text-anchor="middle" font-family="Georgia, serif" font-size="20" fill="#8B4513" font-weight="bold">Birth Chart (Rāśi)</text>
+  <text x="230" y="45" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.8">Ascendant: Aries</text>
+  
+  <!-- Outer square -->
+  <rect x="30" y="60" width="400" height="400" fill="none" stroke="#B8860B" stroke-width="2"/>
+  
+  <!-- Diagonals -->
+  <line x1="30" y1="60" x2="430" y2="460" stroke="#B8860B" stroke-width="1.5"/>
+  <line x1="430" y1="60" x2="30" y2="460" stroke="#B8860B" stroke-width="1.5"/>
+  
+  <!-- Inner diamond -->
+  <polygon points="230,60 430,260 230,460 30,260" fill="none" stroke="#B8860B" stroke-width="1.5"/>
+  <text x="230" y="78" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">1</text>
+  <text x="120" y="78" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">2</text>
+  <text x="45" y="160" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">3</text>
+  <text x="45" y="260" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">4</text>
+  <text x="45" y="360" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">5</text>
+  <text x="120" y="442" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">6</text>
+  <text x="230" y="442" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">7</text>
+  <text x="340" y="442" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">8</text>
+  <text x="415" y="360" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">9</text>
+  <text x="415" y="260" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">10</text>
+  <text x="415" y="160" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">11</text>
+  <text x="340" y="78" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8B4513" opacity="0.6">12</text>
+  <text x="230" y="115" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-weight="bold" fill="#CD5C5C">Mo</text>
+  <text x="85" y="270" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-weight="bold" fill="#CD5C5C">Ra(R)</text>
+  <text x="130" y="405" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-weight="bold" fill="#CD5C5C">Ju(R) Sa(R)</text>
+  <text x="375" y="270" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-weight="bold" fill="#CD5C5C">Su Ve Ke(R)</text>
+  <text x="375" y="170" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-weight="bold" fill="#CD5C5C">Ma Me(R)</text>
+  <text x="230" y="255" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#228B22" font-style="italic">Asc</text>
+</svg>

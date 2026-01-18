@@ -1,0 +1,25 @@
+{
+  "request_id": "28ebbc45",
+  "timestamp": "2025-12-26T13:24:04.180740Z",
+  "user_input": "When is a good time for new ventures?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1966-01-24",
+    "tob": "08:32",
+    "location": "Bangalore, Karnataka, India",
+    "lat": 12.9716,
+    "lon": 77.5946,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

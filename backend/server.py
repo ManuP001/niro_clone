@@ -13,7 +13,7 @@ except (ImportError, AttributeError):
         def packages_distributions():
             return {}
 
-from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Header
+from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Header, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -77,6 +77,14 @@ from backend.profile import router as profile_router
 from backend.routes.astro_routes import router as astro_router
 from backend.routes.debug_routes import router as debug_router
 from backend.services.astro_database import get_astro_db
+
+# Import NIRO V2 routes and storage
+from backend.niro_v2.routes import router as niro_v2_router
+from backend.niro_v2.storage import init_niro_v2_storage, get_niro_v2_storage
+
+# Import NIRO Simplified routes and storage
+from backend.niro_simplified.routes import router as simplified_router
+from backend.niro_simplified.storage import init_simplified_storage, get_simplified_storage
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -299,25 +307,79 @@ async def compare_calculations(request: dict):
 @api_router.get("/utils/search-cities")
 async def search_cities_endpoint(query: str, max_results: int = 10):
     """
-    Search cities with autocomplete
+    Search cities with autocomplete - uses Vedic API geo-search for comprehensive coverage.
     
     Query params:
-    - query: Search query (min 3 characters)
+    - query: Search query (min 2 characters)
     - max_results: Max results to return (default 10)
     
     Returns: List of cities with lat, lon, timezone
+    
+    Data sources (in order):
+    1. Vedic API /utilities/geo-search (comprehensive worldwide coverage)
+    2. Local Indian cities database (fast fallback)
+    3. GeoNames API (international fallback)
     """
-    if len(query) < 3:
+    if len(query) < 2:
         return {"cities": []}
     
     try:
-        # Use Indian city database as primary source (fast, reliable, comprehensive)
+        # PRIMARY: Use Vedic API geo-search for comprehensive coverage
+        vedic_api_key = os.environ.get('VEDIC_API_KEY')
+        if vedic_api_key:
+            import httpx
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                params = {
+                    'api_key': vedic_api_key,
+                    'city': query,
+                    'max_rows': max_results * 2  # Get more to filter
+                }
+                
+                resp = await client.get(
+                    'https://api.vedicastroapi.com/v3-json/utilities/geo-search',
+                    params=params
+                )
+                
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if data.get('status') == 200:
+                        results = data.get('response', [])
+                        
+                        # Transform Vedic API response to our format
+                        cities = []
+                        for r in results[:max_results]:
+                            coords = r.get('coordinates', [])
+                            lat = float(coords[0]) if coords and len(coords) > 0 else None
+                            lon = float(coords[1]) if coords and len(coords) > 1 else None
+                            
+                            if lat and lon:  # Only include results with valid coordinates
+                                cities.append({
+                                    'id': f"vedic_{r.get('name', '').lower().replace(' ', '_')}",
+                                    'name': r.get('name', ''),
+                                    'country': r.get('country_name', ''),
+                                    'country_code': r.get('country', ''),
+                                    'state': r.get('full_name', '').split(', ')[1] if ', ' in r.get('full_name', '') else '',
+                                    'lat': lat,
+                                    'lon': lon,
+                                    'timezone': r.get('tzone', ['UTC'])[0] if r.get('tzone') else 'UTC',
+                                    'tz_offset': r.get('tz', 0),
+                                    'display_name': r.get('full_name', r.get('name', ''))
+                                })
+                        
+                        if cities:
+                            logger.info(f"Vedic API geo-search found {len(cities)} cities for: {query}")
+                            return {"cities": cities}
+        
+        # FALLBACK 1: Use Indian city database (fast, reliable for major cities)
         cities = indian_city_service.search_cities(query, max_results)
         
-        # If no results found in Indian database, try GeoNames for international cities
-        if not cities:
-            logger.info("No results in Indian database, trying GeoNames")
-            cities = city_service.search_cities(query, max_results)
+        if cities:
+            logger.info(f"Local Indian DB found {len(cities)} cities for: {query}")
+            return {"cities": cities}
+        
+        # FALLBACK 2: Try GeoNames for international cities
+        logger.info("No results in local database, trying GeoNames")
+        cities = city_service.search_cities(query, max_results)
         
         return {"cities": cities}
         
@@ -1326,14 +1388,195 @@ async def submit_feedback(request: FeedbackRequest):
     }
 
 
+# ============= PERSONALIZED WELCOME MESSAGE ENDPOINT =============
+
+@api_router.get("/profile/welcome")
+async def get_personalized_welcome(authorization: Optional[str] = Header(None)):
+    """
+    Get personalized welcome message based on user's astrological profile.
+    
+    Uses the Confidence-Aware Welcome Engine to generate:
+    - Personality anchor (Moon sign + Ascendant traits)
+    - Current life phase insight (Mahadasha/Antardasha)
+    
+    Requires authentication via JWT token.
+    
+    Response:
+    {
+        "ok": true,
+        "welcome_message": "Welcome, Sharad. With Moon in Gemini...",
+        "confidence_map": { "personality": "high", "past_theme": null, "current_phase": "high" },
+        "suggested_questions": ["What does my career look like?", ...]
+    }
+    """
+    try:
+        # Extract and verify JWT token
+        if not authorization:
+            return {
+                "ok": False,
+                "error": "Authentication required",
+                "welcome_message": "Welcome! Please complete your birth details to get personalized insights."
+            }
+        
+        parts = authorization.split()
+        if len(parts) != 2 or parts[0].lower() != 'bearer':
+            return {
+                "ok": False,
+                "error": "Invalid authorization format",
+                "welcome_message": "Welcome! Please complete your birth details to get personalized insights."
+            }
+        
+        token = parts[1]
+        
+        # Verify token
+        auth_service = get_auth_service()
+        payload = auth_service.verify_token(token)
+        if not payload:
+            return {
+                "ok": False,
+                "error": "Invalid token",
+                "welcome_message": "Welcome! Please complete your birth details to get personalized insights."
+            }
+        
+        user_id = payload.get('user_id')
+        user_profile = auth_service.get_profile(user_id)
+        
+        if not user_profile:
+            return {
+                "ok": False,
+                "error": "Profile not found",
+                "welcome_message": "Welcome! Please complete your birth details to get personalized insights."
+            }
+        
+        # Check if birth details are complete
+        if not user_profile.get('dob') or not user_profile.get('tob') or not user_profile.get('location'):
+            return {
+                "ok": False,
+                "error": "Incomplete birth details",
+                "welcome_message": "Welcome! Please complete your birth details to get personalized insights."
+            }
+        
+        # Fetch astrological profile
+        from backend.astro_client.vedic_api import vedic_api_client
+        from backend.astro_client.models import BirthDetails
+        from backend.conversation.welcome_builder import generate_welcome_message
+        
+        # Parse birth details
+        dob_str = user_profile.get('dob')
+        if isinstance(dob_str, str):
+            from datetime import datetime as dt
+            # Handle various date formats
+            for fmt in ['%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y']:
+                try:
+                    dob = dt.strptime(dob_str, fmt).date()
+                    break
+                except ValueError:
+                    continue
+            else:
+                dob = date.today()  # Fallback
+        else:
+            dob = dob_str
+        
+        birth = BirthDetails(
+            dob=dob,
+            tob=user_profile.get('tob', '12:00'),
+            location=user_profile.get('location', ''),
+            latitude=user_profile.get('birth_place_lat'),
+            longitude=user_profile.get('birth_place_lon'),
+            timezone=user_profile.get('birth_place_tz', 5.5)
+        )
+        
+        # Fetch full astro profile
+        try:
+            astro_profile = await vedic_api_client.fetch_full_profile(birth, user_id=user_id)
+        except Exception as e:
+            logger.error(f"Failed to fetch astro profile for welcome: {e}")
+            return {
+                "ok": False,
+                "error": f"Could not generate astrological profile: {str(e)}",
+                "welcome_message": f"Welcome, {user_profile.get('name', '')}! I'm ready to explore your questions."
+            }
+        
+        # Generate personalized welcome message using NEW Welcome Builder
+        user_name = user_profile.get('name', '').split()[0] if user_profile.get('name') else None
+        welcome_result = await generate_welcome_message(
+            first_name=user_name or "there",
+            astro_profile=astro_profile.model_dump() if hasattr(astro_profile, 'model_dump') else dict(astro_profile),
+            signals=None  # Optional signals for past theme detection
+        )
+        
+        # Generate suggested questions based on current dasha
+        suggested_questions = []
+        if astro_profile.current_mahadasha:
+            maha_planet = astro_profile.current_mahadasha.planet
+            
+            # Planet-specific question suggestions (5 questions each)
+            planet_questions = {
+                "Sun": ["How can I step into leadership roles?", "What recognition can I expect this year?", "What's my career outlook?", "How can I boost my confidence?", "What creative projects should I pursue?"],
+                "Moon": ["How can I improve my emotional well-being?", "What's the outlook for my home life?", "How can I nurture my relationships?", "What about my family dynamics?", "How can I trust my intuition more?"],
+                "Mars": ["Is this a good time for bold career moves?", "How should I channel my energy?", "What challenges should I prepare for?", "How can I be more assertive?", "What physical activities would benefit me?"],
+                "Mercury": ["What skills should I develop now?", "How's my communication outlook?", "What learning opportunities await?", "How can I improve my networking?", "What business ideas should I explore?"],
+                "Jupiter": ["What opportunities are coming my way?", "Is this good for higher education?", "How can I expand my horizons?", "What about my spiritual growth?", "How can I attract more abundance?"],
+                "Venus": ["What's my relationship outlook?", "How can I attract more abundance?", "What creative pursuits should I explore?", "How can I enhance my social life?", "What about love and romance?"],
+                "Saturn": ["What long-term goals should I focus on?", "How can I build lasting foundations?", "What discipline do I need to develop?", "How can I overcome obstacles?", "What career stability can I expect?"],
+                "Rahu": ["What unconventional paths should I explore?", "Where is my ambition leading me?", "What new experiences await?", "How can I break free from limitations?", "What foreign opportunities exist?"],
+                "Ketu": ["What should I let go of?", "How can I deepen my spiritual practice?", "What past patterns need healing?", "How can I find inner peace?", "What wisdom am I gaining?"]
+            }
+            
+            suggested_questions = planet_questions.get(maha_planet, [
+                "What does my career look like?",
+                "What's my relationship outlook?",
+                "How's my health and energy?",
+                "What opportunities are coming?",
+                "How can I grow spiritually?"
+            ])
+        else:
+            suggested_questions = [
+                "What does my career look like?",
+                "What's my relationship outlook?",
+                "How's my health and energy?",
+                "What opportunities are coming?",
+                "How can I grow spiritually?"
+            ]
+        
+        logger.info(f"Generated personalized welcome for user {user_id} with confidence: {welcome_result['confidence_map']}")
+        
+        return {
+            "ok": True,
+            "welcome_message": welcome_result['welcome_message'],
+            "confidence_map": welcome_result['confidence_map'],
+            "word_count": welcome_result['word_count'],
+            "sections_included": welcome_result['sections_included'],
+            "suggested_questions": suggested_questions
+        }
+        
+    except Exception as e:
+        logger.error(f"Error generating personalized welcome: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "ok": False,
+            "error": str(e),
+            "welcome_message": "Welcome! I'm ready to explore your astrological questions."
+        }
+
+
 # ============= KUNDLI ENDPOINT =============
 
 @api_router.get("/kundli")
-async def get_kundli(authorization: Optional[str] = Header(None)):
+async def get_kundli(
+    authorization: Optional[str] = Header(None),
+    style: Optional[str] = Query(default="north", description="Chart style: 'north' or 'south'")
+):
     """
     Get Kundli chart (birth chart) as SVG + structured data.
     
     Requires authentication via JWT token in Authorization header.
+    
+    Query Parameters:
+    - style: 'north' (default) or 'south' - Chart rendering style
+        - North Indian: Diamond layout, houses are fixed positions, signs move
+        - South Indian: Square layout, signs are fixed positions, houses move
     
     Response:
     {
@@ -1345,10 +1588,15 @@ async def get_kundli(authorization: Optional[str] = Header(None)):
             "houses": [ ... ],
             "planets": [ ... ]
         },
-        "source": { "vendor": "VedicAstroAPI", "chart_type": "birth_chart", "format": "svg" }
+        "source": { "vendor": "VedicAstroAPI", "chart_type": "birth_chart", "format": "svg", "style": "north" }
     }
     """
     try:
+        # Validate style parameter
+        chart_style = style.lower() if style else "north"
+        if chart_style not in ["north", "south"]:
+            chart_style = "north"
+        
         # Extract and verify JWT token
         if not authorization:
             raise HTTPException(status_code=401, detail="Missing authorization header")
@@ -1406,71 +1654,109 @@ async def get_kundli(authorization: Optional[str] = Header(None)):
                 "message": "Invalid birth details format"
             }
         
-        # Fetch Kundli SVG from Vedic API
+        # Fetch raw chart data from Vedic API
         from backend.astro_client.vedic_api import vedic_api_client
         
-        kundli_result = await vedic_api_client.get_kundli_svg(birth_details)
+        # Get planet-details API data
+        api_params = {
+            'dob': birth_details.dob.strftime("%d/%m/%Y"),
+            'tob': birth_details.tob,
+            'lat': birth_details.latitude or 28.6139,
+            'lon': birth_details.longitude or 77.2090,
+            'tz': birth_details.timezone,
+        }
         
-        if not kundli_result.get('ok'):
-            logger.error(f"Kundli fetch failed: {kundli_result.get('error')}")
+        try:
+            # Fetch planet details from API
+            planet_details = await vedic_api_client._get('/horoscope/planet-details', api_params.copy())
+            
+            # Use STRICT template-based renderer (Astrosage reference)
+            from backend.astro_client.kundli_normalize import normalize_kundli_data, NormalizationError, sign_num_to_name
+            from backend.astro_client.kundli_render import render_kundli_chart, RenderingError
+            
+            # Normalize the API response with STRICT validation
+            try:
+                normalized = normalize_kundli_data({'response': planet_details})
+            except NormalizationError as e:
+                logger.error(f"[KUNDLI] Normalization failed: {e}")
+                return {
+                    "ok": False,
+                    "error": "NORMALIZATION_FAILED",
+                    "message": str(e)
+                }
+            
+            # Get user name for title
+            user_name = profile_data.get('name', 'User')
+            
+            # Render SVG using STRICT template-based renderer
+            try:
+                svg = render_kundli_chart(normalized, style=chart_style, title=f"{user_name} - Kundli")
+            except RenderingError as e:
+                logger.error(f"[KUNDLI] Rendering failed: {e}")
+                return {
+                    "ok": False,
+                    "error": "RENDERING_FAILED",
+                    "message": str(e)
+                }
+            
+            # Build structured data for frontend
+            structured = {
+                "ascendant": {
+                    "sign": normalized["ascendant_sign"],
+                    "sign_num": normalized["ascendant_sign_num"],
+                    "degree": normalized["ascendant_degree"],
+                    "house": 1
+                },
+                "houses": [
+                    {
+                        "house": h["house"],
+                        "sign": h["sign"],
+                        "sign_num": h["sign_num"],
+                        "sign_code": h["sign_code"]
+                    }
+                    for h in normalized["houses"]
+                ],
+                "planets": [
+                    {
+                        "name": p["code"],
+                        "full_name": p["name"],
+                        "sign": p["sign"],
+                        "sign_num": p["sign_num"],
+                        "degree": p["degree"],
+                        "house": p["house"],
+                        "is_retrograde": p["is_retrograde"]
+                    }
+                    for p in normalized["planets"]
+                ]
+            }
+            
+            logger.info(f"[KUNDLI] session={user_id} ok=true style={chart_style} svg_bytes={len(svg)} planets={len(normalized['planets'])}")
+            
+            return {
+                "ok": True,
+                "svg": svg,
+                "profile": {
+                    "name": profile_data.get('name', 'User'),
+                    "dob": profile_data.get('dob'),
+                    "tob": profile_data.get('tob'),
+                    "location": profile_data.get('location')
+                },
+                "structured": structured,
+                "source": {
+                    "vendor": "VedicAstroAPI",
+                    "chart_type": "birth_chart",
+                    "format": "svg",
+                    "style": chart_style
+                }
+            }
+            
+        except Exception as api_error:
+            logger.error(f"Vedic API error: {api_error}")
             return {
                 "ok": False,
-                "error": kundli_result.get('error', 'KUNDLI_FETCH_FAILED'),
-                "message": "Could not load Kundli chart"
+                "error": "VEDIC_API_ERROR",
+                "message": str(api_error)
             }
-        
-        # Fetch full astro profile for structured data
-        astro_profile = await vedic_api_client.fetch_full_profile(birth_details, user_id)
-        
-        # Build structured chart data
-        houses_data = astro_profile.houses if hasattr(astro_profile, 'houses') and astro_profile.houses else []
-        planets_data = astro_profile.planets if hasattr(astro_profile, 'planets') and astro_profile.planets else []
-        
-        structured_data = {
-            "ascendant": {
-                "sign": astro_profile.ascendant or "Unknown",
-                "degree": astro_profile.ascendant_degree if hasattr(astro_profile, 'ascendant_degree') else 0.0,
-                "house": 1
-            },
-            "houses": [
-                {
-                    "house": h.house_num if hasattr(h, 'house_num') else i+1,
-                    "sign": h.sign if hasattr(h, 'sign') else "Unknown",
-                    "lord": h.sign_lord if hasattr(h, 'sign_lord') else "Unknown"
-                }
-                for i, h in enumerate(houses_data)
-            ] if houses_data else [{"house": i+1, "sign": "Unknown", "lord": "Unknown"} for i in range(12)],
-            "planets": [
-                {
-                    "name": planet.planet if hasattr(planet, 'planet') else "Unknown",
-                    "sign": planet.sign if hasattr(planet, 'sign') else "Unknown",
-                    "degree": planet.degree if hasattr(planet, 'degree') else 0.0,
-                    "house": planet.house if hasattr(planet, 'house') else 0,
-                    "retrograde": planet.is_retrograde if hasattr(planet, 'is_retrograde') else False
-                }
-                for planet in planets_data
-            ]
-        }
-        
-        # Logging
-        logger.info(f"[KUNDLI] session={user_id} ok=true svg_bytes={kundli_result.get('svg_size', 0)} planets={len(structured_data['planets'])} houses=12")
-        
-        return {
-            "ok": True,
-            "svg": kundli_result.get('svg', ''),
-            "profile": {
-                "name": profile_data.get('name', 'User'),
-                "dob": profile_data.get('dob'),
-                "tob": profile_data.get('tob'),
-                "location": profile_data.get('location')
-            },
-            "structured": structured_data,
-            "source": {
-                "vendor": kundli_result.get('vendor', 'VedicAstroAPI'),
-                "chart_type": kundli_result.get('chart_type', 'birth_chart'),
-                "format": "svg"
-            }
-        }
     
     except HTTPException:
         raise
@@ -1478,6 +1764,85 @@ async def get_kundli(authorization: Optional[str] = Header(None)):
         logger.error(f"Error in get_kundli: {e}", exc_info=True)
         logger.error(f"[KUNDLI] session=unknown ok=false error={str(e)}")
         raise HTTPException(status_code=502, detail="Failed to fetch Kundli")
+
+
+def _get_planet_full_name(abbr: str) -> str:
+    """Get full planet name from abbreviation."""
+    names = {
+        'Su': 'Sun', 'Mo': 'Moon', 'Ma': 'Mars', 'Me': 'Mercury',
+        'Ju': 'Jupiter', 'Ve': 'Venus', 'Sa': 'Saturn', 'Ra': 'Rahu', 'Ke': 'Ketu'
+    }
+    return names.get(abbr, abbr)
+
+
+# ============= DEBUG KUNDLI RENDER ENDPOINT =============
+
+@api_router.get("/debug/render_kundli")
+async def debug_render_kundli(
+    style: str = Query(default="north", description="Chart style: 'north' or 'south'"),
+    dob: str = Query(default="24/01/1986", description="Date of birth (DD/MM/YYYY)"),
+    tob: str = Query(default="06:32", description="Time of birth (HH:MM)"),
+    lat: float = Query(default=28.89, description="Latitude"),
+    lon: float = Query(default=76.57, description="Longitude"),
+    tz: float = Query(default=5.5, description="Timezone offset"),
+    name: str = Query(default="Test User", description="Name for title")
+):
+    """
+    Debug endpoint to render kundli chart directly from birth details.
+    No authentication required - for testing only.
+    
+    Returns SVG directly with content-type image/svg+xml
+    
+    Uses STRICT normalization and rendering following Astrosage reference.
+    """
+    from fastapi.responses import Response
+    import httpx
+    import os
+    
+    try:
+        from backend.astro_client.kundli_normalize import normalize_kundli_data, NormalizationError
+        from backend.astro_client.kundli_render import render_kundli_chart, RenderingError
+        
+        # Fetch from Vedic API
+        api_key = os.environ.get('VEDIC_API_KEY')
+        if not api_key:
+            return {"ok": False, "error": "VEDIC_API_KEY not configured"}
+        
+        url = 'https://api.vedicastroapi.com/v3-json/horoscope/planet-details'
+        params = {
+            'api_key': api_key,
+            'dob': dob,
+            'tob': tob,
+            'lat': str(lat),
+            'lon': str(lon),
+            'tz': str(tz),
+            'lang': 'en'
+        }
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, timeout=30)
+            api_data = response.json()
+        
+        if api_data.get('status') != 200:
+            return {"ok": False, "error": "API_ERROR", "details": api_data}
+        
+        # Normalize with STRICT validation
+        try:
+            normalized = normalize_kundli_data(api_data)
+        except NormalizationError as e:
+            return {"ok": False, "error": "NORMALIZATION_FAILED", "message": str(e)}
+        
+        # Render with STRICT validation
+        try:
+            svg = render_kundli_chart(normalized, style=style, title=f"{name} - Kundli")
+        except RenderingError as e:
+            return {"ok": False, "error": "RENDERING_FAILED", "message": str(e)}
+        
+        return Response(content=svg, media_type="image/svg+xml")
+        
+    except Exception as e:
+        logger.error(f"Debug render error: {e}", exc_info=True)
+        return {"ok": False, "error": str(e)}
 
 
 # ============= CHECKLIST & PROCESSING ENDPOINTS =============
@@ -1627,11 +1992,37 @@ async def get_checklist_report(request_id: str):
 async def init_astro_db():
     """Initialize astro database on startup"""
     try:
-        db = await get_astro_db()
-        await db.init()
+        astro_db = await get_astro_db()
+        await astro_db.init()
         logger.info("✅ Astro database initialized")
     except Exception as e:
         logger.error(f"Failed to initialize astro database: {e}")
+
+@app.on_event("startup")
+async def init_niro_v2_db():
+    """Initialize NIRO V2 MongoDB storage on startup"""
+    try:
+        if db is not None:
+            niro_storage = await init_niro_v2_storage(db)
+            app.state.niro_v2_storage = niro_storage
+            logger.info("✅ NIRO V2 storage initialized with MongoDB")
+        else:
+            logger.warning("⚠ NIRO V2 storage not initialized - MongoDB not available")
+    except Exception as e:
+        logger.error(f"Failed to initialize NIRO V2 storage: {e}")
+
+@app.on_event("startup")
+async def init_simplified_db():
+    """Initialize NIRO Simplified MongoDB storage on startup"""
+    try:
+        if db is not None:
+            simplified_storage = await init_simplified_storage(db)
+            app.state.simplified_storage = simplified_storage
+            logger.info("✅ NIRO Simplified storage initialized with MongoDB")
+        else:
+            logger.warning("⚠ NIRO Simplified storage not initialized - MongoDB not available")
+    except Exception as e:
+        logger.error(f"Failed to initialize NIRO Simplified storage: {e}")
 
 logger.info(f"Including API router (legacy): {api_router}")
 app.include_router(api_router)
@@ -1643,6 +2034,10 @@ logger.info(f"Including astro router: {astro_router}")
 app.include_router(astro_router)
 logger.info(f"Including debug router: {debug_router}")
 app.include_router(debug_router)
+logger.info(f"Including NIRO V2 router: {niro_v2_router}")
+app.include_router(niro_v2_router)
+logger.info(f"Including NIRO Simplified router: {simplified_router}")
+app.include_router(simplified_router)
 logger.info(f"✅ All routers included. Total routes: {len(app.routes)}")
 
 app.add_middleware(

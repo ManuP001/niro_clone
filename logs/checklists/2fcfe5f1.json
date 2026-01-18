@@ -1,0 +1,25 @@
+{
+  "request_id": "2fcfe5f1",
+  "timestamp": "2026-01-04T19:19:42.805908Z",
+  "user_input": "what's my relationship with my father like?",
+  "topic": "romantic_relationships",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.83333,
+    "lon": 76.66667,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

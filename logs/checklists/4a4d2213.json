@@ -1,0 +1,18 @@
+{
+  "request_id": "4a4d2213",
+  "timestamp": "2025-12-27T09:05:59.885645Z",
+  "user_input": "Tell me about romantic relationships and love in my life",
+  "topic": "romantic_relationships",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

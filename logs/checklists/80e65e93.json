@@ -1,0 +1,18 @@
+{
+  "request_id": "80e65e93",
+  "timestamp": "2025-12-25T17:44:52.436210Z",
+  "user_input": "Hello NIRO",
+  "topic": null,
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "I'd love to help! Could you tell me a bit more about what aspect of 'Hello NIRO' you'd like to explore?"
+  }
+}

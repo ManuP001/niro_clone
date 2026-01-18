@@ -1,0 +1,25 @@
+{
+  "request_id": "294bd7bf",
+  "timestamp": "2025-12-26T19:47:38.508789Z",
+  "user_input": "What are my career strengths and opportunities?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1992-11-08",
+    "tob": "18:45",
+    "location": "Bangalore",
+    "lat": 12.97,
+    "lon": 77.59,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "request_id": "03391d39",
+  "timestamp": "2025-12-26T18:54:48.415785Z",
+  "user_input": "Should I take this new opportunity?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

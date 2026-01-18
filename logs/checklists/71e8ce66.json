@@ -1,0 +1,25 @@
+{
+  "request_id": "71e8ce66",
+  "timestamp": "2025-12-26T19:50:35.005590Z",
+  "user_input": "What will happen in my career next year?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "14:30",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Service unavailable"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "request_id": "8452ab69",
+  "timestamp": "2025-12-27T11:22:32.092030Z",
+  "user_input": "How is my mother's health?",
+  "topic": "family_home",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Mumbai",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

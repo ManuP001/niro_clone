@@ -1,0 +1,25 @@
+{
+  "request_id": "3ec1d1f7",
+  "timestamp": "2025-12-26T19:52:03.403779Z",
+  "user_input": "should I start a business or a job?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "14:30",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Service unavailable"
+  }
+}

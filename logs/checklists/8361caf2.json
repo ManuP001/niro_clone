@@ -1,0 +1,25 @@
+{
+  "request_id": "8361caf2",
+  "timestamp": "2026-01-07T08:12:44.423679Z",
+  "user_input": "I want to be successful have enough money for me and my family to have luxurious life what should I do job or buisness tell me purely from my charts of personality and kundli",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1988-09-30",
+    "tob": "11:30",
+    "location": "Jaipur, Rajasthan, India",
+    "lat": 27.0,
+    "lon": 76.0,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

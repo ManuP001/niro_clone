@@ -66,9 +66,10 @@ class NiroLLM:
         focus = payload.get('focus')
         user_question = payload.get('user_question', '')
         astro_features = payload.get('astro_features', {})
+        time_context = payload.get('time_context', 'timeless')  # NEW: Get time context
         
-        system_prompt = self._build_system_prompt(mode, focus)
-        user_prompt = self._build_user_prompt(user_question, astro_features, mode, focus)
+        system_prompt = self._build_system_prompt(mode, focus, time_context)
+        user_prompt = self._build_user_prompt(user_question, astro_features, mode, focus, time_context)
         
         # Try OpenAI first (primary)
         if self.openai_key:
@@ -103,37 +104,88 @@ class NiroLLM:
         
         raise Exception("No LLM available")
     
-    def _build_system_prompt(self, mode: str, focus: Optional[str]) -> str:
-        """Build system prompt for LLM"""
-        return """You are NIRO, a wise and compassionate Vedic astrology guide.
+    def _build_system_prompt(self, mode: str, focus: Optional[str], time_context: str = 'timeless') -> str:
+        """Build system prompt for LLM with timeframe enforcement"""
+        
+        # Base system prompt
+        base_prompt = """You are NIRO, a wise and compassionate Vedic astrology guide.
 You provide insights using traditional Jyotish wisdom in a warm, accessible way.
 
-IMPORTANT: Structure your response in exactly this format:
+RESPONSE STRUCTURE (CRITICAL - follow exactly):
+1. MAIN ANSWER FIRST: Start with a direct, conversational answer to the user's question (2-3 sentences).
+2. EXPLANATION BELOW: Then provide supporting astrological reasoning.
+
+Format your response as:
 
 SUMMARY:
-[Write a 2-3 sentence overview of the main insight]
+[Direct answer to the question - 2-3 conversational sentences addressing what they asked]
 
 REASONS:
-- [First astrological reason or influence]
-- [Second astrological reason or influence]
-- [Third astrological reason or influence]
+- [Supporting astrological factor 1]
+- [Supporting astrological factor 2]
+- [Supporting astrological factor 3]
 
 REMEDIES:
-- [First practical remedy or suggestion]
-- [Second practical remedy or suggestion]
+- [Practical suggestion 1]
+- [Practical suggestion 2]
 
-Keep your language warm and encouraging. Reference planets, houses, and nakshatras."""
+Keep language warm and encouraging. Be specific about planets and houses."""
+
+        # TIMEFRAME ENFORCEMENT - Critical for quality
+        timeframe_rules = ""
+        
+        if time_context == "past":
+            timeframe_rules = """
+
+TIMEFRAME RULES (CRITICAL - PAST QUESTION):
+- This is a question about the PAST. Anchor your answer to past events/periods.
+- DO NOT reference "current dasha", "ongoing period", or "right now"
+- DO NOT use present tense for planetary influences
+- Focus on natal chart placements and past dasha periods that were active
+- Use phrases like "during that time", "in that period", "back then"
+- Reference past planetary periods, NOT current ones"""
+
+        elif time_context == "future":
+            timeframe_rules = """
+
+TIMEFRAME RULES (FUTURE QUESTION):
+- This is a question about the FUTURE. Anchor your answer to upcoming periods.
+- Reference upcoming dashas, transits, and timing windows
+- Use phrases like "in the coming months", "when [planet] enters", "the upcoming period"
+- Be specific about future timeframes when possible"""
+
+        elif time_context == "present":
+            timeframe_rules = """
+
+TIMEFRAME RULES (PRESENT QUESTION):
+- This is a question about the PRESENT/NOW.
+- Focus on current planetary influences and active dasha periods
+- Use present tense: "right now", "currently", "at this time"
+- Reference active transits and current dasha"""
+
+        return base_prompt + timeframe_rules
     
     def _build_user_prompt(
         self,
         user_question: str,
         astro_features: Dict[str, Any],
         mode: str,
-        focus: Optional[str]
+        focus: Optional[str],
+        time_context: str = 'timeless'
     ) -> str:
-        """Build user prompt with astro context"""
+        """Build user prompt with astro context and timeframe"""
+        
+        # Add timeframe context to prompt
+        timeframe_label = {
+            'past': 'PAST (about previous events/periods)',
+            'present': 'PRESENT (about current situation)',
+            'future': 'FUTURE (about upcoming events)',
+            'timeless': 'GENERAL (no specific timeframe)'
+        }.get(time_context, 'GENERAL')
+        
         prompt = f"""Mode: {mode}
 Focus: {focus or 'general'}
+Timeframe: {timeframe_label}
 User Question: {user_question}
 
 Astrological Context:
@@ -142,7 +194,8 @@ Astrological Context:
 - Current Mahadasha: {astro_features.get('mahadasha', {}).get('lord', 'N/A')}
 - Current Antardasha: {astro_features.get('antardasha', {}).get('lord', 'N/A')}
 
-Provide a structured Vedic astrology response."""
+IMPORTANT: Provide your MAIN ANSWER first, then supporting details. 
+Match your response timeframe to: {timeframe_label}"""
         return prompt
     
     def _parse_llm_response(

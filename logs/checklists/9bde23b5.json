@@ -1,0 +1,18 @@
+{
+  "request_id": "9bde23b5",
+  "timestamp": "2025-12-26T23:01:30.075571Z",
+  "user_input": "Tell me more",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_career",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Service unavailable"
+  }
+}

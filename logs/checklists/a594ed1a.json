@@ -1,0 +1,25 @@
+{
+  "request_id": "a594ed1a",
+  "timestamp": "2026-01-04T12:38:46.104495Z",
+  "user_input": "What kind of business should I do?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.83333,
+    "lon": 76.66667,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

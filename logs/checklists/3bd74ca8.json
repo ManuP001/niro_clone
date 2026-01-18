@@ -1,0 +1,25 @@
+{
+  "request_id": "3bd74ca8",
+  "timestamp": "2026-01-04T09:49:40.022615Z",
+  "user_input": "What does my Jupiter placement mean for my relationships?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1988-07-12",
+    "tob": "16:20",
+    "location": "Chennai",
+    "lat": 13.08,
+    "lon": 80.27,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

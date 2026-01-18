@@ -1,0 +1,25 @@
+{
+  "request_id": "d606f098",
+  "timestamp": "2025-12-26T21:37:21.080261Z",
+  "user_input": "How's my health looking?",
+  "topic": "health_energy",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "10:30",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

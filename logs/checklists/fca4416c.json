@@ -1,0 +1,25 @@
+{
+  "request_id": "fca4416c",
+  "timestamp": "2025-12-26T20:14:08.963048Z",
+  "user_input": "What does my career look like?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "10:30",
+    "location": "Mumbai, India",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

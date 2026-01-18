@@ -1,0 +1,25 @@
+{
+  "request_id": "3c72c9a5",
+  "timestamp": "2026-01-04T19:03:18.496040Z",
+  "user_input": "Tell me about my health",
+  "topic": "health_energy",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-06-15",
+    "tob": "11:30",
+    "location": "Delhi",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

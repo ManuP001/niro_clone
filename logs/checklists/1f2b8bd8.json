@@ -1,0 +1,25 @@
+{
+  "request_id": "1f2b8bd8",
+  "timestamp": "2026-01-07T08:35:41.839108Z",
+  "user_input": "what does my birth chart say about my children?",
+  "topic": "family_home",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1958-11-29",
+    "tob": "01:00",
+    "location": "Delhi, Delhi, India",
+    "lat": 28.65195,
+    "lon": 77.23149,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

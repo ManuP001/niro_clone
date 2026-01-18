@@ -1,0 +1,25 @@
+{
+  "request_id": "1d70188a",
+  "timestamp": "2025-12-27T12:11:52.282393Z",
+  "user_input": "how will my career evolve in this year?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1985-10-10",
+    "tob": "10:47",
+    "location": "Dehradun, Uttarakhand, India",
+    "lat": 30.3165,
+    "lon": 78.0322,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

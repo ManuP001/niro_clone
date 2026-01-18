@@ -7,13 +7,17 @@ import ChatScreen from './components/screens/ChatScreen';
 import KundliScreen from './components/screens/KundliScreen';
 import HoroscopeScreen from './components/screens/HoroscopeScreen';
 import PanchangScreen from './components/screens/PanchangScreen';
-import CompatibilityScreen from './components/screens/CompatibilityScreen';
-import ChecklistScreen from './components/screens/ChecklistScreen';
 import CandidateSignalsScreen from './components/screens/CandidateSignalsScreen';
 import BottomNav from './components/BottomNav';
 import { ChatProvider } from './context/ChatContext';
 import { getAuthToken, getCurrentUser, getUserProfile, clearAuthToken } from './utils/auth';
 import { BACKEND_URL } from './config';
+
+// NIRO V2 Imports
+import { NiroV2App } from './components/screens/v2';
+
+// NIRO Simplified V1 Imports
+import { SimplifiedApp } from './components/screens/simplified';
 
 function App() {
   const [authState, setAuthState] = useState({
@@ -25,8 +29,10 @@ function App() {
     userId: null,
   });
   const [activeScreen, setActiveScreen] = useState('home');
-  const [checklistRequestId, setChecklistRequestId] = useState(null);
-  const [candidateSignalsUserId, setCandidateSignalsUserId] = useState(null);
+  // NIRO V2: Toggle between legacy and V2 UI
+  const [useV2UI, setUseV2UI] = useState(false); // Default to Simplified
+  // NIRO Simplified V1: New simplified flow
+  const [useSimplified, setUseSimplified] = useState(true); // Default to Simplified V1
 
   // Check auth status on mount
   useEffect(() => {
@@ -135,7 +141,48 @@ function App() {
     return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // Show onboarding if profile incomplete
+  // NIRO Simplified V1.5: Skip birth details onboarding, go directly to app
+  // Only require login (phone/email), then proceed to simplified experience
+  if (useSimplified) {
+    return (
+      <ChatProvider>
+        <div className="App min-h-screen bg-gray-50 flex flex-col lg:items-center lg:justify-center lg:p-4">
+          {/* UI Version Toggle (for development) */}
+          <div className="fixed top-2 right-2 z-50 flex gap-1">
+            <button 
+              onClick={() => { setUseSimplified(true); setUseV2UI(false); }}
+              className="text-white text-xs px-2 py-1 rounded-full shadow-lg"
+              style={{ backgroundColor: '#d7b870' }}
+            >
+              V1
+            </button>
+            <button 
+              onClick={() => { setUseSimplified(false); setUseV2UI(true); }}
+              className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${useV2UI && !useSimplified ? 'bg-blue-600' : 'bg-slate-400'}`}
+            >
+              V2
+            </button>
+            <button 
+              onClick={() => { setUseSimplified(false); setUseV2UI(false); }}
+              className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${!useV2UI && !useSimplified ? 'bg-purple-600' : 'bg-slate-400'}`}
+            >
+              Old
+            </button>
+          </div>
+          
+          {/* Desktop: centered container with max width - overflow-auto for scrolling */}
+          <div className="w-full lg:max-w-md lg:h-[85vh] lg:max-h-[900px] lg:rounded-2xl lg:shadow-xl lg:overflow-auto flex-1 flex flex-col">
+            <SimplifiedApp 
+              token={authState.token} 
+              userId={authState.userId}
+            />
+          </div>
+        </div>
+      </ChatProvider>
+    );
+  }
+
+  // Show onboarding if profile incomplete (for V2 and legacy modes only)
   if (!authState.profileComplete) {
     return (
       <OnboardingScreen token={authState.token} onComplete={handleOnboardingComplete} />
@@ -144,6 +191,18 @@ function App() {
 
   // Authenticated and profile complete - show main app
   const renderScreen = () => {
+    // NIRO V2: Use new UI if enabled
+    if (useV2UI) {
+      return (
+        <NiroV2App 
+          token={authState.token} 
+          userId={authState.userId}
+          existingChat={() => setActiveScreen('chat')}
+        />
+      );
+    }
+    
+    // Legacy UI
     switch (activeScreen) {
       case 'home':
         return <HomeScreen onNavigate={setActiveScreen} />;
@@ -155,26 +214,9 @@ function App() {
         return <HoroscopeScreen />;
       case 'panchang':
         return <PanchangScreen />;
-      case 'compatibility':
-        return <CompatibilityScreen 
-          onViewChecklist={(requestId) => {
-            setChecklistRequestId(requestId);
-            setActiveScreen('checklist');
-          }}
-          onViewCandidateSignals={(userId) => {
-            setCandidateSignalsUserId(userId);
-            setActiveScreen('candidate-signals');
-          }}
-        />;
-      case 'checklist':
-        return <ChecklistScreen 
-          requestId={checklistRequestId} 
-          onBack={() => setActiveScreen('compatibility')} 
-        />;
-      case 'candidate-signals':
+      case 'signals':
         return <CandidateSignalsScreen 
-          userId={candidateSignalsUserId} 
-          onBack={() => setActiveScreen('compatibility')} 
+          userId={authState.userId}
         />;
       default:
         return <HomeScreen onNavigate={setActiveScreen} />;
@@ -184,13 +226,38 @@ function App() {
   return (
     <ChatProvider>
       <div className="App min-h-screen bg-gray-50 flex flex-col lg:items-center lg:justify-center lg:p-4">
+        {/* UI Version Toggle (for development) */}
+        <div className="fixed top-2 right-2 z-50 flex gap-1">
+          <button 
+            onClick={() => { setUseSimplified(true); setUseV2UI(false); }}
+            className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${useSimplified ? 'bg-emerald-600' : 'bg-slate-400'}`}
+          >
+            V1
+          </button>
+          <button 
+            onClick={() => { setUseSimplified(false); setUseV2UI(true); }}
+            className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${useV2UI && !useSimplified ? 'bg-blue-600' : 'bg-slate-400'}`}
+          >
+            V2
+          </button>
+          <button 
+            onClick={() => { setUseSimplified(false); setUseV2UI(false); }}
+            className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${!useV2UI && !useSimplified ? 'bg-purple-600' : 'bg-slate-400'}`}
+          >
+            Old
+          </button>
+        </div>
+        
         {/* Desktop: centered container with max width */}
         <div className="w-full h-screen lg:h-auto lg:max-w-[840px] lg:rounded-lg lg:shadow-xl lg:bg-white flex flex-col lg:min-h-screen">
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto">
+            {/* Add padding-bottom for fixed bottom nav on mobile */}
+            <div className="flex-1 overflow-y-auto pb-20 lg:pb-0">
               {renderScreen()}
             </div>
-            <BottomNav activeScreen={activeScreen} onNavigate={setActiveScreen} onLogout={handleLogout} />
+            {!useV2UI && !useSimplified && (
+              <BottomNav activeScreen={activeScreen} onNavigate={setActiveScreen} onLogout={handleLogout} />
+            )}
           </div>
         </div>
       </div>

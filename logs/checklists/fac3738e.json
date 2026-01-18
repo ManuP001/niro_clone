@@ -1,0 +1,25 @@
+{
+  "request_id": "fac3738e",
+  "timestamp": "2025-12-27T11:34:47.190057Z",
+  "user_input": "What does my chart say about my mother?",
+  "topic": "family_home",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1978-11-03",
+    "tob": "23:45",
+    "location": "Chennai",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

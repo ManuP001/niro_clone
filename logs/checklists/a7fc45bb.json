@@ -1,0 +1,18 @@
+{
+  "request_id": "a7fc45bb",
+  "timestamp": "2025-12-27T09:06:17.489532Z",
+  "user_input": "Tell me more",
+  "topic": "money",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_money",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "request_id": "017b57f2",
+  "timestamp": "2025-12-26T21:41:34.160963Z",
+  "user_input": "How do I login to the app?",
+  "topic": "general",
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

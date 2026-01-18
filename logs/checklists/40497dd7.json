@@ -1,0 +1,25 @@
+{
+  "request_id": "40497dd7",
+  "timestamp": "2026-01-04T09:58:55.838499Z",
+  "user_input": "Yes, please continue with: How do you feel about the direction your career is heading right now?",
+  "topic": "daily_guidance",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "14:30",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

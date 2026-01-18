@@ -1,0 +1,25 @@
+{
+  "request_id": "ea205078",
+  "timestamp": "2025-12-27T11:23:15.527146Z",
+  "user_input": "What opportunities await me professionally?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1992-07-15",
+    "tob": "14:30",
+    "location": "Delhi",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

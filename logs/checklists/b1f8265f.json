@@ -1,0 +1,25 @@
+{
+  "request_id": "b1f8265f",
+  "timestamp": "2025-12-27T09:03:46.726620Z",
+  "user_input": "What will happen in my career next year? When should I make a move?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1991-04-18",
+    "tob": "09:45",
+    "location": "Hyderabad",
+    "lat": 17.39,
+    "lon": 78.49,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

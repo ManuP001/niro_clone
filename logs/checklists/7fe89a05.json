@@ -1,0 +1,25 @@
+{
+  "request_id": "7fe89a05",
+  "timestamp": "2026-01-17T07:35:04.091304Z",
+  "user_input": "should i shift to goa?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1993-05-18",
+    "tob": "02:59",
+    "location": "Hanumangarh, Rajasthan, India",
+    "lat": 29.11,
+    "lon": 74.6,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

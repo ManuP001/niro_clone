@@ -1,0 +1,18 @@
+{
+  "request_id": "77e71f1b",
+  "timestamp": "2025-12-26T22:42:56.126239Z",
+  "user_input": "Tell me about my career prospects",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": "focus_career",
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

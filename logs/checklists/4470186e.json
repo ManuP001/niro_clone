@@ -1,0 +1,25 @@
+{
+  "request_id": "4470186e",
+  "timestamp": "2025-12-26T21:45:49.227203Z",
+  "user_input": "Tell me about my relationship with my mother",
+  "topic": "romantic_relationships",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-01-15",
+    "tob": "10:30",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

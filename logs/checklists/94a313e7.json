@@ -1,0 +1,25 @@
+{
+  "request_id": "94a313e7",
+  "timestamp": "2025-12-27T09:05:07.140508Z",
+  "user_input": "Yes, please continue with: What kind of career or industry are you currently exploring?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "14:30",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

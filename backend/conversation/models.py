@@ -51,6 +51,7 @@ class ConversationState(BaseModel):
     last_ai_question: Optional[str] = Field(None, description="Last question asked by AI")
     last_user_intent: Optional[str] = Field(None, description="Last detected user intent")
     last_ai_response_id: Optional[str] = Field(None, description="ID of last AI response for feedback")
+    last_used_planets: List[str] = Field(default_factory=list, description="Planets used in last answer for diversity")
 
     class Config:
         use_enum_values = True
@@ -65,13 +66,12 @@ class SuggestedAction(BaseModel):
 class TrustDriver(BaseModel):
     """Human-readable driver for Trust Widget"""
     label: str = Field(..., description="Human-readable label (e.g., 'Moon phase influence')")
-    impact: Optional[str] = Field(None, description="Brief impact description")
+    type: Optional[str] = Field(None, description="Type of driver: dasha, transit, yoga, house, reason")
 
 
 class TrustWidget(BaseModel):
-    """Trust Widget data for 'Why this answer' section"""
-    drivers: List[TrustDriver] = Field(default_factory=list, description="Top 2-3 human-readable drivers")
-    confidence: str = Field(default="Medium", description="Confidence level: Low/Medium/High")
+    """Trust Widget data for 'Why this answer' section - simplified, no confidence"""
+    drivers: List[TrustDriver] = Field(default_factory=list, description="Top 2-4 human-readable drivers")
     time_window: Optional[str] = Field(None, description="Time window chip if available")
 
 

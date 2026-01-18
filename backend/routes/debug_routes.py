@@ -3,6 +3,8 @@ Debug endpoints for pipeline observability.
 
 Powers the Match → Checklist tab.
 Shows complete execution trace with no guessing.
+
+Also includes memory debug endpoints for conversation memory system.
 """
 
 import logging
@@ -12,6 +14,7 @@ from datetime import datetime
 
 from backend.models.pipeline_models import DebugPipelineTraceResponse
 from backend.services.astro_database import get_astro_db
+from backend.memory import get_memory_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/debug", tags=["debug"])
@@ -180,23 +183,50 @@ async def get_latest_candidate_signals(
     
     Shows ALL candidate signals considered before filtering,
     useful for understanding why certain signals were kept/dropped.
-    """
-    # Use from query or JWT
-    if not user_id:
-        user_id = None  # Will get latest regardless of user
     
+    Checks in-memory cache first, then falls back to database.
+    """
+    # First try in-memory cache (faster, most recent)
+    from backend.astro_client.reading_pack import _candidate_signals_cache
+    
+    if _candidate_signals_cache:
+        # Get the most recent entry from cache
+        latest_key = max(_candidate_signals_cache.keys(), 
+                        key=lambda k: _candidate_signals_cache[k].get('timestamp', ''))
+        cache_data = _candidate_signals_cache[latest_key]
+        
+        # If user_id specified, filter
+        if user_id and cache_data.get('user_id') != user_id:
+            # Try database for specific user
+            db = await get_astro_db()
+            debug_data = await db.get_latest_candidate_signals_debug(user_id)
+            if debug_data:
+                return {
+                    "data": debug_data,
+                    "retrieved_at": datetime.utcnow().isoformat(),
+                    "source": "database"
+                }
+        else:
+            return {
+                "data": cache_data,
+                "retrieved_at": datetime.utcnow().isoformat(),
+                "source": "cache"
+            }
+    
+    # Fall back to database
     db = await get_astro_db()
     debug_data = await db.get_latest_candidate_signals_debug(user_id)
     
     if not debug_data:
         raise HTTPException(
             status_code=404,
-            detail="No candidate signals debug data found"
+            detail="No candidate signals debug data found. Ask a question in chat first."
         )
     
     return {
         "data": debug_data,
-        "retrieved_at": datetime.utcnow().isoformat()
+        "retrieved_at": datetime.utcnow().isoformat(),
+        "source": "database"
     }
 
 
@@ -220,5 +250,167 @@ async def get_candidate_signals_by_run(
     return {
         "data": debug_data,
         "retrieved_at": datetime.utcnow().isoformat()
+    }
+
+
+# ============================================================================
+# MEMORY DEBUG ENDPOINTS
+# ============================================================================
+
+@router.get("/memory/{user_id}")
+async def get_user_memory(
+    user_id: str,
+    session_id: Optional[str] = Query(None),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Get memory state for a user.
+    
+    Returns:
+    - user_memory: Long-term user profile memory (stable traits, facts)
+    - conversation_state: Current session state (if session_id provided)
+    - conversation_summary: Rolling summary (if session_id provided)
+    
+    Use this to debug:
+    - What facts/traits the system remembers about a user
+    - What's being avoided in responses (avoid_repeating)
+    - Current conversation context
+    """
+    memory_service = get_memory_service()
+    debug_info = memory_service.get_debug_info(user_id, session_id)
+    
+    if not debug_info.get('user_memory'):
+        # Create empty memory if not exists
+        debug_info['user_memory'] = {
+            "user_id": user_id,
+            "birth_profile_complete": False,
+            "astro_profile_summary": [],
+            "high_confidence_facts": [],
+            "low_confidence_notes": [],
+            "explored_topics": [],
+            "created_at": None,
+            "last_updated_at": None
+        }
+    
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "session_id": session_id,
+        "memory": debug_info,
+        "retrieved_at": datetime.utcnow().isoformat()
+    }
+
+
+@router.get("/memory/{user_id}/context")
+async def get_memory_context(
+    user_id: str,
+    session_id: str = Query(..., description="Session ID to load context for"),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Get the combined MemoryContext that gets passed to the pipeline.
+    
+    This shows exactly what context is being injected into:
+    1. Signal scoring (for repetition penalty)
+    2. LLM prompt (for avoiding repeated conclusions)
+    
+    Useful for understanding why certain responses were generated.
+    """
+    memory_service = get_memory_service()
+    context = memory_service.load_memory_context(user_id, session_id)
+    
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "session_id": session_id,
+        "context": context.to_dict(),
+        "context_for_prompt": context.get_context_for_prompt(),
+        "retrieved_at": datetime.utcnow().isoformat()
+    }
+
+
+@router.get("/memory/{user_id}/sessions")
+async def get_user_sessions(
+    user_id: str,
+    limit: int = Query(5, ge=1, le=20),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Get recent session IDs for a user.
+    
+    Useful for finding session_id to query conversation state.
+    """
+    from backend.memory import get_memory_store
+    store = get_memory_store()
+    sessions = store.get_recent_sessions(user_id, limit)
+    
+    return {
+        "ok": True,
+        "user_id": user_id,
+        "sessions": sessions,
+        "count": len(sessions),
+        "retrieved_at": datetime.utcnow().isoformat()
+    }
+
+
+@router.delete("/memory/{user_id}")
+async def reset_user_memory(
+    user_id: str,
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Reset ALL memory for a user.
+    
+    This clears:
+    - User profile memory (traits, facts)
+    - All conversation states
+    - All conversation summaries
+    
+    Use with caution - this is destructive!
+    """
+    memory_service = get_memory_service()
+    success = memory_service.reset_user_memory(user_id)
+    
+    if not success:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to reset user memory"
+        )
+    
+    return {
+        "ok": True,
+        "message": f"All memory reset for user {user_id}",
+        "reset_at": datetime.utcnow().isoformat()
+    }
+
+
+@router.delete("/memory/{user_id}/session/{session_id}")
+async def reset_session_memory(
+    user_id: str,
+    session_id: str,
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Reset memory for a specific session.
+    
+    This clears:
+    - Conversation state for the session
+    - Conversation summary for the session
+    
+    User profile memory is preserved.
+    """
+    memory_service = get_memory_service()
+    success = memory_service.reset_session_memory(session_id, user_id)
+    
+    if not success:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to reset session memory"
+        )
+    
+    return {
+        "ok": True,
+        "message": f"Session memory reset for session {session_id}",
+        "reset_at": datetime.utcnow().isoformat()
     }
 

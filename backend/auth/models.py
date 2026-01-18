@@ -40,6 +40,8 @@ class UserProfile(BaseModel):
     birth_place_lat: Optional[float] = None
     birth_place_lon: Optional[float] = None
     birth_place_tz: Optional[float] = 5.5  # Default to IST
+    gender: Optional[str] = None  # male, female, other
+    marital_status: Optional[str] = None  # single, married, other
     profile_complete: bool = True
 
 
@@ -52,6 +54,8 @@ class UserProfileRequest(BaseModel):
     birth_place_lat: Optional[float] = None
     birth_place_lon: Optional[float] = None
     birth_place_tz: Optional[float] = 5.5
+    gender: Optional[str] = None  # male, female, other
+    marital_status: Optional[str] = None  # single, married, other
 
 
 class UserResponse(BaseModel):

@@ -1,0 +1,18 @@
+{
+  "request_id": "a746fcda",
+  "timestamp": "2025-12-26T21:40:15.311772Z",
+  "user_input": "What does the future hold for me?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

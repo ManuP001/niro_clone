@@ -173,6 +173,299 @@ def generate_clarifying_options(
     return options
 
 
+# Topic-specific impact descriptions - comprehensive for ALL planets
+TOPIC_IMPACTS = {
+    'career': {
+        'Jupiter': 'brings growth opportunities, mentorship & expansion in your profession',
+        'Venus': 'enhances workplace harmony, creativity & professional relationships',
+        'Saturn': 'demands discipline but rewards persistence with lasting career gains',
+        'Mars': 'drives ambition and competitive edge in professional pursuits',
+        'Mercury': 'sharpens communication skills & business acumen',
+        'Sun': 'boosts leadership potential & recognition at work',
+        'Moon': 'influences work-life balance & emotional fulfillment in career',
+        'Rahu': 'creates unconventional career opportunities & sudden breakthroughs',
+        'Ketu': 'encourages detachment from material success, spiritual career paths'
+    },
+    'relationship': {
+        'Jupiter': 'expands relationship possibilities & brings wisdom to partnerships',
+        'Venus': 'heightens romance, attraction & harmony in relationships',
+        'Saturn': 'brings commitment, loyalty & long-term relationship stability',
+        'Mars': 'adds passion but may create conflicts if unchecked',
+        'Mercury': 'improves communication & understanding with partners',
+        'Sun': 'affects ego dynamics & mutual respect in relationships',
+        'Moon': 'deepens emotional bonding & nurturing in partnerships',
+        'Rahu': 'may bring intense, unconventional relationship experiences',
+        'Ketu': 'encourages spiritual connection over material attachment'
+    },
+    'health': {
+        'Jupiter': 'supports overall vitality & recovery from illness',
+        'Venus': 'influences reproductive health & overall wellness',
+        'Saturn': 'demands attention to chronic conditions & bone health',
+        'Mars': 'affects energy levels, blood & inflammatory conditions',
+        'Mercury': 'influences nervous system & mental well-being',
+        'Sun': 'core vitality, heart health & immune strength',
+        'Moon': 'emotional health, fluid balance & digestive wellness',
+        'Rahu': 'may create mysterious ailments, needs careful diagnosis',
+        'Ketu': 'spiritual healing, but watch for unexplained symptoms'
+    },
+    'finance': {
+        'Jupiter': 'opens doors for wealth growth & wise investments',
+        'Venus': 'attracts luxury, comforts & gains through partnerships',
+        'Saturn': 'slow but steady wealth building through hard work',
+        'Mars': 'aggressive financial moves, real estate opportunities',
+        'Mercury': 'gains through business, trading & intellectual work',
+        'Sun': 'income from government, authority positions',
+        'Moon': 'fluctuating finances, gains through public & liquids',
+        'Rahu': 'sudden gains or losses, speculative opportunities',
+        'Ketu': 'detachment from wealth, spiritual over material gains'
+    },
+    'family': {
+        'Jupiter': 'brings blessings, harmony & growth to family matters',
+        'Venus': 'enhances domestic happiness, comfort & family bonds',
+        'Saturn': 'teaches responsibility & creates lasting family structures',
+        'Mars': 'energizes home projects but watch for family tensions',
+        'Mercury': 'improves family communication & sibling relationships',
+        'Sun': 'affects father figures & authority dynamics at home',
+        'Moon': 'deepens emotional connection, especially with mother',
+        'Rahu': 'may bring unexpected changes or unconventional family situations',
+        'Ketu': 'encourages letting go of family attachments, ancestral healing'
+    },
+    'spiritual': {
+        'Jupiter': 'expands spiritual wisdom, brings teachers & higher learning',
+        'Venus': 'opens doors to devotion, artistic spirituality & inner beauty',
+        'Saturn': 'deepens spiritual discipline & karmic understanding',
+        'Mars': 'energizes spiritual practices & drives transformation',
+        'Mercury': 'facilitates spiritual study & metaphysical understanding',
+        'Sun': 'illuminates soul purpose & authentic self-expression',
+        'Moon': 'deepens intuition, meditation & emotional spirituality',
+        'Rahu': 'creates intense spiritual seeking & mystical experiences',
+        'Ketu': 'accelerates liberation, past-life wisdom & enlightenment'
+    },
+    'travel': {
+        'Jupiter': 'opens opportunities for meaningful journeys & foreign connections',
+        'Venus': 'attracts pleasant travel experiences & beautiful destinations',
+        'Saturn': 'may delay travel but brings structured, purposeful journeys',
+        'Mars': 'energizes adventurous travel & quick movements',
+        'Mercury': 'facilitates business travel & communication during journeys',
+        'Sun': 'brings travel for recognition, government or leadership purposes',
+        'Moon': 'influences emotional journeys & travel to water destinations',
+        'Rahu': 'creates sudden travel opportunities & foreign adventures',
+        'Ketu': 'encourages pilgrimages & spiritually significant journeys'
+    },
+    'education': {
+        'Jupiter': 'expands learning opportunities & brings wise teachers',
+        'Venus': 'enhances artistic learning & creative studies',
+        'Saturn': 'demands discipline but rewards with deep, lasting knowledge',
+        'Mars': 'drives competitive academic pursuits & technical learning',
+        'Mercury': 'sharpens intellect, memory & communication skills',
+        'Sun': 'boosts confidence in studies & leadership in academia',
+        'Moon': 'affects emotional engagement with learning & intuitive knowledge',
+        'Rahu': 'creates interest in unconventional subjects & foreign education',
+        'Ketu': 'encourages spiritual knowledge & letting go of academic ego'
+    },
+    'general': {
+        'Jupiter': 'brings expansion, wisdom & opportunities for growth in this area',
+        'Venus': 'enhances harmony, pleasure & positive connections',
+        'Saturn': 'brings lessons, structure & long-term development',
+        'Mars': 'energizes action, courage & drives forward momentum',
+        'Mercury': 'sharpens thinking, communication & decision-making',
+        'Sun': 'illuminates your path & boosts confidence',
+        'Moon': 'influences emotions, intuition & inner responses',
+        'Rahu': 'creates intensity, ambition & unconventional opportunities',
+        'Ketu': 'encourages release, spiritual insight & transcendence'
+    }
+}
+
+HOUSE_MEANINGS = {
+    1: "self & personality", 2: "wealth & speech", 3: "courage & siblings",
+    4: "home & mother", 5: "creativity & children", 6: "health & enemies",
+    7: "partnerships & marriage", 8: "transformation", 9: "luck & wisdom",
+    10: "career & status", 11: "gains & aspirations", 12: "spirituality & losses"
+}
+
+TOPIC_DISPLAY = {
+    'career': 'career', 'relationship': 'relationships', 
+    'health': 'health', 'finance': 'finances',
+    'family': 'family matters', 'spiritual': 'spiritual journey',
+    'travel': 'travel plans', 'education': 'learning',
+    'general': 'life path'
+}
+
+
+def _build_trust_widget_from_drivers(
+    drivers: List[Dict[str, Any]],
+    topic_normalized: str,
+    timing_windows: List[Dict[str, Any]],
+    time_context: str
+) -> Dict[str, Any]:
+    """
+    Build Trust Widget from pre-selected drivers (from reading_pack).
+    
+    ROLE ENFORCEMENT: Only shows signals with roles:
+    - TOPIC_DRIVER (primary)
+    - TIME_DRIVER (timing context)
+    - BASELINE_CONTEXT (optional, max 1)
+    
+    NEW: Includes topic_tag per driver for multi-topic questions.
+    
+    Excludes:
+    - planet="Unknown" or "Mixed"
+    - role="NOISE"
+    """
+    widget_drivers = []
+    seen_planets = set()
+    baseline_count = 0
+    
+    current_impacts = TOPIC_IMPACTS.get(topic_normalized, TOPIC_IMPACTS['general'])
+    topic_display = TOPIC_DISPLAY.get(topic_normalized, 'life path')
+    
+    # Topic tag display labels
+    topic_tag_labels = {
+        'career': 'Career',
+        'health_energy': 'Health',
+        'health': 'Health',
+        'romantic_relationships': 'Relationships',
+        'relationship': 'Relationships',
+        'marriage_partnership': 'Marriage',
+        'money': 'Finance',
+        'finance': 'Finance',
+        'family_home': 'Family',
+        'family': 'Family',
+        'learning_education': 'Education',
+        'education': 'Education',
+        'travel_relocation': 'Travel',
+        'travel': 'Travel',
+        'spirituality': 'Spiritual',
+        'self_psychology': 'Self',
+        'general': 'General',
+    }
+    
+    # Valid roles for Trust Widget
+    valid_roles = {'TOPIC_DRIVER', 'TIME_DRIVER', 'BASELINE_CONTEXT'}
+    
+    for signal in drivers[:4]:  # Check up to 4, show max 3
+        if len(widget_drivers) >= 3:
+            break
+            
+        planet = signal.get('planet', signal.get('_planet', ''))
+        sig_type = signal.get('type', '')
+        house = signal.get('house')
+        claim = signal.get('claim', '')
+        polarity = signal.get('polarity', 'mixed')
+        evidence = signal.get('evidence', {})
+        role = signal.get('role', 'NOISE')
+        topic_tag = signal.get('topic_tag', topic_normalized)  # NEW: Get topic tag
+        
+        # ROLE FILTER: Skip NOISE and invalid roles
+        if role not in valid_roles:
+            continue
+        
+        # PLANET FILTER: Skip Unknown/Mixed planets
+        if planet in ('Unknown', 'Mixed', ''):
+            continue
+        
+        # Limit BASELINE_CONTEXT to 1
+        if role == 'BASELINE_CONTEXT':
+            if baseline_count >= 1:
+                continue
+            baseline_count += 1
+        
+        # Skip duplicate planets
+        if planet in seen_planets:
+            continue
+        
+        # Get display label for topic tag
+        topic_label = topic_tag_labels.get(topic_tag, topic_tag.replace('_', ' ').title())
+        
+        # Build driver label based on signal type
+        if sig_type == 'dasha':
+            period_type = 'Mahadasha' if 'Mahadasha' in claim else 'Antardasha'
+            impact = current_impacts.get(planet, f'influences your {topic_display} direction')
+            widget_drivers.append({
+                "label": f"{planet} {period_type} active — {impact}",
+                "type": "dasha",
+                "role": role,
+                "topic_tag": topic_label  # NEW: Include topic tag
+            })
+            seen_planets.add(planet)
+                
+        elif sig_type == 'transit':
+            house_desc = f"transiting your {house}th house" if house else "in transit"
+            impact = current_impacts.get(planet, f'affecting your {topic_display}')
+            widget_drivers.append({
+                "label": f"{planet} {house_desc} — {impact}",
+                "type": "transit",
+                "role": role,
+                "topic_tag": topic_label  # NEW: Include topic tag
+            })
+            seen_planets.add(planet)
+                
+        elif sig_type == 'planet_position':
+            house_num = evidence.get('house') if isinstance(evidence, dict) else house
+            # Fallback to signal's house attribute
+            if not house_num:
+                house_num = house
+            is_retrograde = evidence.get('retrograde', False) if isinstance(evidence, dict) else False
+            
+            if house_num:
+                house_meaning = HOUSE_MEANINGS.get(int(house_num), f"{house_num}th house")
+                impact = current_impacts.get(planet, f'influences your {topic_display}')
+                retro_note = " (retrograde)" if is_retrograde else ""
+                widget_drivers.append({
+                    "label": f"{planet} in {house_meaning}{retro_note} — {impact}",
+                    "type": "planet_position",
+                    "role": role,
+                    "topic_tag": topic_label  # NEW: Include topic tag
+                })
+                seen_planets.add(planet)
+            else:
+                # No house info but still valid planet position
+                impact = current_impacts.get(planet, f'influences your {topic_display}')
+                widget_drivers.append({
+                    "label": f"{planet} in your chart — {impact}",
+                    "type": "planet_position",
+                    "role": role,
+                    "topic_tag": topic_label  # NEW: Include topic tag
+                })
+                seen_planets.add(planet)
+                    
+        elif sig_type == 'yoga':
+            yoga_name = claim or "Beneficial yoga"
+            topic_label = topic_tag_labels.get(topic_tag, topic_tag.replace('_', ' ').title())
+            widget_drivers.append({
+                "label": f"{yoga_name} — enhances your chart's positive potential",
+                "type": "yoga",
+                "role": role,
+                "topic_tag": topic_label  # NEW: Include topic tag
+            })
+            
+        elif sig_type in ('planet_strength', 'rule'):
+            topic_label = topic_tag_labels.get(topic_tag, topic_tag.replace('_', ' ').title())
+            if house:
+                house_meaning = HOUSE_MEANINGS.get(int(house), f"{house}th house matters")
+                polarity_word = "strengthens" if polarity == 'supportive' else "challenges"
+                widget_drivers.append({
+                    "label": f"{house}th house ({house_meaning}) — {polarity_word} this area",
+                    "type": "house",
+                    "role": role,
+                    "topic_tag": topic_label  # NEW: Include topic tag
+                })
+    
+    # Extract time window (skip for past context)
+    time_window = None
+    if time_context != "past" and timing_windows:
+        first_window = timing_windows[0]
+        period = first_window.get('period', '')
+        nature = first_window.get('nature', '')
+        if period and 'ongoing' not in period.lower():
+            time_window = f"{period}" + (f" ({nature})" if nature else "")
+    
+    return {
+        "drivers": widget_drivers[:3],  # Max 3 drivers
+        "time_window": time_window
+    }
+
+
 def generate_next_step_chips(
     current_topic: Optional[str],
     last_ai_question: Optional[str],
@@ -250,92 +543,92 @@ def build_trust_widget(
     reasons: List[str],
     timing_windows: List[Dict[str, Any]],
     signal_scores: List[float],
-    time_context: str = "timeless"
+    time_context: str = "timeless",
+    selected_signals: List[Dict[str, Any]] = None,
+    topic: str = None,
+    drivers_from_pack: List[Dict[str, Any]] = None,
+    is_astro_intent: bool = True
 ) -> Dict[str, Any]:
     """
-    Build Trust Widget data from raw reasons.
+    Build Trust Widget data - uses EXACTLY the drivers from reading_pack.
+    
+    IMPORTANT: For non-astro intents, returns empty/hidden widget.
+    For astro intents, uses the pre-selected drivers from the signal pipeline.
     
     Args:
-        reasons: Raw reasons list (may contain S1, S2 labels)
+        reasons: Raw reasons list from LLM response (fallback only)
         timing_windows: Timing window data
-        signal_scores: Signal confidence scores
+        signal_scores: Signal scores (kept for compatibility)
         time_context: Time context ("past", "present", "future", "timeless")
+        selected_signals: List of selected signals (deprecated, use drivers_from_pack)
+        topic: Current topic (career, relationship, health, etc.)
+        drivers_from_pack: Pre-selected drivers from reading_pack (NEW - preferred)
+        is_astro_intent: Whether this is an astrology question (NEW)
         
     Returns:
-        Trust Widget dict with drivers, confidence, and time_window
+        Trust Widget dict with detailed drivers and time_window
+        For non-astro intents: returns {"drivers": [], "time_window": None}
     """
-    # Clean reasons - remove S1, S2 labels and make human-readable
-    drivers = []
-    for reason in reasons[:3]:  # Top 3 only
-        # Remove signal IDs like [S1], [S2]
-        clean_reason = re.sub(r'\[S\d+\]\s*', '', reason).strip()
-        
-        # Split on → to get label and impact
-        if '→' in clean_reason:
-            parts = clean_reason.split('→', 1)
-            label = parts[0].strip()
-            impact = parts[1].strip() if len(parts) > 1 else None
-        else:
-            label = clean_reason
-            impact = None
-        
-        # Make more human-readable
-        label = humanize_astrological_term(label)
-        
-        if label:
-            drivers.append({
-                "label": label,
-                "impact": impact
-            })
+    # NON-ASTRO INTENT: Return empty trust widget
+    if not is_astro_intent:
+        return {
+            "drivers": [],
+            "time_window": None,
+            "hidden": True
+        }
     
-    # Calculate confidence based on signal scores
-    # Adjusted thresholds based on actual signal scoring ranges (0.45-0.70 typical)
-    if signal_scores:
-        avg_score = sum(signal_scores) / len(signal_scores)
-        num_signals = len(signal_scores)
-        
-        # More signals = higher confidence
-        # Adjust thresholds: most scores are in 0.50-0.70 range
-        if avg_score >= 0.65 or (avg_score >= 0.55 and num_signals >= 4):
-            confidence = "High"
-        elif avg_score >= 0.50 or num_signals >= 3:
-            confidence = "Medium"
-        else:
-            confidence = "Low"
+    # Normalize topic names
+    topic_normalized = topic.lower() if topic else ''
+    
+    if 'relationship' in topic_normalized or 'romantic' in topic_normalized or 'love' in topic_normalized or 'marriage' in topic_normalized:
+        topic_normalized = 'relationship'
+    elif 'career' in topic_normalized or 'job' in topic_normalized or 'work' in topic_normalized or 'business' in topic_normalized:
+        topic_normalized = 'career'
+    elif 'health' in topic_normalized or 'wellness' in topic_normalized or 'energy' in topic_normalized:
+        topic_normalized = 'health'
+    elif 'finance' in topic_normalized or 'money' in topic_normalized or 'wealth' in topic_normalized:
+        topic_normalized = 'finance'
+    elif 'family' in topic_normalized or 'home' in topic_normalized:
+        topic_normalized = 'family'
+    elif 'spirit' in topic_normalized or 'soul' in topic_normalized:
+        topic_normalized = 'spiritual'
+    elif 'travel' in topic_normalized or 'relocation' in topic_normalized:
+        topic_normalized = 'travel'
+    elif 'education' in topic_normalized or 'learning' in topic_normalized:
+        topic_normalized = 'education'
     else:
-        confidence = "Low"  # No signals = low confidence
+        topic_normalized = 'general'
     
-    # Extract time window based on time_context
+    # USE DRIVERS FROM READING PACK (preferred path)
+    if drivers_from_pack and len(drivers_from_pack) > 0:
+        return _build_trust_widget_from_drivers(drivers_from_pack, topic_normalized, timing_windows, time_context)
+    
+    # Fallback to selected_signals if drivers_from_pack not provided
+    if selected_signals:
+        return _build_trust_widget_from_drivers(selected_signals[:3], topic_normalized, timing_windows, time_context)
+    
+    # Ultimate fallback - build from LLM reasons
+    drivers = []
+    if reasons:
+        for reason in reasons[:3]:
+            clean_reason = re.sub(r'\[S\d+\]\s*', '', reason).strip()
+            if clean_reason and len(clean_reason) > 10:
+                drivers.append({
+                    "label": humanize_astrological_term(clean_reason),
+                    "type": "reason"
+                })
+    
+    # Extract time window
     time_window = None
-    
-    # For PAST context, don't show "current" or "ongoing" timing - it's not relevant
-    if time_context == "past":
-        # For past questions, timing windows are less relevant
-        # Only show if specifically about the past period
-        time_window = None  # Don't show current dasha for past questions
-        
-    # For PRESENT/TIMELESS context, show current timing
-    elif time_context in ("present", "timeless"):
-        if timing_windows:
-            first_window = timing_windows[0]
-            period = first_window.get('period', '')
+    if time_context != "past" and timing_windows:
+        first_window = timing_windows[0]
+        period = first_window.get('period', '')
+        if period and 'ongoing' not in period.lower():
             nature = first_window.get('nature', '')
-            # Skip if it says "ongoing" - that's not helpful
-            if period and 'ongoing' not in period.lower():
-                time_window = f"{period}" + (f" ({nature})" if nature else "")
-                
-    # For FUTURE context, show the relevant future window
-    elif time_context == "future":
-        if timing_windows:
-            first_window = timing_windows[0]
-            period = first_window.get('period', '')
-            nature = first_window.get('nature', '')
-            if period:
-                time_window = f"{period}" + (f" ({nature})" if nature else "")
+            time_window = f"{period}" + (f" ({nature})" if nature else "")
     
     return {
-        "drivers": drivers,
-        "confidence": confidence,
+        "drivers": drivers[:3],
         "time_window": time_window
     }
 

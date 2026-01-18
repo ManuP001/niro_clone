@@ -220,6 +220,8 @@ const OnboardingScreen = ({ token, onComplete }) => {
     birth_place_lat: null,
     birth_place_lon: null,
     birth_place_tz: 5.5,
+    gender: '',         // NEW: Gender field
+    marital_status: '', // NEW: Marital status field
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -238,7 +240,7 @@ const OnboardingScreen = ({ token, onComplete }) => {
       location: value,
     }));
 
-    // Minimum 2 characters before search
+    // Minimum 2 characters before search (improved from 3)
     if (value.length < 2) {
       setPlaceSuggestions([]);
       setShowSuggestions(false);
@@ -246,8 +248,8 @@ const OnboardingScreen = ({ token, onComplete }) => {
     }
 
     try {
-      // Use /api/utils/search-cities for worldwide city autocomplete
-      const response = await fetch(`${BACKEND_URL}/api/utils/search-cities?query=${encodeURIComponent(value)}&max_results=10`);
+      // Use /api/utils/search-cities for worldwide city autocomplete (now powered by Vedic API)
+      const response = await fetch(`${BACKEND_URL}/api/utils/search-cities?query=${encodeURIComponent(value)}&max_results=15`);
       const data = await response.json();
       
       // Transform response: map cities to suggestion format
@@ -259,7 +261,8 @@ const OnboardingScreen = ({ token, onComplete }) => {
           country: city.country,
           lat: city.lat,
           lon: city.lon,
-          tz: city.timezone === 'Asia/Kolkata' ? 5.5 : 0
+          // Use tz_offset if available (from Vedic API), otherwise derive from timezone
+          tz: city.tz_offset || (city.timezone === 'Asia/Kolkata' ? 5.5 : 0)
         }));
         setPlaceSuggestions(suggestions);
         setShowSuggestions(true);
@@ -305,13 +308,30 @@ const OnboardingScreen = ({ token, onComplete }) => {
     }));
   };
 
+  // State for the "Loading your stars" animation
+  const [loadingStars, setLoadingStars] = useState(false);
+  
+  // Pre-generate star positions to avoid Math.random in render
+  const [starPositions] = useState(() => 
+    [...Array(50)].map((_, i) => ({
+      id: i,
+      width: (i % 3) + 1 + 'px',
+      height: (i % 3) + 1 + 'px',
+      top: ((i * 17) % 100) + '%',
+      left: ((i * 23) % 100) + '%',
+      animationDelay: ((i * 0.1) % 2) + 's',
+      animationDuration: ((i * 0.15) % 2) + 1 + 's',
+      opacity: 0.3 + ((i % 7) * 0.1),
+    }))
+  );
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     // Basic validation
-    if (!formData.name.trim() || !formData.dob || !formData.tob || !formData.location.trim()) {
+    if (!formData.name.trim() || !formData.dob || !formData.tob || !formData.location.trim() || !formData.gender || !formData.marital_status) {
       setError('Please fill in all fields');
       setLoading(false);
       return;
@@ -331,18 +351,97 @@ const OnboardingScreen = ({ token, onComplete }) => {
 
       if (!response.ok || !data.ok) {
         setError(data.detail || 'Failed to save profile');
+        setLoading(false);
         return;
       }
+
+      // Show "Loading your stars" animation
+      setLoading(false);
+      setLoadingStars(true);
+
+      // Wait for profile to be saved and prepare personalized data
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Call completion callback
       onComplete();
     } catch (err) {
-      setError('Network error. Please try again.');
-      console.error(err);
-    } finally {
+      console.error('Onboarding error:', err);
+      console.error('BACKEND_URL was:', BACKEND_URL);
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        setError(`Network error: ${err.message}. Please try again.`);
+      }
       setLoading(false);
     }
   };
+
+  // Loading your stars animation screen
+  if (loadingStars) {
+    return (
+      <div className="h-screen w-full bg-gradient-to-b from-indigo-950 via-purple-950 to-slate-900 flex flex-col items-center justify-center px-4">
+        {/* Animated stars background */}
+        <div className="absolute inset-0 overflow-hidden">
+          {starPositions.map((star) => (
+            <div
+              key={star.id}
+              className="absolute rounded-full bg-white animate-pulse"
+              style={{
+                width: star.width,
+                height: star.height,
+                top: star.top,
+                left: star.left,
+                animationDelay: star.animationDelay,
+                animationDuration: star.animationDuration,
+                opacity: star.opacity,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Main content */}
+        <div className="relative z-10 text-center">
+          {/* Animated celestial orb */}
+          <div className="relative w-32 h-32 mx-auto mb-8">
+            {/* Outer glow ring */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400/20 via-orange-400/20 to-yellow-400/20 animate-ping" style={{ animationDuration: '2s' }} />
+            
+            {/* Middle ring */}
+            <div className="absolute inset-2 rounded-full bg-gradient-to-r from-amber-500/30 via-orange-500/30 to-yellow-500/30 animate-pulse" />
+            
+            {/* Inner orb with sun/star symbol */}
+            <div className="absolute inset-4 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-yellow-500 flex items-center justify-center shadow-lg shadow-orange-500/50">
+              <span className="text-4xl">✨</span>
+            </div>
+
+            {/* Orbiting elements */}
+            <div className="absolute inset-0 animate-spin" style={{ animationDuration: '8s' }}>
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-3 h-3 rounded-full bg-blue-400 shadow-lg shadow-blue-400/50" />
+            </div>
+            <div className="absolute inset-0 animate-spin" style={{ animationDuration: '6s', animationDirection: 'reverse' }}>
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-2 h-2 rounded-full bg-purple-400 shadow-lg shadow-purple-400/50" />
+            </div>
+            <div className="absolute inset-0 animate-spin" style={{ animationDuration: '10s' }}>
+              <div className="absolute top-1/2 right-0 translate-x-1 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-teal-400 shadow-lg shadow-teal-400/50" />
+            </div>
+          </div>
+
+          {/* Loading text */}
+          <h2 className="text-2xl font-bold text-white mb-3">Loading your stars...</h2>
+          <p className="text-indigo-200/80 text-sm max-w-xs mx-auto">
+            Mapping your celestial blueprint and preparing your personalized insights
+          </p>
+
+          {/* Animated dots */}
+          <div className="flex justify-center gap-1.5 mt-6">
+            <div className="w-2 h-2 rounded-full bg-amber-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-2 h-2 rounded-full bg-orange-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-2 h-2 rounded-full bg-yellow-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center px-4">
@@ -372,6 +471,52 @@ const OnboardingScreen = ({ token, onComplete }) => {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-base"
               required
             />
+          </div>
+
+          {/* Gender */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Gender
+            </label>
+            <div className="flex gap-3">
+              {['Male', 'Female', 'Other'].map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, gender: option.toLowerCase() }))}
+                  className={`flex-1 py-3 rounded-lg font-medium transition-colors border ${
+                    formData.gender === option.toLowerCase()
+                      ? 'bg-emerald-600 text-white border-emerald-600'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Marital Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Marital Status
+            </label>
+            <div className="flex gap-3">
+              {['Single', 'Married', 'Other'].map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, marital_status: option.toLowerCase() }))}
+                  className={`flex-1 py-3 rounded-lg font-medium transition-colors border ${
+                    formData.marital_status === option.toLowerCase()
+                      ? 'bg-emerald-600 text-white border-emerald-600'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Date of Birth - Custom Picker */}

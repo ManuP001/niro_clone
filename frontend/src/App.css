@@ -48,3 +48,17 @@
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #a3a3a3;
 }
+
+/* NIRO V1.5 Custom Animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}

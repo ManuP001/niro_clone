@@ -1,0 +1,25 @@
+{
+  "request_id": "bab307da",
+  "timestamp": "2025-12-25T18:28:39.922284Z",
+  "user_input": "How is my money and wealth looking?",
+  "topic": "money",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-01-15",
+    "tob": "10:30",
+    "location": "Mumbai",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

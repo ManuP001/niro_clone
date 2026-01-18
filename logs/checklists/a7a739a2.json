@@ -1,0 +1,25 @@
+{
+  "request_id": "a7a739a2",
+  "timestamp": "2026-01-15T06:32:03.890205Z",
+  "user_input": "Help me choose a topic",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": "guide_mode",
+  "birth_details": {
+    "dob": "1985-10-10",
+    "tob": "10:47",
+    "location": "Dehradun, Uttarakhand, India",
+    "lat": 30.33,
+    "lon": 78.06,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

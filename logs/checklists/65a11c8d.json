@@ -1,0 +1,18 @@
+{
+  "request_id": "65a11c8d",
+  "timestamp": "2025-12-27T10:12:54.827760Z",
+  "user_input": "Tell me about my career",
+  "topic": "career",
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

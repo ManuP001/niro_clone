@@ -1,0 +1,25 @@
+{
+  "request_id": "f0499a13",
+  "timestamp": "2025-12-26T18:53:05.714378Z",
+  "user_input": "when did my sade sati start?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1973-05-14",
+    "tob": "13:32",
+    "location": "Pune, Maharashtra, India",
+    "lat": 18.5204,
+    "lon": 73.8567,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

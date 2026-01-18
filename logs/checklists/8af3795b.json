@@ -1,0 +1,25 @@
+{
+  "request_id": "8af3795b",
+  "timestamp": "2025-12-27T11:26:28.449106Z",
+  "user_input": "What does my chart say about my mother?",
+  "topic": "family_home",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1992-07-15",
+    "tob": "14:30",
+    "location": "Delhi",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

@@ -1,7 +1,7 @@
 """Authentication API endpoints"""
 
 import logging
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from typing import Optional
 
 from .models import (
@@ -123,7 +123,7 @@ async def verify_otp(req: OTPVerify):
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_current_user(authorization: Optional[str] = None):
+async def get_current_user(authorization: Optional[str] = Header(None)):
     """
     Get current user info from token.
     

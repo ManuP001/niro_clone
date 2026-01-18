@@ -1,0 +1,25 @@
+{
+  "request_id": "dad4be76",
+  "timestamp": "2026-01-07T08:14:27.642977Z",
+  "user_input": "I want to start a manufacturing of biomass pellets",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1988-09-30",
+    "tob": "11:30",
+    "location": "Jaipur, Rajasthan, India",
+    "lat": 27.0,
+    "lon": 76.0,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

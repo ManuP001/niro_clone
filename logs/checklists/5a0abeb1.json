@@ -1,0 +1,25 @@
+{
+  "request_id": "5a0abeb1",
+  "timestamp": "2026-01-13T20:22:55.805282Z",
+  "user_input": "Yes, please continue with: Would you like to explore specific strategies to leverage this favorable timing?",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1990-05-15",
+    "tob": "14:30",
+    "location": "Mumbai",
+    "lat": 19.08,
+    "lon": 72.88,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": "Could you clarify what aspect of career you'd like to explore? I want to give you the most relevant insights."
+  }
+}

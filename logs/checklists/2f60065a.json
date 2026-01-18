@@ -1,0 +1,25 @@
+{
+  "request_id": "2f60065a",
+  "timestamp": "2026-01-04T12:52:53.434594Z",
+  "user_input": "career and business moves of the next 30 days",
+  "topic": "career",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1985-10-10",
+    "tob": "10:47",
+    "location": "Dehradun, Uttarakhand, India",
+    "lat": 30.33,
+    "lon": 78.06,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

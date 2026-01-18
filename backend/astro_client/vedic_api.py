@@ -33,6 +33,7 @@ from .models import (
     YogaInfo,
     TransitEvent
 )
+from .vimshottari import calculate_vimshottari_dashas
 
 logger = logging.getLogger(__name__)
 
@@ -291,10 +292,16 @@ class VedicAPIClient:
         """
         Fetch complete astrological profile from Vedic API.
         
-        Makes real API calls to:
-        - /extended-horoscope/extended-kundli-details for birth chart info
-        - /dashas/maha-dasha for dasha timeline
-        - /horoscope/planets for detailed planetary positions
+        OPTIMIZED: Uses single /horoscope/planet-details call which returns:
+        - Ascendant with exact degree
+        - All 9 planets with exact degrees, nakshatras, padas
+        - Current dasha info
+        - Panchang details
+        
+        Then fetches /dashas/current-mahadasha-full for complete dasha timeline.
+        
+        Before: 11 API calls (1 kundli + 1 dasha + 9 planets)
+        After: 2 API calls (1 planet-details + 1 dasha-full)
         
         Raises VedicApiError if any call fails.
         """
@@ -307,56 +314,91 @@ class VedicAPIClient:
             'lat': birth.latitude or 28.6139,  # Default to Delhi if not provided
             'lon': birth.longitude or 77.2090,
             'tz': birth.timezone,
-            'ayanamsa': 'Lahiri'
         }
         
         try:
-            # All API calls are REAL - no fallbacks
-            logger.info("[PROFILE] Calling /extended-horoscope/extended-kundli-details...")
-            kundli_details = await self._get('/extended-horoscope/extended-kundli-details', api_params.copy())
+            # OPTIMIZED: Single call to /horoscope/planet-details returns everything
+            logger.info("[PROFILE] Calling /horoscope/planet-details (OPTIMIZED - single call)...")
+            planet_details = await self._get('/horoscope/planet-details', api_params.copy())
             
-            logger.info("[PROFILE] Calling /dashas/maha-dasha...")
-            dashas_data = await self._get('/dashas/maha-dasha', api_params.copy())
+            # Log raw response for debugging
+            import json
+            logger.info(f"[PLANET_DETAILS] Response keys: {list(planet_details.keys())}")
             
-            # Fetch planet details using /horoscope/planet-report for each planet
+            # Fetch full dasha timeline
+            logger.info("[PROFILE] Calling /dashas/current-mahadasha-full...")
+            dashas_data = await self._get('/dashas/current-mahadasha-full', api_params.copy())
+            
+            # Parse planet-details response into our format
+            # Response has keys "0" (Ascendant), "1" (Sun), "2" (Moon), etc.
             planets_list = []
-            planet_names = ['sun', 'moon', 'mars', 'mercury', 'jupiter', 'venus', 'saturn', 'rahu', 'ketu']
+            ascendant_data = None
             
-            for planet_name in planet_names:
-                try:
-                    params = api_params.copy()
-                    params['planet'] = planet_name
-                    logger.info(f"[PROFILE] Calling /horoscope/planet-report for {planet_name}...")
-                    planet_resp = await self._get('/horoscope/planet-report', params)
+            # Map numeric keys to planet data
+            planet_key_map = {
+                "0": "Ascendant",
+                "1": "Sun",
+                "2": "Moon", 
+                "3": "Mars",
+                "4": "Mercury",
+                "5": "Jupiter",
+                "6": "Venus",
+                "7": "Saturn",
+                "8": "Rahu",
+                "9": "Ketu"
+            }
+            
+            for key, planet_name in planet_key_map.items():
+                p = planet_details.get(key, {})
+                if not p:
+                    continue
                     
-                    if planet_resp and isinstance(planet_resp, list) and len(planet_resp) > 0:
-                        p = planet_resp[0]
-                        # Get sign and calculate approximate degree based on nakshatra if available
-                        sign = p.get('planet_zodiac', 'Aries')
-                        house = p.get('planet_location', 1)
-                        
-                        # Calculate approximate degree based on sign position
-                        # Each sign has 30 degrees, planets spread within
-                        sign_idx = ZODIAC_SIGNS.index(sign) if sign in ZODIAC_SIGNS else 0
-                        # Use planet index to create varied degrees (pseudo-random but deterministic)
-                        planet_idx = planet_names.index(planet_name)
-                        base_degree = (planet_idx * 3.7 + house * 2.3) % 30
-                        
-                        planets_list.append({
-                            'name': p.get('planet_considered', planet_name.capitalize()),
-                            'sign': sign,
-                            'house': house,
-                            'strength': p.get('planet_strength', 'Neutral'),
-                            'degree': round(base_degree, 1),  # Calculated approximate degree
-                            'retrograde': planet_name in ['saturn', 'jupiter', 'mars'],  # Common retrogrades
-                            'nakshatra': '',
-                            'nakshatra_lord': ''
-                        })
-                except Exception as e:
-                    logger.warning(f"[PROFILE] Could not fetch planet report for {planet_name}: {e}")
+                if planet_name == "Ascendant":
+                    ascendant_data = p
+                    logger.info(f"[PLANET_DETAILS] Ascendant: {p.get('zodiac')} {p.get('local_degree', 0):.2f}° nakshatra={p.get('nakshatra')}")
+                else:
+                    planets_list.append({
+                        'name': planet_name,
+                        'sign': p.get('zodiac', 'Aries'),
+                        'house': p.get('house', 1),
+                        'degree': round(p.get('local_degree', 0), 2),
+                        'global_degree': p.get('global_degree', 0),
+                        'retrograde': p.get('retro', False),
+                        'nakshatra': p.get('nakshatra', ''),
+                        'nakshatra_lord': p.get('nakshatra_lord', ''),
+                        'nakshatra_pada': p.get('nakshatra_pada', 1),
+                        'zodiac_lord': p.get('zodiac_lord', ''),
+                        'is_combust': p.get('is_combust', False),
+                        'basic_avastha': p.get('basic_avastha', ''),
+                        'lord_status': p.get('lord_status', '')
+                    })
+                    logger.debug(f"[PLANET_DETAILS] {planet_name}: {p.get('zodiac')} H{p.get('house')} {p.get('local_degree', 0):.2f}° {'(R)' if p.get('retro') else ''}")
             
-            planets_data = {'planets': planets_list} if planets_list else {}
-            logger.info(f"[PROFILE] Fetched {len(planets_list)} planet positions")
+            logger.info(f"[PROFILE] Parsed {len(planets_list)} planets from planet-details")
+            
+            # Build kundli_details dict from planet_details for compatibility
+            kundli_details = {
+                'ascendant_sign': ascendant_data.get('zodiac', 'Aries') if ascendant_data else 'Aries',
+                'ascendant_degree': ascendant_data.get('local_degree', 0) if ascendant_data else 0,
+                'ascendant_nakshatra': ascendant_data.get('nakshatra', '') if ascendant_data else '',
+                'nakshatra_pada': ascendant_data.get('nakshatra_pada', 1) if ascendant_data else 1,
+                'rasi': planet_details.get('rasi', ''),
+                'nakshatra': planet_details.get('nakshatra', ''),
+                'moon_nakshatra': planet_details.get('nakshatra', ''),
+                'sun_sign': planets_list[0].get('sign', '') if planets_list else '',  # Sun is first planet
+                # Panchang data
+                'ayanamsa': planet_details.get('panchang', {}).get('ayanamsa', 23.67),
+                'ayanamsa_name': planet_details.get('panchang', {}).get('ayanamsa_name', 'Lahiri'),
+                'day_of_birth': planet_details.get('panchang', {}).get('day_of_birth', ''),
+                'tithi': planet_details.get('panchang', {}).get('tithi', ''),
+                'yoga': planet_details.get('panchang', {}).get('yoga', ''),
+                'karana': planet_details.get('panchang', {}).get('karana', ''),
+                # Dasha from planet-details
+                'current_dasa': planet_details.get('current_dasa', ''),
+                'birth_dasa': planet_details.get('birth_dasa', ''),
+            }
+            
+            planets_data = {'planets': planets_list}
             
             # Parse into our models
             profile_kwargs = {
@@ -371,7 +413,7 @@ class VedicAPIClient:
             
             profile = self._parse_profile_from_real_api(**profile_kwargs)
             
-            logger.info(f"[PROFILE] Success: Ascendant={profile.ascendant}, Moon={profile.moon_sign}")
+            logger.info(f"[PROFILE] Success: Ascendant={profile.ascendant} {profile.ascendant_degree:.2f}°, Moon={profile.moon_sign}")
             return profile
         
         except VedicApiError as e:
@@ -528,6 +570,158 @@ class VedicAPIClient:
         except VedicApiError as e:
             logger.error(f"[YOGAS] VEDIC API ERROR: {e.error_code}")
             raise
+    
+    
+    async def fetch_kundli_optimized(self, birth: BirthDetails, user_id: str = None) -> Dict[str, Any]:
+        """
+        OPTIMIZED: Fetch Kundli SVG and profile data with minimal API calls.
+        
+        Optimizations (v2):
+        1. Single /horoscope/planet-details call (returns ALL planets + ascendant with exact degrees)
+        2. Single /dashas/current-mahadasha-full call (returns current dasha with dates)
+        
+        Before v1: 11+ sequential API calls (~8-10 seconds)
+        Before v2: 3 API calls (~1-2 seconds)
+        After v2: 2 API calls (~0.5-1 second)
+        
+        Returns:
+        {
+            "ok": True,
+            "svg": "<svg>...</svg>",
+            "profile": AstroProfile,
+            "structured": { planets, houses, ascendant }
+        }
+        """
+        import asyncio
+        
+        logger.info(f"[KUNDLI_OPT] Starting optimized fetch for {birth.location}")
+        start_time = asyncio.get_event_loop().time()
+        
+        api_params = {
+            'dob': birth.dob.strftime("%d/%m/%Y"),
+            'tob': birth.tob,
+            'lat': birth.latitude or 28.6139,
+            'lon': birth.longitude or 77.2090,
+            'tz': birth.timezone,
+        }
+        
+        try:
+            # STEP 1: Single call to /horoscope/planet-details (returns everything)
+            logger.info("[KUNDLI_OPT] Step 1: Fetching /horoscope/planet-details (ALL data in 1 call)...")
+            planet_details = await self._get('/horoscope/planet-details', api_params.copy())
+            
+            # Parse planet-details response
+            planet_key_map = {
+                "0": "Ascendant", "1": "Sun", "2": "Moon", "3": "Mars",
+                "4": "Mercury", "5": "Jupiter", "6": "Venus", "7": "Saturn",
+                "8": "Rahu", "9": "Ketu"
+            }
+            
+            planets_list = []
+            ascendant_data = None
+            
+            for key, planet_name in planet_key_map.items():
+                p = planet_details.get(key, {})
+                if not p:
+                    continue
+                    
+                if planet_name == "Ascendant":
+                    ascendant_data = p
+                else:
+                    planets_list.append({
+                        'name': planet_name,
+                        'sign': p.get('zodiac', 'Aries'),
+                        'house': p.get('house', 1),
+                        'degree': round(p.get('local_degree', 0), 2),
+                        'retrograde': p.get('retro', False),
+                        'nakshatra': p.get('nakshatra', ''),
+                        'nakshatra_lord': p.get('nakshatra_lord', ''),
+                        'nakshatra_pada': p.get('nakshatra_pada', 1),
+                        'is_combust': p.get('is_combust', False),
+                        'lord_status': p.get('lord_status', '')
+                    })
+            
+            logger.info(f"[KUNDLI_OPT] Parsed {len(planets_list)} planets with exact degrees")
+            
+            # STEP 2: Fetch dasha data
+            logger.info("[KUNDLI_OPT] Step 2: Fetching /dashas/current-mahadasha-full...")
+            dashas_data = await self._get('/dashas/current-mahadasha-full', api_params.copy())
+            
+            # Build kundli_details from planet_details for compatibility
+            kundli_details = {
+                'ascendant_sign': ascendant_data.get('zodiac', 'Aries') if ascendant_data else 'Aries',
+                'ascendant_degree': ascendant_data.get('local_degree', 0) if ascendant_data else 0,
+                'ascendant_nakshatra': ascendant_data.get('nakshatra', '') if ascendant_data else '',
+                'nakshatra_pada': ascendant_data.get('nakshatra_pada', 1) if ascendant_data else 1,
+                'rasi': planet_details.get('rasi', ''),
+                'nakshatra': planet_details.get('nakshatra', ''),
+                'moon_nakshatra': planet_details.get('nakshatra', ''),
+                'sun_sign': planets_list[0].get('sign', '') if planets_list else '',
+                'ayanamsa': planet_details.get('panchang', {}).get('ayanamsa', 23.67),
+            }
+            
+            # Generate SVG from kundli data
+            svg = self._generate_kundli_svg(kundli_details, birth, "north", planets_list)
+            
+            # Parse into profile model
+            planets_data = {'planets': planets_list}
+            profile = self._parse_profile_from_real_api(birth=birth, kundli=kundli_details, dashas=dashas_data, planets=planets_data, user_id=user_id)
+            
+            # Build structured data for frontend
+            structured = {
+                "ascendant": {
+                    "sign": profile.ascendant or "Unknown",
+                    "degree": profile.ascendant_degree if hasattr(profile, 'ascendant_degree') else 0.0,
+                    "house": 1
+                },
+                "houses": [
+                    {
+                        "house": h.house_num if hasattr(h, 'house_num') else i+1,
+                        "sign": h.sign if hasattr(h, 'sign') else "Unknown",
+                        "lord": h.sign_lord if hasattr(h, 'sign_lord') else "Unknown"
+                    }
+                    for i, h in enumerate(profile.houses or [])
+                ] if profile.houses else [{"house": i+1, "sign": "Unknown", "lord": "Unknown"} for i in range(12)],
+                "planets": [
+                    {
+                        "name": planet.planet if hasattr(planet, 'planet') else "Unknown",
+                        "sign": planet.sign if hasattr(planet, 'sign') else "Unknown",
+                        "degree": planet.degree if hasattr(planet, 'degree') else 0.0,
+                        "house": planet.house if hasattr(planet, 'house') else 0,
+                        "retrograde": planet.is_retrograde if hasattr(planet, 'is_retrograde') else False
+                    }
+                    for planet in (profile.planets or [])
+                ]
+            }
+            
+            elapsed = asyncio.get_event_loop().time() - start_time
+            logger.info(f"[KUNDLI_OPT] ✅ Complete in {elapsed:.2f}s (was ~8-10s before)")
+            
+            return {
+                "ok": True,
+                "svg": svg,
+                "svg_size": len(svg),
+                "profile": profile,
+                "structured": structured,
+                "chart_type": "kundli",
+                "vendor": "VedicAstroAPI",
+                "optimization": f"Completed in {elapsed:.2f}s"
+            }
+            
+        except VedicApiError as e:
+            logger.error(f"[KUNDLI_OPT] API Error: {e.error_code}")
+            return {
+                "ok": False,
+                "error": e.error_code,
+                "message": e.message
+            }
+        except Exception as e:
+            logger.error(f"[KUNDLI_OPT] Unexpected error: {e}")
+            return {
+                "ok": False,
+                "error": "KUNDLI_FETCH_FAILED",
+                "message": str(e)
+            }
     
     
     async def fetch_kundli_svg(self, birth: BirthDetails, div: str = "D1", style: str = "north") -> Dict[str, Any]:
@@ -688,32 +882,87 @@ class VedicAPIClient:
                 effects=yoga_data.get('effects', '')
             ))
         
-        # Parse current dasha
+        # Parse current dasha with validation
         current_maha = dashas.get('current_mahadasha', {})
-        current_mahadasha = DashaInfo(
-            level='mahadasha',
-            planet=current_maha.get('planet', 'Jupiter'),
-            start_date=date.fromisoformat(current_maha['start_date']) if current_maha.get('start_date') else birth.dob,
-            end_date=date.fromisoformat(current_maha['end_date']) if current_maha.get('end_date') else birth.dob,
-            years_total=current_maha.get('years_total', 16),
-            years_elapsed=current_maha.get('years_elapsed', 0),
-            years_remaining=current_maha.get('years_remaining', 16)
+        
+        # Check if API returned valid dasha dates
+        api_maha_start = None
+        api_maha_end = None
+        try:
+            api_maha_start = date.fromisoformat(current_maha.get('start_date', ''))
+            api_maha_end = date.fromisoformat(current_maha.get('end_date', ''))
+        except (ValueError, TypeError):
+            pass
+        
+        # Detect invalid API dates
+        api_dates_invalid = (
+            api_maha_start is None or
+            api_maha_end is None or
+            api_maha_start == api_maha_end or
+            api_maha_start == birth.dob or
+            abs((api_maha_end - api_maha_start).days) < 30
         )
         
-        # Find current antardasha
-        current_antar = next(
-            (a for a in dashas.get('antardashas', []) if a.get('is_current')),
-            dashas.get('antardashas', [{}])[0]
-        )
-        current_antardasha = DashaInfo(
-            level='antardasha',
-            planet=current_antar.get('planet', 'Venus'),
-            start_date=date.fromisoformat(current_antar['start_date']) if current_antar.get('start_date') else birth.dob,
-            end_date=date.fromisoformat(current_antar['end_date']) if current_antar.get('end_date') else birth.dob,
-            years_total=current_antar.get('years_total', 2),
-            years_elapsed=0,
-            years_remaining=current_antar.get('years_total', 2)
-        )
+        if api_dates_invalid:
+            # Use LOCAL Vimshottari calculation
+            moon_data = base_chart.get('planets', {}).get('Moon', {})
+            moon_nakshatra = moon_data.get('nakshatra', 'Pushya')
+            
+            logger.warning(f"[DASHA_PARSE_ALT] API returned invalid dasha dates, using LOCAL calculation with nakshatra={moon_nakshatra}")
+            
+            local_dashas = calculate_vimshottari_dashas(
+                dob=birth.dob,
+                moon_nakshatra=moon_nakshatra
+            )
+            
+            local_maha = local_dashas.get('current_mahadasha', {})
+            local_antar = local_dashas.get('current_antardasha', {})
+            
+            current_mahadasha = DashaInfo(
+                level='mahadasha',
+                planet=local_maha.get('planet', 'Jupiter'),
+                start_date=local_maha.get('start_date', birth.dob),
+                end_date=local_maha.get('end_date', birth.dob + timedelta(days=16*365)),
+                years_total=local_maha.get('years_total', 16),
+                years_elapsed=local_maha.get('years_elapsed', 0),
+                years_remaining=local_maha.get('years_remaining', 16)
+            )
+            
+            current_antardasha = DashaInfo(
+                level='antardasha',
+                planet=local_antar.get('planet', 'Venus') if local_antar else 'Venus',
+                start_date=local_antar.get('start_date', birth.dob) if local_antar else birth.dob,
+                end_date=local_antar.get('end_date', birth.dob + timedelta(days=2*365)) if local_antar else birth.dob + timedelta(days=2*365),
+                years_total=local_antar.get('years_total', 2) if local_antar else 2,
+                years_elapsed=local_antar.get('years_elapsed', 0) if local_antar else 0,
+                years_remaining=local_antar.get('years_remaining', 2) if local_antar else 2
+            )
+        else:
+            # Use valid API data
+            current_mahadasha = DashaInfo(
+                level='mahadasha',
+                planet=current_maha.get('planet', 'Jupiter'),
+                start_date=api_maha_start,
+                end_date=api_maha_end,
+                years_total=current_maha.get('years_total', 16),
+                years_elapsed=current_maha.get('years_elapsed', 0),
+                years_remaining=current_maha.get('years_remaining', 16)
+            )
+            
+            # Find current antardasha
+            current_antar = next(
+                (a for a in dashas.get('antardashas', []) if a.get('is_current')),
+                dashas.get('antardashas', [{}])[0]
+            )
+            current_antardasha = DashaInfo(
+                level='antardasha',
+                planet=current_antar.get('planet', 'Venus'),
+                start_date=date.fromisoformat(current_antar['start_date']) if current_antar.get('start_date') else birth.dob,
+                end_date=date.fromisoformat(current_antar['end_date']) if current_antar.get('end_date') else birth.dob,
+                years_total=current_antar.get('years_total', 2),
+                years_elapsed=0,
+                years_remaining=current_antar.get('years_total', 2)
+            )
         
         # Get Moon details
         moon_data = base_chart.get('planets', {}).get('Moon', {})
@@ -837,34 +1086,145 @@ class VedicAPIClient:
                     effects=y.get('effects', '')
                 ))
         
-        # Parse dasha from API
-        maha_timeline = dashas.get('mahadasha_timeline', [])
-        current_maha = None
-        if maha_timeline:
-            current_maha = maha_timeline[0]  # Assume first is current
+        # Parse dasha from /dashas/current-mahadasha-full API
+        # New format uses 'order_of_dashas' for current periods
+        import json
         
-        current_mahadasha = DashaInfo(
-            level='mahadasha',
-            planet=current_maha.get('planet', 'Jupiter') if current_maha else 'Jupiter',
-            start_date=date.fromisoformat(current_maha['start_date']) if current_maha and current_maha.get('start_date') else birth.dob,
-            end_date=date.fromisoformat(current_maha['end_date']) if current_maha and current_maha.get('end_date') else birth.dob,
-            years_total=float(current_maha.get('years_total', 16)) if current_maha else 16,
-            years_elapsed=float(current_maha.get('years_elapsed', 0)) if current_maha else 0,
-            years_remaining=float(current_maha.get('years_remaining', 16)) if current_maha else 16
+        order_of_dashas = dashas.get('order_of_dashas', {})
+        current_major = order_of_dashas.get('major', {})
+        current_minor = order_of_dashas.get('minor', {})
+        
+        logger.info(f"[DASHA_PARSE] Current Major Dasha: {current_major.get('name', 'N/A')}")
+        logger.info(f"[DASHA_PARSE] Current Minor Dasha: {current_minor.get('name', 'N/A')}")
+        
+        def parse_dasha_date(date_str: str) -> date:
+            """Parse Vedic API date format: 'Sun Feb 09 2025 22:45:43 GMT+0000 (Coordinated Universal Time)'"""
+            if not date_str:
+                return None
+            try:
+                # Extract just the date part: "Sun Feb 09 2025"
+                parts = date_str.split()
+                if len(parts) >= 4:
+                    month_map = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+                                 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12}
+                    day = int(parts[2])
+                    month = month_map.get(parts[1], 1)
+                    year = int(parts[3])
+                    return date(year, month, day)
+            except (ValueError, IndexError, TypeError) as e:
+                logger.warning(f"[DASHA_PARSE] Could not parse date '{date_str}': {e}")
+            return None
+        
+        # Parse mahadasha from API
+        api_maha_start = parse_dasha_date(current_major.get('start', ''))
+        api_maha_end = parse_dasha_date(current_major.get('end', ''))
+        maha_planet = current_major.get('name', '')
+        
+        # Parse antardasha from API
+        api_antar_start = parse_dasha_date(current_minor.get('start', ''))
+        api_antar_end = parse_dasha_date(current_minor.get('end', ''))
+        antar_planet = current_minor.get('name', '')
+        
+        # Detect invalid API dates
+        api_dates_invalid = (
+            api_maha_start is None or
+            api_maha_end is None or
+            not maha_planet or
+            api_maha_start == api_maha_end
         )
         
-        # Antardasha (use first from antardashas)
-        antardashas = dashas.get('antardashas', [{}])
-        current_antar = antardashas[0] if antardashas else {}
-        current_antardasha = DashaInfo(
-            level='antardasha',
-            planet=current_antar.get('planet', 'Venus'),
-            start_date=date.fromisoformat(current_antar['start_date']) if current_antar.get('start_date') else birth.dob,
-            end_date=date.fromisoformat(current_antar['end_date']) if current_antar.get('end_date') else birth.dob,
-            years_total=float(current_antar.get('years_total', 2)),
-            years_elapsed=0,
-            years_remaining=float(current_antar.get('years_total', 2))
-        )
+        if api_dates_invalid:
+            # Use LOCAL Vimshottari calculation
+            logger.warning(f"[DASHA_PARSE] API returned invalid dasha dates (start={api_maha_start}, end={api_maha_end}), using LOCAL calculation")
+            
+            # Get Moon nakshatra from kundli or planets
+            moon_nakshatra = kundli.get('moon_nakshatra', '') or kundli.get('nakshatra', '')
+            if not moon_nakshatra:
+                moon_planet_data = next((p for p in planets_list if p.planet == 'Moon'), None)
+                moon_nakshatra = moon_planet_data.nakshatra if moon_planet_data and moon_planet_data.nakshatra else 'Pushya'
+            
+            # Calculate locally
+            local_dashas = calculate_vimshottari_dashas(
+                dob=birth.dob,
+                moon_nakshatra=moon_nakshatra,
+                moon_degree=None,
+                nakshatra_pada=kundli.get('nakshatra_pada', 2)
+            )
+            
+            local_maha = local_dashas.get('current_mahadasha', {})
+            local_antar = local_dashas.get('current_antardasha', {})
+            
+            logger.info(f"[DASHA_LOCAL] Calculated: Mahadasha={local_maha.get('planet')} ({local_maha.get('start_date')} to {local_maha.get('end_date')})")
+            
+            current_mahadasha = DashaInfo(
+                level='mahadasha',
+                planet=local_maha.get('planet', 'Jupiter'),
+                start_date=local_maha.get('start_date', birth.dob),
+                end_date=local_maha.get('end_date', birth.dob + timedelta(days=16*365)),
+                years_total=local_maha.get('years_total', 16),
+                years_elapsed=local_maha.get('years_elapsed', 0),
+                years_remaining=local_maha.get('years_remaining', 16)
+            )
+            
+            current_antardasha = DashaInfo(
+                level='antardasha',
+                planet=local_antar.get('planet', 'Venus') if local_antar else 'Venus',
+                start_date=local_antar.get('start_date', birth.dob) if local_antar else birth.dob,
+                end_date=local_antar.get('end_date', birth.dob + timedelta(days=2*365)) if local_antar else birth.dob + timedelta(days=2*365),
+                years_total=local_antar.get('years_total', 2) if local_antar else 2,
+                years_elapsed=local_antar.get('years_elapsed', 0) if local_antar else 0,
+                years_remaining=local_antar.get('years_remaining', 2) if local_antar else 2
+            )
+        else:
+            # Use API data (valid dates from /dashas/current-mahadasha-full)
+            logger.info(f"[DASHA_PARSE] Using API dasha: {maha_planet} ({api_maha_start} to {api_maha_end})")
+            
+            # Calculate years
+            today = date.today()
+            maha_total_days = (api_maha_end - api_maha_start).days
+            maha_elapsed_days = (today - api_maha_start).days if today > api_maha_start else 0
+            maha_years_total = maha_total_days / 365.25
+            maha_years_elapsed = maha_elapsed_days / 365.25
+            maha_years_remaining = max(0, maha_years_total - maha_years_elapsed)
+            
+            current_mahadasha = DashaInfo(
+                level='mahadasha',
+                planet=maha_planet,
+                start_date=api_maha_start,
+                end_date=api_maha_end,
+                years_total=round(maha_years_total, 2),
+                years_elapsed=round(maha_years_elapsed, 2),
+                years_remaining=round(maha_years_remaining, 2)
+            )
+            
+            # Antardasha
+            if api_antar_start and api_antar_end and antar_planet:
+                antar_total_days = (api_antar_end - api_antar_start).days
+                antar_elapsed_days = (today - api_antar_start).days if today > api_antar_start else 0
+                antar_years_total = antar_total_days / 365.25
+                antar_years_elapsed = antar_elapsed_days / 365.25
+                antar_years_remaining = max(0, antar_years_total - antar_years_elapsed)
+                
+                current_antardasha = DashaInfo(
+                    level='antardasha',
+                    planet=antar_planet,
+                    start_date=api_antar_start,
+                    end_date=api_antar_end,
+                    years_total=round(antar_years_total, 2),
+                    years_elapsed=round(antar_years_elapsed, 2),
+                    years_remaining=round(antar_years_remaining, 2)
+                )
+            else:
+                # Fallback antardasha
+                current_antardasha = DashaInfo(
+                    level='antardasha',
+                    planet='Venus',
+                    start_date=birth.dob,
+                    end_date=birth.dob + timedelta(days=2*365),
+                    years_total=2,
+                    years_elapsed=0,
+                    years_remaining=2
+                )
         
         # Get ascendant details
         asc_degree = kundli.get('ascendant_degree', None)
@@ -906,15 +1266,28 @@ class VedicAPIClient:
     
     def _generate_kundli_svg(self, kundli_data: Dict[str, Any], birth: BirthDetails, style: str = "north", planets_data: List[Dict] = None) -> str:
         """
-        Generate SVG representation of Kundli from API data.
+        Generate clean rectangular SVG representation of Kundli from API data.
         
-        Creates a proper North Indian style birth chart SVG with:
-        - Classic diamond house layout with visible dark lines
-        - Planet positions in correct houses
-        - House numbers
-        - Professional styling matching traditional Kundli charts
+        Creates a traditional North Indian style birth chart SVG.
+        In North Indian charts, house positions are FIXED, but we display
+        the SIGN NUMBER (Rashi number) in each house position.
         """
         asc_sign = kundli_data.get('ascendant_sign', 'Aries')
+        
+        # Sign name to number mapping (Aries=1, ..., Pisces=12)
+        SIGN_TO_NUM = {
+            'Aries': 1, 'Taurus': 2, 'Gemini': 3, 'Cancer': 4,
+            'Leo': 5, 'Virgo': 6, 'Libra': 7, 'Scorpio': 8,
+            'Sagittarius': 9, 'Capricorn': 10, 'Aquarius': 11, 'Pisces': 12
+        }
+        
+        # Get ascendant sign number
+        asc_sign_num = SIGN_TO_NUM.get(asc_sign, 1)
+        
+        # Calculate which SIGN falls in each HOUSE
+        # Formula: sign_num = ((asc_sign_num - 1) + (house_num - 1)) % 12 + 1
+        def get_sign_for_house(house_num):
+            return ((asc_sign_num - 1) + (house_num - 1)) % 12 + 1
         
         # Planet abbreviations
         PLANET_ABBR = {
@@ -932,118 +1305,130 @@ class VedicAPIClient:
                 if 1 <= house <= 12:
                     planets_by_house[house].append(abbr)
         
-        # SVG dimensions
-        width, height = 500, 550
-        cx, cy = 250, 275  # Center of chart
-        size = 200  # Half-size of the outer square
+        # Traditional colors
+        bg_color = "#FDF5E6"
+        line_color = "#B8860B"
+        text_color = "#8B4513"
+        planet_color = "#CD5C5C"
         
-        # Colors matching reference image
-        bg_color = "#FFF8E7"  # Light cream/yellow
-        line_color = "#3b2f2f"  # Dark brown for strong visibility
-        text_color = "#B22222"  # Dark red/maroon
+        # Chart size - the Kundli square will be 400x400, with padding for title
+        chart_size = 400
+        padding_top = 60  # Space for title
+        padding_side = 30
+        padding_bottom = 20
         
-        svg_parts = [
-            f'<?xml version="1.0" encoding="UTF-8"?>',
-            f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
-            f'<defs>',
-            f'  <style>',
-            f'    .house-num {{ font-family: Arial, sans-serif; font-size: 14px; fill: {text_color}; }}',
-            f'    .planet {{ font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: {text_color}; }}',
-            f'    .title {{ font-family: Arial, sans-serif; font-size: 18px; font-weight: bold; fill: #333; }}',
-            f'    .subtitle {{ font-family: Arial, sans-serif; font-size: 12px; fill: #666; }}',
-            f'  </style>',
-            f'</defs>',
-            # Background
-            f'<rect width="100%" height="100%" fill="{bg_color}"/>',
-            # Title
-            f'<text x="{cx}" y="30" text-anchor="middle" class="title">Birth Chart (Rashi Chart)</text>',
-        ]
+        total_width = chart_size + 2 * padding_side
+        total_height = chart_size + padding_top + padding_bottom
         
-        # Chart frame with rounded corners
-        frame_x, frame_y = cx - size - 20, cy - size - 20
-        frame_w, frame_h = (size + 20) * 2, (size + 20) * 2
-        svg_parts.append(f'<rect x="{frame_x}" y="{frame_y}" width="{frame_w}" height="{frame_h}" fill="#FDF5E6" stroke="{line_color}" stroke-width="3" rx="10"/>')
+        # Center of the chart square
+        cx = total_width // 2
+        cy = padding_top + chart_size // 2
+        half = chart_size // 2
         
-        # North Indian Kundli layout - outer square with diagonals and inner diamond
-        # Outer square corners
-        top_left = (cx - size, cy - size)
-        top_right = (cx + size, cy + size - 2*size)  # Actually top-right
-        bottom_right = (cx + size, cy + size)
-        bottom_left = (cx - size, cy + size)
+        svg = f'''<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 {total_width} {total_height}" style="max-width: 100%; height: auto;">
+  <rect width="100%" height="100%" fill="{bg_color}"/>
+  
+  <!-- Title -->
+  <text x="{cx}" y="25" text-anchor="middle" font-family="Georgia, serif" font-size="20" fill="{text_color}" font-weight="bold">Birth Chart (Rashi)</text>
+  <text x="{cx}" y="45" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="{text_color}" opacity="0.8">Ascendant: {asc_sign}</text>
+  
+  <!-- Outer square -->
+  <rect x="{cx - half}" y="{cy - half}" width="{chart_size}" height="{chart_size}" fill="none" stroke="{line_color}" stroke-width="2"/>
+  
+  <!-- Diagonals -->
+  <line x1="{cx - half}" y1="{cy - half}" x2="{cx + half}" y2="{cy + half}" stroke="{line_color}" stroke-width="1.5"/>
+  <line x1="{cx + half}" y1="{cy - half}" x2="{cx - half}" y2="{cy + half}" stroke="{line_color}" stroke-width="1.5"/>
+  
+  <!-- Inner diamond -->
+  <polygon points="{cx},{cy - half} {cx + half},{cy} {cx},{cy + half} {cx - half},{cy}" fill="none" stroke="{line_color}" stroke-width="1.5"/>
+'''
         
-        # Draw outer square (darker, thicker lines for visibility)
-        svg_parts.append(f'<rect x="{cx-size}" y="{cy-size}" width="{size*2}" height="{size*2}" fill="none" stroke="{line_color}" stroke-width="2.5"/>')
-        
-        # Draw main diagonals (darker, thicker lines for visibility)
-        svg_parts.append(f'<line x1="{cx-size}" y1="{cy-size}" x2="{cx+size}" y2="{cy+size}" stroke="{line_color}" stroke-width="2.5"/>')
-        svg_parts.append(f'<line x1="{cx+size}" y1="{cy-size}" x2="{cx-size}" y2="{cy+size}" stroke="{line_color}" stroke-width="2.5"/>')
-        
-        # Draw inner diamond (connects midpoints of outer square sides)
-        mid_top = (cx, cy - size)
-        mid_right = (cx + size, cy)
-        mid_bottom = (cx, cy + size)
-        mid_left = (cx - size, cy)
-        
-        svg_parts.append(f'<line x1="{mid_top[0]}" y1="{mid_top[1]}" x2="{mid_right[0]}" y2="{mid_right[1]}" stroke="{line_color}" stroke-width="2.5"/>')
-        svg_parts.append(f'<line x1="{mid_right[0]}" y1="{mid_right[1]}" x2="{mid_bottom[0]}" y2="{mid_bottom[1]}" stroke="{line_color}" stroke-width="2.5"/>')
-        svg_parts.append(f'<line x1="{mid_bottom[0]}" y1="{mid_bottom[1]}" x2="{mid_left[0]}" y2="{mid_left[1]}" stroke="{line_color}" stroke-width="2.5"/>')
-        svg_parts.append(f'<line x1="{mid_left[0]}" y1="{mid_left[1]}" x2="{mid_top[0]}" y2="{mid_top[1]}" stroke="{line_color}" stroke-width="2.5"/>')
-        
-        # House positions for North Indian chart (house number -> coordinates for text)
-        # In North Indian chart, House 1 (Lagna) is at the top center diamond
-        house_positions = {
-            1: (cx, cy - size//2 - 20),           # Top center (Lagna)
-            2: (cx - size//2 - 20, cy - size//2 - 20),  # Top-left triangle
-            3: (cx - size + 30, cy - 30),         # Left-top triangle
-            4: (cx - size//2 - 20, cy),           # Left center
-            5: (cx - size + 30, cy + 30),         # Left-bottom triangle
-            6: (cx - size//2 - 20, cy + size//2 + 20),  # Bottom-left triangle
-            7: (cx, cy + size//2 + 20),           # Bottom center
-            8: (cx + size//2 + 20, cy + size//2 + 20),  # Bottom-right triangle
-            9: (cx + size - 30, cy + 30),         # Right-bottom triangle
-            10: (cx + size//2 + 20, cy),          # Right center
-            11: (cx + size - 30, cy - 30),        # Right-top triangle
-            12: (cx + size//2 + 20, cy - size//2 - 20),  # Top-right triangle
+        # Sign number positions - CORRECT North Indian layout
+        # Houses go CLOCKWISE from Lagna (House 1) at top center:
+        # Top: 2 - 1 - 12
+        # Left side (top to bottom): 3, 4, 5
+        # Right side (top to bottom): 11, 10, 9
+        # Bottom: 6 - 7 - 8
+        q = chart_size // 4
+        house_num_pos = {
+            1:  (cx, cy - half + 18),           # Top center (House 1 = Lagna)
+            2:  (cx - q - 10, cy - half + 18),  # Top LEFT (House 2)
+            12: (cx + q + 10, cy - half + 18),  # Top RIGHT (House 12)
+            3:  (cx - half + 15, cy - q),       # Left upper (House 3)
+            11: (cx + half - 15, cy - q),       # Right upper (House 11)
+            4:  (cx - half + 15, cy),           # Left middle (House 4)
+            10: (cx + half - 15, cy),           # Right middle (House 10)
+            5:  (cx - half + 15, cy + q),       # Left lower (House 5)
+            9:  (cx + half - 15, cy + q),       # Right lower (House 9)
+            6:  (cx - q - 10, cy + half - 18),  # Bottom LEFT (House 6)
+            8:  (cx + q + 10, cy + half - 18),  # Bottom RIGHT (House 8)
+            7:  (cx, cy + half - 18),           # Bottom center (House 7)
         }
         
-        # Planet positions (offset from house number position)
-        planet_positions = {
-            1: (cx, cy - size//2 + 10),
-            2: (cx - size//2, cy - size//2 + 10),
-            3: (cx - size + 50, cy - 10),
-            4: (cx - size//2, cy + 15),
-            5: (cx - size + 50, cy + 50),
-            6: (cx - size//2, cy + size//2 - 10),
-            7: (cx, cy + size//2 - 10),
-            8: (cx + size//2, cy + size//2 - 10),
-            9: (cx + size - 50, cy + 50),
-            10: (cx + size//2, cy + 15),
-            11: (cx + size - 50, cy - 10),
-            12: (cx + size//2, cy - size//2 + 10),
-        }
+        # Add SIGN numbers (not house numbers) to each position
+        for house_num, (hx, hy) in house_num_pos.items():
+            sign_num = get_sign_for_house(house_num)
+            svg += f'  <text x="{hx}" y="{hy}" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="{text_color}" opacity="0.6">{sign_num}</text>\n'
         
-        # Draw house numbers and planets
-        for house_num in range(1, 13):
-            # House number
-            hx, hy = house_positions[house_num]
-            svg_parts.append(f'<text x="{hx}" y="{hy}" text-anchor="middle" class="house-num">{house_num}</text>')
+        # Planet positions - CORRECT to match house positions (CLOCKWISE)
+        planet_pos = {
+            # Top center (House 1 = Lagna)
+            1:  (cx, cy - half + 55),
             
-            # Planets in this house
+            # Top LEFT (House 2)
+            2:  (cx - q, cy - half + 55),
+            
+            # Top RIGHT (House 12)
+            12: (cx + q, cy - half + 55),
+            
+            # Left upper (House 3)
+            3:  (cx - half + 55, cy - q + 10),
+            
+            # Right upper (House 11)
+            11: (cx + half - 55, cy - q + 10),
+            
+            # Left middle (House 4)
+            4:  (cx - half + 55, cy + 10),
+            
+            # Right middle (House 10)
+            10: (cx + half - 55, cy + 10),
+            
+            # Left lower (House 5)
+            5:  (cx - half + 55, cy + q - 10),
+            
+            # Right lower (House 9)
+            9:  (cx + half - 55, cy + q - 10),
+            
+            # Bottom LEFT (House 6)
+            6:  (cx - q, cy + half - 55),
+            
+            # Bottom RIGHT (House 8)
+            8:  (cx + q, cy + half - 55),
+            
+            # Bottom center (House 7)
+            7:  (cx, cy + half - 55),
+        }
+        
+        # Add planets to their houses
+        for house_num, (px, py) in planet_pos.items():
             planets = planets_by_house.get(house_num, [])
             if planets:
-                px, py = planet_positions[house_num]
-                planets_str = ' '.join(planets)
-                svg_parts.append(f'<text x="{px}" y="{py}" text-anchor="middle" class="planet">{planets_str}</text>')
+                if len(planets) <= 3:
+                    planets_str = ' '.join(planets)
+                    svg += f'  <text x="{px}" y="{py}" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="{planet_color}">{planets_str}</text>\n'
+                else:
+                    # Stack vertically for many planets
+                    for i, planet in enumerate(planets):
+                        offset_y = py - 10 + i * 16
+                        svg += f'  <text x="{px}" y="{offset_y}" text-anchor="middle" font-family="Georgia, serif" font-size="14" font-weight="bold" fill="{planet_color}">{planet}</text>\n'
         
-        # Add "As" (Ascendant) marker in house 1
-        svg_parts.append(f'<text x="{cx}" y="{cy - 10}" text-anchor="middle" class="planet">As</text>')
+        # Add Ascendant marker
+        svg += f'  <text x="{cx}" y="{cy - 5}" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="{line_color}" font-style="italic">Asc</text>\n'
         
-        # Footer note
-        svg_parts.append(f'<text x="{cx}" y="{height - 20}" text-anchor="middle" class="subtitle">Houses numbered 1-12 • Planets shown in their respective houses</text>')
+        svg += '</svg>'
         
-        svg_parts.append('</svg>')
-        
-        return '\n'.join(svg_parts)
+        return svg
     
     def _parse_transits(
         self,

@@ -1,0 +1,25 @@
+{
+  "request_id": "737b779a",
+  "timestamp": "2025-12-27T11:59:01.126829Z",
+  "user_input": "how will my studies be in 2035?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "2025-05-07",
+    "tob": "10:56",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.8955,
+    "lon": 76.6066,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "request_id": "060e165e",
+  "timestamp": "2025-12-26T21:39:14.408942Z",
+  "user_input": "The app is not working properly",
+  "topic": "general",
+  "mode": "NEED_BIRTH_DETAILS",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

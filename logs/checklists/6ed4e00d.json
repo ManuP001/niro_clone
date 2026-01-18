@@ -1,0 +1,25 @@
+{
+  "request_id": "6ed4e00d",
+  "timestamp": "2025-12-27T11:39:56.251720Z",
+  "user_input": "How is Saturn affecting me?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1978-11-03",
+    "tob": "23:45",
+    "location": "Chennai",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

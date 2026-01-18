@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 520" style="max-width:100%;height:auto;">
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#FFFEF5"/>
+  
+  <!-- Title -->
+  <text id="chart_title" x="250" y="28" text-anchor="middle" font-family="Georgia,serif" font-size="18" font-weight="bold" fill="#4A3728">Birth Chart (Rāśi)</text>
+  <text id="asc_label" x="250" y="48" text-anchor="middle" font-family="Georgia,serif" font-size="12" fill="#9a6b2f">Ascendant: --</text>
+  
+  <!-- Chart Area (starts at y=60) -->
+  <g transform="translate(50, 60)">
+    <!-- Outer Square 400x400 -->
+    <rect x="0" y="0" width="400" height="400" fill="none" stroke="#9a6b2f" stroke-width="2"/>
+    
+    <!-- Diagonals -->
+    <line x1="0" y1="0" x2="400" y2="400" stroke="#9a6b2f" stroke-width="1.5"/>
+    <line x1="400" y1="0" x2="0" y2="400" stroke="#9a6b2f" stroke-width="1.5"/>
+    
+    <!-- Inner Diamond (connects midpoints) -->
+    <polygon points="200,0 400,200 200,400 0,200" fill="none" stroke="#9a6b2f" stroke-width="1.5"/>
+    
+    <!-- Ascendant Marker at Center -->
+    <text id="asc_marker" x="200" y="204" text-anchor="middle" font-family="Georgia,serif" font-size="14" fill="#228B22" font-style="italic">Asc</text>
+    
+    <!-- House 1: Top Center (Lagna) -->
+    <g id="house1_group">
+      <text id="house1_sign" x="200" y="20" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house1_planets" transform="translate(200, 45)"></g>
+    </g>
+    
+    <!-- House 2: Top Right -->
+    <g id="house2_group">
+      <text id="house2_sign" x="300" y="20" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house2_planets" transform="translate(300, 45)"></g>
+    </g>
+    
+    <!-- House 3: Right Upper -->
+    <g id="house3_group">
+      <text id="house3_sign" x="380" y="100" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house3_planets" transform="translate(355, 115)"></g>
+    </g>
+    
+    <!-- House 4: Right Middle -->
+    <g id="house4_group">
+      <text id="house4_sign" x="380" y="200" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house4_planets" transform="translate(355, 215)"></g>
+    </g>
+    
+    <!-- House 5: Right Lower -->
+    <g id="house5_group">
+      <text id="house5_sign" x="380" y="300" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house5_planets" transform="translate(355, 315)"></g>
+    </g>
+    
+    <!-- House 6: Bottom Right -->
+    <g id="house6_group">
+      <text id="house6_sign" x="300" y="380" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house6_planets" transform="translate(300, 340)"></g>
+    </g>
+    
+    <!-- House 7: Bottom Center -->
+    <g id="house7_group">
+      <text id="house7_sign" x="200" y="380" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house7_planets" transform="translate(200, 340)"></g>
+    </g>
+    
+    <!-- House 8: Bottom Left -->
+    <g id="house8_group">
+      <text id="house8_sign" x="100" y="380" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house8_planets" transform="translate(100, 340)"></g>
+    </g>
+    
+    <!-- House 9: Left Lower -->
+    <g id="house9_group">
+      <text id="house9_sign" x="20" y="300" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house9_planets" transform="translate(45, 315)"></g>
+    </g>
+    
+    <!-- House 10: Left Middle -->
+    <g id="house10_group">
+      <text id="house10_sign" x="20" y="200" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house10_planets" transform="translate(45, 215)"></g>
+    </g>
+    
+    <!-- House 11: Left Upper -->
+    <g id="house11_group">
+      <text id="house11_sign" x="20" y="100" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house11_planets" transform="translate(45, 115)"></g>
+    </g>
+    
+    <!-- House 12: Top Left -->
+    <g id="house12_group">
+      <text id="house12_sign" x="100" y="20" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#9a6b2f"></text>
+      <g id="house12_planets" transform="translate(100, 45)"></g>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,25 @@
+{
+  "request_id": "b9ee6e71",
+  "timestamp": "2026-01-07T08:25:28.314812Z",
+  "user_input": "I am over 65 years old. I won't have kids in the future. I want to know how many kids I have already?",
+  "topic": "family_home",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1958-11-29",
+    "tob": "01:00",
+    "location": "Delhi, Delhi, India",
+    "lat": 28.65195,
+    "lon": 77.23149,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

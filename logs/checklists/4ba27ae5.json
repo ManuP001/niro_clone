@@ -1,0 +1,25 @@
+{
+  "request_id": "4ba27ae5",
+  "timestamp": "2025-12-27T11:26:56.307366Z",
+  "user_input": "When will I get married?",
+  "topic": "marriage_partnership",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1992-07-15",
+    "tob": "14:30",
+    "location": "Delhi",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

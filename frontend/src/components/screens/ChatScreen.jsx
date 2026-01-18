@@ -319,46 +319,83 @@ const ChatScreen = ({ token, userId }) => {
   // Get messages from global store
   const messages = getMessages(userId) || [];
 
-  // Load personalized welcome message on mount
+  // Load personalized welcome message on mount with retry logic
   useEffect(() => {
+    let isMounted = true; // Prevent state updates after unmount
+    
+    const fetchWelcomeWithRetry = async (retries = 3, delay = 1000) => {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          const response = await fetch(`${BACKEND_URL}/api/profile/welcome`, {
+            method: 'POST',  // Fixed: Use POST as per backend endpoint
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.ok && data.welcome_message) {
+              return data;
+            }
+          }
+          
+          // If 404 (profile not found yet), retry after delay
+          if (response.status === 404 && attempt < retries) {
+            console.log(`Profile not found, retrying in ${delay}ms (attempt ${attempt}/${retries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+          
+          return null;
+        } catch (err) {
+          if (attempt < retries) {
+            console.log(`Fetch error, retrying in ${delay}ms (attempt ${attempt}/${retries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
+        }
+      }
+      return null;
+    };
+
     const loadWelcome = async () => {
+      // Skip if already loaded or component unmounted
+      if (welcomeLoaded || !isMounted) {
+        return;
+      }
+      
       try {
         // Check if welcome already in store
         if (messages.length > 0 && messages[0]?.isWelcome) {
-          setWelcomeLoaded(true);
+          if (isMounted) setWelcomeLoaded(true);
           return;
         }
 
         // Fetch personalized welcome from backend if authenticated
         if (token && userId) {
           try {
-            const response = await fetch(`${BACKEND_URL}/api/profile/welcome`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            });
-
-            if (response.ok) {
-              const data = await response.json();
-              if (data.ok && data.welcome_message) {
-                // NEW FORMAT: welcome_message (string) + suggested_questions (array)
-                const messageText = data.welcome_message;
-                const questions = data.suggested_questions || [];
-                
-                const welcomeMessage = {
-                  id: 'welcome',
-                  type: 'ai',
-                  message: messageText,
-                  timestamp: 'Welcome',
-                  isWelcome: true,
-                };
-                // Store in global store for persistence
-                setMessages(userId, [welcomeMessage]);
-                setSuggestedQuestions(questions);
-                setWelcomeLoaded(true);
-                return;
-              }
+            const data = await fetchWelcomeWithRetry(3, 1000);
+            
+            if (!isMounted) return; // Check before state update
+            
+            if (data && data.welcome_message) {
+              // NEW FORMAT: welcome_message (string) + suggested_questions (array)
+              const messageText = data.welcome_message;
+              const questions = data.suggested_questions || [];
+              
+              const welcomeMessage = {
+                id: 'welcome',
+                type: 'ai',
+                message: messageText,
+                timestamp: 'Welcome',
+                isWelcome: true,
+              };
+              // Store in global store for persistence
+              setMessages(userId, [welcomeMessage]);
+              setSuggestedQuestions(questions);
+              setWelcomeLoaded(true);
+              return;
             }
           } catch (apiErr) {
             console.error('Error fetching personalized welcome:', apiErr);
@@ -369,14 +406,19 @@ const ChatScreen = ({ token, userId }) => {
       }
 
       // Fallback: always show generic welcome if no personalized message was loaded
-      if (messages.length === 0) {
+      if (isMounted && messages.length === 0) {
         setMessages(userId, [WELCOME_MESSAGE]);
       }
-      setWelcomeLoaded(true);
+      if (isMounted) setWelcomeLoaded(true);
     };
 
     loadWelcome();
-  }, [userId, token, messages.length]);
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
+  }, [userId, token]); // Removed messages.length to prevent re-fetching
 
   // Typewriter effect for new messages
   useEffect(() => {

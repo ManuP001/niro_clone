@@ -155,7 +155,7 @@ export const navItems = [
   { id: 'kundli', label: 'Kundli', icon: 'star' },
   { id: 'horoscope', label: 'Horoscope', icon: 'star' },
   { id: 'panchang', label: 'Panchang', icon: 'calendar' },
-  { id: 'compatibility', label: 'Match', icon: 'heart' },
+  { id: 'signals', label: 'Signals', icon: 'activity' },
 ];
 
 export const niroFeatures = [

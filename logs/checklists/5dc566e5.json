@@ -1,0 +1,25 @@
+{
+  "request_id": "5dc566e5",
+  "timestamp": "2025-12-27T11:40:13.708893Z",
+  "user_input": "Compare my 2019 vs 2024",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1978-11-03",
+    "tob": "23:45",
+    "location": "Chennai",
+    "lat": null,
+    "lon": null,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "request_id": "f4f9be88",
+  "timestamp": "2026-01-12T12:32:35.732742Z",
+  "user_input": "What's in my birth chart?",
+  "topic": "general",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {},
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}

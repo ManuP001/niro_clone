@@ -1,0 +1,25 @@
+{
+  "request_id": "b1f58746",
+  "timestamp": "2026-01-06T07:49:24.509542Z",
+  "user_input": "Which all gemstones are advisable for me? Are they based on my current antardasha or any other part of my birth chart?",
+  "topic": "daily_guidance",
+  "mode": "NORMAL_READING",
+  "action_id": null,
+  "birth_details": {
+    "dob": "1986-01-24",
+    "tob": "06:32",
+    "location": "Rohtak, Haryana, India",
+    "lat": 28.83333,
+    "lon": 76.66667,
+    "tz": 5.5
+  },
+  "api_calls": [],
+  "reading_pack": {},
+  "llm": {
+    "model": "niro"
+  },
+  "final": {
+    "status": "ok",
+    "summary": ""
+  }
+}
