@@ -35,14 +35,6 @@ export default function HomeScreen({
     onNavigate('categoryListing', { categoryId });
   };
 
-  const handleAskMira = () => {
-    if (askInput.trim()) {
-      onNavigate('mira', { initialMessage: askInput.trim() });
-    } else {
-      onNavigate('mira', {});
-    }
-  };
-
   return (
     <div 
       className={`min-h-screen ${hasBottomNav ? 'pb-20' : ''}`}
