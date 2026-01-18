@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { colors, shadows } from './theme';
 import { HOME_CATEGORIES } from './tileData';
-import { ChevronRightIcon, SendIcon } from './icons';
+import { ChevronRightIcon } from './icons';
 import { trackEvent } from './utils';
 import HeroSection from './HeroSection';
 import TileCard from './TileCard';
@@ -20,7 +20,6 @@ export default function HomeScreen({
   onChatWithMira,
   onTalkToHuman,
 }) {
-  const [askInput, setAskInput] = useState('');
 
   useEffect(() => {
     trackEvent('home_viewed', { flow_version: 'v5' }, token);
