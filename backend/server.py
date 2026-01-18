@@ -3,6 +3,11 @@ from pathlib import Path
 # Add parent directory to path to support relative imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# IMPORTANT: Load environment variables FIRST before any imports that need them
+from dotenv import load_dotenv
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
+
 # Fix for Python 3.9 importlib.metadata compatibility
 try:
     from importlib.metadata import packages_distributions
@@ -16,7 +21,6 @@ except (ImportError, AttributeError):
 from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Header, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
-from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
@@ -85,9 +89,6 @@ from backend.niro_v2.storage import init_niro_v2_storage, get_niro_v2_storage
 # Import NIRO Simplified routes and storage
 from backend.niro_simplified.routes import router as simplified_router
 from backend.niro_simplified.storage import init_simplified_storage, get_simplified_storage
-
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
 
 # Ensure workspace-local logs directory exists for runtime logs
 (ROOT_DIR / "logs").mkdir(parents=True, exist_ok=True)
