@@ -657,6 +657,103 @@ class SimplifiedCatalog:
                     display_order=["starter", "plus", "pro"].index(tier_level) + 1,
                     catalog_version=CATALOG_VERSION
                 )
+        
+        # =========================================================================
+        # V5 TILE-BASED TIERS (Frontend tile IDs)
+        # =========================================================================
+        v5_tile_tiers = [
+            # Relationship Clarity & Commitment
+            ("relationship_healing", "love", "Relationship Healing", 6999, 8, 
+             "Full astrology report about Love & Relationships",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "3×20 min follow-ups", "Unlimited chat", "30-Day Repair Plan", "Communication Script Pack"]),
+            
+            ("family_relationships", "marriage", "Family Relationships", 5999, 8,
+             "Full astrology report about Family Relationships", 
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "4×30 min follow-ups", "Unlimited chat", "Family Harmony Toolkit", "Communication Guidelines"]),
+            
+            ("dating_compatibility", "love", "Dating & Compatibility", 4999, 8,
+             "Full astrology report about Dating & Compatibility",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "3×20 min follow-ups", "Unlimited chat", "Compatibility Checklist", "Dating Timeline"]),
+            
+            ("marriage_planning", "marriage", "Marriage Planning", 7999, 12,
+             "Full astrology report about Marriage & Partnership",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "5×20 min follow-ups", "Unlimited chat", "Kundli Matching Report", "Muhurat Calendar"]),
+            
+            # Career Direction & Stability
+            ("career_clarity", "career", "Career Clarity", 4999, 8,
+             "Full report about Career, Opportunities & Money",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "3×20 min follow-ups", "Unlimited chat", "Role Fit Map", "Skill Focus Plan"]),
+            
+            ("job_transition", "career", "Job Transition", 7999, 12,
+             "Full report about Career, Opportunities & Money",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "5×15 min follow-ups", "Unlimited chat", "Timing Window", "Offer Decision Checklist"]),
+            
+            ("money_stability", "money", "Money Stability", 2999, 4,
+             "Full report about Career, Opportunities & Money",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "2×15 min follow-ups", "Unlimited chat", "Wealth Timeline", "Savings Discipline Plan"]),
+            
+            # Business & Money
+            ("business_decision", "business", "Business Decisions", 4999, 8,
+             "Full report about Business, Growth & Money",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "3×20 min follow-ups", "Unlimited chat", "Business Muhurat Pack", "Decision Risk Scan"]),
+            
+            ("financial_growth", "business", "Financial Growth", 7999, 12,
+             "Full report about Business, Growth & Money",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "5×15 min follow-ups", "Unlimited chat", "Wealth Leakage Scan", "Growth Window"]),
+            
+            ("timing_move", "business", "Timing Your Next Move", 2999, 4,
+             "Full report about Business, Growth & Money",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "2×15 min follow-ups", "Unlimited chat", "Next 90/180 Day Timeline", "Action Calendar"]),
+            
+            # Family & Kids
+            ("fertility", "children", "Fertility Support", 5999, 8,
+             "Full Astrology report about Parenthood",
+             ["1 Vedic Astrologer consultation", "3 Tarot Card Readings (5 Qs each)", "3×20 min follow-ups", "Unlimited Chat", "Conception Timing Pack", "Mira Q&A List"]),
+            
+            ("baby_naming", "children", "Baby Naming & Muhurat", 4999, 12,
+             "Child's Kundli, name options and life report",
+             ["1 Vedic Astrologer consultation", "3 Tarot Card Readings (5 Qs each)", "5×15 min follow-ups", "Unlimited Chat", "Baby Naming Pack", "Childbirth Muhurat Pack"]),
+            
+            ("child_development", "children", "Child Development", 4999, 8,
+             "Child's Kundli and life report",
+             ["1 Vedic Astrologer consultation", "3 Tarot Card Readings (5 Qs each)", "3×20 min follow-ups", "Unlimited Chat", "Kids Kundli Snapshot", "Learning Style Guide"]),
+            
+            # Health & Wellness
+            ("healing_journey", "health", "Healing Journey", 4999, 8,
+             "Full astrology report about Health",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "3×20 min follow-ups", "Unlimited chat", "Healing Window Timing", "14-Day Recovery Routine"]),
+            
+            ("stress_management", "mental_health", "Stress Management", 7999, 12,
+             "Full astrology report about Health",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "5×15 min follow-ups", "Unlimited chat", "Stress Driver Diagnosis", "Sleep Reset Plan"]),
+            
+            ("energy_balance", "health", "Energy & Balance", 4999, 8,
+             "Full astrology report about Health",
+             ["1 Vedic astrologer consultation", "1 Tarot reading (5 Qs)", "3×20 min follow-ups", "Unlimited chat", "Energy Pattern Scan", "14-Day Vitality Plan"]),
+        ]
+        
+        for tier_id, topic_id, name, price, weeks, tagline, features in v5_tile_tiers:
+            self.tiers[tier_id] = PackTier(
+                tier_id=tier_id,
+                topic_id=topic_id,
+                tier_level="v5_pack",
+                name=name,
+                tagline=tagline,
+                price_inr=price,
+                validity_weeks=weeks,
+                is_recommended=True,
+                access_policy=AccessPolicy(
+                    chat_sla_hours=24,
+                    calls_enabled=True,
+                    calls_per_month=2,
+                    call_duration_minutes=60,
+                    max_active_expert_threads=3,
+                    free_tools_access=True
+                ),
+                features=features,
+                display_order=1,
+                catalog_version=CATALOG_VERSION
+            )
     
     # =========================================================================
     # SEED FREE TOOLS
