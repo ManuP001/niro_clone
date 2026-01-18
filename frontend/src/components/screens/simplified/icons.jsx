@@ -383,6 +383,7 @@ export const getTileIcon = (iconType, className = 'w-6 h-6') => {
   const icons = {
     heart: <HeartIcon className={className} />,
     ring: <RingIcon className={className} />,
+    rings: <RingIcon className={className} />,
     healing: <HealingIcon className={className} />,
     compass: <CompassIcon className={className} />,
     briefcase: <BriefcaseIcon className={className} />,
