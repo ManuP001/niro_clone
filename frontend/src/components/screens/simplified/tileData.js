@@ -70,6 +70,64 @@ export const HOME_CATEGORIES = [
           { name: 'Protection Kit', description: 'Can mirror protection + shanti options', price: 799 },
           { name: 'Shanti Pooja', description: 'Family peace ritual', price: 1999 }
         ]
+      },
+      {
+        id: 'dating_compatibility',
+        title: 'Dating & Compatibility',
+        shortTitle: 'Dating',
+        iconType: 'heart',
+        outcomeStatement: 'Full astrology report about Dating & Compatibility',
+        painPoints: 'Dating confusion; wants to understand compatibility patterns',
+        price: 4999,
+        validity: 60,
+        duration: '60 days',
+        sessions: '7 days / 3 messages per expert to find best fit',
+        responseSLA: '24 hours',
+        toolFeatures: '1 Vedic astrologer consultation + 1 Tarot reading (5 Qs) + 3×20 min follow-ups + Unlimited chat',
+        whoFor: [
+          'Navigating the dating scene with clarity',
+          'Want to understand compatibility with a potential partner',
+          'Need guidance on relationship patterns and timing'
+        ],
+        includedTools: [
+          { name: 'Compatibility Checklist', description: 'Key factors that make a match work', cta: 'Open' },
+          { name: 'Dating Timeline', description: 'Favorable periods for meeting someone', cta: 'Open' },
+          { name: 'Red Flag Identifier', description: 'Patterns to watch for in new relationships', cta: 'Open' }
+        ],
+        paidRemedies: [
+          { name: 'Venus Harmony Kit', description: 'Attract love and connection ritual', price: 899 },
+          { name: 'Protection Kit', description: 'Emotional protection during dating', price: 799 },
+          { name: 'Relationship Pooja', description: 'Blessing for new love', price: 1999 }
+        ]
+      },
+      {
+        id: 'marriage_planning',
+        title: 'Marriage Planning',
+        shortTitle: 'Marriage',
+        iconType: 'rings',
+        outcomeStatement: 'Full astrology report about Marriage & Partnership',
+        painPoints: 'Marriage timing anxiety; wants auspicious dates + partner clarity',
+        price: 7999,
+        validity: 90,
+        duration: '90 days',
+        sessions: '7 days / 3 messages per expert to find best fit',
+        responseSLA: '24 hours',
+        toolFeatures: '1 Vedic astrologer consultation + 1 Tarot reading (5 Qs) + 5×20 min follow-ups + Unlimited chat',
+        whoFor: [
+          'Planning to get married and need timing guidance',
+          'Want kundli matching with your partner',
+          'Need auspicious muhurat for engagement or wedding'
+        ],
+        includedTools: [
+          { name: 'Kundli Matching Report', description: 'Comprehensive compatibility analysis', cta: 'Open' },
+          { name: 'Muhurat Calendar', description: 'Auspicious dates for engagement & wedding', cta: 'Open' },
+          { name: 'Marriage Readiness Assessment', description: 'Timing and preparation checklist', cta: 'Open' }
+        ],
+        paidRemedies: [
+          { name: 'Venus Harmony Kit', description: 'Love and marriage blessing ritual', price: 899 },
+          { name: 'Vivah Pooja', description: 'Marriage blessing ceremony', price: 2499 },
+          { name: 'Gemstone Recommendation', description: 'Partnership harmony stone', price: 1499 }
+        ]
       }
     ]
   },
