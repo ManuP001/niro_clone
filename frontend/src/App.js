@@ -152,10 +152,16 @@ function App() {
           {/* UI Version Toggle (for development) */}
           <div className="fixed top-2 right-2 z-50 flex gap-1">
             <button 
-              onClick={() => { setUseV5Flow(!useV5Flow); }}
-              className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${useV5Flow ? 'bg-teal-600' : 'bg-amber-500'}`}
+              onClick={() => { setUseV5Flow(true); }}
+              className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${useV5Flow ? 'bg-teal-600' : 'bg-slate-400'}`}
             >
-              {useV5Flow ? 'V5' : 'V4'}
+              V5
+            </button>
+            <button 
+              onClick={() => { setUseV5Flow(false); }}
+              className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${!useV5Flow ? 'bg-amber-500' : 'bg-slate-400'}`}
+            >
+              V4
             </button>
             <button 
               onClick={() => { setUseSimplified(false); setUseV2UI(true); }}
