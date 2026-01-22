@@ -34,7 +34,7 @@ function App() {
   // NIRO Simplified V1: New simplified flow
   const [useSimplified, setUseSimplified] = useState(true); // Default to Simplified V1
   // V5: Toggle between V4 and V5 onboarding
-  const [useV5Flow, setUseV5Flow] = useState(true); // Default to V5
+  const [useV5Flow, setUseV5Flow] = useState(false); // Default to V4
 
   // Check auth status on mount
   useEffect(() => {
