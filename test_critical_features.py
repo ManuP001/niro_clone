@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://git-liftoff.preview.emergentagent.com/api"
+BACKEND_URL = "https://onboard-overhaul.preview.emergentagent.com/api"
 
 class CriticalFeaturesTester:
     def __init__(self):
