@@ -754,6 +754,183 @@ class SimplifiedCatalog:
                 display_order=1,
                 catalog_version=CATALOG_VERSION
             )
+        
+        # =========================================================================
+        # V5 18 SUB-TOPIC TIERS (3 tiers per sub-topic: Focussed, Supported, Comprehensive)
+        # =========================================================================
+        v5_subtopic_tiers = [
+            # ==================== LOVE SUB-TOPICS (6) ====================
+            # Relationship Healing
+            ("relationship-healing_focussed", "love", "Relationship Healing - Focussed", 6999, 8),
+            ("relationship-healing_supported", "love", "Relationship Healing - Supported", 8999, 8),
+            ("relationship-healing_comprehensive", "love", "Relationship Healing - Comprehensive", 10999, 8),
+            
+            # Family Relationships
+            ("family-relationships_focussed", "marriage", "Family Relationships - Focussed", 5999, 8),
+            ("family-relationships_supported", "marriage", "Family Relationships - Supported", 7999, 8),
+            ("family-relationships_comprehensive", "marriage", "Family Relationships - Comprehensive", 9999, 8),
+            
+            # Dating & Compatibility
+            ("dating-compatibility_focussed", "love", "Dating & Compatibility - Focussed", 4999, 8),
+            ("dating-compatibility_supported", "love", "Dating & Compatibility - Supported", 6999, 8),
+            ("dating-compatibility_comprehensive", "love", "Dating & Compatibility - Comprehensive", 8999, 8),
+            
+            # Marriage Planning
+            ("marriage-planning_focussed", "marriage", "Marriage Planning - Focussed", 7999, 12),
+            ("marriage-planning_supported", "marriage", "Marriage Planning - Supported", 9999, 12),
+            ("marriage-planning_comprehensive", "marriage", "Marriage Planning - Comprehensive", 11999, 12),
+            
+            # Communication & Trust
+            ("communication-trust_focussed", "love", "Communication & Trust - Focussed", 5999, 8),
+            ("communication-trust_supported", "love", "Communication & Trust - Supported", 7999, 8),
+            ("communication-trust_comprehensive", "love", "Communication & Trust - Comprehensive", 9999, 8),
+            
+            # Breakup & Closure
+            ("breakup-closure_focussed", "love", "Breakup & Closure - Focussed", 4999, 8),
+            ("breakup-closure_supported", "love", "Breakup & Closure - Supported", 6999, 8),
+            ("breakup-closure_comprehensive", "love", "Breakup & Closure - Comprehensive", 8999, 8),
+            
+            # ==================== CAREER SUB-TOPICS (6) ====================
+            # Career Clarity
+            ("career-clarity_focussed", "career", "Career Clarity - Focussed", 4999, 8),
+            ("career-clarity_supported", "career", "Career Clarity - Supported", 6999, 8),
+            ("career-clarity_comprehensive", "career", "Career Clarity - Comprehensive", 8999, 8),
+            
+            # Job Transition
+            ("job-transition_focussed", "career", "Job Transition - Focussed", 7999, 12),
+            ("job-transition_supported", "career", "Job Transition - Supported", 9999, 12),
+            ("job-transition_comprehensive", "career", "Job Transition - Comprehensive", 11999, 12),
+            
+            # Money Stability
+            ("money-stability_focussed", "money", "Money Stability - Focussed", 2999, 4),
+            ("money-stability_supported", "money", "Money Stability - Supported", 4999, 4),
+            ("money-stability_comprehensive", "money", "Money Stability - Comprehensive", 6999, 4),
+            
+            # Work Stress
+            ("work-stress_focussed", "career", "Work Stress - Focussed", 4999, 8),
+            ("work-stress_supported", "career", "Work Stress - Supported", 6999, 8),
+            ("work-stress_comprehensive", "career", "Work Stress - Comprehensive", 8999, 8),
+            
+            # Office Politics
+            ("office-politics_focussed", "career", "Office Politics - Focussed", 4999, 8),
+            ("office-politics_supported", "career", "Office Politics - Supported", 6999, 8),
+            ("office-politics_comprehensive", "career", "Office Politics - Comprehensive", 8999, 8),
+            
+            # Big Decision Timing
+            ("big-decision-timing_focussed", "career", "Big Decision Timing - Focussed", 2999, 4),
+            ("big-decision-timing_supported", "career", "Big Decision Timing - Supported", 4999, 4),
+            ("big-decision-timing_comprehensive", "career", "Big Decision Timing - Comprehensive", 6999, 4),
+            
+            # ==================== HEALTH SUB-TOPICS (6) ====================
+            # Healing Journey
+            ("healing-journey_focussed", "health", "Healing Journey - Focussed", 4999, 8),
+            ("healing-journey_supported", "health", "Healing Journey - Supported", 6999, 8),
+            ("healing-journey_comprehensive", "health", "Healing Journey - Comprehensive", 8999, 8),
+            
+            # Stress Management
+            ("stress-management_focussed", "mental_health", "Stress Management - Focussed", 7999, 12),
+            ("stress-management_supported", "mental_health", "Stress Management - Supported", 9999, 12),
+            ("stress-management_comprehensive", "mental_health", "Stress Management - Comprehensive", 11999, 12),
+            
+            # Energy & Balance
+            ("energy-balance_focussed", "health", "Energy & Balance - Focussed", 4999, 8),
+            ("energy-balance_supported", "health", "Energy & Balance - Supported", 6999, 8),
+            ("energy-balance_comprehensive", "health", "Energy & Balance - Comprehensive", 8999, 8),
+            
+            # Sleep Reset
+            ("sleep-reset_focussed", "health", "Sleep Reset - Focussed", 4999, 8),
+            ("sleep-reset_supported", "health", "Sleep Reset - Supported", 6999, 8),
+            ("sleep-reset_comprehensive", "health", "Sleep Reset - Comprehensive", 8999, 8),
+            
+            # Emotional Recovery
+            ("emotional-recovery_focussed", "mental_health", "Emotional Recovery - Focussed", 4999, 8),
+            ("emotional-recovery_supported", "mental_health", "Emotional Recovery - Supported", 6999, 8),
+            ("emotional-recovery_comprehensive", "mental_health", "Emotional Recovery - Comprehensive", 8999, 8),
+            
+            # Women's Wellness
+            ("womens-wellness_focussed", "health", "Women's Wellness - Focussed", 4999, 8),
+            ("womens-wellness_supported", "health", "Women's Wellness - Supported", 6999, 8),
+            ("womens-wellness_comprehensive", "health", "Women's Wellness - Comprehensive", 8999, 8),
+        ]
+        
+        # Define access policies for each tier level
+        tier_policies = {
+            "focussed": AccessPolicy(
+                chat_sla_hours=48,
+                calls_enabled=True,
+                calls_per_month=1,
+                call_duration_minutes=60,
+                max_active_expert_threads=1,
+                free_tools_access=True
+            ),
+            "supported": AccessPolicy(
+                chat_sla_hours=24,
+                calls_enabled=True,
+                calls_per_month=3,
+                call_duration_minutes=60,
+                max_active_expert_threads=2,
+                free_tools_access=True
+            ),
+            "comprehensive": AccessPolicy(
+                chat_sla_hours=24,
+                calls_enabled=True,
+                calls_per_month=5,
+                call_duration_minutes=60,
+                max_active_expert_threads=-1,
+                free_tools_access=True
+            )
+        }
+        
+        tier_features = {
+            "focussed": [
+                "1× 60-min video call",
+                "7 days async chat",
+                "1 follow-up check-in",
+                "Basic clarity report"
+            ],
+            "supported": [
+                "3 sessions (1×60-min + 2×30-min)",
+                "Unlimited chat for full duration",
+                "2 follow-ups included",
+                "Extended guidance report"
+            ],
+            "comprehensive": [
+                "5 sessions (2×60-min + 3×30-min)",
+                "Unlimited chat + priority response",
+                "Multiple expert perspectives",
+                "Comprehensive life report"
+            ]
+        }
+        
+        for tier_id, topic_id, name, price, weeks in v5_subtopic_tiers:
+            # Determine tier level from ID
+            if "_focussed" in tier_id:
+                tier_level = "focussed"
+                display_order = 1
+                is_recommended = False
+            elif "_supported" in tier_id:
+                tier_level = "supported"
+                display_order = 2
+                is_recommended = True  # Supported tier is always recommended
+            else:
+                tier_level = "comprehensive"
+                display_order = 3
+                is_recommended = False
+            
+            self.tiers[tier_id] = PackTier(
+                tier_id=tier_id,
+                topic_id=topic_id,
+                tier_level=tier_level,
+                name=name,
+                tagline=f"{tier_level.capitalize()} guidance package",
+                price_inr=price,
+                validity_weeks=weeks,
+                is_recommended=is_recommended,
+                access_policy=tier_policies[tier_level],
+                features=tier_features[tier_level],
+                display_order=display_order,
+                catalog_version=CATALOG_VERSION
+            )
     
     # =========================================================================
     # SEED FREE TOOLS
