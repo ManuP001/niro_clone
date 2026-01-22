@@ -17,7 +17,7 @@ import { BACKEND_URL } from './config';
 import { NiroV2App } from './components/screens/v2';
 
 // NIRO Simplified V1 Imports
-import { SimplifiedApp } from './components/screens/simplified';
+import { SimplifiedApp, SimplifiedAppV5 } from './components/screens/simplified';
 
 function App() {
   const [authState, setAuthState] = useState({
@@ -33,6 +33,8 @@ function App() {
   const [useV2UI, setUseV2UI] = useState(false); // Default to Simplified
   // NIRO Simplified V1: New simplified flow
   const [useSimplified, setUseSimplified] = useState(true); // Default to Simplified V1
+  // V5: Toggle between V4 and V5 onboarding
+  const [useV5Flow, setUseV5Flow] = useState(true); // Default to V5
 
   // Check auth status on mount
   useEffect(() => {
