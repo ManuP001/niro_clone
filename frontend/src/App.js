@@ -152,11 +152,10 @@ function App() {
           {/* UI Version Toggle (for development) */}
           <div className="fixed top-2 right-2 z-50 flex gap-1">
             <button 
-              onClick={() => { setUseSimplified(true); setUseV2UI(false); }}
-              className="text-white text-xs px-2 py-1 rounded-full shadow-lg"
-              style={{ backgroundColor: '#d7b870' }}
+              onClick={() => { setUseV5Flow(!useV5Flow); }}
+              className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${useV5Flow ? 'bg-teal-600' : 'bg-amber-500'}`}
             >
-              V1
+              {useV5Flow ? 'V5' : 'V4'}
             </button>
             <button 
               onClick={() => { setUseSimplified(false); setUseV2UI(true); }}
@@ -174,10 +173,17 @@ function App() {
           
           {/* Desktop: centered container with max width - overflow-auto for scrolling */}
           <div className="w-full lg:max-w-md lg:h-[85vh] lg:max-h-[900px] lg:rounded-2xl lg:shadow-xl lg:overflow-auto flex-1 flex flex-col">
-            <SimplifiedApp 
-              token={authState.token} 
-              userId={authState.userId}
-            />
+            {useV5Flow ? (
+              <SimplifiedAppV5 
+                token={authState.token} 
+                userId={authState.userId}
+              />
+            ) : (
+              <SimplifiedApp 
+                token={authState.token} 
+                userId={authState.userId}
+              />
+            )}
           </div>
         </div>
       </ChatProvider>
