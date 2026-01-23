@@ -5,7 +5,7 @@ Endpoints for topics, experts, scenarios, tiers, tools, plans, and threads.
 
 import os
 import logging
-from fastapi import APIRouter, HTTPException, Header, Query, Request
+from fastapi import APIRouter, HTTPException, Header, Query, Request, BackgroundTasks
 from typing import Optional, List
 from datetime import datetime, timedelta
 from pydantic import BaseModel, Field
@@ -16,6 +16,7 @@ import razorpay
 from .models import UserState, ActivePlanSummary, RecentThreadSummary
 from .catalog import get_simplified_catalog, CATALOG_VERSION
 from .storage import get_simplified_storage
+from backend.services.email_service import send_booking_notification
 
 logger = logging.getLogger(__name__)
 
