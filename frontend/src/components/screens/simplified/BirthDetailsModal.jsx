@@ -358,7 +358,7 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
           className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto shadow-xl"
           style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}
         >
-          <FormContent />
+          {formContent}
         </div>
       </div>
     );
@@ -371,7 +371,7 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
         className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
         style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}
       >
-        <FormContent />
+        {formContent}
       </div>
     </div>
   );
