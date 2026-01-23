@@ -21,8 +21,8 @@ export default function TrustSafetyScreen({ onComplete, onBack }) {
     },
     {
       icon: CheckIcon,
-      title: '7-Day Refund Policy',
-      description: "Not satisfied? Get a full refund, no questions asked",
+      title: '100% Satisfaction Guaranteed',
+      description: "Your satisfaction is our priority",
     },
   ];
 
