@@ -40,8 +40,8 @@ import {
 const TIER_LEVELS = ['Focussed', 'Supported', 'Comprehensive'];
 const DEFAULT_TIER = 'Supported';
 
-// Premium Gradient Background (same as home/onboarding)
-const GRADIENT_BG = 'linear-gradient(180deg, #3E827A 0%, rgba(255, 255, 195, 0.58) 100%)';
+// Light pastel green background for better text visibility
+const GRADIENT_BG = 'linear-gradient(180deg, #E8F5F3 0%, #F5FBF9 50%, #FFFEF5 100%)';
 const CARD_BG = 'rgba(255, 255, 255, 0.85)';
 const CARD_BORDER = 'rgba(0,0,0,0.06)';
 const DIVIDER_COLOR = 'rgba(0,0,0,0.06)';
@@ -299,7 +299,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
         </div>
       </section>
 
-      {/* ===== REFUND GUARANTEE - ONLY AFTER TIER SUMMARY ===== */}
+      {/* ===== SATISFACTION GUARANTEE ===== */}
       <section className="px-5 py-3">
         <div 
           className="flex items-center justify-center gap-2 py-2.5 rounded-lg"
@@ -307,7 +307,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
         >
           <CheckIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
           <span className="text-sm" style={{ color: colors.teal.primary }}>
-            No questions asked — 7 day full refund guarantee
+            100% satisfaction guaranteed
           </span>
         </div>
       </section>
@@ -495,7 +495,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
             'Unlimited follow-ups in Supported & Comprehensive packs',
             'Clear outcomes: patterns, timing, and what to expect next (no jargon)',
             'Private, secure, and designed for a judgement-free experience',
-            'No questions asked — 7-day full refund guarantee.'
+            '100% satisfaction guaranteed'
           ]).map((bullet, idx) => (
             <div key={idx} className="flex items-start gap-3">
               <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />

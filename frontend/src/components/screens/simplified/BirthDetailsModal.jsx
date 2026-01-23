@@ -12,8 +12,8 @@ const TEAL_GRADIENT = 'linear-gradient(180deg, #3E827A 0%, rgba(255, 255, 195, 0
 export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, isOnboarding = false }) {
   const [formData, setFormData] = useState({
     name: '',
-    dob: '',
-    tob: '12:00',
+    dob: '1986-01-24',
+    tob: '06:32',
     location: '',
     birth_place_lat: null,
     birth_place_lon: null,
@@ -153,7 +153,10 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
           <input
             type="text"
             value={formData.name}
-            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            onChange={(e) => {
+              const val = e.target.value;
+              setFormData(prev => ({ ...prev, name: val }));
+            }}
             placeholder="Your full name"
             className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2"
             style={{ 
@@ -161,6 +164,7 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
               borderColor: '#A8D5CF',
               color: '#3E827A'
             }}
+            autoComplete="off"
             required
           />
         </div>
