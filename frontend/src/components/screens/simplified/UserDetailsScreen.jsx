@@ -39,8 +39,8 @@ export default function UserDetailsScreen({ token, onComplete }) {
     
     setIsLoading(true);
     try {
-      // Save profile data
-      const response = await fetch(`${BACKEND_URL}/api/profile/update`, {
+      // Save profile data - Backend expects specific field names
+      const response = await fetch(`${BACKEND_URL}/api/profile/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,16 +49,17 @@ export default function UserDetailsScreen({ token, onComplete }) {
         body: JSON.stringify({
           name: formData.name,
           gender: formData.gender,
-          birth_date: formData.birthDate,
-          birth_time: formData.birthTime || null,
-          birth_place: formData.birthPlace,
+          dob: formData.birthDate,  // Backend expects 'dob' in YYYY-MM-DD format
+          tob: formData.birthTime || '12:00',  // Backend expects 'tob', default to noon if not provided
+          location: formData.birthPlace,  // Backend expects 'location'
         }),
       });
 
       if (response.ok) {
         onComplete();
       } else {
-        setErrors({ submit: 'Failed to save. Please try again.' });
+        const errorData = await response.json().catch(() => ({}));
+        setErrors({ submit: errorData.detail || 'Failed to save. Please try again.' });
       }
     } catch (err) {
       console.error('Failed to save profile:', err);
