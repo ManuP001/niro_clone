@@ -11,18 +11,18 @@ export default function TrustSafetyScreen({ onComplete, onBack }) {
   const trustPoints = [
     {
       icon: ShieldIcon,
-      title: '100% Verified Experts',
-      description: 'Every astrologer is background verified',
+      title: 'Verified experts',
+      description: 'Every astrologer is vetted for quality and conduct.',
     },
     {
       icon: LockIcon,
-      title: 'Your Privacy Protected',
-      description: 'All conversations are encrypted and secure',
+      title: 'Private by design',
+      description: 'Your chats and calls are encrypted and never shared.',
     },
     {
       icon: CheckIcon,
-      title: '100% Satisfaction Guaranteed',
-      description: "Your satisfaction is our priority",
+      title: 'No questions asked refund',
+      description: "If you don't feel helped, we'll refund you — no questions asked.",
     },
   ];
 
@@ -58,13 +58,13 @@ export default function TrustSafetyScreen({ onComplete, onBack }) {
             backgroundClip: 'text',
           }}
         >
-          Trust & Safety
+          Trust & Privacy
         </h1>
         <p 
           className="text-center mb-8"
           style={{ color: 'rgba(255,255,255,0.8)' }}
         >
-          Your peace of mind is our priority
+          Everything you share stays protected.
         </p>
         
         {/* Trust cards */}
@@ -99,7 +99,7 @@ export default function TrustSafetyScreen({ onComplete, onBack }) {
         {/* 10K users badge */}
         <div className="mt-6 text-center">
           <p className="text-sm" style={{ color: 'rgba(255,255,255,0.9)' }}>
-            Join <span className="font-semibold" style={{ color: colors.gold.primary }}>10,000+</span> users who found clarity
+            Join <span className="font-semibold" style={{ color: colors.gold.primary }}>10,000+</span> people who found clarity with Niro.
           </p>
         </div>
       </div>
@@ -115,7 +115,7 @@ export default function TrustSafetyScreen({ onComplete, onBack }) {
             boxShadow: shadows.md,
           }}
         >
-          Start Exploring
+          Continue
           <ArrowRightIcon className="w-5 h-5" />
         </button>
       </div>
