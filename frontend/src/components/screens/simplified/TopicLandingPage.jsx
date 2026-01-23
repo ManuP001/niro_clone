@@ -9,8 +9,7 @@ import {
   CalendarIcon,
   ChatIcon,
   GiftIcon,
-  PhoneIcon,
-  UserIcon
+  PhoneIcon
 } from './icons';
 import { trackEvent } from './utils';
 
