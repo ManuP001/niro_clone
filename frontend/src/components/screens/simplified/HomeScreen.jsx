@@ -1,63 +1,71 @@
 import React, { useEffect } from 'react';
 import { colors } from './theme';
-import { SparklesIcon, ConsultIcon } from './icons';
+import { SparklesIcon, PhoneIcon, ConsultIcon, ShieldIcon } from './icons';
 import { trackEvent } from './utils';
-import TileCard from './TileCard';
 
 /**
- * HomeScreen V4 - Revamped with animated logo, 3 life situations, 18 tiles
- * - Fixed header with animated Niro logo
- * - Only tiles scroll
- * - Premium minimal design matching other screens
+ * HomeScreen V6 - Premium UI Upgrade
+ * 
+ * Changes from V4:
+ * - Reordered 18 tiles (premium + highest intent first)
+ * - Reduced bottom whitespace by 60%+
+ * - Gradient background (same as onboarding)
+ * - Category modules with premium card containers
+ * - Premium CTA area with "Talk to Expert" as primary
+ * - Trust microcopy under CTAs
  */
 
-// Base styling constants (same as landing page)
-const BASE_BG = '#FAFAFA';
-
-// 3 Life Situations with 6 subtopics each = 18 tiles
-const LIFE_SITUATIONS = [
+// V6 Tile Order - Premium + Highest Intent First
+const V6_LIFE_SITUATIONS = [
   {
     id: 'love',
     title: 'Love & Relationships',
+    helperCopy: 'Dating, commitment, healing, family dynamics',
     tiles: [
       { id: 'relationship_healing', shortTitle: 'Healing', iconType: 'healing' },
-      { id: 'family_relationships', shortTitle: 'Family', iconType: 'family' },
       { id: 'dating_compatibility', shortTitle: 'Dating', iconType: 'heart' },
       { id: 'marriage_planning', shortTitle: 'Marriage', iconType: 'rings' },
       { id: 'communication_trust', shortTitle: 'Trust', iconType: 'chat' },
+      { id: 'family_relationships', shortTitle: 'Family', iconType: 'family' },
       { id: 'breakup_closure', shortTitle: 'Closure', iconType: 'breakup' },
     ]
   },
   {
     id: 'career',
     title: 'Career & Money',
+    helperCopy: 'Work direction, stability, timing, growth',
     tiles: [
       { id: 'career_clarity', shortTitle: 'Clarity', iconType: 'compass' },
       { id: 'job_transition', shortTitle: 'Job Change', iconType: 'briefcase' },
       { id: 'money_stability', shortTitle: 'Money', iconType: 'wallet' },
+      { id: 'big_decision_timing', shortTitle: 'Timing', iconType: 'clock' },
       { id: 'work_stress', shortTitle: 'Work Stress', iconType: 'stress' },
       { id: 'office_politics', shortTitle: 'Office', iconType: 'office' },
-      { id: 'big_decision_timing', shortTitle: 'Timing', iconType: 'clock' },
     ]
   },
   {
     id: 'health',
     title: 'Health & Wellness',
+    helperCopy: 'Stress, recovery, energy, emotional balance',
     tiles: [
-      { id: 'healing_journey', shortTitle: 'Healing', iconType: 'healing' },
       { id: 'stress_management', shortTitle: 'Stress', iconType: 'stress' },
-      { id: 'energy_balance', shortTitle: 'Energy', iconType: 'energy' },
       { id: 'sleep_reset', shortTitle: 'Sleep', iconType: 'sleep' },
+      { id: 'energy_balance', shortTitle: 'Energy', iconType: 'energy' },
+      { id: 'healing_journey', shortTitle: 'Healing', iconType: 'healing' },
       { id: 'emotional_recovery', shortTitle: 'Emotional', iconType: 'emotional' },
       { id: 'womens_wellness', shortTitle: 'Wellness', iconType: 'wellness' },
     ]
   }
 ];
 
+// Premium Gradient Background (same as onboarding)
+const GRADIENT_BG = 'linear-gradient(180deg, #F8FAF9 0%, #F0F5F3 50%, #E8F0ED 100%)';
+const MODULE_BG = 'rgba(255, 255, 255, 0.7)';
+
 // Animated Logo Component (from Splash Screen)
 function AnimatedLogo() {
   return (
-    <div className="relative w-24 h-24 mx-auto">
+    <div className="relative w-28 h-28 mx-auto">
       {/* Animated Ring */}
       <svg 
         className="absolute inset-0 w-full h-full animate-spin-slow" 
@@ -94,7 +102,7 @@ function AnimatedLogo() {
       {/* Logo Text */}
       <div className="absolute inset-0 flex items-center justify-center">
         <span 
-          className="text-3xl font-bold tracking-wide"
+          className="text-4xl font-bold tracking-wide"
           style={{ 
             fontFamily: "'Kumbh Sans', 'Inter', sans-serif",
             background: colors.logo.gradient,
@@ -237,7 +245,7 @@ function MinimalistTile({ tile, onClick }) {
     <button
       onClick={() => onClick(tile.id)}
       data-testid={`tile-${tile.id}`}
-      className="flex flex-col items-center justify-center w-24 h-24 rounded-2xl transition-all active:scale-[0.96] hover:shadow-md"
+      className="flex flex-col items-center justify-center w-full aspect-square rounded-2xl transition-all active:scale-[0.96] hover:shadow-md"
       style={{ 
         backgroundColor: '#FFFFFF',
         border: '1px solid rgba(0,0,0,0.06)',
@@ -256,6 +264,48 @@ function MinimalistTile({ tile, onClick }) {
   );
 }
 
+// Category Module Component - Premium Card Container
+function CategoryModule({ situation, onTileClick }) {
+  return (
+    <div 
+      className="rounded-2xl p-4 mb-4"
+      style={{ 
+        backgroundColor: MODULE_BG,
+        backdropFilter: 'blur(8px)',
+        border: '1px solid rgba(255,255,255,0.8)',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
+      }}
+    >
+      {/* Section Title + Helper */}
+      <div className="mb-3">
+        <h3 
+          className="text-sm font-semibold"
+          style={{ color: colors.text.dark }}
+        >
+          {situation.title}
+        </h3>
+        <p 
+          className="text-xs mt-0.5"
+          style={{ color: colors.text.secondary }}
+        >
+          {situation.helperCopy}
+        </p>
+      </div>
+      
+      {/* 3x2 Grid of Tiles */}
+      <div className="grid grid-cols-3 gap-2.5">
+        {situation.tiles.map((tile) => (
+          <MinimalistTile 
+            key={tile.id}
+            tile={tile}
+            onClick={onTileClick}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function HomeScreen({ 
   token, 
   hasBottomNav, 
@@ -265,7 +315,7 @@ export default function HomeScreen({
 }) {
 
   useEffect(() => {
-    trackEvent('home_viewed', { flow_version: 'v4_revamp' }, token);
+    trackEvent('home_viewed', { flow_version: 'v6_premium' }, token);
   }, [token]);
 
   const handleTileClick = (tileId) => {
@@ -275,86 +325,84 @@ export default function HomeScreen({
 
   return (
     <div 
-      className={`min-h-screen ${hasBottomNav ? 'pb-20' : ''}`}
-      style={{ backgroundColor: BASE_BG }}
+      className={`min-h-screen ${hasBottomNav ? 'pb-16' : ''}`}
+      style={{ background: GRADIENT_BG }}
     >
       {/* Fixed Header with Animated Logo */}
       <header 
         className="sticky top-0 z-40 pt-6 pb-4 px-5"
-        style={{ backgroundColor: BASE_BG }}
+        style={{ 
+          background: 'linear-gradient(180deg, #F8FAF9 0%, rgba(248,250,249,0.95) 100%)',
+        }}
       >
-        {/* Animated Logo */}
+        {/* Animated Logo (Larger) */}
         <AnimatedLogo />
         
-        {/* CTA Buttons - Smaller */}
-        <div className="flex gap-2 mt-4">
-          <button
-            onClick={onChatWithMira}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-medium text-xs transition-all active:scale-[0.98]"
-            style={{ 
-              backgroundColor: colors.gold.primary,
-              color: colors.text.dark,
-            }}
-            data-testid="chat-with-mira-btn"
-          >
-            <SparklesIcon className="w-3.5 h-3.5" />
-            Chat with Mira (AI Astrologer)
-          </button>
+        {/* Premium CTA Area */}
+        <div className="mt-4">
+          {/* CTAs - Talk to Expert is Primary */}
+          <div className="flex gap-2">
+            <button
+              onClick={onTalkToHuman}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-medium text-xs transition-all active:scale-[0.98]"
+              style={{ 
+                backgroundColor: colors.teal.primary,
+                color: '#ffffff',
+              }}
+              data-testid="talk-to-expert-btn"
+            >
+              <PhoneIcon className="w-3.5 h-3.5" />
+              Talk to Expert
+            </button>
 
-          <button
-            onClick={onTalkToHuman}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-medium text-xs transition-all active:scale-[0.98]"
-            style={{ 
-              backgroundColor: '#FFFFFF',
-              color: colors.text.dark,
-              border: '1px solid rgba(0,0,0,0.1)',
-            }}
-            data-testid="talk-to-expert-btn"
-          >
-            <ConsultIcon className="w-3.5 h-3.5" />
-            Talk to Expert
-          </button>
+            <button
+              onClick={onChatWithMira}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-medium text-xs transition-all active:scale-[0.98]"
+              style={{ 
+                backgroundColor: 'rgba(255,255,255,0.9)',
+                color: colors.text.dark,
+                border: '1px solid rgba(0,0,0,0.08)',
+              }}
+              data-testid="chat-with-mira-btn"
+            >
+              <SparklesIcon className="w-3.5 h-3.5" />
+              Chat with Mira (AI)
+            </button>
+          </div>
+          
+          {/* Trust Microcopy */}
+          <div className="flex items-center justify-center gap-1.5 mt-2">
+            <ShieldIcon className="w-3 h-3" style={{ color: colors.text.mutedDark }} />
+            <span 
+              className="text-[10px]"
+              style={{ color: colors.text.mutedDark }}
+            >
+              Private • No spam • Verified experts
+            </span>
+          </div>
         </div>
       </header>
 
-      {/* Scrollable Tiles Section */}
-      <div className="px-5">
+      {/* Scrollable Tiles Section - Reduced Bottom Padding */}
+      <div className="px-4 pt-2" style={{ paddingBottom: '12px' }}>
         {/* Section Title */}
-        <div className="mb-5">
+        <div className="mb-4">
           <p 
-            className="text-base font-medium text-center"
+            className="text-sm font-medium text-center"
             style={{ color: colors.text.dark }}
           >
             Choose a life topic that feels the most uncertain right now
           </p>
         </div>
 
-        {/* Life Situations */}
-        {LIFE_SITUATIONS.map((situation) => (
-          <div key={situation.id} className="mb-6">
-            {/* Category Title */}
-            <h3 
-              className="text-sm font-semibold mb-3"
-              style={{ color: colors.text.secondary }}
-            >
-              {situation.title}
-            </h3>
-            
-            {/* 3x2 Grid of Tiles */}
-            <div className="grid grid-cols-3 gap-3">
-              {situation.tiles.map((tile) => (
-                <MinimalistTile 
-                  key={tile.id}
-                  tile={tile}
-                  onClick={handleTileClick}
-                />
-              ))}
-            </div>
-          </div>
+        {/* Life Situations - Premium Module Cards */}
+        {V6_LIFE_SITUATIONS.map((situation) => (
+          <CategoryModule 
+            key={situation.id}
+            situation={situation}
+            onTileClick={handleTileClick}
+          />
         ))}
-
-        {/* Extra scroll padding */}
-        <div className="h-8" />
       </div>
     </div>
   );
