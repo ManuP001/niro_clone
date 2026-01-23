@@ -32,6 +32,7 @@ export default function TileCard({ tile, onClick, size = 'normal' }) {
   return (
     <button
       onClick={() => onClick(tile.id)}
+      data-testid={`tile-${tile.id}`}
       className={`flex-shrink-0 w-28 ${s.height} rounded-xl ${s.padding} flex flex-col items-center justify-center text-center transition-all active:scale-[0.97] hover:shadow-md`}
       style={{ 
         backgroundColor: colors.background.card,
