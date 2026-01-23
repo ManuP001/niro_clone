@@ -261,7 +261,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
                 )}
               </div>
               <p className="text-sm" style={{ color: colors.text.secondary }}>
-                {tierData?.duration} week{tierData?.duration > 1 ? 's' : ''} package
+                {tierData?.durationWeeks} week{tierData?.durationWeeks > 1 ? 's' : ''} package
               </p>
             </div>
             <div className="text-right">
