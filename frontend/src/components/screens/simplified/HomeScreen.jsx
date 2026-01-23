@@ -331,9 +331,9 @@ export default function HomeScreen({
     >
       {/* Fixed Header with Animated Logo */}
       <header 
-        className="sticky top-0 z-40 pt-6 pb-4 px-5"
+        className="sticky top-0 z-40 pt-8 pb-6 px-5"
         style={{ 
-          background: 'linear-gradient(180deg, #F8FAF9 0%, rgba(248,250,249,0.95) 100%)',
+          background: HEADER_GRADIENT,
         }}
       >
         {/* Animated Logo (Larger) */}
