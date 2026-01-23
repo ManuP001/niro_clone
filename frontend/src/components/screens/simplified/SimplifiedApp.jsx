@@ -291,6 +291,7 @@ export default function SimplifiedApp({ token, userId }) {
           onBack={goBack}
           onNavigate={navigate}
           hasBottomNav={showBottomNav}
+          userName={getUserName()}
         />
       );
     }
