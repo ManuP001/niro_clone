@@ -58,8 +58,8 @@ const V6_LIFE_SITUATIONS = [
   }
 ];
 
-// Premium Gradient Background (consistent teal gradient)
-const GRADIENT_BG = 'linear-gradient(180deg, #3E827A 0%, #5A9A92 30%, #7AB5AD 60%, #A8D5CF 85%, #E8F0ED 100%)';
+// Premium Gradient Background (same as login screen)
+const GRADIENT_BG = 'linear-gradient(180deg, #3E827A 0%, rgba(255, 255, 195, 0.58) 100%)';
 const MODULE_BG = 'rgba(255, 255, 255, 0.85)';
 const HEADER_GRADIENT = 'linear-gradient(180deg, #3E827A 0%, #4A8F87 100%)';
 

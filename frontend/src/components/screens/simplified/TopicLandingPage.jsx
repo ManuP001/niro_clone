@@ -41,7 +41,7 @@ const TIER_LEVELS = ['Focussed', 'Supported', 'Comprehensive'];
 const DEFAULT_TIER = 'Supported';
 
 // Premium Gradient Background (same as home/onboarding)
-const GRADIENT_BG = 'linear-gradient(180deg, #3E827A 0%, #5A9A92 30%, #7AB5AD 60%, #A8D5CF 85%, #E8F0ED 100%)';
+const GRADIENT_BG = 'linear-gradient(180deg, #3E827A 0%, rgba(255, 255, 195, 0.58) 100%)';
 const CARD_BG = 'rgba(255, 255, 255, 0.85)';
 const CARD_BORDER = 'rgba(0,0,0,0.06)';
 const DIVIDER_COLOR = 'rgba(0,0,0,0.06)';
