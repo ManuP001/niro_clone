@@ -15,6 +15,9 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 - ✅ Onboarding flow: Login → User Details → How Niro Works → Trust & Safety → Home
 - ✅ HomeScreen: Reduced tile size, removed category subtitles, added profile button
 - ✅ Landing Page: 2x2 grid for package details, topic explainer moved after tier selector
+- ✅ Reused existing BirthDetailsModal for onboarding (city autocomplete with lat/lon)
+- ✅ Fixed Health tiles: Corrected IDs (health_timing, emotional_wellbeing, recovery_support)
+- ✅ Deleted redundant UserDetailsScreen.jsx - using BirthDetailsModal instead
 
 ---
 
