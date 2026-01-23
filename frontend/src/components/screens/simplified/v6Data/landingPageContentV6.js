@@ -51,7 +51,7 @@ const COMMON_FAQS_CAREER = [
   { q: 'What\'s included in this package?', a: 'Your package includes expert consultations, follow-ups, and unlimited chat support based on your tier.' },
   { q: 'How do calls and follow-ups work?', a: 'After purchase, you\'ll schedule your first call within 24-48 hours. Follow-ups are scheduled based on your journey needs.' },
   { q: 'Can I chat anytime during the package window?', a: 'Yes. Supported and Comprehensive tiers include unlimited chat throughout your package duration.' },
-  { q: 'What if I\'m not satisfied—do you offer refunds?', a: 'Yes. No questions asked — 7-day full refund guarantee.' },
+  { q: 'What if I\'m not satisfied—do you offer refunds?', a: 'Yes, we offer a satisfaction guarantee. Contact our support team if you have any concerns.' },
   { q: 'Can I switch experts if I don\'t feel a match?', a: 'Yes. We\'ll help you switch to another expert if the match doesn\'t feel right.' },
   { q: 'Will this tell me if I should quit or switch?', a: 'We provide clarity on timing and direction, but the decision is always yours.' },
   { q: 'Is my information private and secure?', a: 'Absolutely. All consultations are private and your data is protected.' },
@@ -62,7 +62,7 @@ const COMMON_FAQS_LOVE = [
   { q: 'What\'s included in this package?', a: 'Your package includes expert consultations, follow-ups, and unlimited chat support based on your tier.' },
   { q: 'How do calls and follow-ups work?', a: 'After purchase, you\'ll schedule your first call within 24-48 hours. Follow-ups are scheduled based on your journey needs.' },
   { q: 'Can I chat anytime during the package window?', a: 'Yes. Supported and Comprehensive tiers include unlimited chat throughout your package duration.' },
-  { q: 'What if I\'m not satisfied—do you offer refunds?', a: 'Yes. No questions asked — 7-day full refund guarantee.' },
+  { q: 'What if I\'m not satisfied—do you offer refunds?', a: 'Yes, we offer a satisfaction guarantee. Contact our support team if you have any concerns.' },
   { q: 'Can I switch experts if I don\'t feel a match?', a: 'Yes. We\'ll help you switch to another expert if the match doesn\'t feel right.' },
   { q: 'Will this tell me whether we will end up together?', a: 'We provide clarity on compatibility and timing, but outcomes depend on both partners.' },
   { q: 'Is my information private and secure?', a: 'Absolutely. All consultations are private and your data is protected.' },
@@ -73,7 +73,7 @@ const COMMON_FAQS_HEALTH = [
   { q: 'What\'s included in this package?', a: 'Your package includes expert consultations, follow-ups, and unlimited chat support based on your tier.' },
   { q: 'How do calls and follow-ups work?', a: 'After purchase, you\'ll schedule your first call within 24-48 hours. Follow-ups are scheduled based on your journey needs.' },
   { q: 'Can I chat anytime during the package window?', a: 'Yes. Supported and Comprehensive tiers include unlimited chat throughout your package duration.' },
-  { q: 'What if I\'m not satisfied—do you offer refunds?', a: 'Yes. No questions asked — 7-day full refund guarantee.' },
+  { q: 'What if I\'m not satisfied—do you offer refunds?', a: 'Yes, we offer a satisfaction guarantee. Contact our support team if you have any concerns.' },
   { q: 'Can I switch experts if I don\'t feel a match?', a: 'Yes. We\'ll help you switch to another expert if the match doesn\'t feel right.' },
   { q: 'Is this medical advice?', a: 'No. This is holistic guidance. Please consult medical professionals for health issues.' },
   { q: 'Is my information private and secure?', a: 'Absolutely. All consultations are private and your data is protected.' },
@@ -92,7 +92,7 @@ export const V6_CAREER_SUBTOPICS = {
     heroOneLinePromise: 'Decode what your chart says about your strengths and direction so you can choose your next move with clarity.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Find direction in your career—what fits you, and what\'s next. Get a clear reading of your work phase, ideal roles, and timing to act.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 3999, durationWeeks: 4 },
       Supported: { priceInr: 6999, durationWeeks: 8 },
@@ -185,7 +185,7 @@ export const V6_CAREER_SUBTOPICS = {
     heroOneLinePromise: 'Plan the right timing for switching roles and reduce risk in interviews, offers, and decisions.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Switch jobs with confidence—timing, risks, and the best next move. Know when to resign, interview, negotiate, or wait—with support through the transition.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 5999, durationWeeks: 8 },
       Supported: { priceInr: 9999, durationWeeks: 12 },
@@ -278,7 +278,7 @@ export const V6_CAREER_SUBTOPICS = {
     heroOneLinePromise: 'Understand your money cycles and build steady financial momentum with better timing and fewer setbacks.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Bring stability to money matters—income, expenses, and financial stress. Understand what\'s causing the volatility and what the next few weeks look like.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 2999, durationWeeks: 4 },
       Supported: { priceInr: 4999, durationWeeks: 8 },
@@ -371,7 +371,7 @@ export const V6_CAREER_SUBTOPICS = {
     heroOneLinePromise: 'Get a clear "act now vs wait" verdict for a major decision you\'re facing—based on your chart\'s timing.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Time a big decision—business, purchase, or life move. Get clarity on whether now is the right window to act, wait, or pivot.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 3999, durationWeeks: 4 },
       Supported: { priceInr: 6999, durationWeeks: 8 },
@@ -464,7 +464,7 @@ export const V6_CAREER_SUBTOPICS = {
     heroOneLinePromise: 'See what\'s behind the pressure right now—and when relief is coming—so you can manage it better.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Handle work stress—burnout, pressure, and uncertainty. Get clarity on why this phase feels heavy and when it will lighten up.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 2999, durationWeeks: 4 },
       Supported: { priceInr: 4999, durationWeeks: 8 },
@@ -557,7 +557,7 @@ export const V6_CAREER_SUBTOPICS = {
     heroOneLinePromise: 'Navigate workplace dynamics and conflicts without losing momentum or peace of mind.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Deal with office politics—conflict, misunderstanding, or unfair treatment. Know what to prioritize and when to step back or push forward.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 2999, durationWeeks: 4 },
       Supported: { priceInr: 4999, durationWeeks: 8 },
@@ -655,7 +655,7 @@ export const V6_LOVE_SUBTOPICS = {
     heroOneLinePromise: 'Work through recurring relationship patterns and feel emotionally steady again — without overthinking every move.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Heal a relationship—rebuilding connection, stability, and peace. Understand what\'s breaking the bond and how to repair it with support.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 3999, durationWeeks: 4 },
       Supported: { priceInr: 6999, durationWeeks: 8 },
@@ -748,7 +748,7 @@ export const V6_LOVE_SUBTOPICS = {
     heroOneLinePromise: 'Understand if a new connection has potential — and what you should watch out for before investing emotionally.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Navigate dating—compatibility, patterns, and next steps. Know whether to invest emotionally and what to expect in the coming weeks.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 2999, durationWeeks: 4 },
       Supported: { priceInr: 4999, durationWeeks: 8 },
@@ -841,7 +841,7 @@ export const V6_LOVE_SUBTOPICS = {
     heroOneLinePromise: 'Get emotional clarity after a breakup so you can move forward without carrying the weight of confusion.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Find closure after a breakup—peace, clarity, and next steps. Understand what led here and how to rebuild emotional stability.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 3999, durationWeeks: 4 },
       Supported: { priceInr: 6999, durationWeeks: 8 },
@@ -934,7 +934,7 @@ export const V6_LOVE_SUBTOPICS = {
     heroOneLinePromise: 'Improve communication and rebuild trust with your partner — step by step, with guidance on what to address first.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Strengthen communication—rebuilding trust, honesty, and connection. Get clarity on the blocks and how to repair them effectively.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 2999, durationWeeks: 4 },
       Supported: { priceInr: 4999, durationWeeks: 8 },
@@ -1027,7 +1027,7 @@ export const V6_LOVE_SUBTOPICS = {
     heroOneLinePromise: 'Navigate family expectations, conflicts, and boundaries while protecting your peace and relationships.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Handle family relationships—conflict, boundaries, and emotional strain. Get clarity on dynamics and the best way to reduce friction.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 3999, durationWeeks: 4 },
       Supported: { priceInr: 6999, durationWeeks: 8 },
@@ -1120,7 +1120,7 @@ export const V6_LOVE_SUBTOPICS = {
     heroOneLinePromise: 'Get clarity on timing, partner alignment, and family dynamics so you can move toward marriage with conviction.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Plan marriage with confidence—timing, compatibility, and next steps. Know when marriage is supported and what to prioritise before committing.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 5999, durationWeeks: 8 },
       Supported: { priceInr: 9999, durationWeeks: 12 },
@@ -1218,7 +1218,7 @@ export const V6_HEALTH_SUBTOPICS = {
     heroOneLinePromise: 'Understand why this phase feels overwhelming—and when the pressure will ease—so you can cope better.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Manage stress and anxiety—understand the root cause and when relief comes. Get clarity on what\'s driving the overwhelm and how to regain stability.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 2999, durationWeeks: 4 },
       Supported: { priceInr: 4999, durationWeeks: 8 },
@@ -1311,7 +1311,7 @@ export const V6_HEALTH_SUBTOPICS = {
     heroOneLinePromise: 'Find out what\'s disrupting your sleep and when the restless phase will improve — so you can plan around it.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Reset your sleep—understand the disruption and when it eases. Know what\'s off in your cycle and what will help you rest better.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 2999, durationWeeks: 4 },
       Supported: { priceInr: 4999, durationWeeks: 8 },
@@ -1404,7 +1404,7 @@ export const V6_HEALTH_SUBTOPICS = {
     heroOneLinePromise: 'Understand why your energy feels off—and what the next few weeks look like for recovery and momentum.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Balance your energy—low motivation, fatigue, or feeling stuck. Get clarity on the root cause and when momentum returns.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 2999, durationWeeks: 4 },
       Supported: { priceInr: 4999, durationWeeks: 8 },
@@ -1497,7 +1497,7 @@ export const V6_HEALTH_SUBTOPICS = {
     heroOneLinePromise: 'Know when to push, when to rest, and when to prioritize health moves—based on your chart\'s timing.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Time health decisions—surgery, treatment, or lifestyle changes. Know when your chart supports action and when to wait.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 3999, durationWeeks: 4 },
       Supported: { priceInr: 6999, durationWeeks: 8 },
@@ -1590,7 +1590,7 @@ export const V6_HEALTH_SUBTOPICS = {
     heroOneLinePromise: 'Get clarity on why emotions feel unstable—and what the next few weeks hold for inner peace.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Stabilize emotional wellbeing—mood swings, sadness, or feeling lost. Understand what\'s happening and when things will feel lighter.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 3999, durationWeeks: 4 },
       Supported: { priceInr: 6999, durationWeeks: 8 },
@@ -1683,7 +1683,7 @@ export const V6_HEALTH_SUBTOPICS = {
     heroOneLinePromise: 'Understand your recovery timeline and what will speed up or slow down your healing process.',
     topicExplainerOneLiner: 'Hi <UserName>, here are the paths you can choose for your journey.',
     heroSubtitle: 'Support recovery—from illness, surgery, or setback. Know when your chart supports healing and how to optimize the journey.',
-    refundGuarantee: 'No questions asked — 7-day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     tierCards: {
       Focussed: { priceInr: 3999, durationWeeks: 4 },
       Supported: { priceInr: 6999, durationWeeks: 8 },
