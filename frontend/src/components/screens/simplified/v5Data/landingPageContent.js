@@ -20,7 +20,7 @@ export const LOVE_SUBTOPICS = {
     headline: 'Relationship Healing Guidance',
     subHeadline: 'Navigate relationship challenges with clarity and confidence.',
     heroPromise: 'Trusted guidance for relationship healing — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Feeling stuck in recurring arguments',
       'Lack of communication and understanding',
@@ -101,7 +101,7 @@ export const LOVE_SUBTOPICS = {
     headline: 'Family Relationship Guidance',
     subHeadline: 'Foster harmony and understanding in your family dynamics.',
     heroPromise: 'Trusted guidance for family relationships — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Intergenerational conflicts',
       'Communication breakdowns within the family',
@@ -182,7 +182,7 @@ export const LOVE_SUBTOPICS = {
     headline: 'Dating & Compatibility Insights',
     subHeadline: 'Understand your compatibility and make informed dating choices.',
     heroPromise: 'Trusted guidance for dating & compatibility — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Uncertainty about potential partners',
       'Difficulty finding the right match',
@@ -264,7 +264,7 @@ export const LOVE_SUBTOPICS = {
     headline: 'Marriage Planning Guidance',
     subHeadline: 'Ensure a harmonious and auspicious start to your married life.',
     heroPromise: 'Trusted guidance for marriage planning — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Concerns about astrological compatibility for marriage',
       'Finding the right wedding date (muhurat)',
@@ -346,7 +346,7 @@ export const LOVE_SUBTOPICS = {
     headline: 'Communication & Trust',
     subHeadline: 'Get clear, grounded guidance to rebuild trust, reduce overthinking, and communicate without spiraling. Talk to a verified astrologer on call + chat until you feel steady and sure about where this relationship is headed.',
     heroPromise: 'Trusted guidance for communication & trust — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Understand why trust feels shaky right now',
       'Know what is a phase vs a pattern',
@@ -422,7 +422,7 @@ export const LOVE_SUBTOPICS = {
     headline: 'Breakup & Closure',
     subHeadline: 'Move from confusion to closure — with clear timelines, emotional grounding, and the confidence to let go or reconnect wisely. Get astrological guidance for what ended, what\'s next, and how to protect your peace while you heal.',
     heroPromise: 'Trusted guidance for breakup & closure — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'What this breakup was meant to teach',
       'How long the heavy phase may last',
@@ -504,7 +504,7 @@ export const CAREER_SUBTOPICS = {
     headline: 'Career Clarity Guidance',
     subHeadline: 'Discover your ideal career path and unlock your professional potential.',
     heroPromise: 'Trusted guidance for career clarity — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Feeling unfulfilled in your current job',
       'Uncertainty about career choices',
@@ -585,7 +585,7 @@ export const CAREER_SUBTOPICS = {
     headline: 'Job Transition Support',
     subHeadline: 'Navigate your career change with confidence and strategic planning.',
     heroPromise: 'Trusted guidance for job transition — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Anxiety about leaving a current job',
       'Uncertainty about the job search process',
@@ -666,7 +666,7 @@ export const CAREER_SUBTOPICS = {
     headline: 'Financial Stability Guidance',
     subHeadline: 'Achieve greater financial security and abundance.',
     heroPromise: 'Trusted guidance for money stability — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Financial instability and debt',
       'Struggles with income generation',
@@ -747,7 +747,7 @@ export const CAREER_SUBTOPICS = {
     headline: 'Work Stress',
     subHeadline: 'Get calm clarity on what\'s draining you at work — and how long this pressure phase is likely to last. Understand your current career cycle, stress triggers, and the best timing to push, pause, or change lanes.',
     heroPromise: 'Trusted guidance for work stress — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Identify chart-based stress triggers',
       'Know if this is temporary or structural',
@@ -823,7 +823,7 @@ export const CAREER_SUBTOPICS = {
     headline: 'Office Politics',
     subHeadline: 'Understand hidden dynamics, protect your reputation, and time your moves wisely — without overreacting. Get chart-based clarity on power dynamics, conflict cycles, and the safest way forward in your workplace.',
     heroPromise: 'Trusted guidance for office politics — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Know what to ignore vs address',
       'Identify high-risk days/weeks for conflict',
@@ -898,7 +898,7 @@ export const CAREER_SUBTOPICS = {
     headline: 'Big Decision Timing',
     subHeadline: 'Know when to accept an offer, make a big move, or pause — based on chart-backed timing, not just gut feel. Best for people stuck between options, waiting for the "right time," or afraid of missing a window.',
     heroPromise: 'Trusted guidance for big decision timing — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Identify your next action window',
       'Know which weeks to avoid',
@@ -979,7 +979,7 @@ export const HEALTH_SUBTOPICS = {
     headline: 'Healing Journey Support',
     subHeadline: 'Embark on a healing path with astrological insights and support.',
     heroPromise: 'Trusted guidance for healing journey — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Struggling with physical or emotional ailments',
       'Feeling overwhelmed by health challenges',
@@ -1060,7 +1060,7 @@ export const HEALTH_SUBTOPICS = {
     headline: 'Stress Management Guidance',
     subHeadline: 'Find balance and peace with personalized stress management strategies.',
     heroPromise: 'Trusted guidance for stress management — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Feeling overwhelmed by daily stress',
       'Difficulty sleeping or relaxing',
@@ -1141,7 +1141,7 @@ export const HEALTH_SUBTOPICS = {
     headline: 'Energy & Balance Guidance',
     subHeadline: 'Restore your vitality and achieve a harmonious state of being.',
     heroPromise: 'Trusted guidance for energy & balance — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Low energy levels and fatigue',
       'Feeling unbalanced and out of sync',
@@ -1222,7 +1222,7 @@ export const HEALTH_SUBTOPICS = {
     headline: 'Sleep Reset',
     subHeadline: 'Understand why sleep is off right now — and when your system is likely to stabilize again. Astrology helps you see cycles of stress, overstimulation, and recovery — so you can stop feeling stuck.',
     heroPromise: 'Trusted guidance for sleep reset — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Identify why sleep is disrupted now',
       'Know how long the unstable phase may last',
@@ -1298,7 +1298,7 @@ export const HEALTH_SUBTOPICS = {
     headline: 'Emotional Recovery',
     subHeadline: 'Feel grounded again — with clear timelines, emotional clarity, and supportive guidance through a heavy phase. Best for grief, emotional burnout, low mood, or feeling stuck after a big life event.',
     heroPromise: 'Trusted guidance for emotional recovery — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Understand what you\'re moving through',
       'Know when it\'s likely to feel lighter',
@@ -1374,7 +1374,7 @@ export const HEALTH_SUBTOPICS = {
     headline: 'Women\'s Wellness',
     subHeadline: 'Get cycle-aware guidance, stress clarity, and supportive timing insights for your body and mood shifts. Best for hormonal fluctuations, low energy phases, or recurring mood dips that feel hard to explain.',
     heroPromise: 'Trusted guidance for women\'s wellness — through chat + calls — until it feels clear.',
-    refundGuarantee: 'No questions asked — 7 day full refund guarantee.',
+    refundGuarantee: '100% satisfaction guaranteed.',
     painPoints: [
       'Understand your current body-mood phase',
       'Know when energy is likely to rise again',
