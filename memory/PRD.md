@@ -18,6 +18,10 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 - ✅ Reused existing BirthDetailsModal for onboarding (city autocomplete with lat/lon)
 - ✅ Fixed Health tiles: Corrected IDs (health_timing, emotional_wellbeing, recovery_support)
 - ✅ Deleted redundant UserDetailsScreen.jsx - using BirthDetailsModal instead
+- ✅ Updated Vedic API key - Kundli now loading correctly
+- ✅ Fixed background color consistency - all screens now use same teal gradient
+- ✅ Cleaned up duplicate LoginScreen.jsx (deleted simplified/LoginScreen.jsx)
+- ✅ Added purchase email notification to booking@getniro.ai via Resend API
 
 ---
 
