@@ -184,21 +184,21 @@ const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate }) => 
 
   if (error) {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center px-6 ${hasBottomNav ? 'pb-20' : ''}`} style={{ backgroundColor: '#f5f0e3' }}>
+      <div className={`min-h-screen flex flex-col items-center justify-center px-6 ${hasBottomNav ? 'pb-20' : ''}`} style={{ background: TEAL_GRADIENT }}>
         <div 
           className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-          style={{ backgroundColor: 'rgba(215,184,112,0.2)' }}
+          style={{ backgroundColor: 'rgba(255,255,255,0.9)' }}
         >
           <span className="text-4xl">⚠️</span>
         </div>
-        <h2 className="text-xl font-bold mb-2" style={{ color: '#5c5c5c' }}>Unable to Load Kundli</h2>
-        <p className="text-center mb-6" style={{ color: '#9a8a6a' }}>
-          There was an issue loading your chart. Please try again.
+        <h2 className="text-xl font-bold mb-2" style={{ color: 'white' }}>Unable to Load Kundli</h2>
+        <p className="text-center mb-6 max-w-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>
+          The astrology service is temporarily unavailable. Please try again in a few minutes.
         </p>
         <button
           onClick={() => fetchKundli()}
           className="px-6 py-3 rounded-xl font-medium transition-all"
-          style={{ backgroundColor: '#d7b870', color: '#f0e9d1' }}
+          style={{ backgroundColor: 'white', color: '#3E827A' }}
         >
           Retry
         </button>
