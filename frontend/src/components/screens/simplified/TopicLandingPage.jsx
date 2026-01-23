@@ -171,7 +171,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
         </p>
       </section>
 
-      {/* ===== TOPIC EXPLAINER - Personalized Greeting ===== */}
+      {/* ===== PERSONALIZED GREETING ===== */}
       <section className="px-5 pt-2 pb-4">
         <h2 className="text-lg font-semibold text-center leading-relaxed" style={{ color: colors.text.dark }}>
           Hi {displayName}, here are the paths you can choose for your journey
