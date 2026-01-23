@@ -758,99 +758,100 @@ class SimplifiedCatalog:
         # =========================================================================
         # V5 18 SUB-TOPIC TIERS (3 tiers per sub-topic: Focussed, Supported, Comprehensive)
         # =========================================================================
+        # V6 SUBTOPIC TIERS - Prices synced with frontend landingPageContentV6.js
         v5_subtopic_tiers = [
             # ==================== LOVE SUB-TOPICS (6) ====================
-            # Relationship Healing
-            ("relationship-healing_focussed", "love", "Relationship Healing - Focussed", 6999, 8),
-            ("relationship-healing_supported", "love", "Relationship Healing - Supported", 8999, 8),
-            ("relationship-healing_comprehensive", "love", "Relationship Healing - Comprehensive", 10999, 8),
+            # Relationship Healing (V6: 3999/6999/10999, weeks: 4/8/12)
+            ("relationship-healing_focussed", "love", "Relationship Healing - Focussed", 3999, 4),
+            ("relationship-healing_supported", "love", "Relationship Healing - Supported", 6999, 8),
+            ("relationship-healing_comprehensive", "love", "Relationship Healing - Comprehensive", 10999, 12),
             
-            # Family Relationships
-            ("family-relationships_focussed", "marriage", "Family Relationships - Focussed", 5999, 8),
-            ("family-relationships_supported", "marriage", "Family Relationships - Supported", 7999, 8),
-            ("family-relationships_comprehensive", "marriage", "Family Relationships - Comprehensive", 9999, 8),
+            # Family Relationships (V6: 3999/6999/10999, weeks: 4/8/12)
+            ("family-relationships_focussed", "marriage", "Family Relationships - Focussed", 3999, 4),
+            ("family-relationships_supported", "marriage", "Family Relationships - Supported", 6999, 8),
+            ("family-relationships_comprehensive", "marriage", "Family Relationships - Comprehensive", 10999, 12),
             
-            # Dating & Compatibility
-            ("dating-compatibility_focussed", "love", "Dating & Compatibility - Focussed", 4999, 8),
-            ("dating-compatibility_supported", "love", "Dating & Compatibility - Supported", 6999, 8),
-            ("dating-compatibility_comprehensive", "love", "Dating & Compatibility - Comprehensive", 8999, 8),
+            # Dating & Compatibility (V6: 2999/4999/7999, weeks: 4/8/12)
+            ("dating-compatibility_focussed", "love", "Dating & Compatibility - Focussed", 2999, 4),
+            ("dating-compatibility_supported", "love", "Dating & Compatibility - Supported", 4999, 8),
+            ("dating-compatibility_comprehensive", "love", "Dating & Compatibility - Comprehensive", 7999, 12),
             
-            # Marriage Planning
-            ("marriage-planning_focussed", "marriage", "Marriage Planning - Focussed", 7999, 12),
+            # Marriage Planning (V6: 5999/9999/14999, weeks: 8/12/16)
+            ("marriage-planning_focussed", "marriage", "Marriage Planning - Focussed", 5999, 8),
             ("marriage-planning_supported", "marriage", "Marriage Planning - Supported", 9999, 12),
-            ("marriage-planning_comprehensive", "marriage", "Marriage Planning - Comprehensive", 11999, 12),
+            ("marriage-planning_comprehensive", "marriage", "Marriage Planning - Comprehensive", 14999, 16),
             
-            # Communication & Trust
-            ("communication-trust_focussed", "love", "Communication & Trust - Focussed", 5999, 8),
-            ("communication-trust_supported", "love", "Communication & Trust - Supported", 7999, 8),
-            ("communication-trust_comprehensive", "love", "Communication & Trust - Comprehensive", 9999, 8),
+            # Communication & Trust (V6: 2999/4999/7999, weeks: 4/8/12)
+            ("communication-trust_focussed", "love", "Communication & Trust - Focussed", 2999, 4),
+            ("communication-trust_supported", "love", "Communication & Trust - Supported", 4999, 8),
+            ("communication-trust_comprehensive", "love", "Communication & Trust - Comprehensive", 7999, 12),
             
-            # Breakup & Closure
-            ("breakup-closure_focussed", "love", "Breakup & Closure - Focussed", 4999, 8),
+            # Breakup & Closure (V6: 3999/6999/10999, weeks: 4/8/12)
+            ("breakup-closure_focussed", "love", "Breakup & Closure - Focussed", 3999, 4),
             ("breakup-closure_supported", "love", "Breakup & Closure - Supported", 6999, 8),
-            ("breakup-closure_comprehensive", "love", "Breakup & Closure - Comprehensive", 8999, 8),
+            ("breakup-closure_comprehensive", "love", "Breakup & Closure - Comprehensive", 10999, 12),
             
             # ==================== CAREER SUB-TOPICS (6) ====================
-            # Career Clarity
-            ("career-clarity_focussed", "career", "Career Clarity - Focussed", 4999, 8),
+            # Career Clarity (V6: 3999/6999/10999, weeks: 4/8/12)
+            ("career-clarity_focussed", "career", "Career Clarity - Focussed", 3999, 4),
             ("career-clarity_supported", "career", "Career Clarity - Supported", 6999, 8),
-            ("career-clarity_comprehensive", "career", "Career Clarity - Comprehensive", 8999, 8),
+            ("career-clarity_comprehensive", "career", "Career Clarity - Comprehensive", 10999, 12),
             
-            # Job Transition
-            ("job-transition_focussed", "career", "Job Transition - Focussed", 7999, 12),
+            # Job Transition (V6: 5999/9999/14999, weeks: 8/12/16)
+            ("job-transition_focussed", "career", "Job Transition - Focussed", 5999, 8),
             ("job-transition_supported", "career", "Job Transition - Supported", 9999, 12),
-            ("job-transition_comprehensive", "career", "Job Transition - Comprehensive", 11999, 12),
+            ("job-transition_comprehensive", "career", "Job Transition - Comprehensive", 14999, 16),
             
-            # Money Stability
+            # Money Stability (V6: 2999/4999/7999, weeks: 4/8/12)
             ("money-stability_focussed", "money", "Money Stability - Focussed", 2999, 4),
-            ("money-stability_supported", "money", "Money Stability - Supported", 4999, 4),
-            ("money-stability_comprehensive", "money", "Money Stability - Comprehensive", 6999, 4),
+            ("money-stability_supported", "money", "Money Stability - Supported", 4999, 8),
+            ("money-stability_comprehensive", "money", "Money Stability - Comprehensive", 7999, 12),
             
-            # Work Stress
-            ("work-stress_focussed", "career", "Work Stress - Focussed", 4999, 8),
-            ("work-stress_supported", "career", "Work Stress - Supported", 6999, 8),
-            ("work-stress_comprehensive", "career", "Work Stress - Comprehensive", 8999, 8),
+            # Work Stress (V6: 2999/4999/7999, weeks: 4/8/12)
+            ("work-stress_focussed", "career", "Work Stress - Focussed", 2999, 4),
+            ("work-stress_supported", "career", "Work Stress - Supported", 4999, 8),
+            ("work-stress_comprehensive", "career", "Work Stress - Comprehensive", 7999, 12),
             
-            # Office Politics
-            ("office-politics_focussed", "career", "Office Politics - Focussed", 4999, 8),
-            ("office-politics_supported", "career", "Office Politics - Supported", 6999, 8),
-            ("office-politics_comprehensive", "career", "Office Politics - Comprehensive", 8999, 8),
+            # Office Politics (V6: 2999/4999/7999, weeks: 4/8/12)
+            ("office-politics_focussed", "career", "Office Politics - Focussed", 2999, 4),
+            ("office-politics_supported", "career", "Office Politics - Supported", 4999, 8),
+            ("office-politics_comprehensive", "career", "Office Politics - Comprehensive", 7999, 12),
             
-            # Big Decision Timing
-            ("big-decision-timing_focussed", "career", "Big Decision Timing - Focussed", 2999, 4),
-            ("big-decision-timing_supported", "career", "Big Decision Timing - Supported", 4999, 4),
-            ("big-decision-timing_comprehensive", "career", "Big Decision Timing - Comprehensive", 6999, 4),
+            # Big Decision Timing (V6: 3999/6999/10999, weeks: 4/8/12)
+            ("big-decision-timing_focussed", "career", "Big Decision Timing - Focussed", 3999, 4),
+            ("big-decision-timing_supported", "career", "Big Decision Timing - Supported", 6999, 8),
+            ("big-decision-timing_comprehensive", "career", "Big Decision Timing - Comprehensive", 10999, 12),
             
             # ==================== HEALTH SUB-TOPICS (6) ====================
-            # Healing Journey
-            ("healing-journey_focussed", "health", "Healing Journey - Focussed", 4999, 8),
+            # Healing Journey (V6: 3999/6999/10999, weeks: 4/8/12)
+            ("healing-journey_focussed", "health", "Healing Journey - Focussed", 3999, 4),
             ("healing-journey_supported", "health", "Healing Journey - Supported", 6999, 8),
-            ("healing-journey_comprehensive", "health", "Healing Journey - Comprehensive", 8999, 8),
+            ("healing-journey_comprehensive", "health", "Healing Journey - Comprehensive", 10999, 12),
             
-            # Stress Management
-            ("stress-management_focussed", "mental_health", "Stress Management - Focussed", 7999, 12),
-            ("stress-management_supported", "mental_health", "Stress Management - Supported", 9999, 12),
-            ("stress-management_comprehensive", "mental_health", "Stress Management - Comprehensive", 11999, 12),
+            # Stress Management (V6: 2999/4999/7999, weeks: 4/8/12)
+            ("stress-management_focussed", "mental_health", "Stress Management - Focussed", 2999, 4),
+            ("stress-management_supported", "mental_health", "Stress Management - Supported", 4999, 8),
+            ("stress-management_comprehensive", "mental_health", "Stress Management - Comprehensive", 7999, 12),
             
-            # Energy & Balance
-            ("energy-balance_focussed", "health", "Energy & Balance - Focussed", 4999, 8),
-            ("energy-balance_supported", "health", "Energy & Balance - Supported", 6999, 8),
-            ("energy-balance_comprehensive", "health", "Energy & Balance - Comprehensive", 8999, 8),
+            # Energy & Balance (V6: 2999/4999/7999, weeks: 4/8/12)
+            ("energy-balance_focussed", "health", "Energy & Balance - Focussed", 2999, 4),
+            ("energy-balance_supported", "health", "Energy & Balance - Supported", 4999, 8),
+            ("energy-balance_comprehensive", "health", "Energy & Balance - Comprehensive", 7999, 12),
             
-            # Sleep Reset
-            ("sleep-reset_focussed", "health", "Sleep Reset - Focussed", 4999, 8),
-            ("sleep-reset_supported", "health", "Sleep Reset - Supported", 6999, 8),
-            ("sleep-reset_comprehensive", "health", "Sleep Reset - Comprehensive", 8999, 8),
+            # Sleep Reset (V6: 2999/4999/7999, weeks: 4/8/12)
+            ("sleep-reset_focussed", "health", "Sleep Reset - Focussed", 2999, 4),
+            ("sleep-reset_supported", "health", "Sleep Reset - Supported", 4999, 8),
+            ("sleep-reset_comprehensive", "health", "Sleep Reset - Comprehensive", 7999, 12),
             
-            # Emotional Recovery
-            ("emotional-recovery_focussed", "mental_health", "Emotional Recovery - Focussed", 4999, 8),
-            ("emotional-recovery_supported", "mental_health", "Emotional Recovery - Supported", 6999, 8),
-            ("emotional-recovery_comprehensive", "mental_health", "Emotional Recovery - Comprehensive", 8999, 8),
+            # Emotional Recovery (V6: 2999/4999/7999, weeks: 4/8/12)
+            ("emotional-recovery_focussed", "mental_health", "Emotional Recovery - Focussed", 2999, 4),
+            ("emotional-recovery_supported", "mental_health", "Emotional Recovery - Supported", 4999, 8),
+            ("emotional-recovery_comprehensive", "mental_health", "Emotional Recovery - Comprehensive", 7999, 12),
             
-            # Women's Wellness
-            ("womens-wellness_focussed", "health", "Women's Wellness - Focussed", 4999, 8),
+            # Women's Wellness (V6: 3999/6999/10999, weeks: 4/8/12)
+            ("womens-wellness_focussed", "health", "Women's Wellness - Focussed", 3999, 4),
             ("womens-wellness_supported", "health", "Women's Wellness - Supported", 6999, 8),
-            ("womens-wellness_comprehensive", "health", "Women's Wellness - Comprehensive", 8999, 8),
+            ("womens-wellness_comprehensive", "health", "Women's Wellness - Comprehensive", 10999, 12),
         ]
         
         # Define access policies for each tier level
