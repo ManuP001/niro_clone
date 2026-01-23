@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://horoscope-makeover.preview.emergentagent.com/api"
+BACKEND_URL = "https://astro-landing-revamp.preview.emergentagent.com/api"
 
 def test_mahadasha_time_differentiation_fix():
     """Test Past Query Mahadasha Fix for time differentiation"""

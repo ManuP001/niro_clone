@@ -7,7 +7,7 @@ import requests
 import json
 
 # Backend URL from environment
-BACKEND_URL = "https://horoscope-makeover.preview.emergentagent.com/api"
+BACKEND_URL = "https://astro-landing-revamp.preview.emergentagent.com/api"
 
 def test_welcome_simple():
     """Test Welcome Message Endpoint with detailed error logging"""
