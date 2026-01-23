@@ -322,13 +322,13 @@ export default function HomeScreen({
   return (
     <div 
       className={`min-h-screen ${hasBottomNav ? 'pb-16' : ''}`}
-      style={{ background: HEADER_GRADIENT }}
+      style={{ background: GRADIENT_BG }}
     >
       {/* Fixed Header with Animated Logo */}
       <header 
         className="sticky top-0 z-40 pt-6 pb-4 px-5"
         style={{ 
-          background: HEADER_GRADIENT,
+          background: 'linear-gradient(180deg, #3E827A 0%, #4A8F87 100%)',
         }}
       >
         {/* Profile Button - Top Right */}
