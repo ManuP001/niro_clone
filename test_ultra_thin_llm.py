@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://astro-landing-revamp.preview.emergentagent.com/api"
+BACKEND_URL = "https://kundli-backend.preview.emergentagent.com/api"
 
 def test_ultra_thin_llm_architecture():
     """Test Ultra-Thin LLM Architecture for NIRO chat as per review request"""
