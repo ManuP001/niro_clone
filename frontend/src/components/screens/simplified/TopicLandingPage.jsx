@@ -221,7 +221,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
         </div>
       </section>
 
-      {/* ===== TIER SUMMARY CARD ===== */}
+      {/* ===== TIER SUMMARY CARD (2x2 Grid Design) ===== */}
       <section className="px-5 py-2">
         <div 
           className="rounded-2xl p-5"
@@ -239,7 +239,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
                 {selectedTier}
               </h3>
               <p className="text-sm" style={{ color: colors.text.secondary }}>
-                {tierData?.duration || `${tierData?.durationWeeks} weeks`} package
+                {tierData?.durationWeeks} weeks package
               </p>
             </div>
             <div className="text-right">
@@ -249,13 +249,52 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
             </div>
           </div>
 
-          {/* Tier Summary Details (from Excel) */}
-          <div className="pt-4 border-t" style={{ borderColor: DIVIDER_COLOR }}>
-            {tierData?.tierSummary?.split('\n').map((line, idx) => (
-              <p key={idx} className="text-sm mb-1" style={{ color: colors.text.dark }}>
-                {line}
-              </p>
-            ))}
+          {/* 2x2 Package Summary Grid */}
+          <div className="grid grid-cols-2 gap-3 pt-4 border-t" style={{ borderColor: DIVIDER_COLOR }}>
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
+                <CalendarIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Duration</p>
+                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                  {tierData?.durationWeeks} weeks
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
+                <PhoneIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Consultation</p>
+                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                  {selectedTier === 'Comprehensive' ? '2 sessions' : '1 session'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
+                <ClockIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Follow-ups</p>
+                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                  {selectedTier === 'Focussed' ? '1 call' : selectedTier === 'Supported' ? '2 calls' : '3 calls'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
+                <ChatIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Chat</p>
+                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                  Unlimited
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
