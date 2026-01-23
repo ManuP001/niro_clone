@@ -126,8 +126,8 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
 
   if (!isOpen) return null;
 
-  // Form content component
-  const FormContent = () => (
+  // Shared form content - inlined to prevent re-mount and focus loss
+  const formContent = (
     <>
       {/* Header */}
       <div className="text-center mb-6">
@@ -153,10 +153,7 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
           <input
             type="text"
             value={formData.name}
-            onChange={(e) => {
-              const val = e.target.value;
-              setFormData(prev => ({ ...prev, name: val }));
-            }}
+            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
             placeholder="Your full name"
             className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2"
             style={{ 
