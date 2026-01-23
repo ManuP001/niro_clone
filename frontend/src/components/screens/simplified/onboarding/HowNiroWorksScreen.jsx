@@ -12,7 +12,7 @@ export default function HowNiroWorksScreen({ onNext, onBack }) {
     {
       icon: SparklesIcon,
       title: 'Start with one life topic',
-      description: 'Choose what's most uncertain right now.',
+      description: "Choose what's most uncertain right now.",
     },
     {
       icon: UsersIcon,
@@ -22,7 +22,7 @@ export default function HowNiroWorksScreen({ onNext, onBack }) {
     {
       icon: CalendarIcon,
       title: 'Get timing + direction',
-      description: 'Understand what phase you're in — and what's next.',
+      description: "Understand what phase you're in — and what's next.",
     },
     {
       icon: ChatIcon,
