@@ -1534,6 +1534,8 @@ export default {
   ALL_LANDING_PAGES,
   V5_TOPICS,
   getLandingPageContent,
+  getSubtopicBySlug,
+  getAllSubtopics,
   getSlugsByCategory,
   formatPriceInr
 };
