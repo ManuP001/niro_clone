@@ -104,7 +104,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
     const tierFeatures = content.featuresByTier?.[selectedTier];
     return {
       price: tierCard?.priceInr || 0,
-      duration: tierCard?.durationWeeks || 8,
+      durationWeeks: tierCard?.durationWeeks || 8,
       ...tierFeatures,
     };
   }, [content, selectedTier]);
