@@ -48,8 +48,15 @@ const ONBOARDING_STEPS = {
  * - CategoryListingPage for "View all" and "Talk to human" CTAs
  */
 export default function SimplifiedApp({ token, userId }) {
-  // Onboarding state
-  const [onboardingStep, setOnboardingStep] = useState(ONBOARDING_STEPS.SPLASH);
+  // Onboarding state - start from appropriate step based on saved state
+  const [onboardingStep, setOnboardingStep] = useState(() => {
+    const onboardingComplete = localStorage.getItem(ONBOARDING_KEY) === 'true';
+    const userDetailsComplete = localStorage.getItem(USER_DETAILS_KEY) === 'true';
+    
+    if (onboardingComplete) return ONBOARDING_STEPS.HOME;
+    if (userDetailsComplete) return ONBOARDING_STEPS.HOW_IT_WORKS;
+    return ONBOARDING_STEPS.USER_DETAILS;
+  });
   const [showHomeTour, setShowHomeTour] = useState(false);
   
   // App state
@@ -67,6 +74,7 @@ export default function SimplifiedApp({ token, userId }) {
   // Check if onboarding is complete
   const isOnboardingComplete = localStorage.getItem(ONBOARDING_KEY) === 'true';
   const isHomeTourComplete = localStorage.getItem(HOME_TOUR_KEY) === 'true';
+  const isUserDetailsComplete = localStorage.getItem(USER_DETAILS_KEY) === 'true';
 
   // Load user state
   const loadUserState = useCallback(async () => {
@@ -86,28 +94,32 @@ export default function SimplifiedApp({ token, userId }) {
       const state = await loadUserState();
       trackEvent('app_init', { 
         onboarding_complete: isOnboardingComplete,
-        flow_version: 'v5' 
+        flow_version: 'v6' 
       }, token);
       setLoadingState(false);
+      
+      // For returning users, skip user details
+      if (state && !state.is_new_user && !isUserDetailsComplete) {
+        localStorage.setItem(USER_DETAILS_KEY, 'true');
+      }
     };
     init();
-  }, [loadUserState, token, isOnboardingComplete]);
+  }, [loadUserState, token, isOnboardingComplete, isUserDetailsComplete]);
 
-  // Handle splash complete
-  const handleSplashComplete = () => {
-    if (isOnboardingComplete) {
-      setOnboardingStep(ONBOARDING_STEPS.HOME);
-    } else {
-      setOnboardingStep(ONBOARDING_STEPS.WELCOME);
-    }
+  // Handle user details complete
+  const handleUserDetailsComplete = () => {
+    localStorage.setItem(USER_DETAILS_KEY, 'true');
+    trackEvent('user_details_complete', {}, token);
+    setOnboardingStep(ONBOARDING_STEPS.HOW_IT_WORKS);
+    // Reload user state to get updated Kundli
+    loadUserState();
   };
 
   // Handle onboarding navigation
   const handleOnboardingNext = (currentStep) => {
     switch (currentStep) {
-      case ONBOARDING_STEPS.WELCOME:
-        trackEvent('onboarding_welcome_complete', {}, token);
-        setOnboardingStep(ONBOARDING_STEPS.HOW_IT_WORKS);
+      case ONBOARDING_STEPS.USER_DETAILS:
+        handleUserDetailsComplete();
         break;
       case ONBOARDING_STEPS.HOW_IT_WORKS:
         trackEvent('onboarding_how_works_complete', {}, token);
