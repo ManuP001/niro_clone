@@ -5,11 +5,19 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 
 ## Current Status (January 2025)
 - **Active Version:** V4 with V6 Premium UI Upgrades
-- **Last Update:** January 23, 2026 - User Details screen and onboarding flow fix
+- **Last Update:** January 23, 2026 - UI/UX fixes and email notification
 - **Completed Sprints:** Landing Page + Home Screen V6 Revamp + Onboarding Flow V6
-- **Status:** ✅ Complete and tested (14/14 backend tests passed)
+- **Status:** ✅ Complete and tested (iteration_8.json - all tests passed)
 
-### Latest Changes (Jan 23, 2026)
+### Latest Changes (Jan 23, 2026 - Batch 2)
+- ✅ Fixed birth details input focus bug - refactored FormContent component to formContent JSX variable
+- ✅ Set default birth date to 1986-01-24 and time to 06:32
+- ✅ Landing page background changed from dark teal to light pastel green (#E8F5F3)
+- ✅ Removed all "7-day refund" claims - replaced with "100% satisfaction guaranteed" across 10+ files
+- ✅ Configured Resend API with user credentials (email: harjai.sharad@gmail.com)
+- ✅ API key moved from hardcoded to environment variable in backend/.env
+
+### Previous Changes (Jan 23, 2026 - Batch 1)
 - ✅ Fixed P0 blocker: UserDetailsScreen now saves profile via `/api/profile/` endpoint
 - ✅ Field mapping corrected: birthDate→dob, birthTime→tob, birthPlace→location
 - ✅ Onboarding flow: Login → User Details → How Niro Works → Trust & Safety → Home
