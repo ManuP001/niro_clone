@@ -135,15 +135,15 @@ const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate }) => 
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${hasBottomNav ? 'pb-20' : ''}`} style={{ backgroundColor: '#f5f0e3' }}>
+      <div className={`min-h-screen flex items-center justify-center ${hasBottomNav ? 'pb-20' : ''}`} style={{ background: TEAL_GRADIENT }}>
         <div className="text-center">
           <div 
             className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ background: 'linear-gradient(135deg, #d7b870 0%, #c9a85a 100%)' }}
+            style={{ backgroundColor: 'rgba(255,255,255,0.9)' }}
           >
-            <span className="text-white text-2xl animate-pulse">🌟</span>
+            <span className="text-2xl animate-pulse">🌟</span>
           </div>
-          <p style={{ color: '#5c5c5c' }}>Loading your Kundli...</p>
+          <p style={{ color: 'white' }}>Loading your Kundli...</p>
         </div>
       </div>
     );
