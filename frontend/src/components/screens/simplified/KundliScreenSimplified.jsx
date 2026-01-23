@@ -152,21 +152,21 @@ const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate }) => 
   // Profile incomplete - show birth details collection modal
   if (error === 'PROFILE_INCOMPLETE') {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center px-6 ${hasBottomNav ? 'pb-20' : ''}`} style={{ backgroundColor: '#f5f0e3' }}>
+      <div className={`min-h-screen flex flex-col items-center justify-center px-6 ${hasBottomNav ? 'pb-20' : ''}`} style={{ background: TEAL_GRADIENT }}>
         <div 
           className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
-          style={{ background: 'linear-gradient(135deg, #d7b870 0%, #c9a85a 100%)' }}
+          style={{ backgroundColor: 'rgba(255,255,255,0.9)' }}
         >
           <span className="text-4xl">🌟</span>
         </div>
-        <h2 className="text-2xl font-bold mb-2 text-center" style={{ color: '#5c5c5c' }}>Your Kundli Awaits</h2>
-        <p className="text-center mb-6 max-w-xs" style={{ color: '#9a8a6a' }}>
+        <h2 className="text-2xl font-bold mb-2 text-center" style={{ color: 'white' }}>Your Kundli Awaits</h2>
+        <p className="text-center mb-6 max-w-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>
           Complete your birth details to unlock your personalized Kundli chart and astrological insights.
         </p>
         <button
           onClick={() => setShowBirthModal(true)}
           className="px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl"
-          style={{ backgroundColor: '#d7b870', color: '#f0e9d1' }}
+          style={{ backgroundColor: 'white', color: '#3E827A' }}
         >
           Add Birth Details
         </button>
