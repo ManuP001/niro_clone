@@ -4,7 +4,7 @@ import { BACKEND_URL } from '../../../config';
 /**
  * BirthDetailsModal - Collect birth details for Kundli with NIRO V2 styling
  */
-export default function BirthDetailsModal({ token, isOpen, onClose, onComplete }) {
+export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, isOnboarding = false }) {
   const [formData, setFormData] = useState({
     name: '',
     dob: '',
