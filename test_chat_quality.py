@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://insight-app-9.preview.emergentagent.com/api"
+BACKEND_URL = "https://horoscope-makeover.preview.emergentagent.com/api"
 
 class ChatQualityTester:
     def __init__(self):
