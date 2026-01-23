@@ -411,7 +411,7 @@ export const LOVE_SUBTOPICS = {
       { q: 'Is this therapy?', a: 'No, this is astrological guidance. For clinical issues, please consult a therapist.' },
       { q: 'How fast do I get responses?', a: 'Within 24-48 hours depending on your pack.' },
       { q: 'What if I want a second opinion?', a: 'Comprehensive includes two expert perspectives.' },
-      { q: 'How does the 7-day refund work?', a: 'Full refund if you\'re not satisfied, no questions asked.' }
+      { q: 'How does the satisfaction guarantee work?', a: 'We offer 100% satisfaction guarantee. Contact our support team if you have any concerns.' }
     ]
   },
 
