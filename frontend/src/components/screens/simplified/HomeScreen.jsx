@@ -240,23 +240,23 @@ function MinimalistTileIcon({ type }) {
   return icons[type] || icons.heart;
 }
 
-// Minimalist Tile Component
+// Minimalist Tile Component - Compact Size
 function MinimalistTile({ tile, onClick }) {
   return (
     <button
       onClick={() => onClick(tile.id)}
       data-testid={`tile-${tile.id}`}
-      className="flex flex-col items-center justify-center w-full aspect-square rounded-2xl transition-all active:scale-[0.96] hover:shadow-md"
+      className="flex flex-col items-center justify-center w-full aspect-[1.1] rounded-xl transition-all active:scale-[0.96] hover:shadow-md"
       style={{ 
         backgroundColor: '#FFFFFF',
         border: '1px solid rgba(0,0,0,0.06)',
       }}
     >
-      <div className="mb-2">
+      <div className="mb-1">
         <MinimalistTileIcon type={tile.iconType} />
       </div>
       <span 
-        className="text-xs font-medium text-center px-1 leading-tight"
+        className="text-[11px] font-medium text-center px-1 leading-tight"
         style={{ color: colors.text.dark }}
       >
         {tile.shortTitle}
@@ -265,11 +265,11 @@ function MinimalistTile({ tile, onClick }) {
   );
 }
 
-// Category Module Component - Premium Card Container
+// Category Module Component - Premium Card Container (No subtitle)
 function CategoryModule({ situation, onTileClick }) {
   return (
     <div 
-      className="rounded-2xl p-4 mb-4"
+      className="rounded-2xl p-3 mb-3"
       style={{ 
         backgroundColor: MODULE_BG,
         backdropFilter: 'blur(8px)',
@@ -277,24 +277,18 @@ function CategoryModule({ situation, onTileClick }) {
         boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
       }}
     >
-      {/* Section Title + Helper */}
-      <div className="mb-3">
+      {/* Section Title Only (No Helper subtitle) */}
+      <div className="mb-2">
         <h3 
           className="text-sm font-semibold"
           style={{ color: colors.text.dark }}
         >
           {situation.title}
         </h3>
-        <p 
-          className="text-xs mt-0.5"
-          style={{ color: colors.text.secondary }}
-        >
-          {situation.helperCopy}
-        </p>
       </div>
       
-      {/* 3x2 Grid of Tiles */}
-      <div className="grid grid-cols-3 gap-2.5">
+      {/* 3x2 Grid of Tiles - Tighter spacing */}
+      <div className="grid grid-cols-3 gap-2">
         {situation.tiles.map((tile) => (
           <MinimalistTile 
             key={tile.id}
