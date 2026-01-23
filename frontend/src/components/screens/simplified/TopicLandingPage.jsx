@@ -9,7 +9,8 @@ import {
   CalendarIcon,
   ChatIcon,
   GiftIcon,
-  PhoneIcon
+  PhoneIcon,
+  UserIcon
 } from './icons';
 import { trackEvent } from './utils';
 
@@ -17,7 +18,8 @@ import { trackEvent } from './utils';
 import { 
   getV6SubtopicBySlug,
   V6_TILE_TO_SUBTOPIC_MAP,
-  V6_TIER_CONFIG
+  V6_TIER_CONFIG,
+  V6_EXPERTS
 } from './v6Data/landingPageContentV6';
 
 /**
@@ -72,11 +74,15 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
   const tierData = useMemo(() => {
     if (!content) return null;
     const tierCard = content.tierCards?.[selectedTier];
-    const tierFeatures = content.featuresByTier?.[selectedTier];
+    const outcomes = content.outcomesByTier?.[selectedTier];
+    const howUnfolds = content.howUnfoldsByTier?.[selectedTier];
+    const tierSummary = content.tierSummaryDetails?.[selectedTier];
     return {
       price: tierCard?.priceInr || 0,
       durationWeeks: tierCard?.durationWeeks || 8,
-      ...tierFeatures,
+      outcomes,
+      howUnfolds,
+      tierSummary,
     };
   }, [content, selectedTier]);
 
@@ -128,13 +134,8 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
     );
   }
 
-  const hasRemedies = content.optionalRemedies && content.optionalRemedies.length > 0;
-  const journeySteps = content.journeySteps || [
-    { step: 1, title: 'Choose your pack', desc: 'Select the tier that fits your needs' },
-    { step: 2, title: 'Get matched with an expert', desc: 'Within 24 hours of purchase' },
-    { step: 3, title: 'Calls + follow-ups + Unlimited chat', desc: 'Ongoing support till you have clarity' },
-    { step: 4, title: 'Optional add-ons', desc: 'Coming soon' },
-  ];
+  // Get experts list from content or use default
+  const experts = V6_EXPERTS;
 
   return (
     <div 
@@ -157,23 +158,23 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
           <ArrowLeftIcon className="w-5 h-5" style={{ color: colors.text.dark }} />
         </button>
         <h1 className="text-lg font-semibold flex-1 truncate" style={{ color: colors.text.dark }}>
-          {content.subTopic}
+          {content.headerTitle || content.topicKey}
         </h1>
       </header>
 
-      {/* ===== TOPIC EXPLAINER 1-LINER ===== */}
+      {/* ===== HERO - One Line Promise ===== */}
       <section className="px-5 pt-4 pb-2">
         <p 
           className="text-sm text-center leading-relaxed"
-          style={{ color: colors.text.secondary }}
+          style={{ color: colors.text.dark }}
         >
-          {content.topicExplainerOneLiner}
+          {content.heroOneLinePromise}
         </p>
       </section>
 
-      {/* ===== HERO - Personalized Greeting ===== */}
+      {/* ===== TOPIC EXPLAINER - Personalized Greeting ===== */}
       <section className="px-5 pt-2 pb-4">
-        <h2 className="text-xl font-semibold text-center leading-relaxed" style={{ color: colors.text.dark }}>
+        <h2 className="text-lg font-semibold text-center leading-relaxed" style={{ color: colors.text.dark }}>
           Hi {displayName}, here are the paths you can choose for your journey
         </h2>
       </section>
@@ -249,52 +250,13 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
             </div>
           </div>
 
-          {/* 2x2 Package Summary Grid */}
-          <div className="grid grid-cols-2 gap-3 pt-4 border-t" style={{ borderColor: DIVIDER_COLOR }}>
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
-                <CalendarIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Duration</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
-                  {tierData?.duration || `${tierData?.durationWeeks} weeks`}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
-                <PhoneIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Consultation</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
-                  {tierData?.consultations || '1 session'}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
-                <ClockIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Follow-ups</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
-                  {tierData?.unlimitedChat ? 'Ongoing' : 'Included'}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
-                <ChatIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Chat</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
-                  {getChatDisplay(tierData?.followUps)}
-                </p>
-              </div>
-            </div>
+          {/* Tier Summary Details (from Excel) */}
+          <div className="pt-4 border-t" style={{ borderColor: DIVIDER_COLOR }}>
+            {tierData?.tierSummary?.split('\n').map((line, idx) => (
+              <p key={idx} className="text-sm mb-1" style={{ color: colors.text.dark }}>
+                {line}
+              </p>
+            ))}
           </div>
         </div>
       </section>
@@ -329,7 +291,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               Clarity
             </p>
             <div className="space-y-2">
-              {tierData?.outcomes?.slice(0, 1).map((outcome, idx) => (
+              {tierData?.outcomes?.clarity?.map((outcome, idx) => (
                 <div key={idx} className="flex items-start gap-2.5">
                   <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
                   <p className="text-sm" style={{ color: colors.text.dark }}>{outcome}</p>
@@ -344,7 +306,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               Timeline
             </p>
             <div className="space-y-2">
-              {tierData?.outcomes?.slice(1, 2).map((outcome, idx) => (
+              {tierData?.outcomes?.timeline?.map((outcome, idx) => (
                 <div key={idx} className="flex items-start gap-2.5">
                   <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
                   <p className="text-sm" style={{ color: colors.text.dark }}>{outcome}</p>
@@ -359,7 +321,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               Support
             </p>
             <div className="space-y-2">
-              {tierData?.outcomes?.slice(2).map((outcome, idx) => (
+              {tierData?.outcomes?.support?.map((outcome, idx) => (
                 <div key={idx} className="flex items-start gap-2.5">
                   <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
                   <p className="text-sm" style={{ color: colors.text.dark }}>{outcome}</p>
@@ -373,38 +335,16 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       {/* ===== DIVIDER ===== */}
       <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
-      {/* ===== HOW WILL YOUR JOURNEY UNFOLD (4-Step Timeline) ===== */}
+      {/* ===== HOW WILL YOUR JOURNEY UNFOLD ===== */}
       <section className="px-5 py-4">
         <h3 className="text-base font-semibold mb-4" style={{ color: colors.text.dark }}>
           How will your journey unfold
         </h3>
-        <div className="space-y-0">
-          {journeySteps.map((item, idx) => (
-            <div key={idx} className="flex items-start gap-3 relative">
-              {/* Timeline line */}
-              {idx < journeySteps.length - 1 && (
-                <div 
-                  className="absolute left-4 top-8 w-px h-8"
-                  style={{ backgroundColor: DIVIDER_COLOR }}
-                />
-              )}
-              <div 
-                className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold"
-                style={{ 
-                  backgroundColor: idx === journeySteps.length - 1 ? `${colors.text.mutedDark}20` : `${colors.teal.primary}15`,
-                  color: idx === journeySteps.length - 1 ? colors.text.mutedDark : colors.teal.primary,
-                }}
-              >
-                {item.step}
-              </div>
-              <div className="flex-1 pb-4">
-                <p className="font-medium text-sm" style={{ color: idx === journeySteps.length - 1 ? colors.text.mutedDark : colors.text.dark }}>
-                  {item.title}
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: colors.text.secondary }}>
-                  {item.desc}
-                </p>
-              </div>
+        <div className="space-y-2">
+          {tierData?.howUnfolds?.map((step, idx) => (
+            <div key={idx} className="flex items-start gap-2.5">
+              <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
+              <p className="text-sm" style={{ color: colors.text.dark }}>{step}</p>
             </div>
           ))}
         </div>
@@ -414,26 +354,23 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
       {/* ===== EXPERTS WIDGET ===== */}
-      <section className="py-4">
+      <section className="py-4" data-testid="experts-widget">
         <h3 className="text-base font-semibold mb-1 px-5" style={{ color: colors.text.dark }}>
-          Choose from Niro experts
+          {content.expertsWidgetTitle || 'Choose from Niro experts'}
         </h3>
         <p className="text-xs mb-4 px-5" style={{ color: colors.text.secondary }}>
-          Verified specialists for your situation
+          {content.expertsWidgetSubtitle || 'Verified specialists for this journey. Choose one to start — you can switch later.'}
         </p>
         <div className="flex gap-3 overflow-x-auto px-5 pb-2 scrollbar-hide">
-          {[
-            { role: 'Senior Vedic Astrologer', badge: 'Verified • 10+ yrs', focus: 'Chart + timing clarity' },
-            { role: 'Tarot Guide', badge: 'Verified • 6+ yrs', focus: 'Emotional clarity + patterns' },
-            { role: 'Numerology Expert', badge: 'Verified • 8+ yrs', focus: 'Cycles + decision windows' },
-          ].map((expert, idx) => (
+          {experts.map((expert, idx) => (
             <div 
               key={idx}
-              className="flex-shrink-0 w-40 rounded-xl p-4"
+              className="flex-shrink-0 w-44 rounded-xl p-4"
               style={{ 
                 backgroundColor: CARD_BG,
                 border: `1px solid ${CARD_BORDER}`,
               }}
+              data-testid={`expert-card-${idx}`}
             >
               {/* Photo placeholder */}
               <div 
@@ -450,9 +387,18 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               <p className="text-[10px] mb-2" style={{ color: colors.teal.primary }}>
                 {expert.badge}
               </p>
-              <p className="text-xs" style={{ color: colors.text.secondary }}>
+              <p className="text-xs mb-3" style={{ color: colors.text.secondary }}>
                 {expert.focus}
               </p>
+              <button 
+                className="text-xs font-medium px-3 py-1.5 rounded-lg"
+                style={{ 
+                  backgroundColor: `${colors.teal.primary}10`,
+                  color: colors.teal.primary,
+                }}
+              >
+                View profile
+              </button>
             </div>
           ))}
         </div>
@@ -461,48 +407,41 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       {/* ===== DIVIDER ===== */}
       <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
-      {/* ===== OPTIONAL ADD-ONS (Coming Soon - No CTA) ===== */}
-      {hasRemedies && (
-        <section className="py-4">
-          <h3 className="text-base font-semibold mb-3 px-5" style={{ color: colors.text.dark }}>
-            Optional Add-ons
-          </h3>
-          <div className="flex gap-3 overflow-x-auto px-5 pb-2 scrollbar-hide">
-            {content.optionalRemedies.slice(0, 3).map((remedy, idx) => (
-              <div 
-                key={idx}
-                className="flex-shrink-0 w-48 rounded-xl p-4"
-                style={{ 
-                  backgroundColor: CARD_BG,
-                  border: `1px solid ${CARD_BORDER}`,
-                }}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
-                    <GiftIcon className="w-3.5 h-3.5" style={{ color: colors.teal.primary }} />
-                  </div>
-                </div>
-                <h4 className="font-medium text-sm mb-1" style={{ color: colors.text.dark }}>
-                  {remedy.name}
-                </h4>
-                <p className="text-xs mb-3" style={{ color: colors.text.secondary }}>
-                  {remedy.description}
-                </p>
-                {/* Remedy CTA = "Coming soon" - strict */}
-                <span 
-                  className="inline-block text-[10px] px-2.5 py-1 rounded-full font-medium"
-                  style={{ 
-                    backgroundColor: `${colors.text.mutedDark}15`,
-                    color: colors.text.mutedDark,
-                  }}
-                >
-                  Coming soon
-                </span>
+      {/* ===== OPTIONAL ADD-ONS (Coming Soon) ===== */}
+      <section className="py-4" data-testid="remedies-section">
+        <h3 className="text-base font-semibold mb-3 px-5" style={{ color: colors.text.dark }}>
+          {content.remediesTitle || 'Optional add-ons (Coming soon)'}
+        </h3>
+        <div className="px-5">
+          <div 
+            className="rounded-xl p-4 flex items-center justify-center"
+            style={{ 
+              backgroundColor: CARD_BG,
+              border: `1px solid ${CARD_BORDER}`,
+            }}
+          >
+            <div className="text-center">
+              <div className="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center" style={{ backgroundColor: `${colors.text.mutedDark}10` }}>
+                <GiftIcon className="w-5 h-5" style={{ color: colors.text.mutedDark }} />
               </div>
-            ))}
+              <p className="text-sm mb-2" style={{ color: colors.text.secondary }}>
+                Topic-specific remedies and add-ons
+              </p>
+              {/* Remedy CTA = "Coming soon" - strict */}
+              <span 
+                className="inline-block text-xs px-3 py-1.5 rounded-full font-medium"
+                style={{ 
+                  backgroundColor: `${colors.text.mutedDark}15`,
+                  color: colors.text.mutedDark,
+                }}
+                data-testid="remedies-coming-soon"
+              >
+                Coming soon
+              </span>
+            </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* ===== DIVIDER ===== */}
       <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
