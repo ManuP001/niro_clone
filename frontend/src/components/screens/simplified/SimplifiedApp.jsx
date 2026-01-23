@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import SplashScreen from './SplashScreen';
 import HomeScreen from './HomeScreen';
 import TopicLandingPage from './TopicLandingPage';
 import CheckoutScreen from './CheckoutScreen';
@@ -13,10 +12,10 @@ import RemediesScreen from './RemediesScreen';
 import BottomNav from './BottomNav';
 import CategoryListingPage from './CategoryListingPage';
 import DevToggle from './DevToggle';
+import UserDetailsScreen from './UserDetailsScreen';
 import { apiSimplified, trackEvent } from './utils';
 import { colors } from './theme';
 import { 
-  WelcomeScreen, 
   HowNiroWorksScreen, 
   TrustSafetyScreen, 
   HomeTourOverlay 
@@ -26,24 +25,25 @@ import {
 const ONBOARDING_KEY = 'niro_onboarding_completed';
 const HOME_TOUR_KEY = 'niro_home_tour_completed';
 const USER_MODE_KEY = 'niro_user_mode';
+const USER_DETAILS_KEY = 'niro_user_details_completed';
 
-// Onboarding steps
+// Onboarding steps (Updated flow)
+// Splash (login) → User Details (new users) → How It Works → Trust & Safety → Home
 const ONBOARDING_STEPS = {
-  SPLASH: 'splash',
-  WELCOME: 'welcome',
+  USER_DETAILS: 'userDetails',
   HOW_IT_WORKS: 'howItWorks',
   TRUST_SAFETY: 'trustSafety',
   HOME: 'home'
 };
 
 /**
- * SimplifiedApp - Main app container for NIRO V5
+ * SimplifiedApp - Main app container for NIRO V6
  * 
  * Features:
- * - Guided Onboarding (Welcome → How It Works → Trust & Safety → Home)
+ * - Guided Onboarding: User Details (new users) → How It Works → Trust & Safety → Home
  * - Home Tour Overlay (first time only)
  * - Bottom Navigation: Home, Consult, Mira, Remedies, Astro
- * - Profile in top-right avatar menu
+ * - Profile button in top-right on HomeScreen
  * - DevToggle for testing (enabled via ?dev=true)
  * - CategoryListingPage for "View all" and "Talk to human" CTAs
  */
