@@ -298,22 +298,25 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
           )}
 
           {/* Buttons */}
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-3 rounded-xl font-medium transition-all border"
-              style={{ backgroundColor: 'white', borderColor: '#e5d188', color: '#5c5c5c' }}
-            >
-              Cancel
-            </button>
+          <div className={`flex gap-3 pt-2 ${isOnboarding ? 'flex-col' : ''}`}>
+            {!isOnboarding && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 py-3 rounded-xl font-medium transition-all border"
+                style={{ backgroundColor: 'white', borderColor: '#e5d188', color: '#5c5c5c' }}
+              >
+                Cancel
+              </button>
+            )}
             <button
               type="submit"
               disabled={loading}
               className="flex-1 py-3 rounded-xl font-medium transition-all"
               style={{ backgroundColor: '#d7b870', color: '#f0e9d1' }}
+              data-testid="birth-details-submit"
             >
-              {loading ? 'Saving...' : 'Save & View Kundli'}
+              {loading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save & View Kundli'}
             </button>
           </div>
         </form>
