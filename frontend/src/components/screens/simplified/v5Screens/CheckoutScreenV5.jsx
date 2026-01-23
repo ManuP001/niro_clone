@@ -284,7 +284,7 @@ export default function CheckoutScreenV5({
               className="text-sm"
               style={{ color: colors.ui.success }}
             >
-              7-day full refund guarantee
+              100% satisfaction guaranteed
             </span>
           </div>
 

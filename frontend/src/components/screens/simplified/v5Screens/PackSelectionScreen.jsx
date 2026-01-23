@@ -227,7 +227,7 @@ export default function PackSelectionScreen({
             className="text-sm font-medium"
             style={{ color: colors.ui.success }}
           >
-            No questions asked — 7-day full refund
+            100% satisfaction guaranteed
           </span>
         </div>
       </div>
