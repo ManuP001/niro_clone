@@ -1,8 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BACKEND_URL } from '../../../config';
 
+// Teal gradient background (same as login screen)
+const TEAL_GRADIENT = 'linear-gradient(180deg, #3E827A 0%, #5A9A92 30%, #7AB5AD 60%, #A8D5CF 85%, #E8F0ED 100%)';
+
 /**
- * BirthDetailsModal - Collect birth details for Kundli with NIRO V2 styling
+ * BirthDetailsModal - Collect birth details for Kundli
+ * When isOnboarding=true, renders as full-screen with teal gradient
+ * When isOnboarding=false, renders as modal overlay
  */
 export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, isOnboarding = false }) {
   const [formData, setFormData] = useState({
@@ -121,10 +126,226 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
 
   if (!isOpen) return null;
 
-  // Teal gradient background (same as login screen)
-  const TEAL_GRADIENT = 'linear-gradient(180deg, #3E827A 0%, #5A9A92 30%, #7AB5AD 60%, #A8D5CF 85%, #E8F0ED 100%)';
+  // Form content component
+  const FormContent = () => (
+    <>
+      {/* Header */}
+      <div className="text-center mb-6">
+        <div 
+          className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+          style={{ background: 'linear-gradient(135deg, #3E827A 0%, #5A9A92 100%)' }}
+        >
+          <span className="text-3xl">🌟</span>
+        </div>
+        <h2 className="text-xl font-bold" style={{ color: '#3E827A' }}>
+          {isOnboarding ? 'Tell us about yourself' : 'Complete Your Profile'}
+        </h2>
+        <p className="text-sm mt-1" style={{ color: '#5A9A92' }}>
+          {isOnboarding ? 'This helps us create your personalized Kundli' : 'Enter your birth details to view your Kundli'}
+        </p>
+      </div>
 
-  // For onboarding, render as full-screen; otherwise render as modal
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Name */}
+        <div>
+          <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Full Name</label>
+          <input
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            placeholder="Your full name"
+            className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2"
+            style={{ 
+              backgroundColor: 'white', 
+              borderColor: '#A8D5CF',
+              color: '#3E827A'
+            }}
+            required
+          />
+        </div>
+
+        {/* Gender */}
+        <div>
+          <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Gender</label>
+          <div className="flex gap-2">
+            {['Male', 'Female', 'Other'].map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, gender: option.toLowerCase() }))}
+                className="flex-1 py-3 rounded-xl font-medium transition-all border"
+                style={{
+                  backgroundColor: formData.gender === option.toLowerCase() ? '#3E827A' : 'white',
+                  borderColor: '#A8D5CF',
+                  color: formData.gender === option.toLowerCase() ? 'white' : '#3E827A'
+                }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Marital Status */}
+        <div>
+          <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Marital Status</label>
+          <div className="flex gap-2">
+            {['Single', 'Married', 'Other'].map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, marital_status: option.toLowerCase() }))}
+                className="flex-1 py-3 rounded-xl font-medium transition-all border"
+                style={{
+                  backgroundColor: formData.marital_status === option.toLowerCase() ? '#3E827A' : 'white',
+                  borderColor: '#A8D5CF',
+                  color: formData.marital_status === option.toLowerCase() ? 'white' : '#3E827A'
+                }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Date of Birth */}
+        <div>
+          <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Date of Birth</label>
+          <button
+            type="button"
+            onClick={() => setShowDatePicker(true)}
+            className="w-full px-4 py-3 rounded-xl text-left border transition-all"
+            style={{ 
+              backgroundColor: 'white', 
+              borderColor: '#A8D5CF',
+              color: formData.dob ? '#3E827A' : '#7AB5AD'
+            }}
+          >
+            {formData.dob || 'Select date'}
+          </button>
+        </div>
+
+        {/* Time of Birth */}
+        <div>
+          <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Time of Birth (approx)</label>
+          <button
+            type="button"
+            onClick={() => setShowTimePicker(true)}
+            className="w-full px-4 py-3 rounded-xl text-left border transition-all"
+            style={{ 
+              backgroundColor: 'white', 
+              borderColor: '#A8D5CF',
+              color: formData.tob ? '#3E827A' : '#7AB5AD'
+            }}
+          >
+            {formData.tob || 'Select time'}
+          </button>
+        </div>
+
+        {/* Location */}
+        <div ref={suggestionsRef} className="relative">
+          <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Place of Birth</label>
+          <div className="relative">
+            <span className="absolute left-3 top-3.5 text-lg">📍</span>
+            <input
+              type="text"
+              value={formData.location}
+              onChange={(e) => handleLocationSearch(e.target.value)}
+              onFocus={() => formData.location.length >= 2 && setShowSuggestions(true)}
+              placeholder="Search city, state, country..."
+              className="w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2"
+              style={{ 
+                backgroundColor: 'white', 
+                borderColor: '#A8D5CF',
+                color: '#3E827A'
+              }}
+              required
+            />
+          </div>
+
+          {showSuggestions && placeSuggestions.length > 0 && (
+            <div 
+              className="absolute top-full left-0 right-0 mt-1 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto"
+              style={{ backgroundColor: 'white', border: '1px solid #A8D5CF' }}
+            >
+              {placeSuggestions.map((place, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSelectPlace(place)}
+                  className="w-full text-left px-4 py-2 hover:bg-teal-50 transition-colors border-b last:border-b-0"
+                  style={{ borderColor: '#E8F0ED' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span style={{ color: '#3E827A' }}>📍</span>
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: '#3E827A' }}>{place.label}</p>
+                      <p className="text-xs" style={{ color: '#7AB5AD' }}>Lat: {place.lat.toFixed(2)}, Lon: {place.lon.toFixed(2)}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {formData.birth_place_lat && (
+            <p className="text-xs mt-1" style={{ color: '#3E827A' }}>✓ Location confirmed</p>
+          )}
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="p-3 rounded-xl text-sm" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>
+            {error}
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div className={`flex gap-3 pt-2 ${isOnboarding ? 'flex-col' : ''}`}>
+          {!isOnboarding && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-3 rounded-xl font-medium transition-all border"
+              style={{ backgroundColor: 'white', borderColor: '#A8D5CF', color: '#3E827A' }}
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 py-3 rounded-xl font-medium transition-all"
+            style={{ backgroundColor: '#3E827A', color: 'white' }}
+            data-testid="birth-details-submit"
+          >
+            {loading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save & View Kundli'}
+          </button>
+        </div>
+      </form>
+
+      {/* Date Picker Modal */}
+      {showDatePicker && (
+        <DatePickerModal
+          currentValue={formData.dob}
+          onSet={(val) => setFormData(prev => ({ ...prev, dob: val }))}
+          onClose={() => setShowDatePicker(false)}
+        />
+      )}
+
+      {/* Time Picker Modal */}
+      {showTimePicker && (
+        <TimePickerModal
+          currentValue={formData.tob}
+          onSet={(val) => setFormData(prev => ({ ...prev, tob: val }))}
+          onClose={() => setShowTimePicker(false)}
+        />
+      )}
+    </>
+  );
+
+  // For onboarding, render as full-screen with teal gradient
   if (isOnboarding) {
     return (
       <div 
@@ -132,248 +353,29 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
         style={{ background: TEAL_GRADIENT }}
       >
         <div 
-          className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
+          className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto shadow-xl"
           style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}
         >
-          {renderFormContent()}
+          <FormContent />
         </div>
       </div>
     );
   }
 
+  // For modal, render with dark overlay
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div 
         className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
         style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}
       >
-        {renderFormContent()}
-      </div>
-    </div>
-  );
-
-  function renderFormContent() {
-    return (
-      <>
-        {/* Header */}
-        <div className="text-center mb-6">
-          <div 
-            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ background: 'linear-gradient(135deg, #3E827A 0%, #5A9A92 100%)' }}
-          >
-            <span className="text-3xl">🌟</span>
-          </div>
-          <h2 className="text-xl font-bold" style={{ color: '#3E827A' }}>
-            {isOnboarding ? 'Tell us about yourself' : 'Complete Your Profile'}
-          </h2>
-          <p className="text-sm mt-1" style={{ color: '#5A9A92' }}>
-            {isOnboarding ? 'This helps us create your personalized Kundli' : 'Enter your birth details to view your Kundli'}
-          </p>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Full Name</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Your full name"
-              className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2"
-              style={{ 
-                backgroundColor: 'white', 
-                borderColor: '#e5d188',
-                color: '#5c5c5c'
-              }}
-              required
-            />
-          </div>
-
-          {/* Gender */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Gender</label>
-            <div className="flex gap-2">
-              {['Male', 'Female', 'Other'].map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, gender: option.toLowerCase() }))}
-                  className="flex-1 py-3 rounded-xl font-medium transition-all border"
-                  style={{
-                    backgroundColor: formData.gender === option.toLowerCase() ? '#d7b870' : 'white',
-                    borderColor: '#e5d188',
-                    color: formData.gender === option.toLowerCase() ? '#f0e9d1' : '#5c5c5c'
-                  }}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Marital Status */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Marital Status</label>
-            <div className="flex gap-2">
-              {['Single', 'Married', 'Other'].map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, marital_status: option.toLowerCase() }))}
-                  className="flex-1 py-3 rounded-xl font-medium transition-all border"
-                  style={{
-                    backgroundColor: formData.marital_status === option.toLowerCase() ? '#d7b870' : 'white',
-                    borderColor: '#e5d188',
-                    color: formData.marital_status === option.toLowerCase() ? '#f0e9d1' : '#5c5c5c'
-                  }}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Date of Birth */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Date of Birth</label>
-            <button
-              type="button"
-              onClick={() => setShowDatePicker(true)}
-              className="w-full px-4 py-3 rounded-xl text-left border transition-all"
-              style={{ 
-                backgroundColor: 'white', 
-                borderColor: '#e5d188',
-                color: formData.dob ? '#5c5c5c' : '#9a8a6a'
-              }}
-            >
-              {formData.dob || 'Select date'}
-            </button>
-          </div>
-
-          {/* Time of Birth */}
-          <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Time of Birth (approx)</label>
-            <button
-              type="button"
-              onClick={() => setShowTimePicker(true)}
-              className="w-full px-4 py-3 rounded-xl text-left border transition-all"
-              style={{ 
-                backgroundColor: 'white', 
-                borderColor: '#e5d188',
-                color: formData.tob ? '#5c5c5c' : '#9a8a6a'
-              }}
-            >
-              {formData.tob || 'Select time'}
-            </button>
-          </div>
-
-          {/* Location */}
-          <div ref={suggestionsRef} className="relative">
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Place of Birth</label>
-            <div className="relative">
-              <span className="absolute left-3 top-3.5 text-lg">📍</span>
-              <input
-                type="text"
-                value={formData.location}
-                onChange={(e) => handleLocationSearch(e.target.value)}
-                onFocus={() => formData.location.length >= 2 && setShowSuggestions(true)}
-                placeholder="Search city, state, country..."
-                className="w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2"
-                style={{ 
-                  backgroundColor: 'white', 
-                  borderColor: '#e5d188',
-                  color: '#5c5c5c'
-                }}
-                required
-              />
-            </div>
-
-            {showSuggestions && placeSuggestions.length > 0 && (
-              <div 
-                className="absolute top-full left-0 right-0 mt-1 rounded-xl shadow-lg z-50 max-h-48 overflow-y-auto"
-                style={{ backgroundColor: 'white', border: '1px solid #e5d188' }}
-              >
-                {placeSuggestions.map((place, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleSelectPlace(place)}
-                    className="w-full text-left px-4 py-2 hover:bg-amber-50 transition-colors border-b last:border-b-0"
-                    style={{ borderColor: '#e5d188' }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span style={{ color: '#d7b870' }}>📍</span>
-                      <div>
-                        <p className="text-sm font-medium" style={{ color: '#5c5c5c' }}>{place.label}</p>
-                        <p className="text-xs" style={{ color: '#9a8a6a' }}>Lat: {place.lat.toFixed(2)}, Lon: {place.lon.toFixed(2)}</p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {formData.birth_place_lat && (
-              <p className="text-xs mt-1" style={{ color: '#d7b870' }}>✓ Location confirmed</p>
-            )}
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div className="p-3 rounded-xl text-sm" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>
-              {error}
-            </div>
-          )}
-
-          {/* Buttons */}
-          <div className={`flex gap-3 pt-2 ${isOnboarding ? 'flex-col' : ''}`}>
-            {!isOnboarding && (
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-3 rounded-xl font-medium transition-all border"
-                style={{ backgroundColor: 'white', borderColor: '#e5d188', color: '#5c5c5c' }}
-              >
-                Cancel
-              </button>
-            )}
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 py-3 rounded-xl font-medium transition-all"
-              style={{ backgroundColor: '#d7b870', color: '#f0e9d1' }}
-              data-testid="birth-details-submit"
-            >
-              {loading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save & View Kundli'}
-            </button>
-          </div>
-        </form>
-
-        {/* Date Picker Modal */}
-        {showDatePicker && (
-          <DatePickerModal
-            currentValue={formData.dob}
-            onSet={(val) => setFormData(prev => ({ ...prev, dob: val }))}
-            onClose={() => setShowDatePicker(false)}
-          />
-        )}
-
-        {/* Time Picker Modal */}
-        {showTimePicker && (
-          <TimePickerModal
-            currentValue={formData.tob}
-            onSet={(val) => setFormData(prev => ({ ...prev, tob: val }))}
-            onClose={() => setShowTimePicker(false)}
-          />
-        )}
+        <FormContent />
       </div>
     </div>
   );
 }
 
-// Date Picker Modal with NIRO styling
+// Date Picker Modal
 function DatePickerModal({ currentValue, onSet, onClose }) {
   const currentDate = currentValue ? new Date(currentValue) : new Date(1990, 0, 1);
   const [day, setDay] = useState(currentDate.getDate());
@@ -395,43 +397,43 @@ function DatePickerModal({ currentValue, onSet, onClose }) {
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-[60]">
       <div 
         className="w-full sm:w-96 rounded-t-2xl sm:rounded-2xl p-6"
-        style={{ backgroundColor: '#f5f0e3' }}
+        style={{ backgroundColor: 'white' }}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold" style={{ color: '#5c5c5c' }}>Select Date of Birth</h2>
-          <button onClick={onClose} style={{ color: '#9a8a6a' }}>✕</button>
+          <h2 className="text-xl font-bold" style={{ color: '#3E827A' }}>Select Date of Birth</h2>
+          <button onClick={onClose} style={{ color: '#7AB5AD' }}>✕</button>
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Day</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Day</label>
             <select
               value={day}
               onChange={(e) => setDay(parseInt(e.target.value))}
               className="w-full px-3 py-2 rounded-xl border focus:outline-none"
-              style={{ backgroundColor: 'white', borderColor: '#e5d188', color: '#5c5c5c' }}
+              style={{ backgroundColor: 'white', borderColor: '#A8D5CF', color: '#3E827A' }}
             >
               {days.map((d) => <option key={d} value={d}>{String(d).padStart(2, '0')}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Month</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Month</label>
             <select
               value={month}
               onChange={(e) => setMonth(parseInt(e.target.value))}
               className="w-full px-3 py-2 rounded-xl border focus:outline-none"
-              style={{ backgroundColor: 'white', borderColor: '#e5d188', color: '#5c5c5c' }}
+              style={{ backgroundColor: 'white', borderColor: '#A8D5CF', color: '#3E827A' }}
             >
               {months.map((m, idx) => <option key={idx} value={idx}>{m}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Year</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Year</label>
             <select
               value={year}
               onChange={(e) => setYear(parseInt(e.target.value))}
               className="w-full px-3 py-2 rounded-xl border focus:outline-none"
-              style={{ backgroundColor: 'white', borderColor: '#e5d188', color: '#5c5c5c' }}
+              style={{ backgroundColor: 'white', borderColor: '#A8D5CF', color: '#3E827A' }}
             >
               {years.map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
@@ -442,14 +444,14 @@ function DatePickerModal({ currentValue, onSet, onClose }) {
           <button
             onClick={onClose}
             className="flex-1 py-3 rounded-xl font-medium border"
-            style={{ backgroundColor: 'white', borderColor: '#e5d188', color: '#5c5c5c' }}
+            style={{ backgroundColor: 'white', borderColor: '#A8D5CF', color: '#3E827A' }}
           >
             Cancel
           </button>
           <button
             onClick={handleSet}
             className="flex-1 py-3 rounded-xl font-medium"
-            style={{ backgroundColor: '#d7b870', color: '#f0e9d1' }}
+            style={{ backgroundColor: '#3E827A', color: 'white' }}
           >
             Set Date
           </button>
@@ -459,7 +461,7 @@ function DatePickerModal({ currentValue, onSet, onClose }) {
   );
 }
 
-// Time Picker Modal with NIRO styling
+// Time Picker Modal
 function TimePickerModal({ currentValue, onSet, onClose }) {
   const currentTime = currentValue ? currentValue.split(':') : ['12', '00'];
   const [hour, setHour] = useState(parseInt(currentTime[0]) || 12);
@@ -483,46 +485,46 @@ function TimePickerModal({ currentValue, onSet, onClose }) {
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-[60]">
       <div 
         className="w-full sm:w-96 rounded-t-2xl sm:rounded-2xl p-6"
-        style={{ backgroundColor: '#f5f0e3' }}
+        style={{ backgroundColor: 'white' }}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold" style={{ color: '#5c5c5c' }}>Select Time of Birth</h2>
-          <button onClick={onClose} style={{ color: '#9a8a6a' }}>✕</button>
+          <h2 className="text-xl font-bold" style={{ color: '#3E827A' }}>Select Time of Birth</h2>
+          <button onClick={onClose} style={{ color: '#7AB5AD' }}>✕</button>
         </div>
 
         <div className="flex gap-4 mb-6">
           <div className="flex-1">
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Hour</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Hour</label>
             <select
               value={hour}
               onChange={(e) => setHour(parseInt(e.target.value))}
               className="w-full px-3 py-2 rounded-xl border focus:outline-none"
-              style={{ backgroundColor: 'white', borderColor: '#e5d188', color: '#5c5c5c' }}
+              style={{ backgroundColor: 'white', borderColor: '#A8D5CF', color: '#3E827A' }}
             >
               {hours.map((h) => <option key={h} value={h}>{String(h).padStart(2, '0')}</option>)}
             </select>
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Minute</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Minute</label>
             <select
               value={minute}
               onChange={(e) => setMinute(parseInt(e.target.value))}
               className="w-full px-3 py-2 rounded-xl border focus:outline-none"
-              style={{ backgroundColor: 'white', borderColor: '#e5d188', color: '#5c5c5c' }}
+              style={{ backgroundColor: 'white', borderColor: '#A8D5CF', color: '#3E827A' }}
             >
               {minutes.map((m) => <option key={m} value={m}>{String(m).padStart(2, '0')}</option>)}
             </select>
           </div>
           <div className="flex-1">
-            <label className="block text-sm font-medium mb-2" style={{ color: '#5c5c5c' }}>Period</label>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#3E827A' }}>Period</label>
             <div className="flex gap-1">
               <button
                 type="button"
                 onClick={() => setPeriod('AM')}
                 className="flex-1 py-2 rounded-lg font-medium transition-all"
                 style={{
-                  backgroundColor: period === 'AM' ? '#d7b870' : 'white',
-                  color: period === 'AM' ? '#f0e9d1' : '#5c5c5c'
+                  backgroundColor: period === 'AM' ? '#3E827A' : 'white',
+                  color: period === 'AM' ? 'white' : '#3E827A'
                 }}
               >
                 AM
@@ -532,8 +534,8 @@ function TimePickerModal({ currentValue, onSet, onClose }) {
                 onClick={() => setPeriod('PM')}
                 className="flex-1 py-2 rounded-lg font-medium transition-all"
                 style={{
-                  backgroundColor: period === 'PM' ? '#d7b870' : 'white',
-                  color: period === 'PM' ? '#f0e9d1' : '#5c5c5c'
+                  backgroundColor: period === 'PM' ? '#3E827A' : 'white',
+                  color: period === 'PM' ? 'white' : '#3E827A'
                 }}
               >
                 PM
@@ -546,14 +548,14 @@ function TimePickerModal({ currentValue, onSet, onClose }) {
           <button
             onClick={onClose}
             className="flex-1 py-3 rounded-xl font-medium border"
-            style={{ backgroundColor: 'white', borderColor: '#e5d188', color: '#5c5c5c' }}
+            style={{ backgroundColor: 'white', borderColor: '#A8D5CF', color: '#3E827A' }}
           >
             Cancel
           </button>
           <button
             onClick={handleSet}
             className="flex-1 py-3 rounded-xl font-medium"
-            style={{ backgroundColor: '#d7b870', color: '#f0e9d1' }}
+            style={{ backgroundColor: '#3E827A', color: 'white' }}
           >
             Set Time
           </button>
