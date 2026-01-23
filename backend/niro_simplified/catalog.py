@@ -884,22 +884,22 @@ class SimplifiedCatalog:
         
         tier_features = {
             "focussed": [
-                "1× 60-min video call",
-                "7 days async chat",
-                "1 follow-up check-in",
-                "Basic clarity report"
+                "1× 60-90 min video session",
+                "1 follow-up call (20 min)",
+                "Unlimited chat for package duration",
+                "Written summary report"
             ],
             "supported": [
-                "3 sessions (1×60-min + 2×30-min)",
+                "1× 60-90 min primary session",
+                "2 follow-up calls (20 min each)",
                 "Unlimited chat for full duration",
-                "2 follow-ups included",
-                "Extended guidance report"
+                "Priority chat responses"
             ],
             "comprehensive": [
-                "5 sessions (2×60-min + 3×30-min)",
+                "2× 60 min sessions (multi-expert)",
+                "3 follow-up calls (20 min each)",
                 "Unlimited chat + priority response",
-                "Multiple expert perspectives",
-                "Comprehensive life report"
+                "Cross-verified expert perspectives"
             ]
         }
         
