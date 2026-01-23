@@ -487,7 +487,7 @@ export const LOVE_SUBTOPICS = {
       { q: 'What if I feel triggered again?', a: 'You can reach out through chat anytime during your pack.' },
       { q: 'Is Tarot included?', a: 'Comprehensive includes both Vedic and Tarot perspectives.' },
       { q: 'What if I want privacy?', a: 'All conversations are confidential and encrypted.' },
-      { q: 'Refund policy?', a: '7-day full refund, no questions asked.' }
+      { q: 'Refund policy?', a: '100% satisfaction guaranteed. Contact our support team if you have any concerns.' }
     ]
   }
 };
