@@ -395,7 +395,8 @@ async def create_order(
 @router.post("/checkout/verify", response_model=VerifyPaymentResponse)
 async def verify_payment(
     request_data: VerifyPaymentRequest,
-    authorization: str = Header(default=None)
+    authorization: str = Header(default=None),
+    background_tasks: BackgroundTasks = None
 ):
     """Verify Razorpay payment and create plan"""
     user_id = get_user_id_from_token(authorization)
@@ -466,6 +467,64 @@ async def verify_payment(
             "completed_at": datetime.utcnow()
         }}
     )
+    
+    # Send booking notification email in background
+    try:
+        # Get user profile for email notification
+        user_profile = await storage.db.users.find_one({"user_id": user_id}, {"_id": 0})
+        
+        user_email = user_profile.get('email', '') if user_profile else ''
+        user_name = user_profile.get('name', '') if user_profile else ''
+        user_phone = user_profile.get('phone', '') if user_profile else ''
+        
+        # Get topic name
+        topic = catalog.get_topic(tier.topic_id)
+        topic_name = topic.title if topic else tier.topic_id
+        
+        # Send email notification (in background if available)
+        if background_tasks:
+            background_tasks.add_task(
+                send_booking_notification,
+                user_email=user_email or f"user_{user_id}@niro.app",
+                user_name=user_name,
+                user_phone=user_phone,
+                package_name=f"{topic_name} - {tier.tier_level}",
+                package_tier=tier.tier_level,
+                package_price=tier.price_inr,
+                topic_name=topic_name,
+                transaction_id=request_data.razorpay_payment_id,
+                payment_method="Razorpay",
+                additional_info={
+                    "order_id": request_data.order_id,
+                    "plan_id": plan_id,
+                    "scenarios": order.get("scenario_ids", []),
+                    "validity_weeks": tier.validity_weeks
+                }
+            )
+        else:
+            # Send synchronously if no background tasks
+            await send_booking_notification(
+                user_email=user_email or f"user_{user_id}@niro.app",
+                user_name=user_name,
+                user_phone=user_phone,
+                package_name=f"{topic_name} - {tier.tier_level}",
+                package_tier=tier.tier_level,
+                package_price=tier.price_inr,
+                topic_name=topic_name,
+                transaction_id=request_data.razorpay_payment_id,
+                payment_method="Razorpay",
+                additional_info={
+                    "order_id": request_data.order_id,
+                    "plan_id": plan_id,
+                    "scenarios": order.get("scenario_ids", []),
+                    "validity_weeks": tier.validity_weeks
+                }
+            )
+        
+        logger.info(f"Booking notification email queued for plan {plan_id}")
+    except Exception as e:
+        logger.error(f"Failed to send booking notification: {e}")
+        # Don't fail the purchase if email fails
     
     return VerifyPaymentResponse(
         plan_id=plan_id,
