@@ -322,7 +322,7 @@ export default function LandingPageV5({
 
         {/* Trust chips */}
         <div className="flex flex-wrap gap-2 mb-6">
-          {['Verified Experts', 'Clear + Practical Guidance', '7-day Refund'].map((chip) => (
+          {['Verified Experts', 'Clear + Practical Guidance', 'Satisfaction Guaranteed'].map((chip) => (
             <span 
               key={chip}
               className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full"

@@ -1287,7 +1287,7 @@ export const HEALTH_SUBTOPICS = {
       { q: 'Unlimited chat?', a: 'Supported and Comprehensive include unlimited chat.' },
       { q: 'Response time?', a: 'Within 24-48 hours depending on your pack.' },
       { q: 'Can I do this without birth time?', a: 'Yes, we can work with approximate time.' },
-      { q: 'Refund?', a: '7-day full refund, no questions asked.' }
+      { q: 'Refund?', a: '100% satisfaction guaranteed. Contact our support team if you have any concerns.' }
     ]
   },
 

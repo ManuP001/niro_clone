@@ -94,7 +94,7 @@ export default function TrustScreenV5({ onContinue, onBack }) {
   const trustChips = [
     'Verified Experts',
     'Clear + Practical Guidance',
-    '7-day Refund Guarantee'
+    'Satisfaction Guaranteed'
   ];
 
   return (
