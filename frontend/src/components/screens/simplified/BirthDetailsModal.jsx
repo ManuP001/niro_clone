@@ -135,9 +135,11 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
           >
             <span className="text-3xl">🌟</span>
           </div>
-          <h2 className="text-xl font-bold" style={{ color: '#5c5c5c' }}>Complete Your Profile</h2>
+          <h2 className="text-xl font-bold" style={{ color: '#5c5c5c' }}>
+            {isOnboarding ? 'Tell us about yourself' : 'Complete Your Profile'}
+          </h2>
           <p className="text-sm mt-1" style={{ color: '#9a8a6a' }}>
-            Enter your birth details to view your Kundli
+            {isOnboarding ? 'This helps us create your personalized Kundli' : 'Enter your birth details to view your Kundli'}
           </p>
         </div>
 
