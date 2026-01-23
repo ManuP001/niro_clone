@@ -51,9 +51,9 @@ const V6_LIFE_SITUATIONS = [
       { id: 'stress_management', shortTitle: 'Stress', iconType: 'stress' },
       { id: 'sleep_reset', shortTitle: 'Sleep', iconType: 'sleep' },
       { id: 'energy_balance', shortTitle: 'Energy', iconType: 'energy' },
-      { id: 'healing_journey', shortTitle: 'Healing', iconType: 'healing' },
-      { id: 'emotional_recovery', shortTitle: 'Emotional', iconType: 'emotional' },
-      { id: 'womens_wellness', shortTitle: 'Wellness', iconType: 'wellness' },
+      { id: 'health_timing', shortTitle: 'Timing', iconType: 'healing' },
+      { id: 'emotional_wellbeing', shortTitle: 'Emotional', iconType: 'emotional' },
+      { id: 'recovery_support', shortTitle: 'Recovery', iconType: 'wellness' },
     ]
   }
 ];
