@@ -1460,6 +1460,12 @@ export const getLandingPageContent = (slug) => {
   return ALL_LANDING_PAGES[slug] || null;
 };
 
+// Alias for getLandingPageContent
+export const getSubtopicBySlug = getLandingPageContent;
+
+// Get all subtopics as array
+export const getAllSubtopics = () => Object.values(ALL_LANDING_PAGES);
+
 // Get all slugs for a category
 export const getSlugsByCategory = (category) => {
   const categoryMap = {
