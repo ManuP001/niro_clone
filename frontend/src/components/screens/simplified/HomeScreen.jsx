@@ -66,17 +66,17 @@ const HEADER_GRADIENT = 'linear-gradient(180deg, #3E827A 0%, #5A9A92 60%, #7AB5A
 // Animated Logo Component (from Splash Screen)
 function AnimatedLogo() {
   return (
-    <div className="relative w-28 h-28 mx-auto">
+    <div className="relative w-32 h-32 mx-auto">
       {/* Animated Ring */}
       <svg 
         className="absolute inset-0 w-full h-full animate-spin-slow" 
         viewBox="0 0 160 160"
         style={{ animationDuration: '20s' }}
       >
-        <g stroke="rgba(62,130,122,0.3)" strokeWidth="1" fill="none">
+        <g stroke="rgba(255,255,255,0.4)" strokeWidth="1" fill="none">
           <polygon points="80,8 100,25 120,25 112,48 120,72 100,72 80,88 60,72 40,72 48,48 40,25 60,25" />
         </g>
-        <g fill="rgba(62,130,122,0.5)">
+        <g fill="rgba(255,255,255,0.6)">
           <circle cx="80" cy="8" r="2.5" />
           <circle cx="100" cy="25" r="1.5" />
           <circle cx="120" cy="25" r="2" />
@@ -96,7 +96,7 @@ function AnimatedLogo() {
       <div 
         className="absolute inset-4 rounded-full"
         style={{ 
-          background: 'radial-gradient(circle, rgba(62,130,122,0.1) 0%, transparent 100%)',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 100%)',
         }}
       />
       
@@ -106,7 +106,7 @@ function AnimatedLogo() {
           className="text-4xl font-bold tracking-wide"
           style={{ 
             fontFamily: "'Kumbh Sans', 'Inter', sans-serif",
-            background: colors.logo.gradient,
+            background: 'linear-gradient(135deg, #EFE1A9 0%, #FFFFFF 50%, #EFE1A9 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
