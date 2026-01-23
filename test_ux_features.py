@@ -7,7 +7,7 @@ import requests
 import json
 import uuid
 
-BACKEND_URL = "https://kundli-backend.preview.emergentagent.com/api"
+BACKEND_URL = "https://niro-home-update.preview.emergentagent.com/api"
 
 def test_feedback_endpoint():
     """Test the feedback endpoint quickly"""
