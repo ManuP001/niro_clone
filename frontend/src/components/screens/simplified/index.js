@@ -2,7 +2,6 @@
 export { default as SimplifiedApp } from './SimplifiedApp';
 export { default as SimplifiedAppV5 } from './SimplifiedAppV5';
 export { default as SplashScreen } from './SplashScreen';
-export { default as LoginScreen } from './LoginScreen';
 export { default as HomeScreen } from './HomeScreen';
 export { default as TopicLandingPage } from './TopicLandingPage';
 export { default as CheckoutScreen } from './CheckoutScreen';
