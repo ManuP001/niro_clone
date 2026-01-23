@@ -576,7 +576,7 @@ export const getPackageStructure = (tileId) => {
     faqs: [
       { q: 'How quickly will I get a response?', a: `Our experts respond within ${tile.responseSLA}. For urgent matters, you can book a video call.` },
       { q: 'Can I change my expert?', a: "Yes, you can request a different expert if you feel the match isn't right." },
-      { q: 'What is the refund policy?', a: "We offer a 7-day no-questions-asked refund if you're not satisfied." },
+      { q: 'What is the refund policy?', a: "We offer 100% satisfaction guarantee. Contact our support team if you have any concerns." },
       { q: 'Is my information private?', a: 'Absolutely. All conversations are encrypted and your data is never shared.' },
     ],
   };
