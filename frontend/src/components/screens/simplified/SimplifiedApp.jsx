@@ -287,7 +287,16 @@ export default function SimplifiedApp({ token, userId }) {
 
   // Render onboarding screens (Updated flow: User Details → How It Works → Trust & Safety)
   if (onboardingStep === ONBOARDING_STEPS.USER_DETAILS) {
-    return <UserDetailsScreen token={token} onComplete={handleUserDetailsComplete} />;
+    // Use BirthDetailsModal in full-screen mode during onboarding
+    return (
+      <BirthDetailsModal 
+        token={token} 
+        isOpen={true} 
+        onClose={() => {}} // No close during onboarding 
+        onComplete={handleUserDetailsComplete}
+        isOnboarding={true} // Hide cancel button during onboarding
+      />
+    );
   }
 
   if (onboardingStep === ONBOARDING_STEPS.HOW_IT_WORKS) {
