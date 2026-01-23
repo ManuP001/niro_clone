@@ -267,22 +267,31 @@ export default function SimplifiedApp({ token, userId }) {
     return userState?.name || userState?.email?.split('@')[0] || 'there';
   };
 
-  // Loading state
+  // Loading state - show simple loading instead of splash
   if (loadingState) {
-    return <SplashScreen onComplete={() => {}} />;
+    return (
+      <div 
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: colors.background.gradient }}
+      >
+        <div className="text-center">
+          <div 
+            className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4"
+            style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#ffffff' }}
+          />
+          <p style={{ color: 'rgba(255,255,255,0.8)' }}>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Render onboarding screens
-  if (onboardingStep === ONBOARDING_STEPS.SPLASH) {
-    return <SplashScreen onComplete={handleSplashComplete} />;
-  }
-
-  if (onboardingStep === ONBOARDING_STEPS.WELCOME) {
-    return <WelcomeScreen onNext={() => handleOnboardingNext(ONBOARDING_STEPS.WELCOME)} />;
+  // Render onboarding screens (Updated flow: User Details → How It Works → Trust & Safety)
+  if (onboardingStep === ONBOARDING_STEPS.USER_DETAILS) {
+    return <UserDetailsScreen token={token} onComplete={handleUserDetailsComplete} />;
   }
 
   if (onboardingStep === ONBOARDING_STEPS.HOW_IT_WORKS) {
-    return <HowNiroWorksScreen onNext={() => handleOnboardingNext(ONBOARDING_STEPS.HOW_IT_WORKS)} onBack={() => setOnboardingStep(ONBOARDING_STEPS.WELCOME)} />;
+    return <HowNiroWorksScreen onNext={() => handleOnboardingNext(ONBOARDING_STEPS.HOW_IT_WORKS)} onBack={() => setOnboardingStep(ONBOARDING_STEPS.USER_DETAILS)} />;
   }
 
   if (onboardingStep === ONBOARDING_STEPS.TRUST_SAFETY) {
