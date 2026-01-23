@@ -8,7 +8,7 @@ import json
 import uuid
 import re
 
-BACKEND_URL = "https://niro-v5-redesign.preview.emergentagent.com/api"
+BACKEND_URL = "https://insight-app-9.preview.emergentagent.com/api"
 
 class ChatUXTester:
     def __init__(self):
