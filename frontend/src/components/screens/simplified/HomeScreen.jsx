@@ -275,11 +275,14 @@ export default function HomeScreen({
 
   return (
     <div 
-      className={`min-h-screen flex flex-col ${hasBottomNav ? 'pb-20' : ''}`}
+      className={`min-h-screen ${hasBottomNav ? 'pb-20' : ''}`}
       style={{ backgroundColor: BASE_BG }}
     >
       {/* Fixed Header with Animated Logo */}
-      <header className="flex-shrink-0 pt-6 pb-4 px-5">
+      <header 
+        className="sticky top-0 z-40 pt-6 pb-4 px-5"
+        style={{ backgroundColor: BASE_BG }}
+      >
         {/* Animated Logo */}
         <AnimatedLogo />
         
@@ -315,7 +318,7 @@ export default function HomeScreen({
       </header>
 
       {/* Scrollable Tiles Section */}
-      <div className="flex-1 overflow-y-auto px-5">
+      <div className="px-5">
         {/* Section Title */}
         <div className="mb-5">
           <p 
