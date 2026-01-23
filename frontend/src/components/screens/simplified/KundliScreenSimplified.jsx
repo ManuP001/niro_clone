@@ -208,8 +208,8 @@ const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate }) => 
 
   if (!kundliData) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${hasBottomNav ? 'pb-20' : ''}`} style={{ backgroundColor: '#f5f0e3' }}>
-        <p style={{ color: '#9a8a6a' }}>No Kundli data available</p>
+      <div className={`min-h-screen flex items-center justify-center ${hasBottomNav ? 'pb-20' : ''}`} style={{ background: TEAL_GRADIENT }}>
+        <p style={{ color: 'rgba(255,255,255,0.85)' }}>No Kundli data available</p>
       </div>
     );
   }
