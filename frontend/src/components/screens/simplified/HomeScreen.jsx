@@ -59,8 +59,9 @@ const V6_LIFE_SITUATIONS = [
 ];
 
 // Premium Gradient Background (same as onboarding)
-const GRADIENT_BG = 'linear-gradient(180deg, #F8FAF9 0%, #F0F5F3 50%, #E8F0ED 100%)';
-const MODULE_BG = 'rgba(255, 255, 255, 0.7)';
+const GRADIENT_BG = 'linear-gradient(180deg, #3E827A 0%, #5A9A92 30%, #7AB5AD 60%, #A8D5CF 85%, #E8F0ED 100%)';
+const MODULE_BG = 'rgba(255, 255, 255, 0.85)';
+const HEADER_GRADIENT = 'linear-gradient(180deg, #3E827A 0%, #5A9A92 60%, #7AB5AD 100%)';
 
 // Animated Logo Component (from Splash Screen)
 function AnimatedLogo() {
