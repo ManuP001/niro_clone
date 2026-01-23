@@ -121,24 +121,52 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
 
   if (!isOpen) return null;
 
+  // Teal gradient background (same as login screen)
+  const TEAL_GRADIENT = 'linear-gradient(180deg, #3E827A 0%, #5A9A92 30%, #7AB5AD 60%, #A8D5CF 85%, #E8F0ED 100%)';
+
+  // For onboarding, render as full-screen; otherwise render as modal
+  if (isOnboarding) {
+    return (
+      <div 
+        className="min-h-screen flex flex-col items-center justify-center p-4"
+        style={{ background: TEAL_GRADIENT }}
+      >
+        <div 
+          className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
+          style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}
+        >
+          {renderFormContent()}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div 
         className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto"
-        style={{ backgroundColor: '#f5f0e3' }}
+        style={{ backgroundColor: 'rgba(255,255,255,0.95)' }}
       >
+        {renderFormContent()}
+      </div>
+    </div>
+  );
+
+  function renderFormContent() {
+    return (
+      <>
         {/* Header */}
         <div className="text-center mb-6">
           <div 
             className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ background: 'linear-gradient(135deg, #d7b870 0%, #c9a85a 100%)' }}
+            style={{ background: 'linear-gradient(135deg, #3E827A 0%, #5A9A92 100%)' }}
           >
             <span className="text-3xl">🌟</span>
           </div>
-          <h2 className="text-xl font-bold" style={{ color: '#5c5c5c' }}>
+          <h2 className="text-xl font-bold" style={{ color: '#3E827A' }}>
             {isOnboarding ? 'Tell us about yourself' : 'Complete Your Profile'}
           </h2>
-          <p className="text-sm mt-1" style={{ color: '#9a8a6a' }}>
+          <p className="text-sm mt-1" style={{ color: '#5A9A92' }}>
             {isOnboarding ? 'This helps us create your personalized Kundli' : 'Enter your birth details to view your Kundli'}
           </p>
         </div>
