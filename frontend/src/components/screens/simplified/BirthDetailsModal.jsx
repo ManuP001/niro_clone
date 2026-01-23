@@ -264,6 +264,7 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
                 borderColor: '#A8D5CF',
                 color: '#3E827A'
               }}
+              autoComplete="off"
               required
             />
           </div>
