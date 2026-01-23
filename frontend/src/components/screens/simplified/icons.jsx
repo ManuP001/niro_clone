@@ -443,6 +443,7 @@ export default {
   CalendarIcon,
   DocumentIcon,
   GiftIcon,
+  PhoneIcon,
   SparklesIcon,
   RefreshIcon,
   ToolIcon,
