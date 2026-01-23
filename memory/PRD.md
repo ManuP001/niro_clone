@@ -119,7 +119,7 @@ Source Excel: `Niro_LandingPage_Content_Template_And_Content_V6_UpdatedKeyColumn
 ### Frontend (V6)
 - `/app/frontend/src/components/screens/simplified/HomeScreen.jsx` - V6 premium home with profile button
 - `/app/frontend/src/components/screens/simplified/TopicLandingPage.jsx` - V6 landing page with 2x2 grid
-- `/app/frontend/src/components/screens/simplified/UserDetailsScreen.jsx` - NEW: Birth details collection screen
+- `/app/frontend/src/components/screens/simplified/BirthDetailsModal.jsx` - Birth details form (used in onboarding + Kundli)
 - `/app/frontend/src/components/screens/simplified/SimplifiedApp.jsx` - Main app container with onboarding flow
 - `/app/frontend/src/components/screens/simplified/v6Data/landingPageContentV6.js` - V6 content source
 - `/app/frontend/src/components/screens/simplified/icons.jsx` - Minimalist icons
