@@ -90,7 +90,7 @@ export const LOVE_SUBTOPICS = {
     faqs: [
       { q: 'Is Mira free to use?', a: 'Yes. Mira is free and available anytime. Packages add human astrologer support and done-for-you remedies.' },
       { q: 'How fast will I get responses?', a: 'Within 24 hours for Supported and Comprehensive. Focussed includes a short follow-up window.' },
-      { q: 'Is there a refund?', a: 'Yes — no questions asked 7-day full refund guarantee.' }
+      { q: 'Is there a refund?', a: 'Yes — we offer 100% satisfaction guarantee. Contact our support team if you have any concerns.' }
     ]
   },
 
@@ -171,7 +171,7 @@ export const LOVE_SUBTOPICS = {
     faqs: [
       { q: 'Is Mira free to use?', a: 'Yes. Mira is free and available anytime. Packages add human astrologer support and done-for-you remedies.' },
       { q: 'How fast will I get responses?', a: 'Within 24 hours for Supported and Comprehensive. Focussed includes a short follow-up window.' },
-      { q: 'Is there a refund?', a: 'Yes — no questions asked 7-day full refund guarantee.' }
+      { q: 'Is there a refund?', a: 'Yes — we offer 100% satisfaction guarantee. Contact our support team if you have any concerns.' }
     ]
   },
 
@@ -253,7 +253,7 @@ export const LOVE_SUBTOPICS = {
     faqs: [
       { q: 'Is Mira free to use?', a: 'Yes. Mira is free and available anytime. Packages add human astrologer support and done-for-you remedies.' },
       { q: 'How fast will I get responses?', a: 'Within 24 hours for Supported and Comprehensive. Focussed includes a short follow-up window.' },
-      { q: 'Is there a refund?', a: 'Yes — no questions asked 7-day full refund guarantee.' }
+      { q: 'Is there a refund?', a: 'Yes — we offer 100% satisfaction guarantee. Contact our support team if you have any concerns.' }
     ]
   },
 
@@ -335,7 +335,7 @@ export const LOVE_SUBTOPICS = {
     faqs: [
       { q: 'Is Mira free to use?', a: 'Yes. Mira is free and available anytime. Packages add human astrologer support and done-for-you remedies.' },
       { q: 'How fast will I get responses?', a: 'Within 24 hours for Supported and Comprehensive. Focussed includes a short follow-up window.' },
-      { q: 'Is there a refund?', a: 'Yes — no questions asked 7-day full refund guarantee.' }
+      { q: 'Is there a refund?', a: 'Yes — we offer 100% satisfaction guarantee. Contact our support team if you have any concerns.' }
     ]
   },
 
@@ -574,7 +574,7 @@ export const CAREER_SUBTOPICS = {
     faqs: [
       { q: 'Is Mira free to use?', a: 'Yes. Mira is free and available anytime. Packages add human astrologer support and done-for-you remedies.' },
       { q: 'How fast will I get responses?', a: 'Within 24 hours for Supported and Comprehensive. Focussed includes a short follow-up window.' },
-      { q: 'Is there a refund?', a: 'Yes — no questions asked 7-day full refund guarantee.' }
+      { q: 'Is there a refund?', a: 'Yes — we offer 100% satisfaction guarantee. Contact our support team if you have any concerns.' }
     ]
   },
 
@@ -655,7 +655,7 @@ export const CAREER_SUBTOPICS = {
     faqs: [
       { q: 'Is Mira free to use?', a: 'Yes. Mira is free and available anytime. Packages add human astrologer support and done-for-you remedies.' },
       { q: 'How fast will I get responses?', a: 'Within 24 hours for Supported and Comprehensive. Focussed includes a short follow-up window.' },
-      { q: 'Is there a refund?', a: 'Yes — no questions asked 7-day full refund guarantee.' }
+      { q: 'Is there a refund?', a: 'Yes — we offer 100% satisfaction guarantee. Contact our support team if you have any concerns.' }
     ]
   },
 
@@ -736,7 +736,7 @@ export const CAREER_SUBTOPICS = {
     faqs: [
       { q: 'Is Mira free to use?', a: 'Yes. Mira is free and available anytime. Packages add human astrologer support and done-for-you remedies.' },
       { q: 'How fast will I get responses?', a: 'Within 24 hours for Supported and Comprehensive. Focussed includes a short follow-up window.' },
-      { q: 'Is there a refund?', a: 'Yes — no questions asked 7-day full refund guarantee.' }
+      { q: 'Is there a refund?', a: 'Yes — we offer 100% satisfaction guarantee. Contact our support team if you have any concerns.' }
     ]
   },
 
@@ -1049,7 +1049,7 @@ export const HEALTH_SUBTOPICS = {
     faqs: [
       { q: 'Is Mira free to use?', a: 'Yes. Mira is free and available anytime. Packages add human astrologer support and done-for-you remedies.' },
       { q: 'How fast will I get responses?', a: 'Within 24 hours for Supported and Comprehensive. Focussed includes a short follow-up window.' },
-      { q: 'Is there a refund?', a: 'Yes — no questions asked 7-day full refund guarantee.' }
+      { q: 'Is there a refund?', a: 'Yes — we offer 100% satisfaction guarantee. Contact our support team if you have any concerns.' }
     ]
   },
 
@@ -1130,7 +1130,7 @@ export const HEALTH_SUBTOPICS = {
     faqs: [
       { q: 'Is Mira free to use?', a: 'Yes. Mira is free and available anytime. Packages add human astrologer support and done-for-you remedies.' },
       { q: 'How fast will I get responses?', a: 'Within 24 hours for Supported and Comprehensive. Focussed includes a short follow-up window.' },
-      { q: 'Is there a refund?', a: 'Yes — no questions asked 7-day full refund guarantee.' }
+      { q: 'Is there a refund?', a: 'Yes — we offer 100% satisfaction guarantee. Contact our support team if you have any concerns.' }
     ]
   },
 
@@ -1211,7 +1211,7 @@ export const HEALTH_SUBTOPICS = {
     faqs: [
       { q: 'Is Mira free to use?', a: 'Yes. Mira is free and available anytime. Packages add human astrologer support and done-for-you remedies.' },
       { q: 'How fast will I get responses?', a: 'Within 24 hours for Supported and Comprehensive. Focussed includes a short follow-up window.' },
-      { q: 'Is there a refund?', a: 'Yes — no questions asked 7-day full refund guarantee.' }
+      { q: 'Is there a refund?', a: 'Yes — we offer 100% satisfaction guarantee. Contact our support team if you have any concerns.' }
     ]
   },
 
