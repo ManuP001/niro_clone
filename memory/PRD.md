@@ -5,11 +5,28 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 
 ## Current Status (January 2025)
 - **Active Version:** V4 with V6 Premium UI Upgrades
-- **Last Update:** January 23, 2026 - UI/UX fixes and email notification
+- **Last Update:** January 23, 2026 - Onboarding content updates and pricing sync
 - **Completed Sprints:** Landing Page + Home Screen V6 Revamp + Onboarding Flow V6
-- **Status:** ✅ Complete and tested (iteration_8.json - all tests passed)
+- **Status:** ✅ Complete and tested (iteration_9.json - all tests passed)
 
-### Latest Changes (Jan 23, 2026 - Batch 2)
+### Latest Changes (Jan 23, 2026 - Batch 3)
+- ✅ Updated "How Niro Works" screen content:
+  - Title: "How Niro helps" (was "How Niro Works")
+  - Subtitle: "Get clarity, timing, and next steps — with real experts."
+  - 4 feature cards with new content (life topic, verified experts, timing + direction, unlimited support)
+  - CTA: "Continue" (was "Start Exploring")
+- ✅ Updated "Trust & Safety" screen to "Trust & Privacy":
+  - Title: "Trust & Privacy" (was "Trust & Safety")
+  - Subtitle: "Everything you share stays protected."
+  - 3 trust cards: Verified experts, Private by design, No questions asked refund
+  - Bottom text: "Join 10,000+ people who found clarity with Niro."
+  - CTA: "Continue"
+- ✅ **Backend Pricing Sync** - Updated catalog.py to match frontend V6 prices:
+  - All 18 subtopic tiers synced (e.g., career-clarity_supported = 6999 INR, 8 weeks)
+  - Updated tier features to remove "7 days async chat" wording
+  - 17 backend tests created and passed
+
+### Previous Changes (Jan 23, 2026 - Batch 2)
 - ✅ Fixed birth details input focus bug - refactored FormContent component to formContent JSX variable
 - ✅ Set default birth date to 1986-01-24 and time to 06:32
 - ✅ Landing page background changed from dark teal to light pastel green (#E8F5F3)
@@ -17,7 +34,7 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 - ✅ Configured Resend API with user credentials (email: harjai.sharad@gmail.com)
 - ✅ API key moved from hardcoded to environment variable in backend/.env
 
-### Previous Changes (Jan 23, 2026 - Batch 1)
+### Earlier Changes (Jan 23, 2026 - Batch 1)
 - ✅ Fixed P0 blocker: UserDetailsScreen now saves profile via `/api/profile/` endpoint
 - ✅ Field mapping corrected: birthDate→dob, birthTime→tob, birthPlace→location
 - ✅ Onboarding flow: Login → User Details → How Niro Works → Trust & Safety → Home
