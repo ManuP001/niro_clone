@@ -12,7 +12,7 @@ import RemediesScreen from './RemediesScreen';
 import BottomNav from './BottomNav';
 import CategoryListingPage from './CategoryListingPage';
 import DevToggle from './DevToggle';
-import UserDetailsScreen from './UserDetailsScreen';
+import BirthDetailsModal from './BirthDetailsModal';
 import { apiSimplified, trackEvent } from './utils';
 import { colors } from './theme';
 import { 
