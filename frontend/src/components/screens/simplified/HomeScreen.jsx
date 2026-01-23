@@ -307,6 +307,7 @@ export default function HomeScreen({
   onNavigate, 
   onChatWithMira,
   onTalkToHuman,
+  onOpenProfile,
 }) {
 
   useEffect(() => {
@@ -321,20 +322,38 @@ export default function HomeScreen({
   return (
     <div 
       className={`min-h-screen ${hasBottomNav ? 'pb-16' : ''}`}
-      style={{ background: GRADIENT_BG }}
+      style={{ background: HEADER_GRADIENT }}
     >
       {/* Fixed Header with Animated Logo */}
       <header 
-        className="sticky top-0 z-40 pt-8 pb-6 px-5"
+        className="sticky top-0 z-40 pt-6 pb-4 px-5"
         style={{ 
           background: HEADER_GRADIENT,
         }}
       >
-        {/* Animated Logo (Larger) */}
+        {/* Profile Button - Top Right */}
+        <div className="absolute top-4 right-4 z-50">
+          <button
+            onClick={onOpenProfile}
+            className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95"
+            style={{ 
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              border: '1px solid rgba(255,255,255,0.3)',
+            }}
+            data-testid="profile-button"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Animated Logo */}
         <AnimatedLogo />
         
         {/* Premium CTA Area */}
-        <div className="mt-5">
+        <div className="mt-4">
           {/* CTAs - Talk to Expert is Primary */}
           <div className="flex gap-2">
             <button
@@ -365,19 +384,20 @@ export default function HomeScreen({
           </div>
           
         </div>
-      </header>
 
-      {/* Scrollable Tiles Section - Reduced Bottom Padding */}
-      <div className="px-4 pt-2" style={{ paddingBottom: '12px' }}>
-        {/* Section Title */}
-        <div className="mb-4">
+        {/* Section Title - Now inside header for consistent background */}
+        <div className="mt-4">
           <p 
             className="text-sm font-medium text-center"
-            style={{ color: colors.text.dark }}
+            style={{ color: 'rgba(255,255,255,0.9)' }}
           >
             Choose a life topic that feels the most uncertain right now
           </p>
         </div>
+      </header>
+
+      {/* Scrollable Tiles Section - Reduced Bottom Padding */}
+      <div className="px-4 pt-3" style={{ paddingBottom: '12px' }}>
 
         {/* Life Situations - Premium Module Cards */}
         {V6_LIFE_SITUATIONS.map((situation) => (
