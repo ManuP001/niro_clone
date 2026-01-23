@@ -3,6 +3,9 @@ import { BACKEND_URL } from '../../../config';
 import DOMPurify from 'dompurify';
 import BirthDetailsModal from './BirthDetailsModal';
 
+// Teal gradient background (same as login screen)
+const TEAL_GRADIENT = 'linear-gradient(180deg, #3E827A 0%, #5A9A92 30%, #7AB5AD 60%, #A8D5CF 85%, #E8F0ED 100%)';
+
 // Chart style options
 const CHART_STYLES = {
   north: {
