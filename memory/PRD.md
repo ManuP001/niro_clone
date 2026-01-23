@@ -5,89 +5,102 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 
 ## Current Status (January 2025)
 - **Active Version:** V4 (default)
-- **Last Sprint:** Landing Page UI Improvements (Premium Minimal Design)
-- **Status:** ✅ Complete and tested (17/17 features verified)
+- **Completed Sprints:** Landing Page UI + Home Screen Revamp
+- **Status:** ✅ Complete and tested
 
 ---
 
-## Landing Page Design (V4 - Premium Minimal)
+## Home Screen Design (V4 Revamp)
+
+### Key Features
+- **Animated Niro logo** - Constellation ring animation (20s spin)
+- **Sticky header** - Logo + CTA buttons stay fixed when scrolling
+- **3 Life Situations** with 6 tiles each = **18 tiles total**
+- **Minimalist icons** - Clean stroke-based SVG icons
+- **Same background** (#FAFAFA) as other screens
+
+### Structure
+1. **Fixed Header**
+   - Animated Niro logo (bigger, with constellation ring)
+   - Two smaller CTA buttons:
+     - "Chat with Mira (AI Astrologer)"
+     - "Talk to Expert"
+
+2. **Scrollable Tiles Section**
+   - Title: "Choose a life topic that feels the most uncertain right now"
+   - **Love & Relationships** (6 tiles): Healing, Family, Dating, Marriage, Trust, Closure
+   - **Career & Money** (6 tiles): Clarity, Job Change, Money, Work Stress, Office, Timing
+   - **Health & Wellness** (6 tiles): Healing, Stress, Energy, Sleep, Emotional, Wellness
+
+### Removed
+- Old tagline "Not predictions. Not generic advice..."
+- White layer over background
+- Old horizontal carousel layout (replaced with 3x2 grids)
+
+---
+
+## Landing Page Design (Premium Minimal)
 
 ### Design Philosophy
-- **ONE base background** - #FAFAFA across entire page (no rainbow sections)
-- **TWO container styles** - Standard card (#FFFFFF) + Highlighted card (subtle border/shadow)
-- **Section differentiation** via spacing, dividers, typography (not colors)
+- **ONE base background** (#FAFAFA)
+- **TWO container styles** - Standard card + Highlighted card
+- Section differentiation via spacing, dividers, typography
 
-### Section Order (Top to Bottom)
-
-1. **Header** - Back button + Sub-topic title
-2. **Hero** - "Hi {userName}, here are the paths you can choose for your journey"
-3. **Tier Selector Tabs**
-   - Focussed (Quick clarity)
-   - Supported (Full support) + Recommended badge
-   - Comprehensive (Deep confidence)
-4. **Tier Summary Card** (highlighted)
-   - Name + Recommended badge
-   - Price
-   - 2x2 Grid: Duration | Consultation | Follow-ups | Chat
-5. **Refund Guarantee Strip** - "No questions asked — 7 day full refund guarantee"
-6. **Outcomes Section** (no colored backgrounds)
-   - CLARITY (3 bullets)
-   - TIMELINE (2 bullets)
-   - SUPPORT (2 bullets)
-7. **"How will your journey unfold?"** - 4-step timeline
-   1. Choose your pack
-   2. Get matched with an expert
-   3. Calls + follow-ups + unlimited chat
-   4. Optional add-ons (Coming soon - grayed)
-8. **Optional Add-ons** - "Coming soon" pill, NO CTA button
-9. **Why Niro** - Trust bullets including "Unlimited follow-ups till clarity"
-10. **FAQs** - 6 objection-killer questions only
-11. **Sticky CTA** - Price (left) + "Start my journey" (right) - NOTHING else
-
-### Sticky CTA Requirements
-- ✅ Shows: Price + CTA button only
-- ❌ Does NOT show: Recommended tag, weeks, package name, secure payments, refund text
-
-### Tier Configuration
-| Tier | Micro-label | Sessions | Follow-ups | Chat |
-|------|-------------|----------|------------|------|
-| Focussed | Quick clarity | 1 call | 1 follow-up | 7 days |
-| Supported | Full support | 3 calls | 2 follow-ups | Unlimited |
-| Comprehensive | Deep confidence | 5 calls | 3+ follow-ups | Unlimited |
-
-### FAQs (Objection-killers only)
-1. When will my first consult happen?
-2. Is chat really unlimited?
-3. What happens after I pay?
-4. What if I don't feel it helped?
-5. How does the 7-day refund work?
-6. Are experts verified?
+### Section Order
+1. Header - Back + Title
+2. Hero - "Hi {userName}, here are the paths..."
+3. Tier Selector Tabs (Focussed/Supported/Comprehensive with micro-labels)
+4. Tier Summary Card (2x2 grid: Duration, Consultation, Follow-ups, Unlimited chat)
+5. Refund Guarantee Strip
+6. Outcomes Section (Clarity/Timeline/Support groups)
+7. "How will your journey unfold?" (4-step timeline)
+8. Optional Add-ons ("Coming soon" pill, no CTA)
+9. Why Niro (includes "Unlimited follow-ups till clarity")
+10. FAQs (6 objection-killer questions)
+11. Sticky CTA (Price + "Start my journey" only)
 
 ---
 
 ## 18 Sub-Topics
 
-### Love (6)
-- Relationship Healing, Family Relationships, Dating & Compatibility
-- Marriage Planning, Communication & Trust, Breakup & Closure
+### Love & Relationships
+| ID | Title | Icon |
+|----|-------|------|
+| relationship_healing | Healing | healing |
+| family_relationships | Family | family |
+| dating_compatibility | Dating | heart |
+| marriage_planning | Marriage | rings |
+| communication_trust | Trust | chat |
+| breakup_closure | Closure | breakup |
 
-### Career (6)
-- Career Clarity, Job Transition, Money Stability
-- Work Stress, Office Politics, Big Decision Timing
+### Career & Money
+| ID | Title | Icon |
+|----|-------|------|
+| career_clarity | Clarity | compass |
+| job_transition | Job Change | briefcase |
+| money_stability | Money | wallet |
+| work_stress | Work Stress | stress |
+| office_politics | Office | office |
+| big_decision_timing | Timing | clock |
 
-### Health (6)
-- Healing Journey, Stress Management, Energy & Balance
-- Sleep Reset, Emotional Recovery, Women's Wellness
+### Health & Wellness
+| ID | Title | Icon |
+|----|-------|------|
+| healing_journey | Healing | healing |
+| stress_management | Stress | stress |
+| energy_balance | Energy | energy |
+| sleep_reset | Sleep | sleep |
+| emotional_recovery | Emotional | emotional |
+| womens_wellness | Wellness | wellness |
 
 ---
 
-## Key Files Reference
+## Key Files
 
 ### Frontend
+- `HomeScreen.jsx` - Revamped with animated logo, 3 situations, 18 tiles
 - `TopicLandingPage.jsx` - Premium minimal landing page
-- `SimplifiedApp.jsx` - Passes userName prop to landing page
 - `v5Data/landingPageContent.js` - Content for all 18 sub-topics
-- `theme.js` - V4 color system
 
 ### Backend
 - `niro_simplified/catalog.py` - Tier pricing
@@ -95,42 +108,17 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 
 ---
 
-## Completed Work (January 2025)
-
-### Landing Page UI Improvements Sprint ✅
-- ✅ ONE base background (#FAFAFA)
-- ✅ Premium minimal card styling
-- ✅ Personalized hero: "Hi {userName}, here are the paths..."
-- ✅ Tier tabs with micro-labels
-- ✅ 2x2 package summary grid
-- ✅ "Unlimited chat" (not "Async chat")
-- ✅ Refund guarantee after summary section
-- ✅ Outcomes grouped by Clarity/Timeline/Support (no colors)
-- ✅ "How will your journey unfold?" 4-step timeline
-- ✅ Add-ons with "Coming soon" pill (no CTA)
-- ✅ Sticky CTA simplified (price + button only)
-- ✅ "Unlimited follow-ups till clarity" in Why Niro
-- ✅ Objection-killer FAQs
-- ✅ Razorpay checkout works
-
----
-
 ## Testing Results
-- **Iteration 3:** 100% pass rate (17/17 features)
-- **Bug Fixed:** Duration "8 weeks weeks" → "8 weeks"
+- **Iteration 3:** Landing Page - 100% (17/17)
+- **Iteration 4:** Home Screen - 100% (11/11)
 
 ---
 
 ## Upcoming/Future Tasks
 
 ### P1 - Onboarding Flow
-- Implement 8-screen onboarding with "skip birth time" feature
-- Birth details screen: Full name, DOB, Time (skippable), Place
+- 8-screen onboarding with "skip birth time" feature
 
-### P2 - Home Screen Enhancements
-- Post-purchase home screen with topic rows
-- Horizontal scrolling tiles
-- "View All" links
-
-### P3 - Chat & Other
-- Update Mira chat welcome message
+### P2 - Additional Features
+- Mira chat welcome message update
+- Post-purchase experience
