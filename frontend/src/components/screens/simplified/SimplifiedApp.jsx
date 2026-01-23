@@ -157,7 +157,8 @@ export default function SimplifiedApp({ token, userId }) {
     localStorage.removeItem(ONBOARDING_KEY);
     localStorage.removeItem(HOME_TOUR_KEY);
     localStorage.removeItem(USER_MODE_KEY);
-    setOnboardingStep(ONBOARDING_STEPS.SPLASH);
+    localStorage.removeItem(USER_DETAILS_KEY);
+    setOnboardingStep(ONBOARDING_STEPS.USER_DETAILS);
     setUserMode('NEW');
     window.location.reload();
   };
