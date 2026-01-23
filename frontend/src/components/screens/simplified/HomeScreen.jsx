@@ -340,33 +340,32 @@ export default function HomeScreen({
         <AnimatedLogo />
         
         {/* Premium CTA Area */}
-        <div className="mt-4">
+        <div className="mt-5">
           {/* CTAs - Talk to Expert is Primary */}
           <div className="flex gap-2">
             <button
               onClick={onTalkToHuman}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-medium text-xs transition-all active:scale-[0.98]"
+              className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-medium text-sm transition-all active:scale-[0.98]"
               style={{ 
-                backgroundColor: colors.teal.primary,
-                color: '#ffffff',
+                backgroundColor: '#EFE1A9',
+                color: colors.text.dark,
               }}
               data-testid="talk-to-expert-btn"
             >
-              <PhoneIcon className="w-3.5 h-3.5" />
+              <PhoneIcon className="w-4 h-4" />
               Talk to Expert
             </button>
 
             <button
               onClick={onChatWithMira}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-medium text-xs transition-all active:scale-[0.98]"
+              className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-medium text-sm transition-all active:scale-[0.98]"
               style={{ 
-                backgroundColor: 'rgba(255,255,255,0.9)',
+                backgroundColor: 'rgba(255,255,255,0.95)',
                 color: colors.text.dark,
-                border: '1px solid rgba(0,0,0,0.08)',
               }}
               data-testid="chat-with-mira-btn"
             >
-              <SparklesIcon className="w-3.5 h-3.5" />
+              <SparklesIcon className="w-4 h-4" />
               Chat with Mira (AI)
             </button>
           </div>
