@@ -370,16 +370,6 @@ export default function HomeScreen({
             </button>
           </div>
           
-          {/* Trust Microcopy */}
-          <div className="flex items-center justify-center gap-1.5 mt-2">
-            <ShieldIcon className="w-3 h-3" style={{ color: colors.text.mutedDark }} />
-            <span 
-              className="text-[10px]"
-              style={{ color: colors.text.mutedDark }}
-            >
-              Private • No spam • Verified experts
-            </span>
-          </div>
         </div>
       </header>
 

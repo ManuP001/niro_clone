@@ -413,6 +413,54 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       {/* ===== DIVIDER ===== */}
       <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
+      {/* ===== EXPERTS WIDGET ===== */}
+      <section className="py-4">
+        <h3 className="text-base font-semibold mb-1 px-5" style={{ color: colors.text.dark }}>
+          Choose from Niro experts
+        </h3>
+        <p className="text-xs mb-4 px-5" style={{ color: colors.text.secondary }}>
+          Verified specialists for your situation
+        </p>
+        <div className="flex gap-3 overflow-x-auto px-5 pb-2 scrollbar-hide">
+          {[
+            { role: 'Senior Vedic Astrologer', badge: 'Verified • 10+ yrs', focus: 'Chart + timing clarity' },
+            { role: 'Tarot Guide', badge: 'Verified • 6+ yrs', focus: 'Emotional clarity + patterns' },
+            { role: 'Numerology Expert', badge: 'Verified • 8+ yrs', focus: 'Cycles + decision windows' },
+          ].map((expert, idx) => (
+            <div 
+              key={idx}
+              className="flex-shrink-0 w-40 rounded-xl p-4"
+              style={{ 
+                backgroundColor: CARD_BG,
+                border: `1px solid ${CARD_BORDER}`,
+              }}
+            >
+              {/* Photo placeholder */}
+              <div 
+                className="w-12 h-12 rounded-full mb-3 flex items-center justify-center"
+                style={{ backgroundColor: `${colors.teal.primary}15` }}
+              >
+                <span className="text-lg" style={{ color: colors.teal.primary }}>
+                  {expert.role.charAt(0)}
+                </span>
+              </div>
+              <h4 className="font-medium text-sm mb-1" style={{ color: colors.text.dark }}>
+                {expert.role}
+              </h4>
+              <p className="text-[10px] mb-2" style={{ color: colors.teal.primary }}>
+                {expert.badge}
+              </p>
+              <p className="text-xs" style={{ color: colors.text.secondary }}>
+                {expert.focus}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ===== DIVIDER ===== */}
+      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+
       {/* ===== OPTIONAL ADD-ONS (Coming Soon - No CTA) ===== */}
       {hasRemedies && (
         <section className="py-4">
