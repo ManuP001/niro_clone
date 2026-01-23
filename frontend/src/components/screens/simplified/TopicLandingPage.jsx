@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { colors, shadows } from './theme';
+import { colors } from './theme';
 import { 
   ArrowLeftIcon, 
   CheckIcon, 
@@ -13,65 +13,35 @@ import {
 } from './icons';
 import { trackEvent } from './utils';
 
-// Import content from v5Data
+// Import V6 content
 import { 
-  getSubtopicBySlug,
-} from './v5Data/landingPageContent';
+  getV6SubtopicBySlug,
+  V6_TILE_TO_SUBTOPIC_MAP,
+  V6_TIER_CONFIG
+} from './v6Data/landingPageContentV6';
 
 /**
- * TopicLandingPage - V4 Landing Page (Premium Minimal Design)
+ * TopicLandingPage V6 - Frame 27 Layout + Premium UI
  * 
- * Design Rules:
- * - ONE base background color across entire page
- * - TWO container styles: standard card + highlighted card
- * - Differentiate sections via spacing, dividers, typography
- * - No rainbow section backgrounds
+ * Key Changes:
+ * - Gradient background (same as onboarding + home)
+ * - Subtle highlight style (boxes, dividers, shade differences - no rainbow blocks)
+ * - Topic explainer 1-liner at top
+ * - Recommended badge ONLY on tier selector tabs
+ * - "Unlimited chat" wording (exact)
+ * - "How will your journey unfold" copy
+ * - Refund appears ONLY after tier summary
+ * - Simplified sticky bar: Price + Start my journey only
+ * - Remedies CTA = "Coming soon"
  */
 
-// Tier configuration with micro-labels
-const TIER_CONFIG = {
-  'Focussed': { label: 'Quick clarity', sessions: '1 call', followups: '1 follow-up', chat: '7 days' },
-  'Supported': { label: 'Full support', sessions: '3 calls', followups: '2 follow-ups', chat: 'Unlimited' },
-  'Comprehensive': { label: 'Deep confidence', sessions: '5 calls', followups: '3+ follow-ups', chat: 'Unlimited' },
-};
+// Tier levels
 const TIER_LEVELS = ['Focussed', 'Supported', 'Comprehensive'];
 const DEFAULT_TIER = 'Supported';
 
-// Map old tile IDs to new subtopic slugs
-const TILE_TO_SUBTOPIC_MAP = {
-  'relationship_healing': 'relationship-healing',
-  'family_relationships': 'family-relationships',
-  'dating_compatibility': 'dating-compatibility',
-  'marriage_planning': 'marriage-planning',
-  'communication_trust': 'communication-trust',
-  'breakup_closure': 'breakup-closure',
-  'career_clarity': 'career-clarity',
-  'job_transition': 'job-transition',
-  'money_stability': 'money-stability',
-  'work_stress': 'work-stress',
-  'office_politics': 'office-politics',
-  'big_decision_timing': 'big-decision-timing',
-  'healing_journey': 'healing-journey',
-  'stress_management': 'stress-management',
-  'energy_balance': 'energy-balance',
-  'sleep_reset': 'sleep-reset',
-  'emotional_recovery': 'emotional-recovery',
-  'womens_wellness': 'womens-wellness',
-};
-
-// Objection-killer FAQs (conversion focused)
-const CONVERSION_FAQS = [
-  { q: 'When will my first consult happen?', a: 'Within 24 hours of purchase, you\'ll be matched with an expert and can schedule your first call at a time that works for you.' },
-  { q: 'Is chat really unlimited?', a: 'Yes! For Supported and Comprehensive packs, you get unlimited chat access with your astrologer for the entire pack duration. Focussed includes 7 days of chat.' },
-  { q: 'What happens after I pay?', a: 'You\'ll receive instant confirmation via WhatsApp/email with next steps. Your expert match happens within 24 hours, and you can start chatting right away.' },
-  { q: 'What if I don\'t feel it helped?', a: 'We offer a no-questions-asked 7-day full refund guarantee. If you\'re not satisfied for any reason, just let us know.' },
-  { q: 'How does the 7-day refund work?', a: 'Simply reach out within 7 days of purchase if you\'re not satisfied. We\'ll process a full refund—no questions asked, no hassle.' },
-  { q: 'Are experts verified?', a: 'Absolutely. Every expert on Niro goes through a rigorous verification process. We check credentials, experience, and conduct multiple rounds of vetting.' },
-];
-
-// Base styling constants
-const BASE_BG = '#FAFAFA';
-const CARD_BG = '#FFFFFF';
+// Premium Gradient Background (same as home/onboarding)
+const GRADIENT_BG = 'linear-gradient(180deg, #F8FAF9 0%, #F0F5F3 50%, #E8F0ED 100%)';
+const CARD_BG = 'rgba(255, 255, 255, 0.85)';
 const CARD_BORDER = 'rgba(0,0,0,0.06)';
 const DIVIDER_COLOR = 'rgba(0,0,0,0.06)';
 
@@ -81,19 +51,20 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
 
   // Get subtopic slug from topicId
   const subtopicSlug = useMemo(() => {
-    return TILE_TO_SUBTOPIC_MAP[topicId] || topicId;
+    return V6_TILE_TO_SUBTOPIC_MAP[topicId] || topicId;
   }, [topicId]);
 
-  // Get content for this subtopic
+  // Get V6 content for this subtopic
   const content = useMemo(() => {
-    return getSubtopicBySlug(subtopicSlug);
+    return getV6SubtopicBySlug(subtopicSlug);
   }, [subtopicSlug]);
 
   useEffect(() => {
     trackEvent('landing_viewed', { 
       tile_id: topicId, 
       subtopic_slug: subtopicSlug,
-      selected_tier: selectedTier 
+      selected_tier: selectedTier,
+      version: 'v6'
     }, token);
   }, [topicId, subtopicSlug, selectedTier, token]);
 
@@ -134,16 +105,19 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
   // Get display name
   const displayName = userName || 'there';
 
-  // Get tier summary for sticky CTA
-  const getTierSummary = () => {
-    const config = TIER_CONFIG[selectedTier];
-    return `${config.sessions} + follow-ups + ${config.chat.toLowerCase()} chat`;
+  // Get chat display text - ensure "Unlimited chat" exact wording
+  const getChatDisplay = (followUps) => {
+    if (!followUps) return 'Chat included';
+    if (followUps.toLowerCase().includes('unlimited')) {
+      return 'Unlimited chat';
+    }
+    return followUps;
   };
 
   // If no content found
   if (!content) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: BASE_BG }}>
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: GRADIENT_BG }}>
         <div className="text-center">
           <p style={{ color: colors.ui.error }} className="mb-4">Content not found for this topic</p>
           <button onClick={onBack} style={{ color: colors.teal.primary }} className="font-medium">
@@ -155,17 +129,23 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
   }
 
   const hasRemedies = content.optionalRemedies && content.optionalRemedies.length > 0;
+  const journeySteps = content.journeySteps || [
+    { step: 1, title: 'Choose your pack', desc: 'Select the tier that fits your needs' },
+    { step: 2, title: 'Get matched with an expert', desc: 'Within 24 hours of purchase' },
+    { step: 3, title: 'Calls + follow-ups + Unlimited chat', desc: 'Ongoing support till you have clarity' },
+    { step: 4, title: 'Optional add-ons', desc: 'Coming soon' },
+  ];
 
   return (
     <div 
       className={`min-h-screen ${hasBottomNav ? 'pb-28' : 'pb-24'}`}
-      style={{ backgroundColor: BASE_BG }}
+      style={{ background: GRADIENT_BG }}
     >
       {/* ===== HEADER ===== */}
       <header 
         className="sticky top-0 z-50 px-4 py-3 flex items-center gap-3"
         style={{ 
-          backgroundColor: BASE_BG,
+          background: 'linear-gradient(180deg, #F8FAF9 0%, rgba(248,250,249,0.98) 100%)',
           borderBottom: `1px solid ${DIVIDER_COLOR}`,
         }}
       >
@@ -181,20 +161,30 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
         </h1>
       </header>
 
+      {/* ===== TOPIC EXPLAINER 1-LINER ===== */}
+      <section className="px-5 pt-4 pb-2">
+        <p 
+          className="text-sm text-center leading-relaxed"
+          style={{ color: colors.text.secondary }}
+        >
+          {content.topicExplainerOneLiner}
+        </p>
+      </section>
+
       {/* ===== HERO - Personalized Greeting ===== */}
-      <section className="px-5 pt-6 pb-4">
+      <section className="px-5 pt-2 pb-4">
         <h2 className="text-xl font-semibold text-center leading-relaxed" style={{ color: colors.text.dark }}>
           Hi {displayName}, here are the paths you can choose for your journey
         </h2>
       </section>
 
       {/* ===== TIER SELECTOR TABS ===== */}
-      <section className="px-5 py-4">
+      <section className="px-5 py-3">
         <div className="flex gap-2" data-testid="tier-selector-tabs">
           {TIER_LEVELS.map((tier) => {
             const isSelected = selectedTier === tier;
             const isRecommended = tier === 'Supported';
-            const config = TIER_CONFIG[tier];
+            const config = V6_TIER_CONFIG[tier];
             return (
               <button
                 key={tier}
@@ -209,6 +199,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
                 }}
                 data-testid={`tier-tab-${tier.toLowerCase()}`}
               >
+                {/* Recommended badge ONLY on tier selector tabs */}
                 {isRecommended && (
                   <span 
                     className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] px-2 py-0.5 rounded-full font-semibold whitespace-nowrap"
@@ -230,7 +221,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
         </div>
       </section>
 
-      {/* ===== TIER SUMMARY CARD (Highlighted) ===== */}
+      {/* ===== TIER SUMMARY CARD ===== */}
       <section className="px-5 py-2">
         <div 
           className="rounded-2xl p-5"
@@ -241,27 +232,14 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
           }}
           data-testid="tier-summary-card"
         >
-          {/* Tier Header */}
+          {/* Tier Header - NO Recommended badge here */}
           <div className="flex items-start justify-between mb-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="text-lg font-bold" style={{ color: colors.text.dark }}>
-                  {selectedTier}
-                </h3>
-                {selectedTier === 'Supported' && (
-                  <span 
-                    className="text-[9px] px-2 py-0.5 rounded-full font-semibold"
-                    style={{ 
-                      backgroundColor: colors.gold.primary,
-                      color: colors.text.dark,
-                    }}
-                  >
-                    Recommended
-                  </span>
-                )}
-              </div>
+              <h3 className="text-lg font-bold" style={{ color: colors.text.dark }}>
+                {selectedTier}
+              </h3>
               <p className="text-sm" style={{ color: colors.text.secondary }}>
-                {tierData?.durationWeeks} week{tierData?.durationWeeks > 1 ? 's' : ''} package
+                {tierData?.duration || `${tierData?.durationWeeks} weeks`} package
               </p>
             </div>
             <div className="text-right">
@@ -279,7 +257,9 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Duration</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>{tierData?.durationWeeks} weeks</p>
+                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                  {tierData?.duration || `${tierData?.durationWeeks} weeks`}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
@@ -288,7 +268,9 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Consultation</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>{TIER_CONFIG[selectedTier].sessions}</p>
+                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                  {tierData?.consultations || '1 session'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
@@ -297,7 +279,9 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Follow-ups</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>{TIER_CONFIG[selectedTier].followups}</p>
+                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                  {tierData?.unlimitedChat ? 'Ongoing' : 'Included'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
@@ -306,14 +290,16 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Chat</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>{TIER_CONFIG[selectedTier].chat}</p>
+                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                  {getChatDisplay(tierData?.followUps)}
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== REFUND GUARANTEE (Trust Strip) ===== */}
+      {/* ===== REFUND GUARANTEE - ONLY AFTER TIER SUMMARY ===== */}
       <section className="px-5 py-3">
         <div 
           className="flex items-center justify-center gap-2 py-2.5 rounded-lg"
@@ -327,15 +313,15 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       </section>
 
       {/* ===== DIVIDER ===== */}
-      <div className="mx-5 my-4" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
-      {/* ===== OUTCOMES SECTION (No colored backgrounds) ===== */}
+      {/* ===== OUTCOMES SECTION ===== */}
       <section className="px-5 py-4">
         <h3 className="text-base font-semibold mb-4" style={{ color: colors.text.dark }}>
           What will this journey help you with?
         </h3>
         
-        {/* Grouped outcomes: Clarity, Timeline, Confidence */}
+        {/* Grouped outcomes: Clarity, Timeline, Support */}
         <div className="space-y-4">
           {/* Clarity Block */}
           <div>
@@ -343,7 +329,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               Clarity
             </p>
             <div className="space-y-2">
-              {tierData?.outcomes?.slice(0, 3).map((outcome, idx) => (
+              {tierData?.outcomes?.slice(0, 1).map((outcome, idx) => (
                 <div key={idx} className="flex items-start gap-2.5">
                   <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
                   <p className="text-sm" style={{ color: colors.text.dark }}>{outcome}</p>
@@ -358,7 +344,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               Timeline
             </p>
             <div className="space-y-2">
-              {tierData?.outcomes?.slice(3, 5).map((outcome, idx) => (
+              {tierData?.outcomes?.slice(1, 2).map((outcome, idx) => (
                 <div key={idx} className="flex items-start gap-2.5">
                   <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
                   <p className="text-sm" style={{ color: colors.text.dark }}>{outcome}</p>
@@ -373,7 +359,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               Support
             </p>
             <div className="space-y-2">
-              {tierData?.outcomes?.slice(5, 7).map((outcome, idx) => (
+              {tierData?.outcomes?.slice(2).map((outcome, idx) => (
                 <div key={idx} className="flex items-start gap-2.5">
                   <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
                   <p className="text-sm" style={{ color: colors.text.dark }}>{outcome}</p>
@@ -385,23 +371,18 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       </section>
 
       {/* ===== DIVIDER ===== */}
-      <div className="mx-5 my-4" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
       {/* ===== HOW WILL YOUR JOURNEY UNFOLD (4-Step Timeline) ===== */}
       <section className="px-5 py-4">
         <h3 className="text-base font-semibold mb-4" style={{ color: colors.text.dark }}>
-          How will your journey unfold?
+          How will your journey unfold
         </h3>
         <div className="space-y-0">
-          {[
-            { step: 1, title: 'Choose your pack', desc: 'Select the tier that fits your needs' },
-            { step: 2, title: 'Get matched with an expert', desc: 'Within 24 hours of purchase' },
-            { step: 3, title: 'Calls + follow-ups + unlimited chat', desc: 'Ongoing support till you have clarity' },
-            { step: 4, title: 'Optional add-ons', desc: 'Coming soon' },
-          ].map((item, idx) => (
+          {journeySteps.map((item, idx) => (
             <div key={idx} className="flex items-start gap-3 relative">
               {/* Timeline line */}
-              {idx < 3 && (
+              {idx < journeySteps.length - 1 && (
                 <div 
                   className="absolute left-4 top-8 w-px h-8"
                   style={{ backgroundColor: DIVIDER_COLOR }}
@@ -410,14 +391,14 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               <div 
                 className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-semibold"
                 style={{ 
-                  backgroundColor: idx === 3 ? `${colors.text.mutedDark}20` : `${colors.teal.primary}15`,
-                  color: idx === 3 ? colors.text.mutedDark : colors.teal.primary,
+                  backgroundColor: idx === journeySteps.length - 1 ? `${colors.text.mutedDark}20` : `${colors.teal.primary}15`,
+                  color: idx === journeySteps.length - 1 ? colors.text.mutedDark : colors.teal.primary,
                 }}
               >
                 {item.step}
               </div>
               <div className="flex-1 pb-4">
-                <p className="font-medium text-sm" style={{ color: idx === 3 ? colors.text.mutedDark : colors.text.dark }}>
+                <p className="font-medium text-sm" style={{ color: idx === journeySteps.length - 1 ? colors.text.mutedDark : colors.text.dark }}>
                   {item.title}
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: colors.text.secondary }}>
@@ -430,7 +411,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       </section>
 
       {/* ===== DIVIDER ===== */}
-      <div className="mx-5 my-4" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
       {/* ===== OPTIONAL ADD-ONS (Coming Soon - No CTA) ===== */}
       {hasRemedies && (
@@ -459,6 +440,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
                 <p className="text-xs mb-3" style={{ color: colors.text.secondary }}>
                   {remedy.description}
                 </p>
+                {/* Remedy CTA = "Coming soon" - strict */}
                 <span 
                   className="inline-block text-[10px] px-2.5 py-1 rounded-full font-medium"
                   style={{ 
@@ -475,7 +457,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       )}
 
       {/* ===== DIVIDER ===== */}
-      <div className="mx-5 my-4" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
       {/* ===== WHY NIRO (Trust Section) ===== */}
       <section className="px-5 py-4">
@@ -483,31 +465,31 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
           Why Niro?
         </h3>
         <div className="space-y-3">
-          {[
-            { icon: <CheckIcon className="w-4 h-4" />, text: 'Verified astrologers across modalities' },
-            { icon: <ChatIcon className="w-4 h-4" />, text: 'Unlimited follow-ups till clarity' },
-            { icon: <ShieldIcon className="w-4 h-4" />, text: 'Private & secure conversations' },
-            { icon: <CheckIcon className="w-4 h-4" />, text: 'No spam, ever' },
-            { icon: <ShieldIcon className="w-4 h-4" />, text: '7-day refund guarantee — no questions asked' },
-          ].map((item, idx) => (
-            <div key={idx} className="flex items-center gap-3">
-              <span style={{ color: colors.teal.primary }}>{item.icon}</span>
-              <p className="text-sm" style={{ color: colors.text.dark }}>{item.text}</p>
+          {(content.whyNiroBullets || [
+            'Real astrologers (not generic reports) — across Vedic, Tarot, Numerology & more',
+            'Unlimited follow-ups in Supported & Comprehensive packs',
+            'Clear outcomes: patterns, timing, and what to expect next (no jargon)',
+            'Private, secure, and designed for a judgement-free experience',
+            'No questions asked — 7-day full refund guarantee.'
+          ]).map((bullet, idx) => (
+            <div key={idx} className="flex items-start gap-3">
+              <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
+              <p className="text-sm" style={{ color: colors.text.dark }}>{bullet}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ===== DIVIDER ===== */}
-      <div className="mx-5 my-4" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
-      {/* ===== FAQs (Objection-killers only) ===== */}
+      {/* ===== FAQs ===== */}
       <section className="px-5 py-4 mb-6">
         <h3 className="text-base font-semibold mb-4" style={{ color: colors.text.dark }}>
           Frequently Asked Questions
         </h3>
         <div className="space-y-2">
-          {CONVERSION_FAQS.map((faq, idx) => (
+          {(content.faqs || []).slice(0, 6).map((faq, idx) => (
             <div 
               key={idx}
               className="rounded-xl overflow-hidden"
@@ -539,20 +521,24 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
         </div>
       </section>
 
-      {/* ===== STICKY CTA BAR (Simplified) ===== */}
+      {/* ===== STICKY CTA BAR (Simplified - Price + Start my journey ONLY) ===== */}
       <div 
         className={`fixed ${hasBottomNav ? 'bottom-16' : 'bottom-0'} left-0 right-0 z-50`}
         style={{ 
           backgroundColor: CARD_BG,
           borderTop: `1px solid ${CARD_BORDER}`,
           boxShadow: '0 -2px 16px rgba(0,0,0,0.06)',
+          backdropFilter: 'blur(12px)',
         }}
         data-testid="sticky-cta-bar"
       >
         <div className="px-5 py-4 flex items-center justify-between">
+          {/* Left: Price only */}
           <span className="text-xl font-bold" style={{ color: colors.text.dark }}>
             {formatPrice(tierData?.price || 0)}
           </span>
+          
+          {/* Right: Start my journey CTA only */}
           <button
             onClick={handleCheckout}
             className="px-8 py-3 rounded-xl font-semibold text-base transition-all active:scale-[0.98]"
