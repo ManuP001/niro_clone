@@ -168,16 +168,16 @@ Source Excel: `Niro_LandingPage_Content_Template_And_Content_V6_UpdatedKeyColumn
 ---
 
 ## Upcoming Tasks (P1)
-1. Verify Kundli visibility and dynamic updates on HomeScreen
-2. Cleanup duplicate LoginScreen.jsx (two files exist)
-3. Update Mira Chat welcome message
-4. Implement post-purchase home screen experience
+1. Verify Kundli display in UI (backend API working, frontend rendering untested)
+2. End-to-end test purchase email notification flow
+3. Login flow UX fix (OTP being typed into name field due to missing OTP screen)
 
 ## Future Tasks (P2)
-1. Onboarding flow refinements (8-screen flow, skip birth time)
-2. Global design system application (Teal/Gold theme)
-3. Full Remedies implementation (currently "Coming soon")
+1. Implement post-purchase home screen experience
+2. Onboarding flow refinements (8-screen flow, skip birth time)
+3. Global design system application (Teal/Gold theme)
+4. Full Remedies implementation (currently "Coming soon")
 
 ## Technical Debt
 - Remove unused V5 files (`SimplifiedAppV5.jsx`, `v5Screens/`, `v5Data/`)
-- Consolidate duplicate LoginScreen.jsx files (`screens/` and `screens/simplified/`)
+- Consider adding dedicated OTP verification screen to improve login UX
