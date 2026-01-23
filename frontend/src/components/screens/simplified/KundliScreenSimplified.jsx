@@ -219,7 +219,7 @@ const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate }) => 
   const currentStyle = source?.style || chartStyle;
 
   return (
-    <div className={`min-h-screen ${hasBottomNav ? 'pb-20' : ''}`} style={{ backgroundColor: '#f5f0e3' }}>
+    <div className={`min-h-screen ${hasBottomNav ? 'pb-20' : ''}`} style={{ background: TEAL_GRADIENT }}>
       {/* Header */}
       <div 
         className="px-6 pt-12 pb-6 sticky top-0 z-10"
