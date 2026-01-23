@@ -10,7 +10,7 @@ import uuid
 import time
 
 # Backend URL from environment
-BACKEND_URL = "https://onboard-overhaul.preview.emergentagent.com/api"
+BACKEND_URL = "https://niro-v5-redesign.preview.emergentagent.com/api"
 
 class RoleEnforcementTester:
     def __init__(self):
