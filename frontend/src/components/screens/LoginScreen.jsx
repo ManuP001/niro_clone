@@ -213,7 +213,7 @@ const LoginScreen = ({ onLoginSuccess }) => {
           className="text-lg text-center mb-10 max-w-xs"
           style={{ color: colors.text.primary }}
         >
-          For all your life&apos;s grand decisions
+          Trusted Astrology Guidance for Love, Career and Health
         </p>
 
         {/* Login Form */}
