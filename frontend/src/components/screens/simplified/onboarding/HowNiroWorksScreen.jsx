@@ -11,23 +11,23 @@ export default function HowNiroWorksScreen({ onNext, onBack }) {
   const features = [
     {
       icon: SparklesIcon,
-      title: 'AI-Powered Insights',
-      description: 'Get personalized guidance from Mira, our AI astrologer',
+      title: 'Start with one life topic',
+      description: 'Choose what's most uncertain right now.',
     },
     {
       icon: UsersIcon,
-      title: 'Expert Astrologers',
-      description: 'Connect with verified Vedic astrologers anytime',
+      title: 'Talk to verified experts',
+      description: 'Vedic-first guidance, with follow-ups until clarity.',
     },
     {
       icon: CalendarIcon,
-      title: 'Timing Guidance',
-      description: 'Know the best times for important decisions',
+      title: 'Get timing + direction',
+      description: 'Understand what phase you're in — and what's next.',
     },
     {
       icon: ChatIcon,
-      title: 'Unlimited Support',
-      description: '24/7 chat access with your dedicated expert',
+      title: 'Unlimited support (on higher tiers)',
+      description: 'Unlimited chat + follow-ups during your journey.',
     },
   ];
 
@@ -63,13 +63,13 @@ export default function HowNiroWorksScreen({ onNext, onBack }) {
             backgroundClip: 'text',
           }}
         >
-          How Niro Works
+          How Niro helps
         </h1>
         <p 
           className="text-center mb-8"
           style={{ color: 'rgba(255,255,255,0.8)' }}
         >
-          Your personal astrology companion
+          Get clarity, timing, and next steps — with real experts.
         </p>
         
         {/* Feature cards */}
