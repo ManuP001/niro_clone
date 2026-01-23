@@ -279,7 +279,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Duration</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>{tierData?.duration} weeks</p>
+                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>{tierData?.durationWeeks} weeks</p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
