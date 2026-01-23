@@ -5,6 +5,7 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 
 ## Current Status (January 2025)
 - **Active Version:** V4 with V6 Premium UI Upgrades
+- **Last Update:** December 23, 2025 - Complete V6 content update from Excel
 - **Completed Sprints:** Landing Page + Home Screen V6 Revamp
 - **Status:** ✅ Complete and tested (15/15 features verified)
 
@@ -16,7 +17,6 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 - **Gradient background** - Linear gradient matching onboarding screens
 - **Animated Niro logo** - Larger constellation ring animation (20s spin)
 - **Premium CTA area** - "Talk to Expert" (primary/teal), "Chat with Mira (AI)" (secondary/white)
-- **Trust microcopy** - "Private • No spam • Verified experts"
 - **Category modules** - Soft card containers with helper copy
 - **Reduced whitespace** - Bottom padding reduced by 60%+
 
@@ -56,18 +56,19 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 - **Frame 27 structure** from wireframe reference
 
 ### Section Order
-1. **Header** - Back button + Topic title
-2. **Topic Explainer** - 1-line context at top (from V6 source)
-3. **Hero** - "Hi {userName}, here are the paths you can choose for your journey"
-4. **Tier Selector Tabs** - Focussed/Supported/Comprehensive (Recommended badge ONLY here)
-5. **Tier Summary Card** - 2x2 grid (Duration, Consultation, Follow-ups, Chat)
+1. **Header** - Back button + Topic title (headerTitle from content)
+2. **Hero Promise** - One-line promise (heroOneLinePromise from Excel)
+3. **Personalized Greeting** - "Hi {userName}, here are the paths you can choose for your journey"
+4. **Tier Selector Tabs** - Focussed/Supported/Comprehensive (Recommended badge ONLY on Supported)
+5. **Tier Summary Card** - Details from tierSummaryDetails (Duration, Consultations, Follow-ups, Support)
 6. **Refund Guarantee** - "No questions asked — 7 day full refund guarantee" (ONLY after summary)
-7. **Outcomes** - Grouped by Clarity/Timeline/Support
-8. **How will your journey unfold** - 4-step timeline
-9. **Optional Add-ons** - "Coming soon" pill (NO CTA)
-10. **Why Niro** - Trust bullets
-11. **FAQs** - Expandable
-12. **Sticky CTA Bar** - ONLY Price + "Start my journey" (simplified)
+7. **Outcomes** - Grouped by Clarity/Timeline/Support (from outcomesByTier)
+8. **How will your journey unfold** - Bullets from howUnfoldsByTier
+9. **Experts Widget** - "Meet your experts" with horizontal scroll cards (3 experts)
+10. **Optional Add-ons** - "Coming soon" section
+11. **Why Niro** - Trust bullets
+12. **FAQs** - Expandable
+13. **Sticky CTA Bar** - ONLY Price + "Start my journey" (simplified)
 
 ### Strict Rules
 - ✅ "Unlimited chat" exact wording (not "async chat")
@@ -82,15 +83,24 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 ## V6 Content Source
 
 All 18 subtopic content from: `v6Data/landingPageContentV6.js`
-- Topic explainer 1-liners
-- Tier pricing (Focussed/Supported/Comprehensive)
-- Duration, consultations, follow-ups, chat type
-- Expert mix per tier
-- Outcomes (Clarity/Timeline/Support)
-- Journey steps
-- Why Niro bullets
-- FAQs
-- Optional remedies
+Source Excel: `Niro_LandingPage_Content_Template_And_Content_V6_UpdatedKeyColumns.xlsx`
+
+### Content Structure per Topic:
+- **heroOneLinePromise** - Main promise text
+- **topicExplainerOneLiner** - Personalized greeting template
+- **heroSubtitle** - Additional context
+- **tierCards** - Price and duration per tier (Focussed/Supported/Comprehensive)
+- **tierSummaryDetails** - Formatted summary string per tier
+- **outcomesByTier** - Clarity, Timeline, Support bullets per tier
+- **howUnfoldsByTier** - Journey steps per tier
+- **expertsWidgetTitle/Subtitle** - Experts section content
+- **whyNiroBullets** - Trust reasons
+- **faqs** - FAQ Q&A pairs
+
+### Categories:
+- **V6_LOVE_SUBTOPICS** (6): relationship-healing, dating-compatibility, breakup-closure, communication-trust, family-relationships, marriage-planning
+- **V6_CAREER_SUBTOPICS** (6): career-clarity, job-transition, money-stability, big-decision-timing, work-stress, office-politics
+- **V6_HEALTH_SUBTOPICS** (6): stress-management, sleep-reset, energy-balance, health-timing, emotional-wellbeing, recovery-support
 
 ---
 
