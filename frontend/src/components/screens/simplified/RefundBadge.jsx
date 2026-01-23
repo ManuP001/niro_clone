@@ -3,7 +3,7 @@ import { colors } from './theme';
 import { ShieldIcon } from './icons';
 
 /**
- * RefundBadge - Trust block showing 7-day refund guarantee
+ * RefundBadge - Trust block showing satisfaction guarantee
  */
 export default function RefundBadge({ variant = 'default' }) {
   const styles = {
@@ -54,7 +54,7 @@ export default function RefundBadge({ variant = 'default' }) {
           className="text-xs"
           style={{ color: variant === 'dark' ? colors.text.muted : colors.text.secondary }}
         >
-          7 day full refund guarantee
+          100% satisfaction guaranteed
         </p>
       </div>
     </div>

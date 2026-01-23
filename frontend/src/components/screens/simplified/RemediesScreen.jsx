@@ -305,7 +305,7 @@ export default function RemediesScreen({ hasBottomNav }) {
             </div>
             <div className="flex items-center gap-2">
               <CheckIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
-              <span className="text-xs" style={{ color: colors.text.secondary }}>7-day refund policy on all products</span>
+              <span className="text-xs" style={{ color: colors.text.secondary }}>100% satisfaction guaranteed on all products</span>
             </div>
           </div>
         </div>
