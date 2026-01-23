@@ -107,7 +107,7 @@ export default function LoginScreen({ onLogin }) {
           className="text-lg text-center mb-12 max-w-xs"
           style={{ color: colors.text.primary, opacity: 0.9 }}
         >
-          For all your life&apos;s grand decisions
+          Trusted Astrology Guidance for Love, Career and Health
         </p>
 
         {/* Login Form */}
