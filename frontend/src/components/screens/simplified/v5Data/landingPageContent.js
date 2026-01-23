@@ -811,7 +811,7 @@ export const CAREER_SUBTOPICS = {
       { q: 'Can you guide job switch timing?', a: 'Yes, timing guidance is a core part of what we provide.' },
       { q: 'What if I can\'t share workplace details?', a: 'We work with what you\'re comfortable sharing.' },
       { q: 'Is Numerology included?', a: 'Comprehensive includes multiple expert perspectives.' },
-      { q: 'Refund?', a: '7-day full refund, no questions asked.' },
+      { q: 'Refund?', a: '100% satisfaction guaranteed. Contact our support team if you have any concerns.' },
       { q: 'What happens after purchase?', a: 'You\'ll get matched with an expert within 24 hours.' }
     ]
   },
@@ -886,7 +886,7 @@ export const CAREER_SUBTOPICS = {
       { q: 'How do follow-ups work?', a: 'Chat or call-based depending on your pack.' },
       { q: 'What if things escalate?', a: 'You can reach out anytime during your pack period.' },
       { q: 'Is Tarot included?', a: 'Comprehensive includes multiple expert perspectives.' },
-      { q: 'Refund?', a: '7-day full refund, no questions asked.' },
+      { q: 'Refund?', a: '100% satisfaction guaranteed. Contact our support team if you have any concerns.' },
       { q: 'Response time?', a: 'Within 24-48 hours depending on your pack.' }
     ]
   },
@@ -961,7 +961,7 @@ export const CAREER_SUBTOPICS = {
       { q: 'What if dates change?', a: 'We can provide updated timing guidance.' },
       { q: 'Can I do this without birth time?', a: 'Yes, we can work with approximate time.' },
       { q: 'What if I\'m still unsure?', a: 'We work with you until you feel clear.' },
-      { q: 'Refund?', a: '7-day full refund, no questions asked.' },
+      { q: 'Refund?', a: '100% satisfaction guaranteed. Contact our support team if you have any concerns.' },
       { q: 'How fast is the turnaround?', a: 'Expert matching within 24 hours.' }
     ]
   }
@@ -1362,7 +1362,7 @@ export const HEALTH_SUBTOPICS = {
       { q: 'Can I get a second opinion?', a: 'Comprehensive includes multiple expert perspectives.' },
       { q: 'Is Tarot included?', a: 'Comprehensive includes both Vedic and Tarot/healing perspectives.' },
       { q: 'Can I skip birth time?', a: 'Yes, we can work with approximate time or date only.' },
-      { q: 'Refund?', a: '7-day full refund, no questions asked.' },
+      { q: 'Refund?', a: '100% satisfaction guaranteed. Contact our support team if you have any concerns.' },
       { q: 'How private is this?', a: 'All conversations are confidential and encrypted.' }
     ]
   },
@@ -1438,7 +1438,7 @@ export const HEALTH_SUBTOPICS = {
       { q: 'Unlimited chat?', a: 'Supported and Comprehensive include unlimited chat.' },
       { q: 'Can I do this without birth time?', a: 'Yes, we can work with approximate time.' },
       { q: 'Privacy?', a: 'All conversations are confidential and encrypted.' },
-      { q: 'Refund?', a: '7-day full refund, no questions asked.' },
+      { q: 'Refund?', a: '100% satisfaction guaranteed. Contact our support team if you have any concerns.' },
       { q: 'Response time?', a: 'Within 24-48 hours depending on your pack.' }
     ]
   }
