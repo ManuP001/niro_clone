@@ -1386,7 +1386,7 @@ async def submit_feedback(request: FeedbackRequest):
     
     return {
         "success": True,
-        "message": f"Thank you for your feedback!"
+        "message": "Thank you for your feedback!"
     }
 
 
