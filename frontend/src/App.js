@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import LoginScreen from './components/screens/LoginScreen';
+import AuthCallback from './components/screens/AuthCallback';
 import OnboardingScreen from './components/screens/OnboardingScreen';
 import HomeScreen from './components/screens/HomeScreen';
 import ChatScreen from './components/screens/ChatScreen';
