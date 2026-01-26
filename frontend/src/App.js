@@ -37,8 +37,18 @@ function App() {
   // V5: Toggle between V4 and V5 onboarding
   const [useV5Flow, setUseV5Flow] = useState(false); // Default to V4
 
+  // Check for auth callback (session_id in URL fragment) - MUST be synchronous
+  const isAuthCallback = window.location.pathname === '/auth/callback' || 
+                         window.location.hash.includes('session_id=');
+
   // Check auth status on mount
   useEffect(() => {
+    // Skip auth check if we're processing OAuth callback
+    if (isAuthCallback) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      return;
+    }
+
     const checkAuth = async () => {
       const token = getAuthToken();
       
