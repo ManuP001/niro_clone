@@ -2007,6 +2007,7 @@ async def init_niro_v2_db():
         if db is not None:
             niro_storage = await init_niro_v2_storage(db)
             app.state.niro_v2_storage = niro_storage
+            app.state.db = db  # Make database available to Google auth router
             logger.info("✅ NIRO V2 storage initialized with MongoDB")
         else:
             logger.warning("⚠ NIRO V2 storage not initialized - MongoDB not available")
