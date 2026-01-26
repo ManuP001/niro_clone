@@ -91,12 +91,25 @@ async def send_booking_notification(
         topic_name: Topic/category of the package
         transaction_id: Payment transaction ID
         payment_method: Payment method used
-        additional_info: Any additional details to include
+        additional_info: Any additional details to include (order_id, plan_id, birth details, etc.)
         
     Returns:
         Dict with status of email send
     """
     current_time = datetime.now().strftime("%B %d, %Y at %I:%M %p")
+    
+    # Extract additional info
+    order_id = additional_info.get('order_id', 'N/A') if additional_info else 'N/A'
+    plan_id = additional_info.get('plan_id', 'N/A') if additional_info else 'N/A'
+    user_id = additional_info.get('user_id', 'N/A') if additional_info else 'N/A'
+    validity_weeks = additional_info.get('validity_weeks', 'N/A') if additional_info else 'N/A'
+    scenarios = additional_info.get('scenarios', []) if additional_info else []
+    
+    # Birth details
+    dob = additional_info.get('dob', 'Not provided') if additional_info else 'Not provided'
+    tob = additional_info.get('tob', 'Not provided') if additional_info else 'Not provided'
+    pob = additional_info.get('pob', 'Not provided') if additional_info else 'Not provided'
+    gender = additional_info.get('gender', 'Not provided') if additional_info else 'Not provided'
     
     html_content = f"""
     <!DOCTYPE html>
@@ -108,10 +121,20 @@ async def send_booking_notification(
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #3E827A 0%, #5A9A92 100%); padding: 30px; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0; font-size: 24px;">🌟 New Booking Received!</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 14px;">{current_time}</p>
         </div>
         
         <div style="background: #f5f5f5; padding: 30px; border-radius: 0 0 10px 10px;">
-            <h2 style="color: #3E827A; margin-top: 0;">Customer Details</h2>
+            
+            <!-- IDs Section -->
+            <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="color: #2e7d32; margin: 0 0 10px 0; font-size: 14px;">📋 Order & Plan IDs</h3>
+                <p style="margin: 5px 0; font-size: 13px;"><strong>User ID:</strong> <code style="background: #fff; padding: 2px 6px; border-radius: 4px;">{user_id}</code></p>
+                <p style="margin: 5px 0; font-size: 13px;"><strong>Order ID:</strong> <code style="background: #fff; padding: 2px 6px; border-radius: 4px;">{order_id}</code></p>
+                <p style="margin: 5px 0; font-size: 13px;"><strong>Plan ID:</strong> <code style="background: #fff; padding: 2px 6px; border-radius: 4px;">{plan_id}</code></p>
+            </div>
+            
+            <h2 style="color: #3E827A; margin-top: 0;">👤 Customer Details</h2>
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><strong>Name:</strong></td>
@@ -127,7 +150,27 @@ async def send_booking_notification(
                 </tr>
             </table>
             
-            <h2 style="color: #3E827A; margin-top: 30px;">Package Details</h2>
+            <h2 style="color: #3E827A; margin-top: 30px;">🔒 Birth Details</h2>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><strong>Date of Birth:</strong></td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;">{dob}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><strong>Time of Birth:</strong></td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;">{tob}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><strong>Place of Birth:</strong></td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;">{pob}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><strong>Gender:</strong></td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;">{gender}</td>
+                </tr>
+            </table>
+            
+            <h2 style="color: #3E827A; margin-top: 30px;">📦 Package Details</h2>
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><strong>Topic:</strong></td>
@@ -143,15 +186,21 @@ async def send_booking_notification(
                 </tr>
                 <tr>
                     <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><strong>Price:</strong></td>
-                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;">₹{package_price:,.0f}</td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><strong style="color: #2e7d32;">₹{package_price:,.0f}</strong></td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><strong>Validity:</strong></td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;">{validity_weeks} weeks</td>
                 </tr>
             </table>
             
-            <h2 style="color: #3E827A; margin-top: 30px;">Payment Details</h2>
+            {f'<div style="margin-top: 15px;"><strong>Selected Topics:</strong><ul style="margin: 5px 0;">' + ''.join([f'<li>{s}</li>' for s in scenarios]) + '</ul></div>' if scenarios else ''}
+            
+            <h2 style="color: #3E827A; margin-top: 30px;">💳 Payment Details</h2>
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><strong>Transaction ID:</strong></td>
-                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;">{transaction_id}</td>
+                    <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><code style="background: #fff3e0; padding: 2px 6px; border-radius: 4px;">{transaction_id}</code></td>
                 </tr>
                 <tr>
                     <td style="padding: 10px 0; border-bottom: 1px solid #ddd;"><strong>Payment Method:</strong></td>
@@ -163,16 +212,20 @@ async def send_booking_notification(
                 </tr>
             </table>
             
-            {f'<h2 style="color: #3E827A; margin-top: 30px;">Additional Information</h2><pre style="background: white; padding: 15px; border-radius: 5px; overflow-x: auto;">{str(additional_info)}</pre>' if additional_info else ''}
+            <div style="margin-top: 30px; padding: 15px; background: #fff3e0; border-radius: 8px; border-left: 4px solid #ff9800;">
+                <p style="margin: 0; color: #e65100; font-size: 14px;">
+                    <strong>⚡ Action Required:</strong> Please follow up with the customer to schedule their consultation session.
+                </p>
+            </div>
             
-            <p style="margin-top: 30px; color: #666; font-size: 12px;">
-                This is an automated notification from NIRO. Please follow up with the customer to schedule their consultation.
+            <p style="margin-top: 20px; color: #666; font-size: 12px; text-align: center;">
+                This is an automated notification from NIRO Astrology Platform.
             </p>
         </div>
     </body>
     </html>
     """
     
-    subject = f"🌟 New Booking: {topic_name} - {package_tier} Package"
+    subject = f"🌟 New Booking: {topic_name} - {package_tier} (₹{package_price:,.0f})"
     
     return await send_email(BOOKING_EMAIL, subject, html_content)
