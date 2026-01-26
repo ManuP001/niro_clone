@@ -66,6 +66,7 @@ export const isAuthenticated = () => {
 /**
  * Make an authenticated API call
  * Automatically adds Authorization header with Bearer token
+ * Also includes credentials for cookie-based auth
  */
 export const authenticatedFetch = async (url, options = {}) => {
   const token = getAuthToken();
@@ -82,6 +83,7 @@ export const authenticatedFetch = async (url, options = {}) => {
   return fetch(url, {
     ...options,
     headers,
+    credentials: 'include', // Include cookies for session-based auth
   });
 };
 
