@@ -105,13 +105,38 @@ function App() {
     checkAuth();
   }, []);
 
-  const handleLoginSuccess = (token, userId) => {
-    setAuthState((prev) => ({
-      ...prev,
+  const handleLoginSuccess = (user, token) => {
+    // Clear any previous onboarding state
+    // localStorage.removeItem('niro_onboarding_completed');
+    // localStorage.removeItem('niro_user_details_completed');
+    
+    setAuthState({
+      isLoading: false,
       isAuthenticated: true,
+      user,
+      profileComplete: user?.profile_complete || false,
       token,
-      userId,
-    }));
+      userId: user?.user_id,
+    });
+    
+    // Navigate to main app (clear auth callback path)
+    if (window.location.pathname === '/auth/callback') {
+      window.history.replaceState(null, '', '/');
+    }
+  };
+
+  const handleAuthError = (error) => {
+    console.error('Auth error:', error);
+    setAuthState({
+      isLoading: false,
+      isAuthenticated: false,
+      user: null,
+      profileComplete: false,
+      token: null,
+      userId: null,
+    });
+    // Navigate back to login
+    window.history.replaceState(null, '', '/');
   };
 
   const handleOnboardingComplete = () => {
