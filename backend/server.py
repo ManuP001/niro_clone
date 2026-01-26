@@ -76,6 +76,7 @@ from backend.astro_client import (
 # Import auth and profile routers
 from backend.auth.routes import router as auth_router
 from backend.profile import router as profile_router
+from backend.routes.google_auth import router as google_auth_router
 
 # Import new astro refactoring routers
 from backend.routes.astro_routes import router as astro_router
