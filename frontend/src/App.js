@@ -174,6 +174,16 @@ function App() {
     );
   }
 
+  // Handle OAuth callback - process session_id BEFORE checking auth
+  if (isAuthCallback) {
+    return (
+      <AuthCallback 
+        onAuthSuccess={handleLoginSuccess}
+        onAuthError={handleAuthError}
+      />
+    );
+  }
+
   // Show login screen if not authenticated
   if (!authState.isAuthenticated) {
     return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
