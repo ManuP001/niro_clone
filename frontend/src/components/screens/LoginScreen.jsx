@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BACKEND_URL } from '../../config';
 
 /**
- * LoginScreen - Updated with teal-gold design language (V5)
- * Matches the simplified screens color scheme
+ * LoginScreen - Google OAuth Only (V6)
+ * REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
  */
 
 // Design system colors - matching simplified/theme.js
@@ -43,252 +43,128 @@ const shadows = {
   lg: '0 8px 32px rgba(0, 0, 0, 0.16)',
 };
 
+// Google icon SVG
+const GoogleIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+  </svg>
+);
+
 const LoginScreen = ({ onLoginSuccess }) => {
-  const [identifier, setIdentifier] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    console.log('LoginScreen initialized with BACKEND_URL:', BACKEND_URL);
+    console.log('LoginScreen (Google OAuth) initialized with BACKEND_URL:', BACKEND_URL);
   }, []);
 
-  const handleContinue = async (e) => {
-    e.preventDefault();
-    setError('');
+  const handleGoogleLogin = () => {
     setLoading(true);
-
-    try {
-      const url = `${BACKEND_URL}/api/auth/identify`;
-      console.log('Identifying user at:', url);
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier }),
-      });
-
-      const data = await response.json();
-      console.log('Identify response:', response.status, data);
-
-      if (!response.ok || !data.ok) {
-        setError(data.detail || 'Failed to login');
-        return;
-      }
-
-      // Save token and user_id to localStorage
-      localStorage.setItem('auth_token', data.token);
-      localStorage.setItem('user_id', data.user_id);
-
-      console.log('Login successful, calling onLoginSuccess');
-      // Call success callback
-      onLoginSuccess(data.token, data.user_id);
-    } catch (err) {
-      console.error('Login error:', err);
-      console.error('BACKEND_URL was:', BACKEND_URL);
-      if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        setError('Network error. Please check your connection and try again.');
-      } else {
-        setError(`Network error: ${err.message}. Please try again.`);
-      }
-    } finally {
-      setLoading(false);
-    }
+    setError('');
+    
+    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+    // Use browser's dynamic location to build redirect URL
+    const redirectUrl = window.location.origin + '/auth/callback';
+    
+    console.log('Redirecting to Google OAuth with redirect:', redirectUrl);
+    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
   return (
-    <div 
+    <div
+      data-testid="login-screen"
       className="min-h-screen flex flex-col"
-      style={{ 
+      style={{
         background: colors.background.gradient,
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       }}
     >
-      {/* Constellation Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <svg className="absolute w-full h-full opacity-20" viewBox="0 0 400 800">
-          <g stroke="#ffffff" strokeWidth="0.5" fill="none">
-            <line x1="80" y1="60" x2="150" y2="120" />
-            <line x1="150" y1="120" x2="200" y2="80" />
-            <line x1="200" y1="80" x2="280" y2="140" />
-            <line x1="280" y1="140" x2="350" y2="100" />
-            <line x1="150" y1="120" x2="180" y2="200" />
-            <line x1="50" y1="300" x2="120" y2="350" />
-            <line x1="120" y1="350" x2="180" y2="320" />
-            <line x1="180" y1="320" x2="250" y2="380" />
-            <line x1="320" y1="250" x2="380" y2="300" />
-            <line x1="100" y1="550" x2="160" y2="600" />
-            <line x1="160" y1="600" x2="220" y2="560" />
-            <line x1="280" y1="500" x2="340" y2="550" />
-          </g>
-          <g fill="#ffffff">
-            <circle cx="80" cy="60" r="2" />
-            <circle cx="150" cy="120" r="3" />
-            <circle cx="200" cy="80" r="2" />
-            <circle cx="280" cy="140" r="3" />
-            <circle cx="350" cy="100" r="2" />
-            <circle cx="180" cy="200" r="2" />
-            <circle cx="50" cy="300" r="2" />
-            <circle cx="120" cy="350" r="3" />
-            <circle cx="180" cy="320" r="2" />
-            <circle cx="250" cy="380" r="2" />
-            <circle cx="320" cy="250" r="2" />
-            <circle cx="380" cy="300" r="3" />
-            <circle cx="100" cy="550" r="2" />
-            <circle cx="160" cy="600" r="3" />
-            <circle cx="220" cy="560" r="2" />
-            <circle cx="280" cy="500" r="2" />
-            <circle cx="340" cy="550" r="2" />
-          </g>
-        </svg>
-      </div>
+      {/* Safe area top */}
+      <div className="h-12" style={{ paddingTop: 'env(safe-area-inset-top)' }} />
 
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 relative z-10">
+      <div className="flex-1 flex flex-col items-center justify-center px-6">
         {/* Logo */}
-        <div className="mb-10 text-center">
-          {/* Animated Logo Ring */}
-          <div className="relative w-32 h-32 mx-auto mb-6">
-            <svg 
-              className="absolute inset-0 w-full h-full" 
-              viewBox="0 0 160 160"
-              style={{ animation: 'spin 20s linear infinite' }}
-            >
-              <g stroke="rgba(255,255,255,0.4)" strokeWidth="1" fill="none">
-                <polygon points="80,8 100,25 120,25 112,48 120,72 100,72 80,88 60,72 40,72 48,48 40,25 60,25" />
-              </g>
-              <g fill="rgba(255,255,255,0.6)">
-                <circle cx="80" cy="8" r="3" />
-                <circle cx="100" cy="25" r="2" />
-                <circle cx="120" cy="25" r="2.5" />
-                <circle cx="112" cy="48" r="2" />
-                <circle cx="120" cy="72" r="2.5" />
-                <circle cx="100" cy="72" r="2" />
-                <circle cx="80" cy="88" r="3" />
-                <circle cx="60" cy="72" r="2" />
-                <circle cx="40" cy="72" r="2.5" />
-                <circle cx="48" cy="48" r="2" />
-                <circle cx="40" cy="25" r="2.5" />
-                <circle cx="60" cy="25" r="2" />
-              </g>
-            </svg>
-            
-            {/* Inner glow */}
-            <div 
-              className="absolute inset-6 rounded-full"
-              style={{ 
-                background: 'radial-gradient(circle, rgba(239,225,169,0.3) 0%, transparent 100%)',
-                boxShadow: '0 0 40px rgba(239,225,169,0.3)',
-              }}
-            />
-            
-            {/* Logo text */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span 
-                className="text-3xl font-bold tracking-wide"
-                style={{ 
-                  fontFamily: "'Kumbh Sans', 'Inter', sans-serif",
-                  background: colors.logo.gradient,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
-              >
-                niro
-              </span>
-            </div>
-          </div>
-          
-          {/* Subtitle */}
-          <p 
-            className="text-xs tracking-[0.3em] uppercase"
-            style={{ color: colors.gold.primary }}
+        <div className="mb-8">
+          <h1
+            className="text-5xl font-bold tracking-tight"
+            style={{
+              background: colors.logo.gradient,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              fontFamily: "'Kumbh Sans', 'Inter', sans-serif",
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            }}
           >
-            Astrology
-          </p>
+            niro
+          </h1>
         </div>
 
         {/* Tagline */}
-        <p 
-          className="text-lg text-center mb-10 max-w-xs"
-          style={{ color: colors.text.primary }}
+        <p
+          className="text-center text-lg mb-12 max-w-xs"
+          style={{ color: colors.text.muted }}
         >
-          Trusted Astrology Guidance for Love, Career and Health
+          Your personal astrology companion for life's big questions
         </p>
 
-        {/* Login Form */}
-        <div 
-          className="w-full max-w-sm p-6 rounded-2xl"
-          style={{ 
-            backgroundColor: 'rgba(255,255,255,0.95)',
-            boxShadow: shadows.lg,
+        {/* Google Sign-in Button */}
+        <button
+          data-testid="google-login-btn"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="w-full max-w-sm py-4 px-6 rounded-xl font-semibold text-base transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50"
+          style={{
+            backgroundColor: '#FFFFFF',
+            color: colors.text.dark,
+            boxShadow: shadows.md,
           }}
         >
-          <h2 
-            className="text-xl font-semibold text-center mb-6"
-            style={{ color: colors.text.dark }}
-          >
-            Get Started
-          </h2>
-          
-          <form onSubmit={handleContinue}>
-            <div className="mb-4">
-              <label 
-                className="block text-sm font-medium mb-2"
-                style={{ color: colors.text.secondary }}
-              >
-                Email or Phone
-              </label>
-              <input
-                type="text"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="your@email.com or +91 987654"
-                className="w-full px-4 py-3 rounded-xl text-base focus:outline-none focus:ring-2 transition-all"
-                style={{ 
-                  backgroundColor: colors.gold.cream,
-                  border: `1px solid ${colors.ui.borderDark}`,
-                  color: colors.text.dark,
-                }}
-              />
-              {error && (
-                <p className="mt-2 text-sm" style={{ color: colors.ui.error }}>{error}</p>
-              )}
-            </div>
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 rounded-xl font-semibold text-base transition-all hover:shadow-lg active:scale-[0.98] disabled:opacity-60"
-              style={{ 
-                backgroundColor: colors.gold.primary,
-                color: colors.text.dark,
-                boxShadow: shadows.md,
-              }}
-            >
-              {loading ? 'Please wait...' : 'Continue'}
-            </button>
-          </form>
-          
-          <p 
-            className="text-xs text-center mt-4"
-            style={{ color: colors.text.mutedDark }}
-          >
-            By continuing, you agree to our Terms & Privacy Policy
+          {loading ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-gray-600" />
+          ) : (
+            <>
+              <GoogleIcon />
+              Continue with Google
+            </>
+          )}
+        </button>
+
+        {/* Error message */}
+        {error && (
+          <p className="mt-4 text-sm text-center" style={{ color: colors.ui.error }}>
+            {error}
           </p>
+        )}
+
+        {/* Trust indicators */}
+        <div className="mt-12 flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.gold.primary }}>
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span className="text-xs" style={{ color: colors.text.muted }}>Secure login</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.gold.primary }}>
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span className="text-xs" style={{ color: colors.text.muted }}>Private data</span>
+          </div>
         </div>
       </div>
 
-      {/* Bottom safe area spacer */}
-      <div className="h-8" />
-      
-      {/* Spin animation keyframes */}
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+      {/* Footer */}
+      <div className="pb-8 px-6 text-center">
+        <p className="text-xs" style={{ color: colors.text.muted }}>
+          By continuing, you agree to our Terms of Service and Privacy Policy
+        </p>
+      </div>
     </div>
   );
 };
