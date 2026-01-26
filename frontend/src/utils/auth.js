@@ -29,10 +29,31 @@ export const setAuthToken = (token, userId) => {
 
 /**
  * Clear auth tokens (logout)
+ * Also clears onboarding state and calls backend logout
  */
-export const clearAuthToken = () => {
+export const clearAuthToken = async () => {
+  const token = getAuthToken();
+  
+  // Clear all local storage auth data
   localStorage.removeItem(AUTH_TOKEN_KEY);
   localStorage.removeItem(USER_ID_KEY);
+  localStorage.removeItem('niro_onboarding_completed');
+  localStorage.removeItem('niro_user_details_completed');
+  
+  // Call backend logout (non-blocking)
+  if (token) {
+    try {
+      await fetch(`${window.location.origin.includes('localhost') ? 'http://localhost:8001' : ''}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+    } catch (err) {
+      console.log('Logout request failed (non-critical):', err);
+    }
+  }
 };
 
 /**
