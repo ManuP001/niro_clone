@@ -477,9 +477,28 @@ async def verify_payment(
         user_name = user_profile.get('name', '') if user_profile else ''
         user_phone = user_profile.get('phone', '') if user_profile else ''
         
+        # Get birth details
+        user_dob = user_profile.get('dob', '') if user_profile else ''
+        user_tob = user_profile.get('tob', '') if user_profile else ''
+        user_pob = user_profile.get('pob', '') or user_profile.get('location', {}).get('city', '') if user_profile else ''
+        user_gender = user_profile.get('gender', '') if user_profile else ''
+        
         # Get topic name
         topic = catalog.get_topic(tier.topic_id)
         topic_name = topic.title if topic else tier.topic_id
+        
+        # Prepare comprehensive additional info
+        additional_info = {
+            "order_id": request_data.order_id,
+            "plan_id": plan_id,
+            "user_id": user_id,
+            "scenarios": order.get("scenario_ids", []),
+            "validity_weeks": tier.validity_weeks,
+            "dob": user_dob,
+            "tob": user_tob,
+            "pob": user_pob,
+            "gender": user_gender
+        }
         
         # Send email notification (in background if available)
         if background_tasks:
@@ -494,12 +513,7 @@ async def verify_payment(
                 topic_name=topic_name,
                 transaction_id=request_data.razorpay_payment_id,
                 payment_method="Razorpay",
-                additional_info={
-                    "order_id": request_data.order_id,
-                    "plan_id": plan_id,
-                    "scenarios": order.get("scenario_ids", []),
-                    "validity_weeks": tier.validity_weeks
-                }
+                additional_info=additional_info
             )
         else:
             # Send synchronously if no background tasks
@@ -513,12 +527,7 @@ async def verify_payment(
                 topic_name=topic_name,
                 transaction_id=request_data.razorpay_payment_id,
                 payment_method="Razorpay",
-                additional_info={
-                    "order_id": request_data.order_id,
-                    "plan_id": plan_id,
-                    "scenarios": order.get("scenario_ids", []),
-                    "validity_weeks": tier.validity_weeks
-                }
+                additional_info=additional_info
             )
         
         logger.info(f"Booking notification email queued for plan {plan_id}")
