@@ -1466,7 +1466,7 @@ async def get_personalized_welcome(authorization: Optional[str] = Header(None)):
         # Parse birth details
         dob_str = user_profile.get('dob')
         if isinstance(dob_str, str):
-            from datetime import datetime as dt
+            from datetime import datetime as dt, date
             # Handle various date formats
             for fmt in ['%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y']:
                 try:
