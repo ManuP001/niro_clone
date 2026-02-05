@@ -37,9 +37,9 @@ function App() {
   // V5: Toggle between V4 and V5 onboarding
   const [useV5Flow, setUseV5Flow] = useState(false); // Default to V4
 
-  // Check for auth callback (session_id in URL fragment) - MUST be synchronous
+  // Check for auth callback (code in URL query params from Google OAuth)
   const isAuthCallback = window.location.pathname === '/auth/callback' || 
-                         window.location.hash.includes('session_id=');
+                         window.location.search.includes('code=');
 
   // Check auth status on mount
   useEffect(() => {
