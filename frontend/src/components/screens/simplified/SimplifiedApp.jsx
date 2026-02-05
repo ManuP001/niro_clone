@@ -546,6 +546,7 @@ export default function SimplifiedApp({ token, userId }) {
         <BottomNav 
           activeTab={activeTab}
           onTabChange={handleTabChange}
+          hasActivePlan={userState?.active_plans?.length > 0}
         />
       )}
 
