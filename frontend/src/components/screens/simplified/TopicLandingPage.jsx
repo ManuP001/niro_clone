@@ -232,7 +232,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
           }}
           data-testid="tier-summary-card"
         >
-          {/* Tier Header - NO Recommended badge here */}
+          {/* Tier Header - NO price shown here */}
           <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className="text-lg font-bold" style={{ color: colors.text.dark }}>
@@ -240,11 +240,6 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               </h3>
               <p className="text-sm" style={{ color: colors.text.secondary }}>
                 {tierData?.durationWeeks} weeks package
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold" style={{ color: colors.text.dark }}>
-                {formatPrice(tierData?.price || 0)}
               </p>
             </div>
           </div>
