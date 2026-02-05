@@ -251,28 +251,6 @@ function App() {
   return (
     <ChatProvider>
       <div className="App min-h-screen bg-gray-50 flex flex-col lg:items-center lg:justify-center lg:p-4">
-        {/* UI Version Toggle (for development) */}
-        <div className="fixed top-2 right-2 z-50 flex gap-1">
-          <button 
-            onClick={() => { setUseSimplified(true); setUseV2UI(false); }}
-            className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${useSimplified ? 'bg-emerald-600' : 'bg-slate-400'}`}
-          >
-            V1
-          </button>
-          <button 
-            onClick={() => { setUseSimplified(false); setUseV2UI(true); }}
-            className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${useV2UI && !useSimplified ? 'bg-blue-600' : 'bg-slate-400'}`}
-          >
-            V2
-          </button>
-          <button 
-            onClick={() => { setUseSimplified(false); setUseV2UI(false); }}
-            className={`text-white text-xs px-2 py-1 rounded-full shadow-lg ${!useV2UI && !useSimplified ? 'bg-purple-600' : 'bg-slate-400'}`}
-          >
-            Old
-          </button>
-        </div>
-        
         {/* Desktop: centered container with max width */}
         <div className="w-full h-screen lg:h-auto lg:max-w-[840px] lg:rounded-lg lg:shadow-xl lg:bg-white flex flex-col lg:min-h-screen">
           <div className="flex-1 flex flex-col overflow-hidden">
