@@ -478,6 +478,38 @@ export default function SimplifiedApp({ token, userId }) {
           />
         );
       
+      case 'mypack':
+        // Show the user's active plan dashboard
+        const activePlan = userState?.active_plans?.[0];
+        if (activePlan) {
+          return (
+            <PlanDashboard 
+              token={token}
+              planId={activePlan.plan_id}
+              onNavigate={navigate}
+              onBack={() => {
+                setActiveTab('home');
+                setScreen('home');
+              }}
+              hasBottomNav={showBottomNav}
+            />
+          );
+        }
+        // Fallback to home if no active plan
+        return (
+          <HomeScreen 
+            token={token}
+            userId={userId}
+            userState={userState}
+            userName={getUserName()}
+            hasBottomNav={showBottomNav}
+            onChatWithMira={handleChatWithMira}
+            onTalkToHuman={handleTalkToHuman}
+            onNavigate={(dest, params) => navigate(dest, params)}
+            onOpenProfile={() => setScreen('profile')}
+          />
+        );
+      
       default:
         return (
           <HomeScreen 
