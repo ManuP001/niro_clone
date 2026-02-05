@@ -1,8 +1,9 @@
 """User profile API endpoints"""
 
 import logging
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Request
 from typing import Optional
+from datetime import datetime, timezone
 
 from backend.auth.auth_service import get_auth_service
 from backend.auth.models import (
@@ -16,9 +17,62 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
 
+# Reference to MongoDB - will be set by server.py
+_db = None
+
+def set_db(db):
+    """Set the MongoDB database reference"""
+    global _db
+    _db = db
+
+
+async def _extract_user_id_with_session(authorization: Optional[str], request: Request = None) -> Optional[str]:
+    """Helper to extract user_id from Bearer token or session cookie"""
+    global _db
+    
+    # Try session-based auth first (Google OAuth)
+    session_token = None
+    if request:
+        session_token = request.cookies.get("session_token")
+    
+    # Check Authorization header
+    if not session_token and authorization:
+        parts = authorization.split()
+        if len(parts) == 2 and parts[0].lower() == 'bearer':
+            session_token = parts[1]
+    
+    if session_token and _db:
+        # Try new session-based auth
+        session_doc = await _db.user_sessions.find_one(
+            {"session_token": session_token},
+            {"_id": 0}
+        )
+        
+        if session_doc:
+            expires_at = session_doc.get("expires_at")
+            if isinstance(expires_at, str):
+                expires_at = datetime.fromisoformat(expires_at)
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=timezone.utc)
+            
+            if expires_at > datetime.now(timezone.utc):
+                return session_doc["user_id"]
+    
+    # Fallback to old JWT auth
+    if authorization:
+        parts = authorization.split()
+        if len(parts) == 2 and parts[0].lower() == 'bearer':
+            token = parts[1]
+            auth_service = get_auth_service()
+            payload = auth_service.verify_token(token)
+            if payload:
+                return payload.get('user_id')
+    
+    return None
+
 
 def _extract_user_id(authorization: Optional[str]) -> Optional[str]:
-    """Helper to extract user_id from Bearer token"""
+    """Legacy helper to extract user_id from Bearer token (for sync contexts)"""
     if not authorization:
         return None
     
@@ -37,7 +91,7 @@ def _extract_user_id(authorization: Optional[str]) -> Optional[str]:
 
 
 @router.get("/")
-async def get_profile(authorization: Optional[str] = Header(None)):
+async def get_profile(request: Request, authorization: Optional[str] = Header(None)):
     """
     Get current user's profile.
     
@@ -55,11 +109,29 @@ async def get_profile(authorization: Optional[str] = Header(None)):
       }
     }
     """
+    global _db
     try:
-        user_id = _extract_user_id(authorization)
+        user_id = await _extract_user_id_with_session(authorization, request)
         if not user_id:
             raise HTTPException(status_code=401, detail="Unauthorized")
         
+        # Try new MongoDB users collection first
+        if _db:
+            user_doc = await _db.users.find_one({"user_id": user_id}, {"_id": 0})
+            if user_doc:
+                return {
+                    "ok": True,
+                    "profile": {
+                        "name": user_doc.get("name"),
+                        "dob": user_doc.get("dob"),
+                        "tob": user_doc.get("tob"),
+                        "location": user_doc.get("pob") or user_doc.get("location"),
+                        "gender": user_doc.get("gender"),
+                        "marital_status": user_doc.get("marital_status")
+                    }
+                }
+        
+        # Fallback to old auth service
         auth_service = get_auth_service()
         profile = auth_service.get_profile(user_id)
         
@@ -77,6 +149,7 @@ async def get_profile(authorization: Optional[str] = Header(None)):
 @router.post("/")
 async def update_profile(
     req: UserProfileRequest,
+    request: Request,
     authorization: Optional[str] = Header(None)
 ):
     """
