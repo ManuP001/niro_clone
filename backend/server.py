@@ -1567,13 +1567,14 @@ async def get_personalized_welcome(authorization: Optional[str] = Header(None)):
 
 @api_router.get("/kundli")
 async def get_kundli(
+    request: Request,
     authorization: Optional[str] = Header(None),
     style: Optional[str] = Query(default="north", description="Chart style: 'north' or 'south'")
 ):
     """
     Get Kundli chart (birth chart) as SVG + structured data.
     
-    Requires authentication via JWT token in Authorization header.
+    Requires authentication via JWT token in Authorization header OR session cookie.
     
     Query Parameters:
     - style: 'north' (default) or 'south' - Chart rendering style
@@ -1599,44 +1600,67 @@ async def get_kundli(
         if chart_style not in ["north", "south"]:
             chart_style = "north"
         
-        # Extract and verify JWT token
-        if not authorization:
-            raise HTTPException(status_code=401, detail="Missing authorization header")
+        # Try Google OAuth session auth first (cookie or header)
+        user_id = None
+        profile_data = None
         
-        parts = authorization.split()
-        if len(parts) != 2 or parts[0].lower() != 'bearer':
-            raise HTTPException(status_code=401, detail="Invalid authorization header format")
+        # Check for session token in cookie
+        session_token = request.cookies.get("session_token")
         
-        token = parts[1]
+        # Fallback to Authorization header
+        if not session_token and authorization:
+            parts = authorization.split()
+            if len(parts) == 2 and parts[0].lower() == 'bearer':
+                session_token = parts[1]
         
-        # Verify token
-        auth_service = get_auth_service()
-        payload = auth_service.verify_token(token)
-        if not payload:
-            raise HTTPException(status_code=401, detail="Invalid or expired token")
+        if session_token:
+            # Try new Google OAuth session
+            session_doc = await db.user_sessions.find_one(
+                {"session_token": session_token},
+                {"_id": 0}
+            )
+            
+            if session_doc:
+                from datetime import datetime, timezone
+                expires_at = session_doc.get("expires_at")
+                if isinstance(expires_at, str):
+                    expires_at = datetime.fromisoformat(expires_at)
+                if expires_at.tzinfo is None:
+                    expires_at = expires_at.replace(tzinfo=timezone.utc)
+                
+                if expires_at > datetime.now(timezone.utc):
+                    user_id = session_doc["user_id"]
+                    # Get profile from users collection
+                    user_doc = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+                    if user_doc:
+                        profile_data = {
+                            "name": user_doc.get("name", ""),
+                            "dob": user_doc.get("dob"),
+                            "tob": user_doc.get("tob"),
+                            "location": user_doc.get("pob") or user_doc.get("location", {})
+                        }
         
-        user_id = payload.get('user_id')
+        # Fallback to old JWT auth if no session found
+        if not user_id and authorization:
+            parts = authorization.split()
+            if len(parts) == 2 and parts[0].lower() == 'bearer':
+                token = parts[1]
+                auth_service = get_auth_service()
+                payload = auth_service.verify_token(token)
+                if payload:
+                    user_id = payload.get('user_id')
+                    user_info = auth_service.get_user_info(user_id)
+                    if user_info and user_info.get('profile_complete'):
+                        profile_data = auth_service.get_profile(user_id)
         
-        # Get user profile
-        user_info = auth_service.get_user_info(user_id)
-        if not user_info:
-            raise HTTPException(status_code=404, detail="User not found")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Not authenticated")
         
-        # Check if profile is complete
-        if not user_info.get('profile_complete'):
+        if not profile_data or not profile_data.get('dob') or not profile_data.get('tob'):
             return {
                 "ok": False,
                 "error": "PROFILE_INCOMPLETE",
-                "message": "Complete your profile to view Kundli"
-            }
-        
-        # Get profile details from store
-        profile_data = auth_service.get_profile(user_id)
-        if not profile_data:
-            return {
-                "ok": False,
-                "error": "PROFILE_INCOMPLETE",
-                "message": "Birth details missing"
+                "message": "Complete your profile with birth details to view Kundli"
             }
         
         # Parse birth details
