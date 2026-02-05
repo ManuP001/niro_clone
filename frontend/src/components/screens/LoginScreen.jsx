@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BACKEND_URL } from '../../config';
 
 /**
- * LoginScreen - Google OAuth Only (V6)
- * REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+ * LoginScreen - Direct Google OAuth (no Emergent Auth intermediary)
  */
 
 // Design system colors - matching simplified/theme.js
@@ -58,20 +57,21 @@ const LoginScreen = ({ onLoginSuccess }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    console.log('LoginScreen (Google OAuth) initialized with BACKEND_URL:', BACKEND_URL);
+    console.log('LoginScreen (Direct Google OAuth) initialized with BACKEND_URL:', BACKEND_URL);
   }, []);
 
   const handleGoogleLogin = () => {
     setLoading(true);
     setError('');
     
-    // REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
-    // Use browser's dynamic location to build redirect URL
-    const redirectUrl = window.location.origin + '/auth/callback';
+    // Build the callback URL for our app
+    const callbackUrl = window.location.origin + '/auth/callback';
     
-    console.log('Redirecting to Google OAuth with redirect:', redirectUrl);
-    // Emergent Auth handles Google OAuth - no /google path needed
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    // Redirect to backend which will redirect to Google
+    const googleLoginUrl = `${BACKEND_URL}/api/auth/google/login?redirect_uri=${encodeURIComponent(callbackUrl)}`;
+    
+    console.log('Redirecting to Google OAuth:', googleLoginUrl);
+    window.location.href = googleLoginUrl;
   };
 
   return (
