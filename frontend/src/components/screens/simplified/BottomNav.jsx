@@ -1,22 +1,34 @@
 import React from 'react';
 import { colors } from './theme';
-import { HomeIcon, ConsultIcon, ChatIcon, RemediesIcon, AstroIcon } from './icons';
+import { HomeIcon, ConsultIcon, ChatIcon, RemediesIcon, AstroIcon, PackageIcon } from './icons';
 
 /**
- * BottomNav - Updated navigation with teal color scheme (V5)
- * Tabs: Home, Consult, Mira (Free AI Chat), Remedies, Astro
+ * BottomNav - Updated navigation with teal color scheme (V6)
+ * Tabs: Home, Consult, Mira (Free AI Chat), My Pack (for returning users), Astro
  * Profile moved to top-right avatar
  */
 
-const tabs = [
+// Base tabs for all users
+const baseTabs = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
   { id: 'consult', label: 'Consult', Icon: ConsultIcon },
   { id: 'mira', label: 'Mira', Icon: ChatIcon },
-  { id: 'remedies', label: 'Remedies', Icon: RemediesIcon },
+];
+
+// Tab for returning users with active plans
+const myPackTab = { id: 'mypack', label: 'My Pack', Icon: PackageIcon };
+
+// End tabs
+const endTabs = [
   { id: 'astro', label: 'Astro', Icon: AstroIcon },
 ];
 
-export default function BottomNav({ activeTab, onTabChange }) {
+export default function BottomNav({ activeTab, onTabChange, hasActivePlan = false }) {
+  // Build tabs based on user state
+  const tabs = hasActivePlan 
+    ? [...baseTabs, myPackTab, ...endTabs]
+    : [...baseTabs, { id: 'remedies', label: 'Remedies', Icon: RemediesIcon }, ...endTabs];
+  
   return (
     <nav 
       className="fixed bottom-0 left-0 right-0 border-t z-50"
@@ -35,6 +47,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className="flex flex-col items-center justify-center flex-1 h-full transition-all relative"
+              data-testid={`nav-tab-${tab.id}`}
             >
               {/* Icon container */}
               <div 
