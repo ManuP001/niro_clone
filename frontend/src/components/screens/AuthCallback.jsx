@@ -3,8 +3,7 @@ import { BACKEND_URL } from '../../config';
 
 /**
  * AuthCallback - Handles Google OAuth redirect
- * Processes session_id from URL fragment, exchanges for session_token
- * REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
+ * Processes authorization code from URL query params
  */
 
 const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
@@ -17,23 +16,32 @@ const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
 
     const processAuth = async () => {
       try {
-        // Extract session_id from URL fragment
-        const hash = window.location.hash;
-        const params = new URLSearchParams(hash.replace('#', ''));
-        const sessionId = params.get('session_id');
+        // Extract authorization code from URL query params
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
 
-        console.log('AuthCallback: Processing session_id:', sessionId ? 'present' : 'missing');
+        console.log('AuthCallback: Processing auth code:', code ? 'present' : 'missing');
 
-        if (!sessionId) {
-          throw new Error('No session_id in URL');
+        if (error) {
+          throw new Error(error === 'access_denied' ? 'Login was cancelled' : error);
         }
 
-        // Exchange session_id for our session_token
-        const response = await fetch(`${BACKEND_URL}/api/auth/session`, {
+        if (!code) {
+          throw new Error('No authorization code received');
+        }
+
+        // Exchange code for session token
+        const redirectUri = window.location.origin + '/auth/callback';
+        
+        const response = await fetch(`${BACKEND_URL}/api/auth/google/callback`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ session_id: sessionId }),
+          body: JSON.stringify({ 
+            code: code,
+            redirect_uri: redirectUri
+          }),
         });
 
         if (!response.ok) {
@@ -50,8 +58,8 @@ const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
           localStorage.setItem('user_id', data.user.user_id);
         }
 
-        // Clear the URL hash
-        window.history.replaceState(null, '', window.location.pathname);
+        // Clear the URL params
+        window.history.replaceState(null, '', '/');
 
         // Callback with user data
         if (onAuthSuccess) {
@@ -60,6 +68,8 @@ const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
 
       } catch (error) {
         console.error('AuthCallback error:', error);
+        // Clear URL params on error too
+        window.history.replaceState(null, '', '/');
         if (onAuthError) {
           onAuthError(error.message);
         }
