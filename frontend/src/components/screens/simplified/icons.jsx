@@ -451,6 +451,7 @@ export default {
   CalendarIcon,
   DocumentIcon,
   GiftIcon,
+  PackageIcon,
   PhoneIcon,
   SparklesIcon,
   RefreshIcon,
