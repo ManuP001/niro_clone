@@ -70,8 +70,8 @@ const LoginScreen = ({ onLoginSuccess }) => {
     const redirectUrl = window.location.origin + '/auth/callback';
     
     console.log('Redirecting to Google OAuth with redirect:', redirectUrl);
-    // Open Google OAuth popup directly
-    window.location.href = `https://auth.emergentagent.com/google?redirect=${encodeURIComponent(redirectUrl)}`;
+    // Emergent Auth handles Google OAuth - no /google path needed
+    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
 
   return (
