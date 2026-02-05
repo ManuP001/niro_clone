@@ -18,7 +18,7 @@ except (ImportError, AttributeError):
         def packages_distributions():
             return {}
 
-from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Header, Query
+from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Header, Query, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from starlette.middleware.cors import CORSMiddleware
