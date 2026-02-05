@@ -169,8 +169,9 @@ async def update_profile(
     Response:
     { "ok": true, "profile_complete": true }
     """
+    global _db
     try:
-        user_id = _extract_user_id(authorization)
+        user_id = await _extract_user_id_with_session(authorization, request)
         if not user_id:
             raise HTTPException(status_code=401, detail="Unauthorized")
         
@@ -186,7 +187,41 @@ async def update_profile(
         except (ValueError, AttributeError):
             raise HTTPException(status_code=400, detail="Invalid date or time format")
         
-        # Save profile
+        # Try to save to new MongoDB users collection first
+        if _db:
+            update_data = {
+                'name': req.name,
+                'dob': req.dob,
+                'tob': req.tob,
+                'pob': req.location,
+                'location': req.location,
+                'birth_place_lat': req.birth_place_lat,
+                'birth_place_lon': req.birth_place_lon,
+                'birth_place_tz': req.birth_place_tz,
+                'profile_complete': True,
+                'updated_at': datetime.now(timezone.utc)
+            }
+            
+            # Add gender and marital status if provided
+            if hasattr(req, 'gender') and req.gender:
+                update_data['gender'] = req.gender
+            if hasattr(req, 'marital_status') and req.marital_status:
+                update_data['marital_status'] = req.marital_status
+            
+            result = await _db.users.update_one(
+                {"user_id": user_id},
+                {"$set": update_data},
+                upsert=True
+            )
+            
+            if result.modified_count > 0 or result.upserted_id:
+                logger.info(f"Profile saved to MongoDB for user {user_id}")
+                return {
+                    "ok": True,
+                    "profile_complete": True
+                }
+        
+        # Fallback to old auth service
         auth_service = get_auth_service()
         success = auth_service.save_profile(user_id, {
             'name': req.name,
