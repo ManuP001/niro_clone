@@ -41,7 +41,7 @@ async def _extract_user_id_with_session(authorization: Optional[str], request: R
         if len(parts) == 2 and parts[0].lower() == 'bearer':
             session_token = parts[1]
     
-    if session_token and _db:
+    if session_token and _db is not None:
         # Try new session-based auth
         session_doc = await _db.user_sessions.find_one(
             {"session_token": session_token},
