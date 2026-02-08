@@ -343,6 +343,7 @@ async def get_user_state(
 
 @router.post("/checkout/create-order", response_model=CreateOrderResponse)
 async def create_order(
+    request: Request,
     request_data: CreateOrderRequest,
     authorization: str = Header(default=None)
 ):
@@ -356,6 +357,11 @@ async def create_order(
     
     if not tier:
         raise HTTPException(status_code=404, detail="Tier not found")
+    
+    # Detect environment
+    origin = request.headers.get('origin', '')
+    host = request.headers.get('host', '')
+    environment = get_environment_from_origin(origin, host)
     
     # Create Razorpay order
     order_id = f"order_{uuid.uuid4().hex[:12]}"
