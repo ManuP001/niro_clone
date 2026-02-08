@@ -168,7 +168,7 @@ const DashboardHome = ({ stats, environment, onNavigate }) => {
         </span>
       </div>
 
-      {/* Stats Grid */}
+      {/* Main Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard title="Total Users" value={stats?.total_users || 0} icon="👥" />
         <StatCard title="Total Orders" value={stats?.total_orders || 0} icon="💰" />
@@ -176,10 +176,18 @@ const DashboardHome = ({ stats, environment, onNavigate }) => {
         <StatCard title="Revenue" value={formatCurrency(stats?.total_revenue_inr || 0)} icon="💵" color="green" />
       </div>
 
-      {/* Quick Stats */}
+      {/* User Breakdown */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard title="Google Users" value={stats?.google_users || 0} icon="🔵" color="blue" />
+        <StatCard title="Legacy Users" value={stats?.legacy_users || 0} icon="📱" color="purple" />
+        <StatCard title="With Profiles" value={stats?.profiles_count || 0} icon="📝" color="orange" />
+        <StatCard title="Users Today" value={stats?.users_today || 0} icon="🆕" color="teal" />
+      </div>
+
+      {/* Activity Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <StatCard title="Users Today" value={stats?.users_today || 0} icon="🆕" color="blue" />
         <StatCard title="Chat Threads" value={stats?.total_threads || 0} icon="💬" color="purple" />
+        <StatCard title="Legacy Messages" value={stats?.legacy_messages || 0} icon="📨" color="gray" />
         <StatCard title="Remedy Orders" value={stats?.remedy_orders || 0} icon="🙏" color="orange" />
       </div>
 
