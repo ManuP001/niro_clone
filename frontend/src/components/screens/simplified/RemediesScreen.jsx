@@ -1,11 +1,28 @@
 import React, { useState } from 'react';
 import { colors, shadows } from './theme';
 import { RemediesIcon, StarIcon, CheckIcon, ChevronRightIcon, ShieldIcon, GiftIcon } from './icons';
+import { BACKEND_URL } from '../../../config';
+import { getAuthToken } from '../../../utils/auth';
 
 /**
  * RemediesScreen - Full remedies catalog with categories
- * Shows actual remedy products and poojas
+ * Shows actual remedy products and poojas with Razorpay payment integration
  */
+
+// Load Razorpay script dynamically
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 const REMEDY_CATEGORIES = [
   { id: 'all', label: 'All Remedies' },
