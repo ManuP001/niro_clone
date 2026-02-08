@@ -43,7 +43,8 @@ export const clearAuthToken = async () => {
   // Call backend logout (non-blocking)
   if (token) {
     try {
-      await fetch(`${window.location.origin.includes('localhost') ? 'http://localhost:8001' : ''}/api/auth/logout`, {
+      const { BACKEND_URL } = await import('../config');
+      await fetch(`${BACKEND_URL}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
         headers: {
