@@ -40,9 +40,17 @@ function App() {
   // V5: Toggle between V4 and V5 onboarding
   const [useV5Flow, setUseV5Flow] = useState(false); // Default to V4
 
+  // Check for admin route
+  const isAdminRoute = window.location.pathname.startsWith('/admin');
+  
   // Check for auth callback (code in URL query params from Google OAuth)
   const isAuthCallback = window.location.pathname === '/auth/callback' || 
                          window.location.search.includes('code=');
+
+  // Render admin dashboard if on /admin route
+  if (isAdminRoute) {
+    return <AdminDashboard />;
+  }
 
   // Check auth status on mount
   useEffect(() => {
