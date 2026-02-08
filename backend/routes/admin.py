@@ -118,9 +118,10 @@ async def get_dashboard_stats(
     v2_orders = await db.niro_v2_orders.count_documents({})
     total_orders = simplified_orders + v2_orders
     
-    # Paid orders specifically
-    paid_simplified = await db.niro_simplified_orders.count_documents({"status": "paid"})
-    paid_v2 = await db.niro_v2_orders.count_documents({"status": "paid"})
+    # Paid/completed orders - check multiple status values
+    paid_statuses = ["paid", "completed", "success", "Paid", "Completed", "Success"]
+    paid_simplified = await db.niro_simplified_orders.count_documents({"status": {"$in": paid_statuses}})
+    paid_v2 = await db.niro_v2_orders.count_documents({"status": {"$in": paid_statuses}})
     
     # Active plans
     active_plans = await db.niro_simplified_plans.count_documents({"status": "active"})
@@ -129,20 +130,32 @@ async def get_dashboard_stats(
     total_threads = await db.niro_simplified_threads.count_documents({})
     legacy_messages = await db.niro_messages.count_documents({})
     
-    # Revenue - use amount_inr field (simplified) and total_amount (v2)
-    # For simplified orders
-    simplified_revenue = 0
-    simplified_cursor = db.niro_simplified_orders.find({"status": "paid"}, {"amount_inr": 1})
+    # Revenue - check multiple amount fields and status values
+    total_revenue = 0
+    
+    # For simplified orders - check for paid/completed status
+    simplified_cursor = db.niro_simplified_orders.find(
+        {"status": {"$in": paid_statuses}},
+        {"amount_inr": 1, "amount": 1, "total_amount": 1}
+    )
     async for order in simplified_cursor:
-        simplified_revenue += order.get("amount_inr", 0)
+        # Try different amount field names
+        amount = order.get("amount_inr") or order.get("total_amount") or order.get("amount") or 0
+        # If amount is in paise (> 10000), convert to INR
+        if amount > 100000:
+            amount = amount / 100
+        total_revenue += amount
     
     # For v2 orders
-    v2_revenue = 0
-    v2_cursor = db.niro_v2_orders.find({"status": "paid"}, {"total_amount": 1})
+    v2_cursor = db.niro_v2_orders.find(
+        {"status": {"$in": paid_statuses}},
+        {"total_amount": 1, "amount_inr": 1, "amount": 1}
+    )
     async for order in v2_cursor:
-        v2_revenue += order.get("total_amount", 0)
-    
-    total_revenue = simplified_revenue + v2_revenue
+        amount = order.get("total_amount") or order.get("amount_inr") or order.get("amount") or 0
+        if amount > 100000:
+            amount = amount / 100
+        total_revenue += amount
     
     # Remedy orders
     remedy_orders = await db.niro_remedy_orders.count_documents({})
