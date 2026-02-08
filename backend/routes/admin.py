@@ -561,17 +561,41 @@ def format_datetime(dt):
 async def export_users_csv(
     request: Request,
     x_admin_token: str = Header(None),
-    environment: str = Query(default="all")
+    environment: str = Query(default="all"),
+    source: str = Query(default="all", description="Export source: all, google, legacy")
 ):
-    """Export users as CSV"""
+    """Export users as CSV - includes both Google OAuth and legacy users"""
     if not verify_admin_token(x_admin_token):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
     
-    query = {} if environment == "all" else {"environment": environment}
-    users_cursor = db.users.find(query, {"_id": 0}).sort("created_at", -1)
-    users = await users_cursor.to_list(10000)
+    all_users = []
+    
+    # Get Google OAuth users
+    if source in ["all", "google"]:
+        query = {} if environment == "all" else {"environment": environment}
+        google_users = await db.users.find(query, {"_id": 0}).to_list(10000)
+        for u in google_users:
+            u["auth_source"] = "google"
+        all_users.extend(google_users)
+    
+    # Get legacy users with profiles
+    if source in ["all", "legacy"]:
+        legacy_users = await db.auth_users.find({}, {"_id": 0}).to_list(10000)
+        for user in legacy_users:
+            user_id = user.get("user_id")
+            profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0})
+            if profile:
+                user["name"] = profile.get("name", "")
+                user["dob"] = profile.get("dob", "")
+                user["tob"] = profile.get("tob", "")
+                user["pob"] = profile.get("location", "")
+                user["gender"] = profile.get("gender", "")
+                user["marital_status"] = profile.get("marital_status", "")
+            user["email"] = user.get("identifier", "")
+            user["auth_source"] = "legacy"
+        all_users.extend(legacy_users)
     
     # Create CSV
     output = io.StringIO()
@@ -579,10 +603,10 @@ async def export_users_csv(
     writer.writerow([
         "user_id", "email", "name", "dob", "tob", "pob", 
         "gender", "marital_status", "profile_complete", 
-        "created_at", "last_login", "environment"
+        "created_at", "last_login", "auth_source", "environment"
     ])
     
-    for user in users:
+    for user in all_users:
         writer.writerow([
             user.get("user_id", ""),
             user.get("email", ""),
@@ -595,6 +619,7 @@ async def export_users_csv(
             user.get("profile_complete", False),
             format_datetime(user.get("created_at")),
             format_datetime(user.get("last_login")),
+            user.get("auth_source", "unknown"),
             user.get("environment", "preview")
         ])
     
