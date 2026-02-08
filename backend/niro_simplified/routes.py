@@ -392,11 +392,16 @@ async def create_order(
             "razorpay_order_id": razorpay_order_id,
             "user_id": user_id,
             "tier_id": tier.tier_id,
+            "tier_level": tier.tier_level,
             "topic_id": tier.topic_id,
+            "amount": amount_paise,
             "amount_inr": tier.price_inr,
             "scenario_ids": request_data.scenario_ids,
             "intake_notes": request_data.intake_notes,
+            "expert_id": request_data.expert_id,
+            "expert_name": request_data.expert_name,
             "status": "created",
+            "environment": environment,
             "created_at": datetime.utcnow()
         })
     
