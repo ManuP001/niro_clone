@@ -475,15 +475,34 @@ export default function RemediesScreen({ hasBottomNav }) {
 
             {/* CTA */}
             <button
-              className="w-full py-4 rounded-xl font-semibold transition-all active:scale-[0.99]"
+              onClick={() => handlePurchase(selectedRemedy)}
+              disabled={purchasing}
+              className="w-full py-4 rounded-xl font-semibold transition-all active:scale-[0.99] disabled:opacity-50"
               style={{ 
                 backgroundColor: colors.gold.primary,
                 color: colors.text.dark,
                 boxShadow: shadows.md,
               }}
             >
-              Buy Now — {formatPrice(selectedRemedy.price)}
+              {purchasing ? 'Processing...' : `Buy Now — ${formatPrice(selectedRemedy.price)}`}
             </button>
+
+            {/* Status Messages */}
+            {purchaseStatus === 'success' && (
+              <div className="mt-3 p-3 bg-green-100 text-green-700 rounded-lg text-center text-sm">
+                ✓ Purchase successful! We'll contact you shortly.
+              </div>
+            )}
+            {purchaseStatus === 'failed' && (
+              <div className="mt-3 p-3 bg-red-100 text-red-700 rounded-lg text-center text-sm">
+                Payment verification failed. Please contact support.
+              </div>
+            )}
+            {purchaseStatus === 'error' && (
+              <div className="mt-3 p-3 bg-red-100 text-red-700 rounded-lg text-center text-sm">
+                Something went wrong. Please try again.
+              </div>
+            )}
           </div>
         </div>
       )}
