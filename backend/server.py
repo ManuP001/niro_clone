@@ -91,6 +91,10 @@ from backend.niro_v2.storage import init_niro_v2_storage, get_niro_v2_storage
 from backend.niro_simplified.routes import router as simplified_router
 from backend.niro_simplified.storage import init_simplified_storage, get_simplified_storage
 
+# Import Admin and Remedies routes
+from backend.routes.admin import router as admin_router
+from backend.routes.remedies import router as remedies_router
+
 # Ensure workspace-local logs directory exists for runtime logs
 (ROOT_DIR / "logs").mkdir(parents=True, exist_ok=True)
 
@@ -2072,6 +2076,10 @@ logger.info(f"Including NIRO V2 router: {niro_v2_router}")
 app.include_router(niro_v2_router)
 logger.info(f"Including NIRO Simplified router: {simplified_router}")
 app.include_router(simplified_router)
+logger.info(f"Including Admin router: {admin_router}")
+app.include_router(admin_router)
+logger.info(f"Including Remedies router: {remedies_router}")
+app.include_router(remedies_router)
 logger.info(f"✅ All routers included. Total routes: {len(app.routes)}")
 
 app.add_middleware(
