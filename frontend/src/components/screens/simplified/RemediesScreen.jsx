@@ -201,10 +201,105 @@ const formatPrice = (price) => {
 export default function RemediesScreen({ hasBottomNav }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedRemedy, setSelectedRemedy] = useState(null);
+  const [purchasing, setPurchasing] = useState(false);
+  const [purchaseStatus, setPurchaseStatus] = useState(null);
 
   const filteredRemedies = selectedCategory === 'all' 
     ? REMEDIES 
     : REMEDIES.filter(r => r.category === selectedCategory);
+
+  const handlePurchase = async (remedy) => {
+    setPurchasing(true);
+    setPurchaseStatus(null);
+
+    try {
+      // Load Razorpay script
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error('Failed to load payment gateway');
+      }
+
+      const token = getAuthToken();
+      
+      // Create order
+      const orderResponse = await fetch(`${BACKEND_URL}/api/remedies/create-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          remedy_id: remedy.id,
+          source: 'direct',
+        }),
+      });
+
+      const orderData = await orderResponse.json();
+      
+      if (!orderData.ok) {
+        throw new Error(orderData.detail || 'Failed to create order');
+      }
+
+      // Open Razorpay checkout
+      const options = {
+        key: orderData.key_id,
+        amount: orderData.amount,
+        currency: 'INR',
+        name: 'Niro',
+        description: remedy.title,
+        order_id: orderData.razorpay_order_id,
+        handler: async function (response) {
+          // Verify payment
+          try {
+            const verifyResponse = await fetch(`${BACKEND_URL}/api/remedies/verify-payment`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                remedy_order_id: orderData.remedy_order_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            const verifyData = await verifyResponse.json();
+            
+            if (verifyData.ok) {
+              setPurchaseStatus('success');
+              setSelectedRemedy(null);
+            } else {
+              setPurchaseStatus('failed');
+            }
+          } catch (err) {
+            console.error('Payment verification failed:', err);
+            setPurchaseStatus('failed');
+          }
+        },
+        prefill: {},
+        theme: {
+          color: '#3E827A',
+        },
+        modal: {
+          ondismiss: function () {
+            setPurchasing(false);
+          },
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (err) {
+      console.error('Purchase failed:', err);
+      setPurchaseStatus('error');
+    } finally {
+      setPurchasing(false);
+    }
+  };
 
   return (
     <div 
