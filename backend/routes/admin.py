@@ -200,31 +200,78 @@ async def list_users(
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=20, le=100),
     search: str = Query(default=None),
-    has_purchase: bool = Query(default=None)
+    has_purchase: bool = Query(default=None),
+    source: str = Query(default="all", description="Filter by source: all, google, legacy")
 ):
-    """List all users with pagination"""
+    """List all users with pagination - combines Google OAuth users and legacy auth_users"""
     if not verify_admin_token(x_admin_token):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
     
-    # Build query
-    query = {}
-    if environment != "all":
-        query["environment"] = environment
-    if search:
-        query["$or"] = [
-            {"email": {"$regex": search, "$options": "i"}},
-            {"name": {"$regex": search, "$options": "i"}}
-        ]
+    all_users = []
+    
+    # Get Google OAuth users (new system)
+    if source in ["all", "google"]:
+        query = {}
+        if environment != "all":
+            query["environment"] = environment
+        if search:
+            query["$or"] = [
+                {"email": {"$regex": search, "$options": "i"}},
+                {"name": {"$regex": search, "$options": "i"}}
+            ]
+        
+        google_users = await db.users.find(query, {"_id": 0}).to_list(1000)
+        for u in google_users:
+            u["auth_source"] = "google"
+        all_users.extend(google_users)
+    
+    # Get legacy auth_users with profiles (old system)
+    if source in ["all", "legacy"]:
+        legacy_query = {}
+        if search:
+            legacy_query["identifier"] = {"$regex": search, "$options": "i"}
+        
+        legacy_users_cursor = db.auth_users.find(legacy_query, {"_id": 0})
+        legacy_users = await legacy_users_cursor.to_list(1000)
+        
+        # Enrich with profile data
+        for user in legacy_users:
+            user_id = user.get("user_id")
+            profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0})
+            if profile:
+                user["name"] = profile.get("name", "")
+                user["dob"] = profile.get("dob", "")
+                user["tob"] = profile.get("tob", "")
+                user["pob"] = profile.get("location", "")
+                user["gender"] = profile.get("gender", "")
+                user["marital_status"] = profile.get("marital_status", "")
+                user["profile_complete"] = True
+            else:
+                user["profile_complete"] = False
+            
+            # Map identifier to email
+            user["email"] = user.get("identifier", "")
+            user["auth_source"] = "legacy"
+        
+        # Filter by search on name if provided
+        if search:
+            legacy_users = [u for u in legacy_users if 
+                search.lower() in u.get("email", "").lower() or 
+                search.lower() in u.get("name", "").lower()]
+        
+        all_users.extend(legacy_users)
+    
+    # Sort by created_at descending
+    all_users.sort(key=lambda x: x.get("created_at", ""), reverse=True)
     
     # Get total count
-    total = await db.users.count_documents(query)
+    total = len(all_users)
     
-    # Get users with pagination
+    # Apply pagination
     skip = (page - 1) * limit
-    users_cursor = db.users.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit)
-    users = await users_cursor.to_list(limit)
+    paginated_users = all_users[skip:skip + limit]
     
     # If filtering by purchase status, we need to check plans
     if has_purchase is not None:
@@ -233,13 +280,18 @@ async def list_users(
         async for plan in plans_cursor:
             user_ids_with_purchases.add(plan.get("user_id"))
         
+        # Also check orders
+        orders_cursor = db.niro_simplified_orders.find({"status": "paid"}, {"user_id": 1})
+        async for order in orders_cursor:
+            user_ids_with_purchases.add(order.get("user_id"))
+        
         if has_purchase:
-            users = [u for u in users if u.get("user_id") in user_ids_with_purchases]
+            paginated_users = [u for u in paginated_users if u.get("user_id") in user_ids_with_purchases]
         else:
-            users = [u for u in users if u.get("user_id") not in user_ids_with_purchases]
+            paginated_users = [u for u in paginated_users if u.get("user_id") not in user_ids_with_purchases]
     
     # Get purchase stats for each user
-    for user in users:
+    for user in paginated_users:
         user_id = user.get("user_id")
         if user_id:
             # Count purchases
@@ -256,7 +308,7 @@ async def list_users(
     
     return {
         "ok": True,
-        "users": users,
+        "users": paginated_users,
         "pagination": {
             "page": page,
             "limit": limit,
