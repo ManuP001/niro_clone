@@ -635,6 +635,7 @@ export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [environment, setEnvironment] = useState('all');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -671,11 +672,11 @@ export default function AdminDashboard() {
 
   const renderContent = () => {
     switch (currentPage) {
-      case 'users': return <UsersList />;
-      case 'orders': return <OrdersList />;
-      case 'plans': return <PlansList />;
-      case 'remedies': return <RemedyOrdersList />;
-      default: return <DashboardHome stats={stats} onNavigate={setCurrentPage} />;
+      case 'users': return <UsersList environment={environment} />;
+      case 'orders': return <OrdersList environment={environment} />;
+      case 'plans': return <PlansList environment={environment} />;
+      case 'remedies': return <RemedyOrdersList environment={environment} />;
+      default: return <DashboardHome stats={stats} onNavigate={setCurrentPage} environment={environment} />;
     }
   };
 
@@ -699,8 +700,20 @@ export default function AdminDashboard() {
         </div>
       </div>
       <div className="flex-1 flex flex-col">
-        <header className="bg-white shadow-sm px-6 py-4">
+        <header className="bg-white shadow-sm px-6 py-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-800 capitalize">{currentPage}</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500">Environment:</span>
+            <select
+              value={environment}
+              onChange={(e) => setEnvironment(e.target.value)}
+              className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm"
+            >
+              <option value="all">All</option>
+              <option value="production">Production</option>
+              <option value="preview">Preview</option>
+            </select>
+          </div>
         </header>
         <main className="flex-1 p-6 overflow-y-auto">{renderContent()}</main>
       </div>
