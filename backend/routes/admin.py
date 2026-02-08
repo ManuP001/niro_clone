@@ -396,13 +396,17 @@ async def get_user_detail(
 # ORDERS ENDPOINTS - Combined view of all orders
 # ============================================================================
 
+# Paid status values to check
+PAID_STATUSES = ["paid", "completed", "success", "Paid", "Completed", "Success"]
+
+
 @router.get("/orders")
 async def list_orders(
     request: Request,
     x_admin_token: str = Header(None),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=20, le=100),
-    status: str = Query(default="all", description="Filter: all, created, pending, paid, failed"),
+    status: str = Query(default="all", description="Filter: all, created, pending, paid, completed, failed"),
     order_type: str = Query(default="all", description="Filter: all, simplified, v2"),
     sort_by: str = Query(default="created_at", description="Sort by: created_at, amount"),
     sort_order: str = Query(default="desc", description="Sort order: asc, desc")
@@ -419,14 +423,21 @@ async def list_orders(
     if order_type in ["all", "simplified"]:
         query = {}
         if status != "all":
-            query["status"] = status
+            if status in ["paid", "completed"]:
+                query["status"] = {"$in": PAID_STATUSES}
+            else:
+                query["status"] = status
         
         simplified_cursor = db.niro_simplified_orders.find(query, {"_id": 0})
         simplified_orders = await simplified_cursor.to_list(1000)
         
         for order in simplified_orders:
             order["order_type"] = "simplified"
-            order["amount_display"] = order.get("amount_inr", 0)
+            # Try different amount field names
+            amount = order.get("amount_inr") or order.get("total_amount") or order.get("amount") or 0
+            if amount > 100000:  # If in paise, convert
+                amount = amount / 100
+            order["amount_display"] = amount
             # Get user info
             user_id = order.get("user_id")
             if user_id:
@@ -441,14 +452,20 @@ async def list_orders(
     if order_type in ["all", "v2"]:
         query = {}
         if status != "all":
-            query["status"] = status
+            if status in ["paid", "completed"]:
+                query["status"] = {"$in": PAID_STATUSES}
+            else:
+                query["status"] = status
         
         v2_cursor = db.niro_v2_orders.find(query, {"_id": 0})
         v2_orders = await v2_cursor.to_list(1000)
         
         for order in v2_orders:
             order["order_type"] = "v2"
-            order["amount_display"] = order.get("total_amount", 0)
+            amount = order.get("total_amount") or order.get("amount_inr") or order.get("amount") or 0
+            if amount > 100000:
+                amount = amount / 100
+            order["amount_display"] = amount
             # Get user info
             user_id = order.get("user_id")
             if user_id and user_id != "unknown":
@@ -472,10 +489,10 @@ async def list_orders(
     reverse = sort_order == "desc"
     all_orders.sort(key=get_sort_key, reverse=reverse)
     
-    # Calculate totals
+    # Calculate totals - include all paid/completed statuses
     total = len(all_orders)
     total_amount = sum(o.get("amount_display", 0) for o in all_orders)
-    paid_amount = sum(o.get("amount_display", 0) for o in all_orders if o.get("status") == "paid")
+    paid_amount = sum(o.get("amount_display", 0) for o in all_orders if o.get("status") in PAID_STATUSES)
     
     # Pagination
     skip = (page - 1) * limit
