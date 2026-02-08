@@ -301,6 +301,7 @@ const UsersList = ({ environment }) => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">DOB</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Source</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Purchases</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
@@ -309,11 +310,11 @@ const UsersList = ({ environment }) => {
             <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="px-4 py-8 text-center text-gray-500">Loading...</td>
+                  <td colSpan="7" className="px-4 py-8 text-center text-gray-500">Loading...</td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-4 py-8 text-center text-gray-500">No users found</td>
+                  <td colSpan="7" className="px-4 py-8 text-center text-gray-500">No users found</td>
                 </tr>
               ) : (
                 users.map((user) => (
@@ -325,6 +326,11 @@ const UsersList = ({ environment }) => {
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">{user.name || '-'}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{user.email || '-'}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{user.dob || '-'}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 text-xs rounded-full ${user.auth_source === 'google' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}`}>
+                        {user.auth_source || 'legacy'}
+                      </span>
+                    </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 text-xs rounded-full ${user.profile_complete ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                         {user.profile_complete ? 'Complete' : 'Incomplete'}
