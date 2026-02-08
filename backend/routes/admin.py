@@ -119,10 +119,12 @@ async def get_dashboard_stats(
     if environment != "all":
         env_filter["environment"] = environment
     
-    # Get counts
-    total_users = await db.users.count_documents(env_filter if env_filter else {})
+    # Get counts - combine both user collections
+    google_users = await db.users.count_documents(env_filter if env_filter else {})
+    legacy_users = await db.auth_users.count_documents({})
+    total_users = google_users + legacy_users
     
-    # Users today
+    # Users today (Google OAuth only - legacy doesn't have proper datetime)
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     users_today_filter = {"created_at": {"$gte": today_start}}
     if env_filter:
@@ -134,6 +136,9 @@ async def get_dashboard_stats(
     if env_filter:
         orders_filter.update(env_filter)
     total_orders = await db.niro_simplified_orders.count_documents(orders_filter)
+    
+    # Also count legacy v2 orders
+    legacy_orders = await db.niro_v2_orders.count_documents({})
     
     # Active plans
     plans_filter = {"status": "active"}
@@ -147,6 +152,9 @@ async def get_dashboard_stats(
         threads_filter.update(env_filter)
     total_threads = await db.niro_simplified_threads.count_documents(threads_filter)
     
+    # Also count legacy messages
+    legacy_messages = await db.niro_messages.count_documents({})
+    
     # Revenue calculation
     revenue_pipeline = [
         {"$match": {"status": "paid", **env_filter}},
@@ -158,8 +166,11 @@ async def get_dashboard_stats(
     # Remedy orders
     remedy_orders = await db.niro_remedy_orders.count_documents({"status": "paid", **env_filter})
     
-    # Recent activity (last 10 events)
-    recent_users = await db.users.find(
+    # Profiles count
+    profiles_count = await db.auth_profiles.count_documents({})
+    
+    # Recent activity (last 10 events) - from both collections
+    recent_google_users = await db.users.find(
         env_filter if env_filter else {},
         {"_id": 0, "email": 1, "name": 1, "created_at": 1}
     ).sort("created_at", -1).limit(5).to_list(5)
@@ -173,15 +184,19 @@ async def get_dashboard_stats(
         "ok": True,
         "stats": {
             "total_users": total_users,
+            "google_users": google_users,
+            "legacy_users": legacy_users,
+            "profiles_count": profiles_count,
             "users_today": users_today,
-            "total_orders": total_orders,
+            "total_orders": total_orders + legacy_orders,
             "active_plans": active_plans,
             "total_threads": total_threads,
+            "legacy_messages": legacy_messages,
             "total_revenue_inr": total_revenue,
             "remedy_orders": remedy_orders
         },
         "recent_activity": {
-            "users": recent_users,
+            "users": recent_google_users,
             "orders": recent_orders
         },
         "environment_filter": environment
