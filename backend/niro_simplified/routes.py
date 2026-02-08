@@ -27,6 +27,14 @@ RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_placeholder')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
 JWT_SECRET = os.environ.get('JWT_SECRET', 'dev-secret-key-change-in-prod')
 
+# Helper to detect environment from request
+def get_environment_from_origin(origin: str = None, host: str = None) -> str:
+    """Detect environment from request headers"""
+    check_str = f"{origin or ''}{host or ''}"
+    if '.emergent.host' in check_str:
+        return 'production'
+    return 'preview'
+
 # Initialize Razorpay client
 razorpay_client = None
 if RAZORPAY_KEY_SECRET:
