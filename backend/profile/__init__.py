@@ -188,7 +188,7 @@ async def update_profile(
             raise HTTPException(status_code=400, detail="Invalid date or time format")
         
         # Try to save to new MongoDB users collection first
-        if _db:
+        if _db is not None:
             update_data = {
                 'name': req.name,
                 'dob': req.dob,
