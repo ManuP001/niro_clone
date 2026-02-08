@@ -14,6 +14,9 @@ import { ChatProvider } from './context/ChatContext';
 import { getAuthToken, getCurrentUser, getUserProfile, clearAuthToken } from './utils/auth';
 import { BACKEND_URL } from './config';
 
+// Admin Dashboard
+import AdminDashboard from './components/admin/AdminDashboard';
+
 // NIRO V2 Imports
 import { NiroV2App } from './components/screens/v2';
 
