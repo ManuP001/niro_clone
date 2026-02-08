@@ -116,7 +116,7 @@ async def get_profile(request: Request, authorization: Optional[str] = Header(No
             raise HTTPException(status_code=401, detail="Unauthorized")
         
         # Try new MongoDB users collection first
-        if _db:
+        if _db is not None:
             user_doc = await _db.users.find_one({"user_id": user_id}, {"_id": 0})
             if user_doc:
                 return {
