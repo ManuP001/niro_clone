@@ -1,183 +1,151 @@
 # NIRO Product Requirements Document
 
 ## Overview
-NIRO is an AI-powered Vedic astrology platform providing personalized guidance across Love, Career, and Health topics. The app is on V4 with V6 premium UI upgrades.
+NIRO is an AI-powered Vedic astrology platform providing personalized guidance across Love, Career, and Health topics. The app uses Google OAuth for authentication and Razorpay for payments.
 
-## Current Status (January 2025)
-- **Active Version:** V4 with V6 Premium UI Upgrades
-- **Last Update:** January 23, 2026 - Onboarding content updates and pricing sync
-- **Completed Sprints:** Landing Page + Home Screen V6 Revamp + Onboarding Flow V6
-- **Status:** ✅ Complete and tested (iteration_9.json - all tests passed)
+## Current Status (February 2026)
+- **Active Version:** V6 Premium UI
+- **Last Update:** February 8, 2026 - Admin Dashboard & Remedy Purchase Flow
+- **Status:** ✅ Complete and tested
 
-### Latest Changes (Jan 23, 2026 - Batch 3)
-- ✅ Updated "How Niro Works" screen content:
-  - Title: "How Niro helps" (was "How Niro Works")
-  - Subtitle: "Get clarity, timing, and next steps — with real experts."
-  - 4 feature cards with new content (life topic, verified experts, timing + direction, unlimited support)
-  - CTA: "Continue" (was "Start Exploring")
-- ✅ Updated "Trust & Safety" screen to "Trust & Privacy":
-  - Title: "Trust & Privacy" (was "Trust & Safety")
-  - Subtitle: "Everything you share stays protected."
-  - 3 trust cards: Verified experts, Private by design, No questions asked refund
-  - Bottom text: "Join 10,000+ people who found clarity with Niro."
-  - CTA: "Continue"
-- ✅ **Backend Pricing Sync** - Updated catalog.py to match frontend V6 prices:
-  - All 18 subtopic tiers synced (e.g., career-clarity_supported = 6999 INR, 8 weeks)
-  - Updated tier features to remove "7 days async chat" wording
-  - 17 backend tests created and passed
+### Latest Changes (Feb 8, 2026)
 
-### Previous Changes (Jan 23, 2026 - Batch 2)
-- ✅ Fixed birth details input focus bug - refactored FormContent component to formContent JSX variable
-- ✅ Set default birth date to 1986-01-24 and time to 06:32
-- ✅ Landing page background changed from dark teal to light pastel green (#E8F5F3)
-- ✅ Removed all "7-day refund" claims - replaced with "100% satisfaction guaranteed" across 10+ files
-- ✅ Configured Resend API with user credentials (email: harjai.sharad@gmail.com)
-- ✅ API key moved from hardcoded to environment variable in backend/.env
+#### ✅ Admin Dashboard Implementation
+- **URL:** `/admin` - Password-protected admin panel
+- **Credentials:** Username: `NiroAdmin`, Password: `NewAdmin@123`
+- **Features:**
+  - Dashboard overview with stats (users, orders, plans, revenue)
+  - Users list with search, pagination, and detail view
+  - Package orders list with revenue tracking
+  - Plans list with status tracking
+  - Remedy orders list
+  - CSV export for all data types
+  - Environment filter (Production/Preview/All)
+- **Backend:** `/app/backend/routes/admin.py`
+- **Frontend:** `/app/frontend/src/components/admin/AdminDashboard.jsx`
 
-### Earlier Changes (Jan 23, 2026 - Batch 1)
-- ✅ Fixed P0 blocker: UserDetailsScreen now saves profile via `/api/profile/` endpoint
-- ✅ Field mapping corrected: birthDate→dob, birthTime→tob, birthPlace→location
-- ✅ Onboarding flow: Login → User Details → How Niro Works → Trust & Safety → Home
-- ✅ HomeScreen: Reduced tile size, removed category subtitles, added profile button
-- ✅ Landing Page: 2x2 grid for package details, topic explainer moved after tier selector
-- ✅ Reused existing BirthDetailsModal for onboarding (city autocomplete with lat/lon)
-- ✅ Fixed Health tiles: Corrected IDs (health_timing, emotional_wellbeing, recovery_support)
-- ✅ Deleted redundant UserDetailsScreen.jsx - using BirthDetailsModal instead
-- ✅ Updated Vedic API key - Kundli now loading correctly
-- ✅ Fixed background color consistency - all screens now use same teal gradient
-- ✅ Cleaned up duplicate LoginScreen.jsx (deleted simplified/LoginScreen.jsx)
-- ✅ Added purchase email notification to booking@getniro.ai via Resend API
+#### ✅ Remedy Purchase Flow
+- Full Razorpay integration for remedy purchases
+- Backend API: `/api/remedies/create-order`, `/api/remedies/verify-payment`
+- Remedies catalog: 14 SKUs (poojas, gemstones, kits, rituals)
+- Email notifications on successful purchase
+- **Backend:** `/app/backend/routes/remedies.py`
+- **Frontend:** Updated `RemediesScreen.jsx` with payment flow
 
----
+#### ✅ Bug Fixes
+- Removed "Made with Emergent" badge from `index.html`
+- Environment tagging added to all orders (production/preview)
+- Expert tracking added to package orders
 
-## V6 Home Screen Design
+#### ⚠️ Pending User Action
+- **Google OAuth:** User needs to add new redirect URI to Google Console:
+  - `https://mystic-portal-18.preview.emergentagent.com/auth/callback`
+- **Email notifications:** Verified working - emails sent to `booking@getniro.ai`
 
-### Key Features
-- **Gradient background** - Linear gradient matching onboarding screens
-- **Animated Niro logo** - Larger constellation ring animation (20s spin)
-- **Premium CTA area** - "Talk to Expert" (primary/teal), "Chat with Mira (AI)" (secondary/white)
-- **Category modules** - Soft card containers with helper copy
-- **Reduced whitespace** - Bottom padding reduced by 60%+
+### Previous Changes (Jan 23-26, 2026)
+- ✅ Migrated from email/phone login to Google OAuth 2.0
+- ✅ Updated Vedic API key (was expired)
+- ✅ Fixed profile update network error
+- ✅ Updated onboarding screen content
+- ✅ Price-per-minute display in topic landing page footer
+- ✅ "My Pack" tab for returning users
+- ✅ Removed old version toggles (V2, V5)
 
-### Tile Order (V6 - Premium + Highest Intent First)
+## Architecture
 
-**Love & Relationships** - "Dating, commitment, healing, family dynamics"
-1. Healing
-2. Dating
-3. Marriage
-4. Trust
-5. Family
-6. Closure
+### Backend (FastAPI)
+```
+/app/backend/
+├── server.py                 # Main app entry
+├── routes/
+│   ├── admin.py             # Admin dashboard API (NEW)
+│   ├── remedies.py          # Remedy purchase API (NEW)
+│   ├── google_oauth_direct.py # Google OAuth
+├── niro_simplified/
+│   ├── routes.py            # Package checkout API (updated)
+│   ├── storage.py           # MongoDB storage
+│   └── catalog.py           # Package/tier catalog
+├── services/
+│   └── email_service.py     # Resend email notifications
+└── profile/
+    └── __init__.py          # User profile management
+```
 
-**Career & Money** - "Work direction, stability, timing, growth"
-1. Clarity
-2. Job Change
-3. Money
-4. Timing
-5. Work Stress
-6. Office
+### Frontend (React)
+```
+/app/frontend/src/
+├── App.js                    # Main app with admin route
+├── components/
+│   ├── admin/
+│   │   └── AdminDashboard.jsx # Full admin dashboard (NEW)
+│   └── screens/
+│       └── simplified/
+│           ├── RemediesScreen.jsx # With payment (updated)
+│           └── ...
+```
 
-**Health & Wellness** - "Stress, recovery, energy, emotional balance"
-1. Stress
-2. Sleep
-3. Energy
-4. Healing
-5. Emotional
-6. Wellness
+### MongoDB Collections
+| Collection | Purpose |
+|------------|---------|
+| `users` | User accounts (Google OAuth) with birth details |
+| `user_sessions` | Login sessions |
+| `niro_simplified_orders` | Package orders (with environment tag) |
+| `niro_simplified_plans` | Active plans |
+| `niro_remedy_orders` | Remedy purchases (NEW) |
+| `niro_simplified_threads` | Chat threads |
 
----
+## API Endpoints
 
-## V6 Landing Page Design (Frame 27 Layout)
+### Admin API (Protected)
+- `POST /api/admin/login` - Admin authentication
+- `GET /api/admin/stats` - Dashboard statistics
+- `GET /api/admin/users` - Users list with pagination
+- `GET /api/admin/orders` - Package orders list
+- `GET /api/admin/plans` - Plans list
+- `GET /api/admin/remedy-orders` - Remedy orders list
+- `GET /api/admin/export/users` - Export users CSV
+- `GET /api/admin/export/orders` - Export orders CSV
+- `GET /api/admin/export/plans` - Export plans CSV
+- `GET /api/admin/export/remedies` - Export remedy orders CSV
 
-### Design Philosophy
-- **Gradient background** - Same as home/onboarding (not plain white)
-- **Subtle highlights** - Boxes, dividers, shade differences (no rainbow blocks)
-- **Frame 27 structure** from wireframe reference
+### Remedy API
+- `GET /api/remedies/catalog` - Get remedies catalog
+- `POST /api/remedies/create-order` - Create Razorpay order
+- `POST /api/remedies/verify-payment` - Verify payment
+- `GET /api/remedies/my-orders` - Get user's remedy orders
 
-### Section Order
-1. **Header** - Back button + Topic title (headerTitle from content)
-2. **Hero Promise** - One-line promise (heroOneLinePromise from Excel)
-3. **Personalized Greeting** - "Hi {userName}, here are the paths you can choose for your journey"
-4. **Tier Selector Tabs** - Focussed/Supported/Comprehensive (Recommended badge ONLY on Supported)
-5. **Tier Summary Card** - Details from tierSummaryDetails (Duration, Consultations, Follow-ups, Support)
-6. **Refund Guarantee** - "No questions asked — 7 day full refund guarantee" (ONLY after summary)
-7. **Outcomes** - Grouped by Clarity/Timeline/Support (from outcomesByTier)
-8. **How will your journey unfold** - Bullets from howUnfoldsByTier
-9. **Experts Widget** - "Meet your experts" with horizontal scroll cards (3 experts)
-10. **Optional Add-ons** - "Coming soon" section
-11. **Why Niro** - Trust bullets
-12. **FAQs** - Expandable
-13. **Sticky CTA Bar** - ONLY Price + "Start my journey" (simplified)
+### Auth API
+- `GET /api/auth/google/login` - Initiate Google OAuth
+- `POST /api/auth/google/callback` - Handle OAuth callback
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/logout` - Logout
 
-### Strict Rules
-- ✅ "Unlimited chat" exact wording (not "async chat")
-- ✅ "How will your journey unfold" (not "How will it unfold?")
-- ✅ Recommended badge ONLY on tier selector tabs
-- ✅ Remedies CTA = "Coming soon"
-- ✅ Sticky bar = Price + CTA only (no badge, no weeks, no package name)
-- ✅ Refund appears ONLY after tier summary
+## Environment Variables (Backend)
+```
+MONGO_URL, DB_NAME
+RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET
+RESEND_API_KEY, SENDER_EMAIL, BOOKING_EMAIL
+GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+ADMIN_USERNAME, ADMIN_PASSWORD
+VEDIC_API_KEY
+```
 
----
+## Upcoming Tasks
 
-## V6 Content Source
+### P1 - High Priority
+- [ ] Test end-to-end purchase flow with real payment
+- [ ] Verify email notifications reach booking@getniro.ai
+- [ ] Fix Google OAuth redirect URI (user action)
 
-All 18 subtopic content from: `v6Data/landingPageContentV6.js`
-Source Excel: `Niro_LandingPage_Content_Template_And_Content_V6_UpdatedKeyColumns.xlsx`
+### P2 - Medium Priority
+- [ ] Implement new onboarding flow (UX research doc ready)
+- [ ] Post-purchase home screen
+- [ ] Remedies feature completion
 
-### Content Structure per Topic:
-- **heroOneLinePromise** - Main promise text
-- **topicExplainerOneLiner** - Personalized greeting template
-- **heroSubtitle** - Additional context
-- **tierCards** - Price and duration per tier (Focussed/Supported/Comprehensive)
-- **tierSummaryDetails** - Formatted summary string per tier
-- **outcomesByTier** - Clarity, Timeline, Support bullets per tier
-- **howUnfoldsByTier** - Journey steps per tier
-- **expertsWidgetTitle/Subtitle** - Experts section content
-- **whyNiroBullets** - Trust reasons
-- **faqs** - FAQ Q&A pairs
-
-### Categories:
-- **V6_LOVE_SUBTOPICS** (6): relationship-healing, dating-compatibility, breakup-closure, communication-trust, family-relationships, marriage-planning
-- **V6_CAREER_SUBTOPICS** (6): career-clarity, job-transition, money-stability, big-decision-timing, work-stress, office-politics
-- **V6_HEALTH_SUBTOPICS** (6): stress-management, sleep-reset, energy-balance, health-timing, emotional-wellbeing, recovery-support
-
----
-
-## Key Files
-
-### Frontend (V6)
-- `/app/frontend/src/components/screens/simplified/HomeScreen.jsx` - V6 premium home with profile button
-- `/app/frontend/src/components/screens/simplified/TopicLandingPage.jsx` - V6 landing page with 2x2 grid
-- `/app/frontend/src/components/screens/simplified/BirthDetailsModal.jsx` - Birth details form (used in onboarding + Kundli)
-- `/app/frontend/src/components/screens/simplified/SimplifiedApp.jsx` - Main app container with onboarding flow
-- `/app/frontend/src/components/screens/simplified/v6Data/landingPageContentV6.js` - V6 content source
-- `/app/frontend/src/components/screens/simplified/icons.jsx` - Minimalist icons
-
-### Backend
-- `/app/backend/profile/__init__.py` - Profile endpoints (POST/GET /api/profile/)
-- `/app/backend/auth/routes.py` - Auth endpoints (POST /api/auth/identify)
-- `/app/backend/niro_simplified/catalog.py` - Tier pricing and configuration
-- `/app/backend/niro_simplified/routes.py` - Simplified API routes
+### P3 - Technical Debt
+- [ ] Remove legacy JWT auth code
+- [ ] Delete V5 code files
+- [ ] Simplify App.js routing
 
 ---
-
-## Payments
-- **Provider:** Razorpay (INR)
-- **Test mode:** Enabled with test keys in backend/.env
-
----
-
-## Upcoming Tasks (P1)
-1. Verify Kundli display in UI (backend API working, frontend rendering untested)
-2. End-to-end test purchase email notification flow
-3. Login flow UX fix (OTP being typed into name field due to missing OTP screen)
-
-## Future Tasks (P2)
-1. Implement post-purchase home screen experience
-2. Onboarding flow refinements (8-screen flow, skip birth time)
-3. Global design system application (Teal/Gold theme)
-4. Full Remedies implementation (currently "Coming soon")
-
-## Technical Debt
-- Remove unused V5 files (`SimplifiedAppV5.jsx`, `v5Screens/`, `v5Data/`)
-- Consider adding dedicated OTP verification screen to improve login UX
+*Last updated: February 8, 2026*
