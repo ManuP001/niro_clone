@@ -83,6 +83,8 @@ class CreateOrderRequest(BaseModel):
     tier_id: str
     scenario_ids: List[str] = []
     intake_notes: str = ""
+    expert_id: Optional[str] = None
+    expert_name: Optional[str] = None
 
 
 class CreateOrderResponse(BaseModel):
