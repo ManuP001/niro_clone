@@ -126,10 +126,22 @@ const StatCard = ({ title, value, subtitle }) => (
 // ============================================================================
 // DASHBOARD HOME
 // ============================================================================
-const DashboardHome = ({ stats, onNavigate }) => {
+const DashboardHome = ({ stats, onNavigate, environment }) => {
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-gray-800">Dashboard Overview</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-gray-800">Dashboard Overview</h2>
+        {environment !== 'all' && (
+          <span className="px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm">
+            Showing: {environment} data
+          </span>
+        )}
+      </div>
+      
+      {/* Info Banner for Preview Environment */}
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+        <strong>Note:</strong> This preview environment contains test data only. Production payment data (actual paying customers) will be visible after deployment when connected to the production MongoDB instance.
+      </div>
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard title="Total Users" value={stats?.total_users || 0} subtitle={`${stats?.google_users || 0} Google + ${stats?.legacy_users || 0} Legacy`} />
