@@ -42,16 +42,6 @@ def verify_admin_token(token: str) -> bool:
     active_admin_sessions.pop(token, None)
     return False
 
-def get_environment_from_request(request: Request) -> str:
-    """Detect environment from request host"""
-    host = request.headers.get('host', '')
-    origin = request.headers.get('origin', '')
-    
-    # Check for production domain
-    if '.emergent.host' in host or '.emergent.host' in origin:
-        return 'production'
-    return 'preview'
-
 async def get_db(request: Request) -> AsyncIOMotorDatabase:
     """Get database from app state"""
     return request.app.state.db
@@ -105,80 +95,57 @@ async def verify_session(x_admin_token: str = Header(None)):
 @router.get("/stats")
 async def get_dashboard_stats(
     request: Request,
-    x_admin_token: str = Header(None),
-    environment: str = Query(default="all", description="Filter by environment: all, production, preview")
+    x_admin_token: str = Header(None)
 ):
-    """Get dashboard statistics"""
+    """Get dashboard statistics - all data combined"""
     if not verify_admin_token(x_admin_token):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
     
-    # Build environment filter
-    env_filter = {}
-    if environment != "all":
-        env_filter["environment"] = environment
-    
-    # Get counts - combine both user collections
-    google_users = await db.users.count_documents(env_filter if env_filter else {})
+    # User counts
+    google_users = await db.users.count_documents({})
     legacy_users = await db.auth_users.count_documents({})
     total_users = google_users + legacy_users
-    
-    # Users today (Google OAuth only - legacy doesn't have proper datetime)
-    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    users_today_filter = {"created_at": {"$gte": today_start}}
-    if env_filter:
-        users_today_filter.update(env_filter)
-    users_today = await db.users.count_documents(users_today_filter)
-    
-    # Orders (plans)
-    orders_filter = {"status": "paid"}
-    if env_filter:
-        orders_filter.update(env_filter)
-    total_orders = await db.niro_simplified_orders.count_documents(orders_filter)
-    
-    # Also count legacy v2 orders
-    legacy_orders = await db.niro_v2_orders.count_documents({})
-    
-    # Active plans
-    plans_filter = {"status": "active"}
-    if env_filter:
-        plans_filter.update(env_filter)
-    active_plans = await db.niro_simplified_plans.count_documents(plans_filter)
-    
-    # Chat threads
-    threads_filter = {}
-    if env_filter:
-        threads_filter.update(env_filter)
-    total_threads = await db.niro_simplified_threads.count_documents(threads_filter)
-    
-    # Also count legacy messages
-    legacy_messages = await db.niro_messages.count_documents({})
-    
-    # Revenue calculation
-    revenue_pipeline = [
-        {"$match": {"status": "paid", **env_filter}},
-        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
-    ]
-    revenue_result = await db.niro_simplified_orders.aggregate(revenue_pipeline).to_list(1)
-    total_revenue = revenue_result[0]["total"] / 100 if revenue_result else 0  # Convert paise to INR
-    
-    # Remedy orders
-    remedy_orders = await db.niro_remedy_orders.count_documents({"status": "paid", **env_filter})
-    
-    # Profiles count
     profiles_count = await db.auth_profiles.count_documents({})
     
-    # Recent activity (last 10 events) - from both collections
-    recent_google_users = await db.users.find(
-        env_filter if env_filter else {},
-        {"_id": 0, "email": 1, "name": 1, "created_at": 1}
-    ).sort("created_at", -1).limit(5).to_list(5)
+    # Users today (Google OAuth only)
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    users_today = await db.users.count_documents({"created_at": {"$gte": today_start}})
     
-    recent_orders = await db.niro_simplified_orders.find(
-        {"status": "paid", **env_filter},
-        {"_id": 0, "order_id": 1, "amount": 1, "topic_id": 1, "tier_level": 1, "created_at": 1}
-    ).sort("created_at", -1).limit(5).to_list(5)
+    # Orders - combine both collections, all statuses
+    simplified_orders = await db.niro_simplified_orders.count_documents({})
+    v2_orders = await db.niro_v2_orders.count_documents({})
+    total_orders = simplified_orders + v2_orders
+    
+    # Paid orders specifically
+    paid_simplified = await db.niro_simplified_orders.count_documents({"status": "paid"})
+    paid_v2 = await db.niro_v2_orders.count_documents({"status": "paid"})
+    
+    # Active plans
+    active_plans = await db.niro_simplified_plans.count_documents({"status": "active"})
+    
+    # Chat threads and messages
+    total_threads = await db.niro_simplified_threads.count_documents({})
+    legacy_messages = await db.niro_messages.count_documents({})
+    
+    # Revenue - use amount_inr field (simplified) and total_amount (v2)
+    # For simplified orders
+    simplified_revenue = 0
+    simplified_cursor = db.niro_simplified_orders.find({"status": "paid"}, {"amount_inr": 1})
+    async for order in simplified_cursor:
+        simplified_revenue += order.get("amount_inr", 0)
+    
+    # For v2 orders
+    v2_revenue = 0
+    v2_cursor = db.niro_v2_orders.find({"status": "paid"}, {"total_amount": 1})
+    async for order in v2_cursor:
+        v2_revenue += order.get("total_amount", 0)
+    
+    total_revenue = simplified_revenue + v2_revenue
+    
+    # Remedy orders
+    remedy_orders = await db.niro_remedy_orders.count_documents({})
     
     return {
         "ok": True,
@@ -188,18 +155,16 @@ async def get_dashboard_stats(
             "legacy_users": legacy_users,
             "profiles_count": profiles_count,
             "users_today": users_today,
-            "total_orders": total_orders + legacy_orders,
+            "total_orders": total_orders,
+            "simplified_orders": simplified_orders,
+            "v2_orders": v2_orders,
+            "paid_orders": paid_simplified + paid_v2,
             "active_plans": active_plans,
             "total_threads": total_threads,
             "legacy_messages": legacy_messages,
             "total_revenue_inr": total_revenue,
             "remedy_orders": remedy_orders
-        },
-        "recent_activity": {
-            "users": recent_google_users,
-            "orders": recent_orders
-        },
-        "environment_filter": environment
+        }
     }
 
 
@@ -211,14 +176,15 @@ async def get_dashboard_stats(
 async def list_users(
     request: Request,
     x_admin_token: str = Header(None),
-    environment: str = Query(default="all"),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=20, le=100),
     search: str = Query(default=None),
-    has_purchase: bool = Query(default=None),
-    source: str = Query(default="all", description="Filter by source: all, google, legacy")
+    source: str = Query(default="all", description="Filter: all, google, legacy"),
+    profile_status: str = Query(default="all", description="Filter: all, complete, incomplete"),
+    sort_by: str = Query(default="created_at", description="Sort by: created_at, name, email"),
+    sort_order: str = Query(default="desc", description="Sort order: asc, desc")
 ):
-    """List all users with pagination - combines Google OAuth users and legacy auth_users"""
+    """List all users with pagination, filtering, and sorting"""
     if not verify_admin_token(x_admin_token):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
@@ -229,17 +195,16 @@ async def list_users(
     # Get Google OAuth users (new system)
     if source in ["all", "google"]:
         query = {}
-        if environment != "all":
-            query["environment"] = environment
         if search:
             query["$or"] = [
                 {"email": {"$regex": search, "$options": "i"}},
                 {"name": {"$regex": search, "$options": "i"}}
             ]
         
-        google_users = await db.users.find(query, {"_id": 0}).to_list(1000)
+        google_users = await db.users.find(query, {"_id": 0}).to_list(5000)
         for u in google_users:
             u["auth_source"] = "google"
+            u["profile_complete"] = bool(u.get("dob") and u.get("tob") and u.get("pob"))
         all_users.extend(google_users)
     
     # Get legacy auth_users with profiles (old system)
@@ -248,8 +213,7 @@ async def list_users(
         if search:
             legacy_query["identifier"] = {"$regex": search, "$options": "i"}
         
-        legacy_users_cursor = db.auth_users.find(legacy_query, {"_id": 0})
-        legacy_users = await legacy_users_cursor.to_list(1000)
+        legacy_users = await db.auth_users.find(legacy_query, {"_id": 0}).to_list(5000)
         
         # Enrich with profile data
         for user in legacy_users:
@@ -266,11 +230,10 @@ async def list_users(
             else:
                 user["profile_complete"] = False
             
-            # Map identifier to email
             user["email"] = user.get("identifier", "")
             user["auth_source"] = "legacy"
         
-        # Filter by search on name if provided
+        # Filter by name search for legacy
         if search:
             legacy_users = [u for u in legacy_users if 
                 search.lower() in u.get("email", "").lower() or 
@@ -278,54 +241,60 @@ async def list_users(
         
         all_users.extend(legacy_users)
     
-    # Sort by created_at descending (handle mixed datetime/string)
+    # Filter by profile status
+    if profile_status == "complete":
+        all_users = [u for u in all_users if u.get("profile_complete")]
+    elif profile_status == "incomplete":
+        all_users = [u for u in all_users if not u.get("profile_complete")]
+    
+    # Sort
     def get_sort_key(x):
-        created = x.get("created_at", "")
-        if isinstance(created, datetime):
-            return created.isoformat()
-        return str(created) if created else ""
+        if sort_by == "name":
+            return (x.get("name") or "").lower()
+        elif sort_by == "email":
+            return (x.get("email") or "").lower()
+        else:  # created_at
+            created = x.get("created_at", "")
+            if isinstance(created, datetime):
+                return created.isoformat()
+            return str(created) if created else ""
     
-    all_users.sort(key=get_sort_key, reverse=True)
+    reverse = sort_order == "desc"
+    all_users.sort(key=get_sort_key, reverse=reverse)
     
-    # Get total count
+    # Get total count before pagination
     total = len(all_users)
     
     # Apply pagination
     skip = (page - 1) * limit
     paginated_users = all_users[skip:skip + limit]
     
-    # If filtering by purchase status, we need to check plans
-    if has_purchase is not None:
-        user_ids_with_purchases = set()
-        plans_cursor = db.niro_simplified_plans.find({}, {"user_id": 1})
-        async for plan in plans_cursor:
-            user_ids_with_purchases.add(plan.get("user_id"))
-        
-        # Also check orders
-        orders_cursor = db.niro_simplified_orders.find({"status": "paid"}, {"user_id": 1})
-        async for order in orders_cursor:
-            user_ids_with_purchases.add(order.get("user_id"))
-        
-        if has_purchase:
-            paginated_users = [u for u in paginated_users if u.get("user_id") in user_ids_with_purchases]
-        else:
-            paginated_users = [u for u in paginated_users if u.get("user_id") not in user_ids_with_purchases]
-    
-    # Get purchase stats for each user
+    # Get order count for each user (from both collections)
     for user in paginated_users:
         user_id = user.get("user_id")
         if user_id:
-            # Count purchases
-            purchase_count = await db.niro_simplified_plans.count_documents({"user_id": user_id})
-            user["purchase_count"] = purchase_count
+            # Count from simplified orders
+            simplified_count = await db.niro_simplified_orders.count_documents({"user_id": user_id})
+            # Count from v2 orders
+            v2_count = await db.niro_v2_orders.count_documents({"user_id": user_id})
+            user["order_count"] = simplified_count + v2_count
             
-            # Calculate total spent
-            spent_pipeline = [
-                {"$match": {"user_id": user_id, "status": "paid"}},
-                {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
-            ]
-            spent_result = await db.niro_simplified_orders.aggregate(spent_pipeline).to_list(1)
-            user["total_spent"] = spent_result[0]["total"] / 100 if spent_result else 0
+            # Calculate total spent from both collections
+            total_spent = 0
+            
+            # Simplified orders
+            simp_cursor = db.niro_simplified_orders.find({"user_id": user_id}, {"amount_inr": 1, "status": 1})
+            async for order in simp_cursor:
+                if order.get("status") == "paid":
+                    total_spent += order.get("amount_inr", 0)
+            
+            # V2 orders  
+            v2_cursor = db.niro_v2_orders.find({"user_id": user_id}, {"total_amount": 1, "status": 1})
+            async for order in v2_cursor:
+                if order.get("status") == "paid":
+                    total_spent += order.get("total_amount", 0)
+            
+            user["total_spent"] = total_spent
     
     return {
         "ok": True,
@@ -334,7 +303,13 @@ async def list_users(
             "page": page,
             "limit": limit,
             "total": total,
-            "pages": (total + limit - 1) // limit
+            "pages": (total + limit - 1) // limit if total > 0 else 0
+        },
+        "filters": {
+            "source": source,
+            "profile_status": profile_status,
+            "sort_by": sort_by,
+            "sort_order": sort_order
         }
     }
 
@@ -344,103 +319,174 @@ async def get_user_detail(
     request: Request,
     x_admin_token: str = Header(None)
 ):
-    """Get detailed user info"""
+    """Get detailed user info including all orders"""
     if not verify_admin_token(x_admin_token):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
     
+    # Try to find in Google users first
     user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    
+    if not user:
+        # Try legacy auth_users
+        user = await db.auth_users.find_one({"user_id": user_id}, {"_id": 0})
+        if user:
+            profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0})
+            if profile:
+                user.update({
+                    "name": profile.get("name", ""),
+                    "dob": profile.get("dob", ""),
+                    "tob": profile.get("tob", ""),
+                    "pob": profile.get("location", ""),
+                    "gender": profile.get("gender", ""),
+                    "marital_status": profile.get("marital_status", ""),
+                })
+            user["email"] = user.get("identifier", "")
+            user["auth_source"] = "legacy"
+    else:
+        user["auth_source"] = "google"
+    
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Get user's orders
-    orders = await db.niro_simplified_orders.find(
-        {"user_id": user_id},
-        {"_id": 0}
+    # Get user's orders from both collections
+    simplified_orders = await db.niro_simplified_orders.find(
+        {"user_id": user_id}, {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    v2_orders = await db.niro_v2_orders.find(
+        {"user_id": user_id}, {"_id": 0}
     ).sort("created_at", -1).to_list(50)
     
     # Get user's plans
     plans = await db.niro_simplified_plans.find(
-        {"user_id": user_id},
-        {"_id": 0}
+        {"user_id": user_id}, {"_id": 0}
     ).sort("created_at", -1).to_list(50)
     
     # Get user's remedy orders
     remedy_orders = await db.niro_remedy_orders.find(
-        {"user_id": user_id},
-        {"_id": 0}
+        {"user_id": user_id}, {"_id": 0}
     ).sort("created_at", -1).to_list(50)
     
     return {
         "ok": True,
         "user": user,
-        "orders": orders,
+        "simplified_orders": simplified_orders,
+        "v2_orders": v2_orders,
         "plans": plans,
         "remedy_orders": remedy_orders
     }
 
 
 # ============================================================================
-# ORDERS ENDPOINTS
+# ORDERS ENDPOINTS - Combined view of all orders
 # ============================================================================
 
 @router.get("/orders")
 async def list_orders(
     request: Request,
     x_admin_token: str = Header(None),
-    environment: str = Query(default="all"),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=20, le=100),
-    status: str = Query(default=None),
-    topic: str = Query(default=None)
+    status: str = Query(default="all", description="Filter: all, created, pending, paid, failed"),
+    order_type: str = Query(default="all", description="Filter: all, simplified, v2"),
+    sort_by: str = Query(default="created_at", description="Sort by: created_at, amount"),
+    sort_order: str = Query(default="desc", description="Sort order: asc, desc")
 ):
-    """List all package orders"""
+    """List all orders from both simplified and v2 collections"""
     if not verify_admin_token(x_admin_token):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
     
-    # Build query
-    query = {}
-    if environment != "all":
-        query["environment"] = environment
-    if status:
-        query["status"] = status
-    if topic:
-        query["topic_id"] = topic
+    all_orders = []
     
-    total = await db.niro_simplified_orders.count_documents(query)
+    # Get simplified orders
+    if order_type in ["all", "simplified"]:
+        query = {}
+        if status != "all":
+            query["status"] = status
+        
+        simplified_cursor = db.niro_simplified_orders.find(query, {"_id": 0})
+        simplified_orders = await simplified_cursor.to_list(1000)
+        
+        for order in simplified_orders:
+            order["order_type"] = "simplified"
+            order["amount_display"] = order.get("amount_inr", 0)
+            # Get user info
+            user_id = order.get("user_id")
+            if user_id:
+                user = await db.auth_users.find_one({"user_id": user_id}, {"_id": 0, "identifier": 1})
+                profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+                order["user_email"] = user.get("identifier") if user else None
+                order["user_name"] = profile.get("name") if profile else None
+        
+        all_orders.extend(simplified_orders)
+    
+    # Get v2 orders
+    if order_type in ["all", "v2"]:
+        query = {}
+        if status != "all":
+            query["status"] = status
+        
+        v2_cursor = db.niro_v2_orders.find(query, {"_id": 0})
+        v2_orders = await v2_cursor.to_list(1000)
+        
+        for order in v2_orders:
+            order["order_type"] = "v2"
+            order["amount_display"] = order.get("total_amount", 0)
+            # Get user info
+            user_id = order.get("user_id")
+            if user_id and user_id != "unknown":
+                user = await db.auth_users.find_one({"user_id": user_id}, {"_id": 0, "identifier": 1})
+                profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+                order["user_email"] = user.get("identifier") if user else None
+                order["user_name"] = profile.get("name") if profile else None
+        
+        all_orders.extend(v2_orders)
+    
+    # Sort
+    def get_sort_key(x):
+        if sort_by == "amount":
+            return x.get("amount_display", 0)
+        else:
+            created = x.get("created_at", "")
+            if isinstance(created, datetime):
+                return created.isoformat()
+            return str(created) if created else ""
+    
+    reverse = sort_order == "desc"
+    all_orders.sort(key=get_sort_key, reverse=reverse)
+    
+    # Calculate totals
+    total = len(all_orders)
+    total_amount = sum(o.get("amount_display", 0) for o in all_orders)
+    paid_amount = sum(o.get("amount_display", 0) for o in all_orders if o.get("status") == "paid")
+    
+    # Pagination
     skip = (page - 1) * limit
-    
-    orders_cursor = db.niro_simplified_orders.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit)
-    orders = await orders_cursor.to_list(limit)
-    
-    # Enrich with user info
-    for order in orders:
-        user_id = order.get("user_id")
-        if user_id:
-            user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "email": 1, "name": 1})
-            order["user_email"] = user.get("email") if user else None
-            order["user_name"] = user.get("name") if user else None
-    
-    # Revenue summary
-    revenue_pipeline = [
-        {"$match": {"status": "paid", **({} if environment == "all" else {"environment": environment})}},
-        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
-    ]
-    revenue_result = await db.niro_simplified_orders.aggregate(revenue_pipeline).to_list(1)
-    total_revenue = revenue_result[0]["total"] / 100 if revenue_result else 0
+    paginated_orders = all_orders[skip:skip + limit]
     
     return {
         "ok": True,
-        "orders": orders,
-        "revenue_inr": total_revenue,
+        "orders": paginated_orders,
+        "summary": {
+            "total_orders": total,
+            "total_amount_inr": total_amount,
+            "paid_amount_inr": paid_amount
+        },
         "pagination": {
             "page": page,
             "limit": limit,
             "total": total,
-            "pages": (total + limit - 1) // limit
+            "pages": (total + limit - 1) // limit if total > 0 else 0
+        },
+        "filters": {
+            "status": status,
+            "order_type": order_type,
+            "sort_by": sort_by,
+            "sort_order": sort_order
         }
     }
 
@@ -453,10 +499,9 @@ async def list_orders(
 async def list_plans(
     request: Request,
     x_admin_token: str = Header(None),
-    environment: str = Query(default="all"),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=20, le=100),
-    status: str = Query(default=None),
+    status: str = Query(default="all"),
     topic: str = Query(default=None)
 ):
     """List all plans"""
@@ -466,9 +511,7 @@ async def list_plans(
     db = await get_db(request)
     
     query = {}
-    if environment != "all":
-        query["environment"] = environment
-    if status:
+    if status != "all":
         query["status"] = status
     if topic:
         query["topic_id"] = topic
@@ -483,9 +526,10 @@ async def list_plans(
     for plan in plans:
         user_id = plan.get("user_id")
         if user_id:
-            user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "email": 1, "name": 1})
-            plan["user_email"] = user.get("email") if user else None
-            plan["user_name"] = user.get("name") if user else None
+            user = await db.auth_users.find_one({"user_id": user_id}, {"_id": 0, "identifier": 1})
+            profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+            plan["user_email"] = user.get("identifier") if user else None
+            plan["user_name"] = profile.get("name") if profile else None
     
     return {
         "ok": True,
@@ -494,7 +538,7 @@ async def list_plans(
             "page": page,
             "limit": limit,
             "total": total,
-            "pages": (total + limit - 1) // limit
+            "pages": (total + limit - 1) // limit if total > 0 else 0
         }
     }
 
@@ -507,10 +551,9 @@ async def list_plans(
 async def list_remedy_orders(
     request: Request,
     x_admin_token: str = Header(None),
-    environment: str = Query(default="all"),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=20, le=100),
-    status: str = Query(default=None),
+    status: str = Query(default="all"),
     category: str = Query(default=None)
 ):
     """List all remedy orders"""
@@ -520,9 +563,7 @@ async def list_remedy_orders(
     db = await get_db(request)
     
     query = {}
-    if environment != "all":
-        query["environment"] = environment
-    if status:
+    if status != "all":
         query["status"] = status
     if category:
         query["remedy_category"] = category
@@ -537,9 +578,17 @@ async def list_remedy_orders(
     for order in orders:
         user_id = order.get("user_id")
         if user_id:
+            # Try Google users first
             user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "email": 1, "name": 1})
-            order["user_email"] = user.get("email") if user else None
-            order["user_name"] = user.get("name") if user else None
+            if user:
+                order["user_email"] = user.get("email")
+                order["user_name"] = user.get("name")
+            else:
+                # Try legacy
+                legacy_user = await db.auth_users.find_one({"user_id": user_id}, {"_id": 0, "identifier": 1})
+                profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+                order["user_email"] = legacy_user.get("identifier") if legacy_user else None
+                order["user_name"] = profile.get("name") if profile else None
     
     return {
         "ok": True,
@@ -548,7 +597,7 @@ async def list_remedy_orders(
             "page": page,
             "limit": limit,
             "total": total,
-            "pages": (total + limit - 1) // limit
+            "pages": (total + limit - 1) // limit if total > 0 else 0
         }
     }
 
@@ -567,10 +616,9 @@ def format_datetime(dt):
 async def export_users_csv(
     request: Request,
     x_admin_token: str = Header(None),
-    environment: str = Query(default="all"),
-    source: str = Query(default="all", description="Export source: all, google, legacy")
+    source: str = Query(default="all")
 ):
-    """Export users as CSV - includes both Google OAuth and legacy users"""
+    """Export users as CSV"""
     if not verify_admin_token(x_admin_token):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
@@ -580,8 +628,7 @@ async def export_users_csv(
     
     # Get Google OAuth users
     if source in ["all", "google"]:
-        query = {} if environment == "all" else {"environment": environment}
-        google_users = await db.users.find(query, {"_id": 0}).to_list(10000)
+        google_users = await db.users.find({}, {"_id": 0}).to_list(10000)
         for u in google_users:
             u["auth_source"] = "google"
         all_users.extend(google_users)
@@ -603,13 +650,11 @@ async def export_users_csv(
             user["auth_source"] = "legacy"
         all_users.extend(legacy_users)
     
-    # Create CSV
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow([
         "user_id", "email", "name", "dob", "tob", "pob", 
-        "gender", "marital_status", "profile_complete", 
-        "created_at", "last_login", "auth_source", "environment"
+        "gender", "marital_status", "auth_source", "created_at"
     ])
     
     for user in all_users:
@@ -622,11 +667,8 @@ async def export_users_csv(
             user.get("pob", ""),
             user.get("gender", ""),
             user.get("marital_status", ""),
-            user.get("profile_complete", False),
-            format_datetime(user.get("created_at")),
-            format_datetime(user.get("last_login")),
             user.get("auth_source", "unknown"),
-            user.get("environment", "preview")
+            format_datetime(user.get("created_at"))
         ])
     
     output.seek(0)
@@ -639,50 +681,61 @@ async def export_users_csv(
 @router.get("/export/orders")
 async def export_orders_csv(
     request: Request,
-    x_admin_token: str = Header(None),
-    environment: str = Query(default="all")
+    x_admin_token: str = Header(None)
 ):
-    """Export orders as CSV"""
+    """Export all orders as CSV"""
     if not verify_admin_token(x_admin_token):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
     
-    query = {} if environment == "all" else {"environment": environment}
-    orders_cursor = db.niro_simplified_orders.find(query, {"_id": 0}).sort("created_at", -1)
-    orders = await orders_cursor.to_list(10000)
+    all_orders = []
     
-    # Enrich with user info
-    for order in orders:
+    # Get simplified orders
+    simplified_orders = await db.niro_simplified_orders.find({}, {"_id": 0}).to_list(10000)
+    for order in simplified_orders:
+        order["order_type"] = "simplified"
+        order["amount_display"] = order.get("amount_inr", 0)
         user_id = order.get("user_id")
         if user_id:
-            user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "email": 1, "name": 1})
-            order["user_email"] = user.get("email") if user else ""
-            order["user_name"] = user.get("name") if user else ""
+            user = await db.auth_users.find_one({"user_id": user_id}, {"_id": 0, "identifier": 1})
+            profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+            order["user_email"] = user.get("identifier") if user else ""
+            order["user_name"] = profile.get("name") if profile else ""
+    all_orders.extend(simplified_orders)
+    
+    # Get v2 orders
+    v2_orders = await db.niro_v2_orders.find({}, {"_id": 0}).to_list(10000)
+    for order in v2_orders:
+        order["order_type"] = "v2"
+        order["amount_display"] = order.get("total_amount", 0)
+        user_id = order.get("user_id")
+        if user_id and user_id != "unknown":
+            user = await db.auth_users.find_one({"user_id": user_id}, {"_id": 0, "identifier": 1})
+            profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+            order["user_email"] = user.get("identifier") if user else ""
+            order["user_name"] = profile.get("name") if profile else ""
+    all_orders.extend(v2_orders)
     
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow([
-        "order_id", "user_email", "user_name", "topic_id", "tier_level",
-        "amount_inr", "razorpay_order_id", "razorpay_payment_id",
-        "expert_id", "expert_name", "status", "created_at", "environment"
+        "order_id", "order_type", "user_email", "user_name", "topic_id", "package_id",
+        "amount_inr", "razorpay_order_id", "status", "created_at"
     ])
     
-    for order in orders:
+    for order in all_orders:
         writer.writerow([
             order.get("order_id", ""),
+            order.get("order_type", ""),
             order.get("user_email", ""),
             order.get("user_name", ""),
-            order.get("topic_id", ""),
-            order.get("tier_level", ""),
-            order.get("amount", 0) / 100,
+            order.get("topic_id", order.get("package_id", "")),
+            order.get("tier_id", order.get("package_id", "")),
+            order.get("amount_display", 0),
             order.get("razorpay_order_id", ""),
-            order.get("razorpay_payment_id", ""),
-            order.get("expert_id", ""),
-            order.get("expert_name", ""),
             order.get("status", ""),
-            format_datetime(order.get("created_at")),
-            order.get("environment", "preview")
+            format_datetime(order.get("created_at"))
         ])
     
     output.seek(0)
@@ -695,8 +748,7 @@ async def export_orders_csv(
 @router.get("/export/plans")
 async def export_plans_csv(
     request: Request,
-    x_admin_token: str = Header(None),
-    environment: str = Query(default="all")
+    x_admin_token: str = Header(None)
 ):
     """Export plans as CSV"""
     if not verify_admin_token(x_admin_token):
@@ -704,28 +756,24 @@ async def export_plans_csv(
     
     db = await get_db(request)
     
-    query = {} if environment == "all" else {"environment": environment}
-    plans_cursor = db.niro_simplified_plans.find(query, {"_id": 0}).sort("created_at", -1)
-    plans = await plans_cursor.to_list(10000)
+    plans = await db.niro_simplified_plans.find({}, {"_id": 0}).to_list(10000)
     
-    # Enrich with user info
     for plan in plans:
         user_id = plan.get("user_id")
         if user_id:
-            user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "email": 1, "name": 1})
-            plan["user_email"] = user.get("email") if user else ""
-            plan["user_name"] = user.get("name") if user else ""
+            user = await db.auth_users.find_one({"user_id": user_id}, {"_id": 0, "identifier": 1})
+            profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+            plan["user_email"] = user.get("identifier") if user else ""
+            plan["user_name"] = profile.get("name") if profile else ""
     
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow([
         "plan_id", "user_email", "user_name", "topic_id", "tier_level",
-        "price_inr", "status", "validity_weeks", "purchased_at", 
-        "expires_at", "scenarios", "environment"
+        "price_inr", "status", "validity_weeks", "purchased_at", "expires_at"
     ])
     
     for plan in plans:
-        scenarios = plan.get("selected_scenarios", [])
         writer.writerow([
             plan.get("plan_id", ""),
             plan.get("user_email", ""),
@@ -736,9 +784,7 @@ async def export_plans_csv(
             plan.get("status", ""),
             plan.get("validity_weeks", ""),
             format_datetime(plan.get("purchased_at")),
-            format_datetime(plan.get("expires_at")),
-            "; ".join(scenarios) if scenarios else "",
-            plan.get("environment", "preview")
+            format_datetime(plan.get("expires_at"))
         ])
     
     output.seek(0)
@@ -751,8 +797,7 @@ async def export_plans_csv(
 @router.get("/export/remedies")
 async def export_remedies_csv(
     request: Request,
-    x_admin_token: str = Header(None),
-    environment: str = Query(default="all")
+    x_admin_token: str = Header(None)
 ):
     """Export remedy orders as CSV"""
     if not verify_admin_token(x_admin_token):
@@ -760,24 +805,26 @@ async def export_remedies_csv(
     
     db = await get_db(request)
     
-    query = {} if environment == "all" else {"environment": environment}
-    orders_cursor = db.niro_remedy_orders.find(query, {"_id": 0}).sort("created_at", -1)
-    orders = await orders_cursor.to_list(10000)
+    orders = await db.niro_remedy_orders.find({}, {"_id": 0}).to_list(10000)
     
-    # Enrich with user info
     for order in orders:
         user_id = order.get("user_id")
         if user_id:
             user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "email": 1, "name": 1})
-            order["user_email"] = user.get("email") if user else ""
-            order["user_name"] = user.get("name") if user else ""
+            if user:
+                order["user_email"] = user.get("email", "")
+                order["user_name"] = user.get("name", "")
+            else:
+                legacy_user = await db.auth_users.find_one({"user_id": user_id}, {"_id": 0, "identifier": 1})
+                profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0, "name": 1})
+                order["user_email"] = legacy_user.get("identifier") if legacy_user else ""
+                order["user_name"] = profile.get("name") if profile else ""
     
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow([
         "remedy_order_id", "user_email", "user_name", "remedy_id", "remedy_name",
-        "remedy_category", "price_inr", "expert_id", "expert_name",
-        "source", "status", "created_at", "environment"
+        "remedy_category", "price_inr", "source", "status", "created_at"
     ])
     
     for order in orders:
@@ -789,12 +836,9 @@ async def export_remedies_csv(
             order.get("remedy_name", ""),
             order.get("remedy_category", ""),
             order.get("price_inr", 0),
-            order.get("expert_id", ""),
-            order.get("expert_name", ""),
             order.get("source", "direct"),
             order.get("status", ""),
-            format_datetime(order.get("created_at")),
-            order.get("environment", "preview")
+            format_datetime(order.get("created_at"))
         ])
     
     output.seek(0)
