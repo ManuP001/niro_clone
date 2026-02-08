@@ -278,8 +278,14 @@ async def list_users(
         
         all_users.extend(legacy_users)
     
-    # Sort by created_at descending
-    all_users.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    # Sort by created_at descending (handle mixed datetime/string)
+    def get_sort_key(x):
+        created = x.get("created_at", "")
+        if isinstance(created, datetime):
+            return created.isoformat()
+        return str(created) if created else ""
+    
+    all_users.sort(key=get_sort_key, reverse=True)
     
     # Get total count
     total = len(all_users)
