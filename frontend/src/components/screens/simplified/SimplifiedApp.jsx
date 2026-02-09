@@ -46,15 +46,29 @@ const ONBOARDING_STEPS = {
  * - Profile button in top-right on HomeScreen
  * - DevToggle for testing (enabled via ?dev=true)
  * - CategoryListingPage for "View all" and "Talk to human" CTAs
+ * 
+ * User Types:
+ * - Returning User (for birth details): Someone with email/phone in database
+ * - Paying Customer (for My Pack): Someone with paid order/remedy
  */
-export default function SimplifiedApp({ token, userId }) {
-  // Onboarding state - start from appropriate step based on saved state
+export default function SimplifiedApp({ token, userId, user }) {
+  // Onboarding state - start from appropriate step based on saved state AND user profile
   const [onboardingStep, setOnboardingStep] = useState(() => {
     const onboardingComplete = localStorage.getItem(ONBOARDING_KEY) === 'true';
     const userDetailsComplete = localStorage.getItem(USER_DETAILS_KEY) === 'true';
     
+    // If user has profile_complete from server, they're a returning user
+    // Skip birth details for returning users
+    const isReturningUser = user?.profile_complete || user?.dob;
+    
     if (onboardingComplete) return ONBOARDING_STEPS.HOME;
-    if (userDetailsComplete) return ONBOARDING_STEPS.HOW_IT_WORKS;
+    if (userDetailsComplete || isReturningUser) {
+      // Mark as complete if returning user
+      if (isReturningUser && !userDetailsComplete) {
+        localStorage.setItem(USER_DETAILS_KEY, 'true');
+      }
+      return ONBOARDING_STEPS.HOW_IT_WORKS;
+    }
     return ONBOARDING_STEPS.USER_DETAILS;
   });
   const [showHomeTour, setShowHomeTour] = useState(false);
