@@ -4,12 +4,6 @@ import { BACKEND_URL } from '../../config';
 /**
  * AuthCallback - Handles Google OAuth redirect
  * Processes authorization code from URL query params
- * 
- * Flow for preview environments:
- * 1. Preview redirects to production for OAuth (since only getniro.ai is in Google Console)
- * 2. Production exchanges code, stores token
- * 3. Production redirects back to preview with token in URL
- * 4. Preview stores token and completes auth
  */
 
 const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
@@ -22,34 +16,8 @@ const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
 
     const processAuth = async () => {
       try {
-        // Check if we're receiving a token redirect from production (for preview environments)
+        // Extract authorization code from URL query params
         const urlParams = new URLSearchParams(window.location.search);
-        const tokenFromRedirect = urlParams.get('token');
-        const userDataEncoded = urlParams.get('user');
-        
-        if (tokenFromRedirect && userDataEncoded) {
-          // This is a redirect from production with token - just store and complete
-          console.log('AuthCallback: Received token redirect from production');
-          const userData = JSON.parse(decodeURIComponent(userDataEncoded));
-          
-          localStorage.setItem('auth_token', tokenFromRedirect);
-          localStorage.setItem('user_id', userData.user_id);
-          
-          if (userData.profile_complete || userData.dob) {
-            localStorage.setItem('niro_user_details_completed', 'true');
-            localStorage.setItem('niro_onboarding_completed', 'true');
-          }
-          
-          // Clear the URL params
-          window.history.replaceState(null, '', '/');
-          
-          if (onAuthSuccess) {
-            onAuthSuccess(userData, tokenFromRedirect);
-          }
-          return;
-        }
-
-        // Normal flow - extract authorization code from URL query params
         const code = urlParams.get('code');
         const error = urlParams.get('error');
 
@@ -63,16 +31,8 @@ const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
           throw new Error('No authorization code received');
         }
 
-        // Check if we're on production and need to redirect back to preview
-        const returnOrigin = localStorage.getItem('oauth_return_origin');
-        const currentOrigin = window.location.origin;
-        const isProduction = currentOrigin.includes('getniro.ai') || currentOrigin.includes('.emergent.host');
-        
-        // Exchange code for session token - use the same redirect_uri as login
-        const PRODUCTION_ORIGIN = 'https://getniro.ai';
-        const redirectUri = isProduction 
-          ? currentOrigin + '/auth/callback'
-          : PRODUCTION_ORIGIN + '/auth/callback';
+        // Exchange code for session token
+        const redirectUri = window.location.origin + '/auth/callback';
         
         const response = await fetch(`${BACKEND_URL}/api/auth/google/callback`, {
           method: 'POST',
@@ -103,23 +63,9 @@ const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
           localStorage.setItem('niro_user_details_completed', 'true');
           localStorage.setItem('niro_onboarding_completed', 'true');
         }
-        
-        // If we're on production and need to redirect back to preview
-        if (isProduction && returnOrigin && returnOrigin !== currentOrigin) {
-          console.log('AuthCallback: Redirecting back to preview:', returnOrigin);
-          localStorage.removeItem('oauth_return_origin');
-          
-          // Redirect to preview with token in URL
-          const previewCallbackUrl = `${returnOrigin}/auth/callback?token=${encodeURIComponent(data.token)}&user=${encodeURIComponent(JSON.stringify(data.user))}`;
-          window.location.href = previewCallbackUrl;
-          return;
-        }
 
         // Clear the URL params
         window.history.replaceState(null, '', '/');
-        
-        // Clear return origin if set
-        localStorage.removeItem('oauth_return_origin');
 
         // Callback with user data
         if (onAuthSuccess) {
@@ -130,7 +76,6 @@ const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
         console.error('AuthCallback error:', error);
         // Clear URL params on error too
         window.history.replaceState(null, '', '/');
-        localStorage.removeItem('oauth_return_origin');
         if (onAuthError) {
           onAuthError(error.message);
         }
