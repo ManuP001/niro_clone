@@ -117,9 +117,17 @@ function App() {
   }, []);
 
   const handleLoginSuccess = (user, token) => {
-    // Clear any previous onboarding state
-    // localStorage.removeItem('niro_onboarding_completed');
-    // localStorage.removeItem('niro_user_details_completed');
+    // Store auth token properly
+    if (token && user?.user_id) {
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('user_id', user.user_id);
+    }
+    
+    // Check if user already has profile complete (returning user with birth details)
+    // If profile is complete, mark user details as completed to skip that screen
+    if (user?.profile_complete) {
+      localStorage.setItem('niro_user_details_completed', 'true');
+    }
     
     setAuthState({
       isLoading: false,
