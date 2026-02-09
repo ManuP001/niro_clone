@@ -51,6 +51,7 @@ if RAZORPAY_KEY_SECRET:
 async def get_user_id_from_token_async(authorization: str = None, db = None) -> Optional[str]:
     """Extract user ID from JWT token or session token (async version for DB lookup)"""
     if not authorization:
+        logger.debug("No authorization header provided")
         return None
     
     token = authorization.replace("Bearer ", "")
@@ -60,7 +61,12 @@ async def get_user_id_from_token_async(authorization: str = None, db = None) -> 
         payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
         user_id = payload.get("user_id") or payload.get("sub")
         if user_id:
+            logger.debug(f"JWT token validated for user: {user_id}")
             return user_id
+    except jwt.ExpiredSignatureError:
+        logger.debug("JWT token expired, trying session token")
+    except jwt.InvalidTokenError:
+        logger.debug("Invalid JWT token, trying session token")
     except Exception:
         pass  # Not a JWT, try session token
     
@@ -82,9 +88,22 @@ async def get_user_id_from_token_async(authorization: str = None, db = None) -> 
                     if expires_at.tzinfo is None:
                         expires_at = expires_at.replace(tzinfo=timezone.utc)
                     if expires_at > datetime.now(timezone.utc):
-                        return session_doc.get("user_id")
+                        user_id = session_doc.get("user_id")
+                        logger.debug(f"Session token validated for user: {user_id}")
+                        return user_id
+                    else:
+                        logger.debug(f"Session token expired: {token[:20]}...")
+                else:
+                    # No expiry, assume valid
+                    user_id = session_doc.get("user_id")
+                    logger.debug(f"Session token validated (no expiry) for user: {user_id}")
+                    return user_id
+            else:
+                logger.debug(f"Session token not found in database: {token[:20]}...")
         except Exception as e:
             logger.warning(f"Session token lookup failed: {e}")
+    elif not token.startswith("niro_session_"):
+        logger.debug(f"Token is neither JWT nor session token: {token[:20]}...")
     
     return None
 
