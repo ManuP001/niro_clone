@@ -58,6 +58,12 @@ const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
           localStorage.setItem('user_id', data.user.user_id);
         }
 
+        // If user has profile complete, they're returning - mark onboarding done
+        if (data.user.profile_complete || data.user.dob) {
+          localStorage.setItem('niro_user_details_completed', 'true');
+          localStorage.setItem('niro_onboarding_completed', 'true');
+        }
+
         // Clear the URL params
         window.history.replaceState(null, '', '/');
 
