@@ -2062,10 +2062,12 @@ async def init_simplified_db():
 
 logger.info(f"Including API router (legacy): {api_router}")
 app.include_router(api_router)
-logger.info(f"Including auth router: {auth_router}")
-app.include_router(auth_router)
+# IMPORTANT: Google auth router MUST be before legacy auth router
+# to ensure session tokens are validated before JWT tokens
 logger.info(f"Including Google auth router: {google_auth_router}")
 app.include_router(google_auth_router, prefix="/api")
+logger.info(f"Including auth router (legacy): {auth_router}")
+app.include_router(auth_router)
 logger.info(f"Including profile router: {profile_router}")
 app.include_router(profile_router)
 logger.info(f"Including astro router: {astro_router}")
