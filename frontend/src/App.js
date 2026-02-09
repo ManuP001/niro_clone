@@ -125,8 +125,9 @@ function App() {
     
     // Check if user already has profile complete (returning user with birth details)
     // If profile is complete, mark user details as completed to skip that screen
-    if (user?.profile_complete) {
+    if (user?.profile_complete || user?.dob) {
       localStorage.setItem('niro_user_details_completed', 'true');
+      localStorage.setItem('niro_onboarding_completed', 'true');
     }
     
     setAuthState({
