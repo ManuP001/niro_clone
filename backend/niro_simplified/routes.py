@@ -48,8 +48,49 @@ if RAZORPAY_KEY_SECRET:
 # HELPER FUNCTIONS
 # ============================================================================
 
+async def get_user_id_from_token_async(authorization: str = None, db = None) -> Optional[str]:
+    """Extract user ID from JWT token or session token (async version for DB lookup)"""
+    if not authorization:
+        return None
+    
+    token = authorization.replace("Bearer ", "")
+    
+    # First try: JWT token decode
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        user_id = payload.get("user_id") or payload.get("sub")
+        if user_id:
+            return user_id
+    except Exception:
+        pass  # Not a JWT, try session token
+    
+    # Second try: Session token lookup (for Google OAuth)
+    if token.startswith("niro_session_") and db is not None:
+        try:
+            from datetime import timezone
+            session_doc = await db.user_sessions.find_one(
+                {"session_token": token},
+                {"_id": 0}
+            )
+            if session_doc:
+                # Check if session is valid (not expired)
+                expires_at = session_doc.get("expires_at")
+                if expires_at:
+                    from datetime import datetime
+                    if isinstance(expires_at, str):
+                        expires_at = datetime.fromisoformat(expires_at)
+                    if expires_at.tzinfo is None:
+                        expires_at = expires_at.replace(tzinfo=timezone.utc)
+                    if expires_at > datetime.now(timezone.utc):
+                        return session_doc.get("user_id")
+        except Exception as e:
+            logger.warning(f"Session token lookup failed: {e}")
+    
+    return None
+
+
 def get_user_id_from_token(authorization: str = None) -> Optional[str]:
-    """Extract user ID from JWT token"""
+    """Extract user ID from JWT token (sync version - JWT only)"""
     if not authorization:
         return None
     try:
