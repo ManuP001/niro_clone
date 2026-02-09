@@ -219,6 +219,7 @@ function App() {
             <SimplifiedApp 
               token={authState.token} 
               userId={authState.userId}
+              user={authState.user}
             />
           </div>
         </div>
