@@ -617,11 +617,12 @@ async def get_user_plans(
     status: str = Query(default=None)
 ):
     """Get user's plans"""
-    user_id = get_user_id_from_token(authorization)
+    storage = get_simplified_storage()
+    db = storage.db if storage else None
+    user_id = await get_user_id_from_token_async(authorization, db)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     
-    storage = get_simplified_storage()
     if not storage:
         return {"ok": True, "plans": []}
     
@@ -636,11 +637,12 @@ async def get_plan_detail(
     authorization: str = Header(default=None)
 ):
     """Get plan details with threads"""
-    user_id = get_user_id_from_token(authorization)
+    storage = get_simplified_storage()
+    db = storage.db if storage else None
+    user_id = await get_user_id_from_token_async(authorization, db)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     
-    storage = get_simplified_storage()
     catalog = get_simplified_catalog()
     
     if not storage:
