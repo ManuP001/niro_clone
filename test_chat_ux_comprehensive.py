@@ -8,7 +8,7 @@ import json
 import uuid
 import re
 
-BACKEND_URL = "https://mystic-portal-18.preview.emergentagent.com/api"
+BACKEND_URL = "https://astroapp-oauth.preview.emergentagent.com/api"
 
 class ChatUXTester:
     def __init__(self):

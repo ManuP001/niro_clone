@@ -39,7 +39,7 @@ NIRO is an AI-powered Vedic astrology platform providing personalized guidance a
 
 #### ⚠️ Pending User Action
 - **Google OAuth:** User needs to add new redirect URI to Google Console:
-  - `https://mystic-portal-18.preview.emergentagent.com/auth/callback`
+  - `https://astroapp-oauth.preview.emergentagent.com/auth/callback`
 - **Email notifications:** Verified working - emails sent to `booking@getniro.ai`
 
 ### Previous Changes (Jan 23-26, 2026)

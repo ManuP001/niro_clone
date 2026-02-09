@@ -7,7 +7,7 @@ import requests
 import json
 
 # Backend URL from environment
-BACKEND_URL = "https://mystic-portal-18.preview.emergentagent.com/api"
+BACKEND_URL = "https://astroapp-oauth.preview.emergentagent.com/api"
 
 def test_welcome_simple():
     """Test Welcome Message Endpoint with detailed error logging"""
