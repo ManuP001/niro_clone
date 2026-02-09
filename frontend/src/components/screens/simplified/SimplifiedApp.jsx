@@ -112,13 +112,23 @@ export default function SimplifiedApp({ token, userId, user }) {
       }, token);
       setLoadingState(false);
       
-      // For returning users, skip user details
-      if (state && !state.is_new_user && !isUserDetailsComplete) {
-        localStorage.setItem(USER_DETAILS_KEY, 'true');
+      // For returning users (has profile or paid), skip user details
+      // Returning user for birth details = has email/phone in DB (user prop passed from parent)
+      const isReturningUser = user?.profile_complete || user?.dob;
+      
+      if ((state && !state.is_new_user) || isReturningUser) {
+        if (!isUserDetailsComplete) {
+          localStorage.setItem(USER_DETAILS_KEY, 'true');
+          // Also mark onboarding as complete for returning users
+          if (!isOnboardingComplete && isReturningUser) {
+            localStorage.setItem(ONBOARDING_KEY, 'true');
+            setOnboardingStep(ONBOARDING_STEPS.HOME);
+          }
+        }
       }
     };
     init();
-  }, [loadUserState, token, isOnboardingComplete, isUserDetailsComplete]);
+  }, [loadUserState, token, isOnboardingComplete, isUserDetailsComplete, user]);
 
   // Handle user details complete
   const handleUserDetailsComplete = () => {
