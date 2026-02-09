@@ -26,6 +26,7 @@ const loadRazorpayScript = () => {
 
 const REMEDY_CATEGORIES = [
   { id: 'all', label: 'All Remedies' },
+  { id: 'healing', label: 'Healing Programs' },
   { id: 'pooja', label: 'Poojas' },
   { id: 'gemstone', label: 'Gemstones' },
   { id: 'kit', label: 'Wellness Kits' },
