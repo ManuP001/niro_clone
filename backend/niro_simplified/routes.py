@@ -710,11 +710,12 @@ async def create_thread(
     authorization: str = Header(default=None)
 ):
     """Create a new expert thread"""
-    user_id = get_user_id_from_token(authorization)
+    storage = get_simplified_storage()
+    db = storage.db if storage else None
+    user_id = await get_user_id_from_token_async(authorization, db)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     
-    storage = get_simplified_storage()
     catalog = get_simplified_catalog()
     
     if not storage:
