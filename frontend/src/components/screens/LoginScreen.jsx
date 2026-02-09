@@ -64,27 +64,13 @@ const LoginScreen = ({ onLoginSuccess }) => {
     setLoading(true);
     setError('');
     
-    // FIXED: Always use production URL for OAuth callback to avoid adding new redirect URIs
-    // for every Emergent preview environment fork
-    const PRODUCTION_ORIGIN = 'https://getniro.ai';
-    const currentOrigin = window.location.origin;
-    const isProduction = currentOrigin.includes('getniro.ai') || currentOrigin.includes('.emergent.host');
-    
-    // Use production callback URL always - Google Console only needs this ONE redirect URI
-    const callbackUrl = isProduction 
-      ? currentOrigin + '/auth/callback'
-      : PRODUCTION_ORIGIN + '/auth/callback';
-    
-    // Store current origin so production can redirect back to preview after auth
-    if (!isProduction) {
-      localStorage.setItem('oauth_return_origin', currentOrigin);
-    }
+    // Build the callback URL for our app (uses current origin)
+    const callbackUrl = window.location.origin + '/auth/callback';
     
     // Redirect to backend which will redirect to Google
     const googleLoginUrl = `${BACKEND_URL}/api/auth/google/login?redirect_uri=${encodeURIComponent(callbackUrl)}`;
     
     console.log('Redirecting to Google OAuth:', googleLoginUrl);
-    console.log('Callback URL:', callbackUrl, '| Current origin:', currentOrigin);
     window.location.href = googleLoginUrl;
   };
 
