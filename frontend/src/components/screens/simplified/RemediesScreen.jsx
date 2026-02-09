@@ -35,6 +35,28 @@ const REMEDY_CATEGORIES = [
 
 const REMEDIES = [
   {
+    id: 'chakra_balance',
+    category: 'healing',
+    title: 'Chakra Balance Program',
+    subtitle: '3 Guided Sessions',
+    description: 'A structured 3-session chakra healing plan to feel calmer, clearer, and more grounded',
+    price: 3500,
+    rating: 4.9,
+    reviews: 156,
+    benefits: ['3 × guided chakra healing sessions', 'Daily micro-practice plan (5-10 mins)', 'Guided meditation support', 'Diet guidance for energy balance', '24-hour follow-up support'],
+    helpsWithList: ['Stress, anxiety, overthinking', 'Emotional heaviness, feeling stuck', 'Low confidence, low energy'],
+    expert: {
+      name: 'Anu Khanna',
+      title: 'Vedic Astrology + Chakra Healing',
+      experience: '20+ years',
+      languages: 'English/Hindi',
+      bio: 'Anu blends chakra healing with yoga and meditation to help you find calm, clarity, and alignment.'
+    },
+    programOutcome: 'More emotional steadiness and calm, better grounding and clarity, a repeatable daily practice to maintain balance',
+    image: '🧘',
+    featured: true,
+  },
+  {
     id: 'santan_pooja',
     category: 'pooja',
     title: 'Santan / Fertility Pooja',
