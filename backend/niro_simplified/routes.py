@@ -296,7 +296,9 @@ async def get_user_state(
     authorization: str = Header(default=None)
 ):
     """Get user state for home screen routing"""
-    user_id = get_user_id_from_token(authorization)
+    storage = get_simplified_storage()
+    db = storage.db if storage else None
+    user_id = await get_user_id_from_token_async(authorization, db)
     
     if not user_id:
         # Return new user state for unauthenticated
@@ -304,7 +306,6 @@ async def get_user_state(
             user_state=UserState(user_id="anonymous", is_new_user=True).model_dump()
         )
     
-    storage = get_simplified_storage()
     catalog = get_simplified_catalog()
     
     if not storage:
