@@ -30,6 +30,7 @@ if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET:
 
 # Remedy catalog (same as frontend)
 REMEDIES_CATALOG = {
+    "chakra_balance": {"name": "Chakra Balance Program (3 Sessions)", "price": 3500, "category": "healing"},
     "santan_pooja": {"name": "Santan / Fertility Pooja", "price": 2499, "category": "pooja"},
     "shanti_pooja": {"name": "Shanti / Peace Pooja", "price": 1999, "category": "pooja"},
     "lakshmi_pooja": {"name": "Lakshmi Prosperity Pooja", "price": 2499, "category": "pooja"},
