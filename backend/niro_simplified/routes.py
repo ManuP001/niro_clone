@@ -874,12 +874,13 @@ async def create_topic_pass_order(
     authorization: str = Header(default=None)
 ):
     """Create order for additional topic pass (₹2000)"""
-    user_id = get_user_id_from_token(authorization)
+    storage = get_simplified_storage()
+    db = storage.db if storage else None
+    user_id = await get_user_id_from_token_async(authorization, db)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     
     catalog = get_simplified_catalog()
-    storage = get_simplified_storage()
     
     if not catalog.get_topic(topic_id):
         raise HTTPException(status_code=404, detail="Topic not found")
