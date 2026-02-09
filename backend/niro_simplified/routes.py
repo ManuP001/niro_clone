@@ -772,11 +772,12 @@ async def get_thread_detail(
     authorization: str = Header(default=None)
 ):
     """Get thread with messages"""
-    user_id = get_user_id_from_token(authorization)
+    storage = get_simplified_storage()
+    db = storage.db if storage else None
+    user_id = await get_user_id_from_token_async(authorization, db)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     
-    storage = get_simplified_storage()
     catalog = get_simplified_catalog()
     
     if not storage:
@@ -810,11 +811,12 @@ async def send_message(
     authorization: str = Header(default=None)
 ):
     """Send a message in a thread"""
-    user_id = get_user_id_from_token(authorization)
+    storage = get_simplified_storage()
+    db = storage.db if storage else None
+    user_id = await get_user_id_from_token_async(authorization, db)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     
-    storage = get_simplified_storage()
     if not storage:
         raise HTTPException(status_code=500, detail="Storage not initialized")
     
