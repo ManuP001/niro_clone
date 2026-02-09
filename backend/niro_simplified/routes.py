@@ -389,7 +389,9 @@ async def create_order(
     authorization: str = Header(default=None)
 ):
     """Create a Razorpay order for pack purchase"""
-    user_id = get_user_id_from_token(authorization)
+    storage = get_simplified_storage()
+    db = storage.db if storage else None
+    user_id = await get_user_id_from_token_async(authorization, db)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     
