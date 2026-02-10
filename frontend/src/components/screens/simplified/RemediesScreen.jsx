@@ -449,7 +449,7 @@ export default function RemediesScreen({ hasBottomNav }) {
       {/* Remedy Detail Modal */}
       {selectedRemedy && (
         <div 
-          className="fixed inset-0 z-50 flex items-end"
+          className="fixed inset-0 z-[60] flex items-end"
           onClick={() => setSelectedRemedy(null)}
         >
           <div 
