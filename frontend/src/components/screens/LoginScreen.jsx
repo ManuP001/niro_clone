@@ -57,7 +57,8 @@ const LoginScreen = ({ onLoginSuccess }) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    console.log('LoginScreen (Direct Google OAuth) initialized with BACKEND_URL:', BACKEND_URL);
+    const backendUrl = getBackendUrl();
+    console.log('LoginScreen (Direct Google OAuth) initialized with BACKEND_URL:', backendUrl);
   }, []);
 
   const handleGoogleLogin = () => {
@@ -67,8 +68,11 @@ const LoginScreen = ({ onLoginSuccess }) => {
     // Build the callback URL for our app (uses current origin)
     const callbackUrl = window.location.origin + '/auth/callback';
     
+    // Get fresh backend URL
+    const backendUrl = getBackendUrl();
+    
     // Redirect to backend which will redirect to Google
-    const googleLoginUrl = `${BACKEND_URL}/api/auth/google/login?redirect_uri=${encodeURIComponent(callbackUrl)}`;
+    const googleLoginUrl = `${backendUrl}/api/auth/google/login?redirect_uri=${encodeURIComponent(callbackUrl)}`;
     
     console.log('Redirecting to Google OAuth:', googleLoginUrl);
     window.location.href = googleLoginUrl;
