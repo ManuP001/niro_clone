@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { BACKEND_URL } from '../../config';
+import { getBackendUrl } from '../../config';
 
 /**
  * AuthCallback - Handles Google OAuth redirect
