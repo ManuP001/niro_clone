@@ -33,8 +33,9 @@ const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
 
         // Exchange code for session token
         const redirectUri = window.location.origin + '/auth/callback';
+        const backendUrl = getBackendUrl();
         
-        const response = await fetch(`${BACKEND_URL}/api/auth/google/callback`, {
+        const response = await fetch(`${backendUrl}/api/auth/google/callback`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
