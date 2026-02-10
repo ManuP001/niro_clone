@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BACKEND_URL } from '../../config';
+import { getBackendUrl } from '../../config';
 
 /**
  * LoginScreen - Direct Google OAuth (no Emergent Auth intermediary)
