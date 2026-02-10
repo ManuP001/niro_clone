@@ -12,7 +12,7 @@ import CandidateSignalsScreen from './components/screens/CandidateSignalsScreen'
 import BottomNav from './components/BottomNav';
 import { ChatProvider } from './context/ChatContext';
 import { getAuthToken, getCurrentUser, getUserProfile, clearAuthToken } from './utils/auth';
-import { BACKEND_URL } from './config';
+import { getBackendUrl } from './config';
 
 // Admin Dashboard
 import AdminDashboard from './components/admin/AdminDashboard';
