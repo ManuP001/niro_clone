@@ -62,6 +62,7 @@ function App() {
 
     const checkAuth = async () => {
       const token = getAuthToken();
+      const backendUrl = getBackendUrl(); // Get fresh URL each time
       
       if (!token) {
         setAuthState({
@@ -76,7 +77,7 @@ function App() {
       }
 
       try {
-        const user = await getCurrentUser(BACKEND_URL);
+        const user = await getCurrentUser(backendUrl);
         
         if (!user) {
           clearAuthToken();
