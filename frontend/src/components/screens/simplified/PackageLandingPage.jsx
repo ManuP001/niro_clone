@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { colors } from './theme';
-import { ArrowLeftIcon, CheckIcon, ShieldIcon, ChevronRightIcon } from './icons';
+import { ArrowLeftIcon, CheckIcon, ShieldIcon, ChevronRightIcon } from './icons.jsx';
 import { trackEvent } from './utils';
 import { getBackendUrl } from '../../../config';
 
