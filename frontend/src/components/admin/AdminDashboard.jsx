@@ -643,7 +643,7 @@ const RemedyOrdersList = () => {
 // ============================================================================
 // CATALOG MANAGER - Generic CRUD Component
 // ============================================================================
-const CatalogManager = ({ entityType, title, icon, columns, formFields }) => {
+const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -653,11 +653,14 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields }) => {
   const [error, setError] = useState('');
   const [includeInactive, setIncludeInactive] = useState(false);
 
+  // Use dataKey or derive from entityType (remove hyphens)
+  const responseKey = dataKey || entityType.replace(/-/g, '_').replace('_catalog', '');
+
   const loadItems = async () => {
     setLoading(true);
     try {
       const data = await adminFetch(`/api/admin/${entityType}?include_inactive=${includeInactive}`);
-      setItems(data[entityType] || data.items || []);
+      setItems(data[responseKey] || data[entityType] || data.items || []);
     } catch (err) {
       console.error(`Failed to load ${entityType}:`, err);
     } finally {
