@@ -1517,60 +1517,111 @@ async def seed_catalog_data(
     x_admin_token: str = Header(None),
     force: bool = Query(default=False, description="Force reseed even if data exists")
 ):
-    """Seed initial catalog data from hardcoded values to database"""
+    """Seed initial catalog data from the live SimplifiedCatalog to database"""
     db = await get_db(request)
     if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
-    db = await get_db(request)
     results = {"topics": 0, "experts": 0, "remedies": 0, "tiers": 0}
     
     # Check if data already exists
     if not force:
         existing_topics = await db.admin_topics.count_documents({})
         existing_experts = await db.admin_experts.count_documents({})
-        existing_remedies = await db.admin_remedies.count_documents({})
+        existing_tiers = await db.admin_tiers.count_documents({})
         
-        if existing_topics > 0 or existing_experts > 0 or existing_remedies > 0:
+        if existing_topics > 0 or existing_experts > 0 or existing_tiers > 0:
             return {
                 "ok": False,
                 "message": "Data already exists. Use force=true to reseed.",
                 "existing": {
                     "topics": existing_topics,
                     "experts": existing_experts,
-                    "remedies": existing_remedies
+                    "tiers": existing_tiers
                 }
             }
     
-    # Seed Topics
-    topics_data = [
-        {"topic_id": "career", "label": "Career & Work", "icon": "💼", "tagline": "Navigate your professional path", "color": "blue", "order": 1, "modalities": ["vedic_astrologer", "numerologist", "life_coach"], "active": True},
-        {"topic_id": "money", "label": "Money & Financial Stability", "icon": "💰", "tagline": "Achieve financial clarity", "color": "yellow", "order": 2, "modalities": ["vedic_astrologer", "numerologist", "life_coach"], "active": True},
-        {"topic_id": "health", "label": "Health & Wellbeing", "icon": "🏥", "tagline": "Optimize your vitality", "color": "green", "order": 3, "modalities": ["vedic_astrologer", "healer", "life_coach", "spiritual_guide"], "active": True},
-        {"topic_id": "marriage", "label": "Marriage & Family", "icon": "💑", "tagline": "Strengthen family bonds", "color": "purple", "order": 4, "modalities": ["vedic_astrologer", "marriage_counselor", "relationship_counselor", "palmist"], "active": True},
-        {"topic_id": "children", "label": "Children & Education", "icon": "👶", "tagline": "Guide your child's future", "color": "orange", "order": 5, "modalities": ["vedic_astrologer", "numerologist", "life_coach", "healer"], "active": True},
-        {"topic_id": "love", "label": "Love & Relationships", "icon": "💕", "tagline": "Find harmony in love", "color": "pink", "order": 6, "modalities": ["vedic_astrologer", "tarot", "relationship_counselor", "psychic"], "active": True},
-        {"topic_id": "business", "label": "Business & Entrepreneurship", "icon": "🚀", "tagline": "Grow your venture", "color": "indigo", "order": 7, "modalities": ["vedic_astrologer", "numerologist", "life_coach"], "active": True},
-        {"topic_id": "travel", "label": "Travel / Relocation / Foreign Settlement", "icon": "✈️", "tagline": "Plan your move", "color": "cyan", "order": 8, "modalities": ["vedic_astrologer", "numerologist", "life_coach"], "active": True},
-        {"topic_id": "property", "label": "Property & Home", "icon": "🏠", "tagline": "Make smart property decisions", "color": "amber", "order": 9, "modalities": ["vedic_astrologer", "numerologist"], "active": True},
-        {"topic_id": "mental_health", "label": "Mental Health / Stress / Emotional Balance", "icon": "🧠", "tagline": "Find inner peace", "color": "teal", "order": 10, "modalities": ["healer", "life_coach", "spiritual_guide", "psychic", "wellness_counselor"], "active": True},
-        {"topic_id": "spiritual", "label": "Spiritual Growth / Purpose", "icon": "🙏", "tagline": "Discover your path", "color": "violet", "order": 11, "modalities": ["spiritual_guide", "vedic_astrologer", "healer", "psychic"], "active": True},
-        {"topic_id": "legal", "label": "Legal / Conflict / Disputes", "icon": "⚖️", "tagline": "Resolve with clarity", "color": "slate", "order": 12, "modalities": ["vedic_astrologer", "numerologist"], "active": True},
-        {"topic_id": "meditation", "label": "Meditation & Mindfulness", "icon": "🧘", "tagline": "Cultivate inner stillness", "color": "indigo", "order": 13, "modalities": ["meditation_guru", "spiritual_guide", "healer", "life_coach"], "active": True},
-        {"topic_id": "counseling", "label": "Counseling & Life Guidance", "icon": "💬", "tagline": "Professional support for life challenges", "color": "emerald", "order": 14, "modalities": ["wellness_counselor", "life_coach", "relationship_counselor", "spiritual_guide"], "active": True},
-    ]
+    # Import the live catalog
+    try:
+        from backend.niro_simplified.catalog import get_simplified_catalog
+        catalog = get_simplified_catalog()
+    except Exception as e:
+        logger.error(f"Failed to import catalog: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to load catalog: {str(e)}")
     
-    for topic in topics_data:
-        topic["created_at"] = datetime.now(timezone.utc)
-        topic["updated_at"] = datetime.now(timezone.utc)
+    # Seed Topics from catalog
+    for topic_id, topic in catalog.topics.items():
+        topic_data = {
+            "topic_id": topic.topic_id,
+            "label": topic.label,
+            "icon": topic.icon,
+            "tagline": topic.tagline,
+            "color": topic.color_scheme,
+            "order": topic.display_order,
+            "modalities": topic.expert_modalities,
+            "active": True,
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        }
         await db.admin_topics.update_one(
-            {"topic_id": topic["topic_id"]},
-            {"$set": topic},
+            {"topic_id": topic_id},
+            {"$set": topic_data},
             upsert=True
         )
         results["topics"] += 1
     
-    # Seed Remedies
+    # Seed Experts from catalog
+    for expert_id, expert in catalog.experts.items():
+        expert_data = {
+            "expert_id": expert.expert_id,
+            "name": expert.name,
+            "modality": expert.modality,
+            "modality_label": expert.modality_label,
+            "bio": expert.short_bio,
+            "languages": ", ".join(expert.languages) if isinstance(expert.languages, list) else expert.languages,
+            "years_experience": expert.experience_years,
+            "rating": expert.rating,
+            "total_consults": expert.total_consultations,
+            "topics": expert.topics,
+            "photo_url": expert.photo_url or "",
+            "tags": expert.best_for_tags or [],
+            "active": True,
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        }
+        await db.admin_experts.update_one(
+            {"expert_id": expert_id},
+            {"$set": expert_data},
+            upsert=True
+        )
+        results["experts"] += 1
+    
+    # Seed Tiers from catalog
+    for tier_id, tier in catalog.tiers.items():
+        tier_data = {
+            "tier_id": tier.tier_id,
+            "name": tier.name,
+            "topic_id": tier.topic_id,
+            "price": tier.price_inr,
+            "duration_weeks": tier.validity_weeks,
+            "calls_included": tier.access_policy.calls_per_month if tier.access_policy else 0,
+            "call_duration_mins": tier.access_policy.call_duration_minutes if tier.access_policy else 30,
+            "features": tier.features or [],
+            "description": tier.tagline or "",
+            "popular": tier.is_recommended or False,
+            "tier_level": tier.tier_level,
+            "active": True,
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        }
+        await db.admin_tiers.update_one(
+            {"tier_id": tier_id},
+            {"$set": tier_data},
+            upsert=True
+        )
+        results["tiers"] += 1
+    
+    # Seed Remedies - these are defined separately in RemediesScreen
     remedies_data = [
         {"remedy_id": "chakra_balance", "title": "Chakra Balance Program", "subtitle": "3 Guided Sessions", "category": "healing", "price": 3500, "description": "A structured 3-session chakra healing plan to feel calmer, clearer, and more grounded", "benefits": ["3 × guided chakra healing sessions", "Daily micro-practice plan (5-10 mins)", "Guided meditation support", "Diet guidance for energy balance", "24-hour follow-up support"], "helps_with": ["Stress, anxiety, overthinking", "Emotional heaviness, feeling stuck", "Low confidence, low energy"], "image": "🧘", "featured": True, "active": True, "expert_name": "Anu Khanna", "expert_title": "Vedic Astrology + Chakra Healing", "expert_bio": "Anu blends chakra healing with yoga and meditation to help you find calm, clarity, and alignment."},
         {"remedy_id": "santan_pooja", "title": "Santan / Fertility Pooja", "category": "pooja", "price": 2499, "description": "Verified blessing for fertility and conception support", "benefits": ["Performed by verified priests", "Includes prasad delivery", "60-day prayer cycle"], "image": "🙏", "featured": False, "active": True},
@@ -1599,23 +1650,6 @@ async def seed_catalog_data(
         )
         results["remedies"] += 1
     
-    # Seed sample tiers for career topic
-    tiers_data = [
-        {"tier_id": "career_focussed", "name": "Focussed", "topic_id": "career", "price": 2999, "duration_weeks": 4, "calls_included": 2, "call_duration_mins": 30, "features": ["2 expert calls (30 mins each)", "Unlimited chat support", "Career roadmap"], "description": "Quick guidance for immediate career decisions", "popular": False, "active": True},
-        {"tier_id": "career_supported", "name": "Supported", "topic_id": "career", "price": 4999, "duration_weeks": 6, "calls_included": 3, "call_duration_mins": 45, "features": ["3 expert calls (45 mins each)", "Unlimited chat support", "Detailed career analysis", "Monthly follow-up"], "description": "Comprehensive support for career growth", "popular": True, "active": True},
-        {"tier_id": "career_comprehensive", "name": "Comprehensive", "topic_id": "career", "price": 7999, "duration_weeks": 8, "calls_included": 5, "call_duration_mins": 60, "features": ["5 expert calls (60 mins each)", "Priority chat support", "Complete career blueprint", "Quarterly reviews"], "description": "Full career transformation program", "popular": False, "active": True},
-    ]
-    
-    for tier in tiers_data:
-        tier["created_at"] = datetime.now(timezone.utc)
-        tier["updated_at"] = datetime.now(timezone.utc)
-        await db.admin_tiers.update_one(
-            {"tier_id": tier["tier_id"]},
-            {"$set": tier},
-            upsert=True
-        )
-        results["tiers"] += 1
-    
     logger.info(f"Admin seeded catalog data: {results}")
-    return {"ok": True, "message": "Catalog data seeded successfully", "results": results}
+    return {"ok": True, "message": "Catalog data seeded successfully from live catalog", "results": results}
 
