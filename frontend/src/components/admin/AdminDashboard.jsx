@@ -1559,20 +1559,38 @@ const CategoriesManager = () => (
   />
 );
 
-// Tiles Manager (Homepage tiles, grouped under categories) - With Category & Icon Dropdowns
+// Tiles Manager (Homepage tiles, grouped under categories) - With Category, Package & Icon
 const TilesManager = () => {
   const [categories, setCategories] = useState([]);
+  const [packages, setPackages] = useState([]);
+  const [topics, setTopics] = useState([]);
   
   useEffect(() => {
-    // Fetch categories for dropdown
-    adminFetch('/api/admin/categories')
-      .then(data => setCategories(data.categories || []))
-      .catch(err => console.error('Failed to load categories:', err));
+    // Fetch all needed data for dropdowns
+    Promise.all([
+      adminFetch('/api/admin/categories'),
+      adminFetch('/api/admin/tiers'),
+      adminFetch('/api/admin/topics'),
+    ]).then(([catData, tierData, topicData]) => {
+      setCategories(catData.categories || []);
+      setPackages(tierData.tiers || []);
+      setTopics(topicData.topics || []);
+    }).catch(err => console.error('Failed to load data:', err));
   }, []);
 
   const categoryOptions = [
     { value: '', label: '-- Select Category --' },
     ...categories.map(c => ({ value: c.category_id, label: c.title }))
+  ];
+
+  const packageOptions = [
+    { value: '', label: '-- No Direct Package (Optional) --' },
+    ...packages.map(p => ({ value: p.tier_id, label: `${p.name} (₹${p.price}) - ${p.topic_id || 'No Topic'}` }))
+  ];
+
+  const topicOptions = [
+    { value: '', label: '-- No Topic Link (Optional) --' },
+    ...topics.map(t => ({ value: t.topic_id, label: `${t.label} ${t.icon || ''}` }))
   ];
 
   return (
@@ -1583,18 +1601,20 @@ const TilesManager = () => {
       columns={[
         { key: 'tile_id', label: 'ID' },
         { key: 'short_title', label: 'Short Title' },
-        { key: 'full_title', label: 'Full Title' },
         { key: 'category_id', label: 'Category' },
-        { key: 'icon_type', label: 'Icon' },
+        { key: 'linked_package_id', label: 'Package', render: (v) => v || '-' },
+        { key: 'linked_topic_id', label: 'Topic', render: (v) => v || '-' },
         { key: 'order', label: 'Order' },
         { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
       ]}
       formFields={[
         { name: 'tile_id', label: 'Tile ID', isId: true, hint: 'Unique identifier (e.g., relationship_healing)' },
-        { name: 'category_id', label: 'Category', type: 'select', options: categoryOptions, hint: 'Select parent category' },
+        { name: 'category_id', label: 'Category', type: 'select', options: categoryOptions, hint: 'Required: Select parent category' },
         { name: 'short_title', label: 'Short Title', hint: 'Shown on tile (e.g., Healing)' },
         { name: 'full_title', label: 'Full Title', hint: 'Full name (e.g., Relationship Healing)' },
         { name: 'icon_type', label: 'Icon', type: 'tile-icon-picker', hint: 'Visual icon shown on tile' },
+        { name: 'linked_package_id', label: 'Link to Package', type: 'select', options: packageOptions, hint: 'Optional: Link tile directly to a specific package' },
+        { name: 'linked_topic_id', label: 'Link to Topic', type: 'select', options: topicOptions, hint: 'Optional: Link tile to a topic (shows all packages for that topic)' },
         { name: 'order', label: 'Order in Category', type: 'number', default: 1 },
         { name: 'active', label: 'Active', type: 'checkbox', default: true },
       ]}
