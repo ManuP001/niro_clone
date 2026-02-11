@@ -12,7 +12,7 @@ Build a comprehensive astrology consultation platform with:
 ## User Personas
 1. **Seekers** - Users looking for astrological guidance
 2. **Paying Customers** - Users who purchase consultation packages
-3. **Admins** - Business owners monitoring revenue and users
+3. **Admins** - Business owners managing catalog and monitoring revenue
 
 ## Core Requirements
 - Secure Google OAuth login
@@ -20,74 +20,94 @@ Build a comprehensive astrology consultation platform with:
 - Topic-based consultation packages (Career, Relationships, etc.)
 - Expert chat threads
 - Razorpay payment processing
-- Admin dashboard with revenue metrics
+- Admin dashboard with full CRUD for catalog management
 
 ---
 
 ## What's Been Implemented
 
-### Dec 2025 - Initial Build
-- Full-stack app with React frontend + FastAPI backend
-- Google OAuth 2.0 authentication flow
-- Razorpay payment integration
-- Vedic API integration for Kundli calculations
-- MongoDB database with multiple collections
+### Phase 1: Critical Bug Fixes ✅
+- Fixed Payment "Authentication required" error (session token validation)
+- Fixed Google OAuth double login issue (router order fix)
+- Fixed OAuth loop in production (runtime URL resolution via `getBackendUrl()`)
+- Updated Vedic API key
+- Added Chakra Healing remedy (₹3,500, 3 sessions)
 
-### Feb 2026 - Session 1
-- Admin Dashboard at `/admin` with authentication
-- Data aggregation from legacy + new collections
-- Remedy purchase flow
-- Environment tagging for orders
+### Phase 2: UI & UX Refinements ✅
+- Implemented "My Pack" tab for paying customers (`MyPackScreen.jsx`)
+- Removed per-minute pricing from landing pages
+- Fixed "Buy Now" bar visibility on Remedy page (z-index fix)
 
-### Feb 2026 - Session 2
-- **FIXED:** Payment "Authentication required" error (session token validation)
-- **FIXED:** Google OAuth double login issue (router order fix)
-- **FIXED:** OAuth loop in production (runtime URL resolution)
-- **FIXED:** Vedic API key updated to correct key
-- **ADDED:** Chakra Healing remedy (₹3,500, 3 sessions)
+### Phase 3: Admin Dashboard CRUD ✅
+**Backend APIs** (`/app/backend/routes/admin.py`):
+- Topics CRUD: `GET/POST/PUT/DELETE /api/admin/topics`
+- Experts CRUD: `GET/POST/PUT/DELETE /api/admin/experts`
+- Remedies CRUD: `GET/POST/PUT/DELETE /api/admin/remedies-catalog`
+- Tiers CRUD: `GET/POST/PUT/DELETE /api/admin/tiers`
+- Seed endpoint: `POST /api/admin/seed-catalog`
 
-### Feb 2026 - Session 3 (Current) - Phase 2 Complete
-- **IMPLEMENTED:** "My Pack" tab for paying customers
-  - New `MyPackScreen.jsx` component
-  - Shows package details, days remaining, deliverables
-  - Schedule call option
-  - Suggested remedies section
-  - Quick actions (Mira, Kundli)
-  - Support contact
-  - File: `/app/frontend/src/components/screens/simplified/MyPackScreen.jsx`
+**Frontend Admin UI** (`/app/frontend/src/components/admin/AdminDashboard.jsx`):
+- Generic `CatalogManager` component for all CRUD operations
+- `TopicsManager` - Manage topics shown on home screen
+- `ExpertsManager` - Manage expert profiles
+- `RemediesCatalogManager` - Manage remedies catalog
+- `TiersManager` - Manage consultation packages/tiers
 
-- **IMPLEMENTED:** Removed per-minute pricing from landing pages
-  - Updated `TopicLandingPage.jsx` sticky CTA bar
-  - Now shows total package price instead of ₹/min
-  - File: `/app/frontend/src/components/screens/simplified/TopicLandingPage.jsx`
+**New MongoDB Collections:**
+- `admin_topics` - Dynamic topics configuration
+- `admin_experts` - Expert profiles
+- `admin_remedies` - Remedies catalog
+- `admin_tiers` - Consultation packages
 
-- **FIXED:** "Buy Now" bar visibility on Remedy page
-  - Changed modal z-index from z-50 to z-[60]
-  - File: `/app/frontend/src/components/screens/simplified/RemediesScreen.jsx`
+---
+
+## Admin Dashboard Features
+
+### What Admins Can Do:
+1. **Topics Management**
+   - Add new topics (appears as tile on home screen)
+   - Edit topic name, icon, tagline, color, order
+   - Assign modalities (expert types) to topics
+   - Activate/deactivate topics
+
+2. **Experts Management**
+   - Add new expert profiles
+   - Edit name, bio, modality, languages, experience
+   - Assign experts to topics
+   - Set rating and total consults
+   - Add photo URL
+
+3. **Remedies Management**
+   - Add new remedies (appears in Remedies section)
+   - Edit price, description, benefits
+   - Categorize: healing, pooja, gemstone, kit, ritual
+   - Mark as featured
+   - Activate/deactivate
+
+4. **Packages/Tiers Management**
+   - Create tiers for each topic
+   - Set price, duration, calls included
+   - Define features list
+   - Mark as popular
+   - Link to specific topics
 
 ---
 
 ## Prioritized Backlog
 
-### P0 - Critical (Deploy Required)
-- [x] Phase 1 bug fixes complete
-- [x] Phase 2 UI refinements complete
-- [ ] Redeploy to production to apply all changes
+### P0 - Deploy Required
+- [x] All Phase 1-3 changes complete
+- [ ] Redeploy to production
 
-### P1 - High Priority (Phase 3)
-- [ ] Admin Dashboard CRUD for Plans
-- [ ] Admin Dashboard CRUD for Remedies
-- [ ] Admin Dashboard CRUD for Experts
-- [ ] Admin Dashboard CRUD for Topics
+### P1 - Enhancements
+- [ ] Connect Topics/Tiers from admin DB to frontend display
+- [ ] Expert photo upload functionality
+- [ ] Schedule call integration
 
-### P2 - Medium Priority
-- [ ] Admin dashboard revenue fix verification on production
-- [ ] Schedule call integration (currently placeholder)
-
-### P3 - Low Priority (Tech Debt)
-- [ ] Remove obsolete JWT authentication code (`/app/backend/auth/`)
-- [ ] Remove legacy V5 UI components
-- [ ] Data migration to unified schema
+### P2 - Tech Debt
+- [ ] Remove obsolete JWT auth code
+- [ ] Data migration script for existing data
+- [ ] Cache catalog data for performance
 
 ---
 
@@ -95,36 +115,29 @@ Build a comprehensive astrology consultation platform with:
 
 ### Frontend
 - React with Tailwind CSS
-- Shadcn/UI components
-- Google OAuth via redirect flow
-- Runtime backend URL resolution via `getBackendUrl()`
+- Runtime backend URL via `getBackendUrl()`
+- Admin dashboard with CRUD components
 
 ### Backend
 - FastAPI on port 8001
-- MongoDB for data storage
-- Razorpay SDK for payments
-- Vedic API for astrology calculations
-- Session token + JWT dual authentication support
+- MongoDB collections for catalog data
+- Session token + JWT authentication
 
 ### Key Files
-- `/app/frontend/src/config.js` - Backend URL configuration with `getBackendUrl()`
-- `/app/frontend/src/components/screens/simplified/MyPackScreen.jsx` - New My Pack screen
-- `/app/frontend/src/components/screens/simplified/TopicLandingPage.jsx` - Landing page (pricing updated)
-- `/app/frontend/src/components/screens/simplified/RemediesScreen.jsx` - Remedies with z-index fix
-- `/app/frontend/src/components/screens/simplified/BottomNav.jsx` - Navigation with My Pack tab
-- `/app/backend/niro_simplified/routes.py` - Main API routes with session token auth
-- `/app/backend/routes/google_oauth_direct.py` - OAuth flow
-- `/app/backend/server.py` - Router order (Google auth before legacy JWT)
+- `/app/frontend/src/components/admin/AdminDashboard.jsx` - Admin UI with CRUD
+- `/app/backend/routes/admin.py` - Admin API endpoints
+- `/app/frontend/src/components/screens/simplified/MyPackScreen.jsx` - My Pack tab
+- `/app/frontend/src/config.js` - Backend URL configuration
 
-### Database Collections
-- `users` - User accounts
-- `user_sessions` - OAuth session tokens
-- `niro_simplified_orders` - Purchase orders
-- `niro_simplified_plans` - Active subscriptions
+### Database Collections (Catalog)
+- `admin_topics` - Topics configuration
+- `admin_experts` - Expert profiles  
+- `admin_remedies` - Remedies catalog
+- `admin_tiers` - Package tiers
 
 ---
 
-## Credentials (Preview Environment)
+## Credentials
 - **Admin Dashboard:** NiroAdmin / NewAdmin@123
-- **Vedic API Key:** `6792dc58-2dda-530b-82de-87777c7ecfe5` (in `/app/backend/.env`)
-- **Razorpay:** Live keys in `.env`
+- **Vedic API Key:** `6792dc58-2dda-530b-82de-87777c7ecfe5`
+- **Preview URL:** https://astroapp-oauth.preview.emergentagent.com/admin
