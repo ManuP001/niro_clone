@@ -3,6 +3,13 @@ import { getBackendUrl } from '../../config';
 
 /**
  * Admin Dashboard - Full featured admin panel
+ * 
+ * Features:
+ * - Dashboard overview with stats
+ * - User/Order/Plan management
+ * - Hierarchical homepage management (Categories -> Tiles)
+ * - Catalog management (Topics, Experts, Remedies, Packages)
+ * - Live Homepage Preview
  */
 
 const getAdminToken = () => sessionStorage.getItem('niro_admin_token');
