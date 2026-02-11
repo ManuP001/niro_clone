@@ -111,12 +111,18 @@ class AdminLoginResponse(BaseModel):
     message: str
 
 @router.post("/login", response_model=AdminLoginResponse)
-async def admin_login(req: AdminLoginRequest):
+async def admin_login(req: AdminLoginRequest, request: Request):
     """Admin login endpoint"""
     if req.username == ADMIN_USERNAME and req.password == ADMIN_PASSWORD:
         token = generate_admin_token(req.username)
-        # Token valid for 24 hours
-        active_admin_sessions[token] = datetime.now(timezone.utc) + timedelta(hours=24)
+        expiry = datetime.now(timezone.utc) + timedelta(hours=24)
+        # Token valid for 24 hours - store in memory and DB
+        active_admin_sessions[token] = expiry
+        
+        # Save to database for persistence across restarts
+        db = await get_db(request)
+        await save_admin_session(token, req.username, expiry, db)
+        
         logger.info(f"Admin login successful for {req.username}")
         return AdminLoginResponse(ok=True, token=token, message="Login successful")
     
