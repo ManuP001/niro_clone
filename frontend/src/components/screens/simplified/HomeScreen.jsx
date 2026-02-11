@@ -314,10 +314,35 @@ export default function HomeScreen({
   onTalkToHuman,
   onOpenProfile,
 }) {
+  // State for dynamic homepage data
+  const [lifeSituations, setLifeSituations] = useState(DEFAULT_LIFE_SITUATIONS);
+  const [dataSource, setDataSource] = useState('defaults');
+
+  // Fetch homepage data from API
+  useEffect(() => {
+    const fetchHomepageData = async () => {
+      try {
+        const backendUrl = getBackendUrl();
+        const response = await fetch(`${backendUrl}/api/admin/public/homepage-data`);
+        if (response.ok) {
+          const result = await response.json();
+          if (result.ok && result.data && result.data.length > 0) {
+            setLifeSituations(result.data);
+            setDataSource(result.source || 'database');
+          }
+        }
+      } catch (error) {
+        console.log('Using default homepage data:', error.message);
+        // Keep using defaults on error
+      }
+    };
+    
+    fetchHomepageData();
+  }, []);
 
   useEffect(() => {
-    trackEvent('home_viewed', { flow_version: 'v6_premium' }, token);
-  }, [token]);
+    trackEvent('home_viewed', { flow_version: 'v6_premium', data_source: dataSource }, token);
+  }, [token, dataSource]);
 
   const handleTileClick = (tileId) => {
     trackEvent('tile_clicked', { tile_id: tileId }, token);
