@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getBackendUrl } from '../../config';
+import * as LucideIcons from 'lucide-react';
 
 /**
  * Admin Dashboard - Full featured admin panel
@@ -10,6 +11,7 @@ import { getBackendUrl } from '../../config';
  * - Hierarchical homepage management (Categories -> Tiles)
  * - Catalog management (Topics, Experts, Remedies, Packages)
  * - Live Homepage Preview
+ * - Visual Icon Picker with Lucide icons (matching app style)
  */
 
 const getAdminToken = () => sessionStorage.getItem('niro_admin_token');
