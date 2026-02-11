@@ -1235,6 +1235,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [environment, setEnvironment] = useState('all');
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
