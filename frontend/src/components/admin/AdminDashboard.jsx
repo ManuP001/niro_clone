@@ -1141,6 +1141,12 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
                       rows={3}
                       disabled={field.isId && editItem}
                     />
+                  ) : field.type === 'icon-picker' ? (
+                    <IconPicker
+                      value={formData[field.name] || ''}
+                      onChange={(val) => setFormData({ ...formData, [field.name]: val })}
+                      label=""
+                    />
                   ) : field.type === 'select' ? (
                     <select
                       value={formData[field.name] || ''}
