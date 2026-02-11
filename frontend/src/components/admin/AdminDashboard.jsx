@@ -1030,7 +1030,12 @@ export default function AdminDashboard() {
     { id: 'users', label: 'Users', icon: '👥' },
     { id: 'orders', label: 'Orders', icon: '💰' },
     { id: 'plans', label: 'Plans', icon: '📦' },
-    { id: 'remedies', label: 'Remedies', icon: '🙏' },
+    { id: 'remedies', label: 'Remedy Orders', icon: '🙏' },
+    { id: 'divider1', label: '─── Catalog Management ───', icon: '' },
+    { id: 'manage-topics', label: 'Topics', icon: '📌' },
+    { id: 'manage-experts', label: 'Experts', icon: '👤' },
+    { id: 'manage-remedies', label: 'Remedies', icon: '✨' },
+    { id: 'manage-tiers', label: 'Packages', icon: '🎁' },
   ];
 
   const renderContent = () => {
@@ -1039,6 +1044,10 @@ export default function AdminDashboard() {
       case 'orders': return <OrdersList environment={environment} />;
       case 'plans': return <PlansList environment={environment} />;
       case 'remedies': return <RemedyOrdersList environment={environment} />;
+      case 'manage-topics': return <TopicsManager />;
+      case 'manage-experts': return <ExpertsManager />;
+      case 'manage-remedies': return <RemediesCatalogManager />;
+      case 'manage-tiers': return <TiersManager />;
       default: return <DashboardHome stats={stats} onNavigate={setCurrentPage} environment={environment} />;
     }
   };
