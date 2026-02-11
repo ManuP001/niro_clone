@@ -1949,3 +1949,100 @@ async def seed_catalog_data(
     logger.info(f"Admin seeded catalog data: {results}")
     return {"ok": True, "message": "Catalog data seeded successfully from live catalog", "results": results}
 
+
+# ============================================================================
+# PUBLIC ENDPOINTS (No authentication required for frontend display)
+# ============================================================================
+
+@router.get("/public/homepage-data")
+async def get_public_homepage_data(request: Request):
+    """
+    Get homepage categories and tiles for frontend display.
+    No authentication required - this is public data.
+    Falls back to hardcoded defaults if database is empty.
+    """
+    db = await get_db(request)
+    
+    # Fetch categories
+    categories = await db.admin_categories.find(
+        {"active": {"$ne": False}}, 
+        {"_id": 0}
+    ).sort("order", 1).to_list(50)
+    
+    # Fetch tiles
+    tiles = await db.admin_tiles.find(
+        {"active": {"$ne": False}}, 
+        {"_id": 0}
+    ).sort([("category_id", 1), ("order", 1)]).to_list(100)
+    
+    # If no data in DB, return hardcoded defaults
+    if not categories or not tiles:
+        default_categories = [
+            {"category_id": "love", "title": "Love & Relationships", "helper_copy": "Dating, commitment, healing, family dynamics", "order": 1},
+            {"category_id": "career", "title": "Career & Money", "helper_copy": "Work direction, stability, timing, growth", "order": 2},
+            {"category_id": "health", "title": "Health & Wellness", "helper_copy": "Stress, recovery, energy, emotional balance", "order": 3},
+        ]
+        
+        default_tiles = [
+            # Love tiles
+            {"tile_id": "relationship_healing", "category_id": "love", "short_title": "Healing", "full_title": "Relationship Healing", "icon_type": "healing", "order": 1},
+            {"tile_id": "dating_compatibility", "category_id": "love", "short_title": "Dating", "full_title": "Dating & Compatibility", "icon_type": "heart", "order": 2},
+            {"tile_id": "marriage_planning", "category_id": "love", "short_title": "Marriage", "full_title": "Marriage Planning", "icon_type": "rings", "order": 3},
+            {"tile_id": "communication_trust", "category_id": "love", "short_title": "Trust", "full_title": "Communication & Trust", "icon_type": "chat", "order": 4},
+            {"tile_id": "family_relationships", "category_id": "love", "short_title": "Family", "full_title": "Family Relationships", "icon_type": "family", "order": 5},
+            {"tile_id": "breakup_closure", "category_id": "love", "short_title": "Closure", "full_title": "Breakup & Closure", "icon_type": "breakup", "order": 6},
+            # Career tiles
+            {"tile_id": "career_clarity", "category_id": "career", "short_title": "Clarity", "full_title": "Career Clarity", "icon_type": "compass", "order": 1},
+            {"tile_id": "job_transition", "category_id": "career", "short_title": "Job Change", "full_title": "Job Transition", "icon_type": "briefcase", "order": 2},
+            {"tile_id": "money_stability", "category_id": "career", "short_title": "Money", "full_title": "Money & Stability", "icon_type": "wallet", "order": 3},
+            {"tile_id": "big_decision_timing", "category_id": "career", "short_title": "Timing", "full_title": "Big Decision Timing", "icon_type": "clock", "order": 4},
+            {"tile_id": "work_stress", "category_id": "career", "short_title": "Work Stress", "full_title": "Work Stress", "icon_type": "stress", "order": 5},
+            {"tile_id": "office_politics", "category_id": "career", "short_title": "Office", "full_title": "Office Politics", "icon_type": "office", "order": 6},
+            # Health tiles
+            {"tile_id": "stress_management", "category_id": "health", "short_title": "Stress", "full_title": "Stress Management", "icon_type": "stress", "order": 1},
+            {"tile_id": "sleep_reset", "category_id": "health", "short_title": "Sleep", "full_title": "Sleep Reset", "icon_type": "sleep", "order": 2},
+            {"tile_id": "energy_balance", "category_id": "health", "short_title": "Energy", "full_title": "Energy Balance", "icon_type": "energy", "order": 3},
+            {"tile_id": "health_timing", "category_id": "health", "short_title": "Timing", "full_title": "Health Timing", "icon_type": "healing", "order": 4},
+            {"tile_id": "emotional_wellbeing", "category_id": "health", "short_title": "Emotional", "full_title": "Emotional Wellbeing", "icon_type": "emotional", "order": 5},
+            {"tile_id": "recovery_support", "category_id": "health", "short_title": "Recovery", "full_title": "Recovery Support", "icon_type": "wellness", "order": 6},
+        ]
+        
+        return {
+            "ok": True,
+            "source": "defaults",
+            "categories": default_categories,
+            "tiles": default_tiles
+        }
+    
+    # Group tiles by category for easier frontend consumption
+    tiles_by_category = {}
+    for tile in tiles:
+        cat_id = tile.get("category_id", "other")
+        if cat_id not in tiles_by_category:
+            tiles_by_category[cat_id] = []
+        tiles_by_category[cat_id].append({
+            "id": tile.get("tile_id"),
+            "shortTitle": tile.get("short_title"),
+            "fullTitle": tile.get("full_title"),
+            "iconType": tile.get("icon_type", "star")
+        })
+    
+    # Build response in frontend-friendly format
+    homepage_data = []
+    for cat in categories:
+        cat_id = cat.get("category_id")
+        homepage_data.append({
+            "id": cat_id,
+            "title": cat.get("title"),
+            "helperCopy": cat.get("helper_copy", ""),
+            "tiles": tiles_by_category.get(cat_id, [])
+        })
+    
+    return {
+        "ok": True,
+        "source": "database",
+        "data": homepage_data,
+        "categories": categories,
+        "tiles": tiles
+    }
+
