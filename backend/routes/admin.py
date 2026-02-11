@@ -1692,6 +1692,7 @@ class TierUpdate(BaseModel):
     topic_id: Optional[str] = None
     price: Optional[int] = None
     duration_weeks: Optional[int] = None
+    duration_days: Optional[int] = None
     calls_included: Optional[int] = None
     call_duration_mins: Optional[int] = None
     features: Optional[List[str]] = None
@@ -1699,6 +1700,7 @@ class TierUpdate(BaseModel):
     popular: Optional[bool] = None
     active: Optional[bool] = None
     expert_ids: Optional[List[str]] = None
+    content: Optional[dict] = None  # Rich package content
 
 @router.get("/tiers")
 async def list_admin_tiers(
