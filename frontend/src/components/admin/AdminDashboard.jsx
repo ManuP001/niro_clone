@@ -1415,6 +1415,84 @@ const TILE_ICON_OPTIONS = [
   { value: 'star', label: 'Star' },
 ];
 
+// Tile Icon Picker with visual preview (uses app's custom SVG icons)
+const TileIconPicker = ({ value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Map tile icon names to Lucide equivalents for preview
+  const iconMap = {
+    heart: LucideIcons.Heart,
+    healing: LucideIcons.HeartPulse,
+    rings: LucideIcons.Gem,
+    chat: LucideIcons.MessageCircle,
+    family: LucideIcons.Users,
+    breakup: LucideIcons.HeartCrack,
+    compass: LucideIcons.Compass,
+    briefcase: LucideIcons.Briefcase,
+    wallet: LucideIcons.Wallet,
+    clock: LucideIcons.Clock,
+    stress: LucideIcons.Frown,
+    office: LucideIcons.Building,
+    energy: LucideIcons.Zap,
+    sleep: LucideIcons.Moon,
+    emotional: LucideIcons.Smile,
+    wellness: LucideIcons.Leaf,
+    star: LucideIcons.Star,
+  };
+
+  const IconComponent = iconMap[value];
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg flex items-center gap-2 bg-white hover:bg-gray-50"
+      >
+        {IconComponent ? (
+          <>
+            <IconComponent className="w-5 h-5 text-teal-600" />
+            <span>{TILE_ICON_OPTIONS.find(o => o.value === value)?.label || value}</span>
+          </>
+        ) : (
+          <span className="text-gray-400">Select an icon...</span>
+        )}
+        <LucideIcons.ChevronDown className="w-4 h-4 ml-auto text-gray-400" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl">
+          <div className="p-2 grid grid-cols-4 gap-2 max-h-64 overflow-y-auto">
+            {/* Clear option */}
+            <button
+              type="button"
+              onClick={() => { onChange(''); setIsOpen(false); }}
+              className="p-2 rounded hover:bg-gray-100 flex flex-col items-center justify-center text-gray-400 border border-dashed"
+            >
+              <LucideIcons.X className="w-5 h-5" />
+              <span className="text-[10px] mt-1">None</span>
+            </button>
+            {TILE_ICON_OPTIONS.filter(o => o.value).map(({ value: iconVal, label }) => {
+              const Icon = iconMap[iconVal];
+              return (
+                <button
+                  key={iconVal}
+                  type="button"
+                  onClick={() => { onChange(iconVal); setIsOpen(false); }}
+                  className={`p-2 rounded hover:bg-teal-50 flex flex-col items-center justify-center border ${value === iconVal ? 'bg-teal-100 border-teal-500' : 'border-gray-100'}`}
+                >
+                  {Icon && <Icon className="w-5 h-5 text-teal-600" />}
+                  <span className="text-[10px] mt-1 text-center leading-tight">{label.split(' ')[0]}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Topics Manager - with visual Lucide icon picker
 const TopicsManager = () => (
   <CatalogManager
