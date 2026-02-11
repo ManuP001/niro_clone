@@ -541,7 +541,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
         </div>
       </section>
 
-      {/* ===== STICKY CTA BAR (Price per minute + Start my journey) ===== */}
+      {/* ===== STICKY CTA BAR (Price + Start my journey) ===== */}
       <div 
         className={`fixed ${hasBottomNav ? 'bottom-16' : 'bottom-0'} left-0 right-0 z-50`}
         style={{ 
@@ -553,18 +553,13 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
         data-testid="sticky-cta-bar"
       >
         <div className="px-5 py-4 flex items-center justify-between">
-          {/* Left: Price per minute calculation */}
-          {/* Focussed: 1×60min + 1×30min = 90min, Supported: 1×60min + 2×30min = 120min, Comprehensive: 2×60min + 3×30min = 210min */}
+          {/* Left: Total package price */}
           <div>
             <span className="text-xl font-bold" style={{ color: colors.text.dark }}>
-              ₹{(() => {
-                const price = tierData?.price || 0;
-                const totalMinutes = selectedTier === 'Focussed' ? 90 : selectedTier === 'Supported' ? 120 : 210;
-                return Math.round(price / totalMinutes);
-              })()}/min
+              {formatPrice(tierData?.price || 0)}
             </span>
             <p className="text-xs" style={{ color: colors.text.secondary }}>
-              {selectedTier === 'Focussed' ? '90 mins total' : selectedTier === 'Supported' ? '120 mins total' : '210 mins total'}
+              {tierData?.durationWeeks} weeks package
             </p>
           </div>
           
