@@ -1147,6 +1147,11 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
                       onChange={(val) => setFormData({ ...formData, [field.name]: val })}
                       label=""
                     />
+                  ) : field.type === 'tile-icon-picker' ? (
+                    <TileIconPicker
+                      value={formData[field.name] || ''}
+                      onChange={(val) => setFormData({ ...formData, [field.name]: val })}
+                    />
                   ) : field.type === 'select' ? (
                     <select
                       value={formData[field.name] || ''}
