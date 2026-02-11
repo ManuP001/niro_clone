@@ -356,6 +356,21 @@ export default function SimplifiedApp({ token, userId, user }) {
       );
     }
     
+    // Package Landing Page (for standalone packages like Valentine's)
+    if (screen === 'packageLanding') {
+      return (
+        <PackageLandingPage 
+          token={token}
+          packageId={screenParams.packageId}
+          tileData={screenParams.tileData}
+          onCheckout={handleCheckout}
+          onBack={goBack}
+          hasBottomNav={showBottomNav}
+          userName={getUserName()}
+        />
+      );
+    }
+    
     if (screen === 'checkout') {
       return (
         <CheckoutScreen 
