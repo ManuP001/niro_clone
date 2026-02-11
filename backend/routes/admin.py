@@ -1150,6 +1150,18 @@ async def update_admin_category(
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
+    # Validation: Category cannot be activated without tiles
+    if update_data.get("active") == True:
+        tile_count = await db.admin_tiles.count_documents({
+            "category_id": category_id, 
+            "active": {"$ne": False}
+        })
+        if tile_count == 0:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Cannot activate category '{category_id}' - it has no active tiles. Add at least one tile first."
+            )
+    
     update_data["updated_at"] = datetime.now(timezone.utc)
     
     result = await db.admin_categories.update_one(
