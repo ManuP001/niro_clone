@@ -191,8 +191,8 @@ Preview Modal (Live Data)
 - `/app/frontend/src/config.js` - Backend URL configuration
 
 ### Database Collections (Catalog)
-- `admin_categories` - Homepage categories (3)
-- `admin_tiles` - Homepage tiles (18)
+- `admin_categories` - Homepage categories (4 - added Valentine's Special)
+- `admin_tiles` - Homepage tiles (21 - added 3 Valentine's tiles)
 - `admin_topics` - Topics configuration (14)
 - `admin_experts` - Expert profiles (31)
 - `admin_remedies` - Remedies catalog (15)
