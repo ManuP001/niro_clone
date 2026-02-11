@@ -367,7 +367,7 @@ export default function SimplifiedApp({ token, userId, user }) {
       );
     }
     
-    if (screen === 'plan') {
+    if (screen === 'plan' || screen === 'planDashboard') {
       return (
         <PlanDashboard 
           token={token}
