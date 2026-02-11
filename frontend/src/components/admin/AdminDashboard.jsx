@@ -1182,6 +1182,12 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                       placeholder="Comma-separated values"
                     />
+                  ) : field.type === 'expert-multi-select' ? (
+                    <ExpertMultiSelect
+                      experts={field.experts || []}
+                      selectedIds={formData[field.name] || []}
+                      onChange={(ids) => setFormData({ ...formData, [field.name]: ids })}
+                    />
                   ) : (
                     <input
                       type="text"
