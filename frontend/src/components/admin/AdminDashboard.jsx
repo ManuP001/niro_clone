@@ -1198,59 +1198,215 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
 };
 
 // Icon options for Topics and Tiles - matching the app's existing icons
-const ICON_OPTIONS = [
-  { value: '', label: '-- Select Icon --' },
-  // Emoji icons for Topics
-  { value: '💼', label: '💼 Career' },
-  { value: '💰', label: '💰 Money' },
-  { value: '❤️', label: '❤️ Love' },
-  { value: '💑', label: '💑 Relationship' },
-  { value: '💍', label: '💍 Marriage' },
-  { value: '🏠', label: '🏠 Home/Vastu' },
-  { value: '🌟', label: '🌟 Star/Astrology' },
-  { value: '🔮', label: '🔮 Prediction' },
-  { value: '🧘', label: '🧘 Wellness' },
-  { value: '💪', label: '💪 Health' },
-  { value: '🧠', label: '🧠 Mind' },
-  { value: '📈', label: '📈 Growth' },
-  { value: '🎯', label: '🎯 Focus' },
-  { value: '⚖️', label: '⚖️ Balance' },
-  { value: '🌙', label: '🌙 Sleep' },
-  { value: '✨', label: '✨ Energy' },
-  { value: '🙏', label: '🙏 Spiritual' },
-  { value: '📊', label: '📊 Numbers' },
-  { value: '👶', label: '👶 Children' },
-  { value: '👨‍👩‍👧', label: '👨‍👩‍👧 Family' },
-  { value: '🎓', label: '🎓 Education' },
-  { value: '✈️', label: '✈️ Travel' },
-  { value: '⏰', label: '⏰ Timing' },
-  { value: '🔄', label: '🔄 Change' },
-];
+// Comprehensive Lucide icon list organized by category
+const LUCIDE_ICONS = {
+  // Love & Relationships
+  love: [
+    'Heart', 'HeartHandshake', 'HeartPulse', 'HeartCrack', 'HeartOff',
+    'Users', 'UserPlus', 'UserCheck', 'UsersRound', 'Baby',
+    'Gem', 'Sparkles', 'Star', 'Stars', 'Flower', 'Flower2',
+  ],
+  // Career & Money
+  career: [
+    'Briefcase', 'Building', 'Building2', 'Landmark', 'Factory',
+    'Wallet', 'Banknote', 'CreditCard', 'PiggyBank', 'TrendingUp',
+    'Target', 'Award', 'Trophy', 'Medal', 'Crown',
+    'Lightbulb', 'Rocket', 'Compass', 'Navigation', 'Map',
+  ],
+  // Health & Wellness
+  health: [
+    'Activity', 'Dumbbell', 'Apple', 'Salad', 'Cookie',
+    'Brain', 'Eye', 'Ear', 'Hand', 'Footprints',
+    'Moon', 'Sun', 'Sunrise', 'Sunset', 'CloudSun',
+    'Leaf', 'TreePine', 'Flower', 'Sprout', 'Clover',
+    'Zap', 'Battery', 'BatteryFull', 'Flame', 'Droplet',
+  ],
+  // Communication
+  communication: [
+    'MessageCircle', 'MessageSquare', 'MessagesSquare', 'Mail', 'Send',
+    'Phone', 'PhoneCall', 'Video', 'Mic', 'Volume2',
+    'Bell', 'BellRing', 'Megaphone', 'Radio', 'Podcast',
+  ],
+  // Time & Planning
+  time: [
+    'Clock', 'Clock1', 'Clock12', 'Timer', 'Hourglass',
+    'Calendar', 'CalendarDays', 'CalendarCheck', 'CalendarClock', 'CalendarHeart',
+    'AlarmClock', 'Watch', 'History', 'TimerReset', 'Undo2',
+  ],
+  // Spiritual & Astrology
+  spiritual: [
+    'Sparkle', 'Sparkles', 'Star', 'Stars', 'Sun', 'Moon',
+    'CircleDot', 'Orbit', 'Globe', 'Globe2', 'Earth',
+    'Eye', 'ScanEye', 'Focus', 'Crosshair', 'Scan',
+    'Infinity', 'RotateCcw', 'RefreshCw', 'Repeat', 'Shuffle',
+  ],
+  // Home & Family
+  home: [
+    'Home', 'House', 'Building', 'Castle', 'Tent',
+    'Sofa', 'Bed', 'BedDouble', 'Armchair', 'Lamp',
+    'Key', 'Lock', 'LockKeyhole', 'Shield', 'ShieldCheck',
+    'Dog', 'Cat', 'Bird', 'Fish', 'Rabbit',
+  ],
+  // Education & Growth
+  education: [
+    'GraduationCap', 'BookOpen', 'Book', 'BookMarked', 'Library',
+    'Pencil', 'PenTool', 'Highlighter', 'FileText', 'ScrollText',
+    'Scale', 'Ruler', 'Calculator', 'Binary', 'Code',
+  ],
+  // Travel & Movement
+  travel: [
+    'Plane', 'PlaneTakeoff', 'Car', 'Bus', 'Train',
+    'Ship', 'Sailboat', 'Bike', 'MapPin', 'Route',
+    'Luggage', 'Backpack', 'Tent', 'Mountain', 'Palmtree',
+  ],
+  // Emotions & Feelings
+  emotions: [
+    'Smile', 'Frown', 'Meh', 'Laugh', 'Angry',
+    'ThumbsUp', 'ThumbsDown', 'HandHeart', 'HeartHandshake', 'Handshake',
+    'PartyPopper', 'Gift', 'Cake', 'Candy', 'IceCream',
+  ],
+  // Generic & Misc
+  misc: [
+    'Circle', 'Square', 'Triangle', 'Hexagon', 'Octagon',
+    'Plus', 'Minus', 'X', 'Check', 'CheckCircle',
+    'Info', 'HelpCircle', 'AlertCircle', 'AlertTriangle', 'Ban',
+    'Settings', 'Sliders', 'Filter', 'Search', 'Maximize',
+  ],
+};
 
-// SVG Icon types for Tiles (matching HomeScreen icons)
+// Flatten all icons for the picker
+const ALL_ICONS = Object.entries(LUCIDE_ICONS).flatMap(([category, icons]) => 
+  icons.map(icon => ({ name: icon, category }))
+);
+
+// Icon Picker Component
+const IconPicker = ({ value, onChange, label }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  const filteredIcons = ALL_ICONS.filter(icon => {
+    const matchesSearch = icon.name.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || icon.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  const IconComponent = value ? LucideIcons[value] : null;
+
+  return (
+    <div className="relative">
+      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg flex items-center gap-2 bg-white hover:bg-gray-50"
+      >
+        {IconComponent ? (
+          <>
+            <IconComponent className="w-5 h-5 text-teal-600" />
+            <span>{value}</span>
+          </>
+        ) : (
+          <span className="text-gray-400">Select an icon...</span>
+        )}
+        <LucideIcons.ChevronDown className="w-4 h-4 ml-auto text-gray-400" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl max-h-96 overflow-hidden">
+          {/* Search and Category Filter */}
+          <div className="p-2 border-b sticky top-0 bg-white">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Search icons..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="flex-1 px-2 py-1 text-sm border border-gray-200 rounded"
+              />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-2 py-1 text-sm border border-gray-200 rounded"
+              >
+                <option value="all">All</option>
+                {Object.keys(LUCIDE_ICONS).map(cat => (
+                  <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          
+          {/* Icons Grid */}
+          <div className="p-2 overflow-y-auto max-h-72 grid grid-cols-6 gap-1">
+            {/* Clear option */}
+            <button
+              type="button"
+              onClick={() => { onChange(''); setIsOpen(false); }}
+              className="p-2 rounded hover:bg-gray-100 flex flex-col items-center justify-center text-gray-400"
+              title="Clear"
+            >
+              <LucideIcons.X className="w-5 h-5" />
+              <span className="text-[9px] mt-1">None</span>
+            </button>
+            {filteredIcons.map(({ name }) => {
+              const Icon = LucideIcons[name];
+              if (!Icon) return null;
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => { onChange(name); setIsOpen(false); }}
+                  className={`p-2 rounded hover:bg-teal-50 flex flex-col items-center justify-center ${value === name ? 'bg-teal-100 ring-2 ring-teal-500' : ''}`}
+                  title={name}
+                >
+                  <Icon className="w-5 h-5 text-teal-600" />
+                  <span className="text-[9px] mt-1 truncate w-full text-center">{name}</span>
+                </button>
+              );
+            })}
+          </div>
+          
+          {/* Close button */}
+          <div className="p-2 border-t bg-gray-50">
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="w-full px-3 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// SVG Icon types for Tiles (matching HomeScreen icons - these are custom SVG names)
 const TILE_ICON_OPTIONS = [
   { value: '', label: '-- Select Icon --' },
   // Love category icons
-  { value: 'heart', label: '❤️ Heart (Dating)' },
-  { value: 'healing', label: '💚 Healing' },
-  { value: 'rings', label: '💍 Rings (Marriage)' },
-  { value: 'chat', label: '💬 Chat (Trust)' },
-  { value: 'family', label: '👨‍👩‍👧 Family' },
-  { value: 'breakup', label: '💔 Breakup (Closure)' },
+  { value: 'heart', label: 'Heart (Dating)' },
+  { value: 'healing', label: 'Healing' },
+  { value: 'rings', label: 'Rings (Marriage)' },
+  { value: 'chat', label: 'Chat (Trust)' },
+  { value: 'family', label: 'Family' },
+  { value: 'breakup', label: 'Breakup (Closure)' },
   // Career category icons
-  { value: 'compass', label: '🧭 Compass (Clarity)' },
-  { value: 'briefcase', label: '💼 Briefcase (Job)' },
-  { value: 'wallet', label: '💰 Wallet (Money)' },
-  { value: 'clock', label: '⏰ Clock (Timing)' },
-  { value: 'stress', label: '😰 Stress' },
-  { value: 'office', label: '🏢 Office' },
+  { value: 'compass', label: 'Compass (Clarity)' },
+  { value: 'briefcase', label: 'Briefcase (Job)' },
+  { value: 'wallet', label: 'Wallet (Money)' },
+  { value: 'clock', label: 'Clock (Timing)' },
+  { value: 'stress', label: 'Stress' },
+  { value: 'office', label: 'Office' },
   // Health category icons
-  { value: 'energy', label: '⚡ Energy' },
-  { value: 'sleep', label: '🌙 Sleep' },
-  { value: 'emotional', label: '🎭 Emotional' },
-  { value: 'wellness', label: '🌿 Wellness' },
+  { value: 'energy', label: 'Energy (Lightning)' },
+  { value: 'sleep', label: 'Sleep (Moon)' },
+  { value: 'emotional', label: 'Emotional' },
+  { value: 'wellness', label: 'Wellness (Plant)' },
   // Generic
-  { value: 'star', label: '⭐ Star' },
+  { value: 'star', label: 'Star' },
 ];
 
 // Topics Manager - with icon dropdown
