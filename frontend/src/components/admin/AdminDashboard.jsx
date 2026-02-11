@@ -1415,7 +1415,7 @@ const TILE_ICON_OPTIONS = [
   { value: 'star', label: 'Star' },
 ];
 
-// Topics Manager - with icon dropdown
+// Topics Manager - with visual Lucide icon picker
 const TopicsManager = () => (
   <CatalogManager
     entityType="topics"
@@ -1423,7 +1423,10 @@ const TopicsManager = () => (
     icon="📌"
     columns={[
       { key: 'topic_id', label: 'ID' },
-      { key: 'icon', label: 'Icon' },
+      { key: 'icon', label: 'Icon', render: (v) => {
+        const Icon = LucideIcons[v];
+        return Icon ? <Icon className="w-5 h-5 text-teal-600" /> : v;
+      }},
       { key: 'label', label: 'Name' },
       { key: 'tagline', label: 'Tagline' },
       { key: 'order', label: 'Order' },
@@ -1432,7 +1435,7 @@ const TopicsManager = () => (
     formFields={[
       { name: 'topic_id', label: 'Topic ID', isId: true, hint: 'Unique identifier (e.g., career, money, vastu)' },
       { name: 'label', label: 'Display Name' },
-      { name: 'icon', label: 'Icon', type: 'select', options: ICON_OPTIONS, default: '🌟' },
+      { name: 'icon', label: 'Icon', type: 'icon-picker', default: 'Star' },
       { name: 'tagline', label: 'Tagline' },
       { name: 'color', label: 'Color', type: 'select', options: [
         { value: 'teal', label: 'Teal' },
