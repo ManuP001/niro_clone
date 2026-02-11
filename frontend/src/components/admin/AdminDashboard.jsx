@@ -60,6 +60,172 @@ const formatDate = (dateStr) => {
 };
 
 // ============================================================================
+// HOMEPAGE PREVIEW MODAL
+// ============================================================================
+const HomepagePreview = ({ isOpen, onClose }) => {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchPreviewData();
+    }
+  }, [isOpen]);
+
+  const fetchPreviewData = async () => {
+    setLoading(true);
+    try {
+      const backendUrl = getBackendUrl();
+      const response = await fetch(`${backendUrl}/api/admin/public/homepage-data`);
+      const data = await response.json();
+      if (data.ok && data.data) {
+        setCategories(data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch preview data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  // Mini icon component for preview
+  const PreviewIcon = ({ type }) => {
+    const icons = {
+      heart: '❤️', healing: '💚', rings: '💍', chat: '💬', family: '👨‍👩‍👧', breakup: '💔',
+      compass: '🧭', briefcase: '💼', wallet: '💰', clock: '⏰', stress: '😰', office: '🏢',
+      energy: '⚡', sleep: '🌙', emotional: '🎭', wellness: '🌿', star: '⭐'
+    };
+    return <span className="text-xl">{icons[type] || icons.star}</span>;
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
+          <div>
+            <h3 className="font-semibold text-gray-800">Homepage Preview</h3>
+            <p className="text-xs text-gray-500">Live preview of user-facing homepage</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Mobile Preview Frame */}
+        <div className="flex-1 overflow-y-auto bg-gray-100 p-4">
+          <div 
+            className="mx-auto rounded-3xl overflow-hidden shadow-xl"
+            style={{ 
+              maxWidth: '375px',
+              background: 'linear-gradient(145deg, #3E827A 0%, #4A9F95 50%, #5AB5A8 100%)',
+            }}
+          >
+            {/* Phone Header */}
+            <div className="px-4 pt-6 pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                    <span className="text-white text-sm">✨</span>
+                  </div>
+                  <span className="text-white font-semibold">Niro</span>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-white/20"></div>
+              </div>
+              <p className="text-white/90 text-sm mt-3">What brings you here today?</p>
+            </div>
+
+            {/* Content Area */}
+            <div className="px-3 pb-4">
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin w-8 h-8 border-2 border-white/30 border-t-white rounded-full mx-auto"></div>
+                  <p className="text-white/70 text-sm mt-2">Loading preview...</p>
+                </div>
+              ) : categories.length === 0 ? (
+                <div className="text-center py-8 bg-white/10 rounded-xl">
+                  <p className="text-white/70 text-sm">No categories found</p>
+                  <p className="text-white/50 text-xs mt-1">Add categories in the admin panel</p>
+                </div>
+              ) : (
+                categories.map((category) => (
+                  <div 
+                    key={category.id}
+                    className="bg-white/95 rounded-xl p-3 mb-3"
+                    style={{ backdropFilter: 'blur(8px)' }}
+                  >
+                    <h4 className="text-sm font-semibold text-gray-800 mb-2">{category.title}</h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      {category.tiles?.slice(0, 6).map((tile) => (
+                        <div 
+                          key={tile.id}
+                          className="bg-white rounded-lg p-2 text-center border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
+                        >
+                          <PreviewIcon type={tile.iconType} />
+                          <p className="text-[10px] font-medium text-gray-700 mt-1 truncate">
+                            {tile.shortTitle}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                    {category.tiles?.length > 6 && (
+                      <p className="text-xs text-gray-400 mt-2 text-center">
+                        +{category.tiles.length - 6} more tiles
+                      </p>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Mock Bottom Nav */}
+            <div className="bg-white px-4 py-3 flex justify-around border-t">
+              {['🏠', '🌟', '📦', '👤'].map((icon, i) => (
+                <div key={i} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                  <span className="text-lg">{icon}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-4 py-3 border-t bg-gray-50 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+            Live data from database
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={fetchPreviewData}
+              className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Refresh
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-1.5 text-sm bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
 // LOGIN
 // ============================================================================
 const AdminLogin = ({ onLogin }) => {
