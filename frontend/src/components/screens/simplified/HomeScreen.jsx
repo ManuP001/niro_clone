@@ -249,7 +249,7 @@ function MinimalistTileIcon({ type }) {
 function MinimalistTile({ tile, onClick }) {
   return (
     <button
-      onClick={() => onClick(tile.id)}
+      onClick={() => onClick(tile.id, tile)}
       data-testid={`tile-${tile.id}`}
       className="flex flex-col items-center justify-center w-full aspect-[1.1] rounded-xl transition-all active:scale-[0.96] hover:shadow-md"
       style={{ 
