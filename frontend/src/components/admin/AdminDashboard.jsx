@@ -992,11 +992,13 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
     }
   };
 
-  const handleDelete = async (item) => {
+  const handleDelete = async (item, hardDelete = false) => {
     const idField = formFields.find(f => f.isId)?.name || `${entityType.slice(0, -1)}_id`;
-    if (!window.confirm(`Are you sure you want to deactivate this item?`)) return;
+    const action = hardDelete ? 'permanently delete' : (item.active === false ? 'permanently delete' : 'deactivate');
+    if (!window.confirm(`Are you sure you want to ${action} this item?`)) return;
     try {
-      await adminFetch(`/api/admin/${entityType}/${item[idField]}`, { method: 'DELETE' });
+      const useHardDelete = hardDelete || item.active === false;
+      await adminFetch(`/api/admin/${entityType}/${item[idField]}?hard_delete=${useHardDelete}`, { method: 'DELETE' });
       loadItems();
     } catch (err) {
       alert('Failed to delete: ' + err.message);
