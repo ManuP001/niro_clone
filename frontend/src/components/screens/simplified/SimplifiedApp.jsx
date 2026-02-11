@@ -207,6 +207,9 @@ export default function SimplifiedApp({ token, userId, user }) {
       case 'remedies':
         setScreen('remedies');
         break;
+      case 'mypack':
+        setScreen('mypack');
+        break;
       case 'astro':
         setScreen('kundli');
         break;
