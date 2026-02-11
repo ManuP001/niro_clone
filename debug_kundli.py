@@ -7,7 +7,7 @@ import requests
 import json
 
 # Backend URL from environment
-BACKEND_URL = "https://astroapp-oauth.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-crud.preview.emergentagent.com/api"
 
 def debug_kundli_api():
     """Debug the Kundli API endpoint"""

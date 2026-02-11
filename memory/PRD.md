@@ -140,4 +140,4 @@ Build a comprehensive astrology consultation platform with:
 ## Credentials
 - **Admin Dashboard:** NiroAdmin / NewAdmin@123
 - **Vedic API Key:** `6792dc58-2dda-530b-82de-87777c7ecfe5`
-- **Preview URL:** https://astroapp-oauth.preview.emergentagent.com/admin
+- **Preview URL:** https://hierarchy-crud.preview.emergentagent.com/admin

@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://astroapp-oauth.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-crud.preview.emergentagent.com/api"
 
 class KundliAPITester:
     def __init__(self):

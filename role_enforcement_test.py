@@ -10,7 +10,7 @@ import uuid
 import time
 
 # Backend URL from environment
-BACKEND_URL = "https://astroapp-oauth.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-crud.preview.emergentagent.com/api"
 
 class RoleEnforcementTester:
     def __init__(self):

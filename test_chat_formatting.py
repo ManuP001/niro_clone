@@ -9,7 +9,7 @@ import json
 import uuid
 import re
 
-BACKEND_URL = "https://astroapp-oauth.preview.emergentagent.com/api"
+BACKEND_URL = "https://hierarchy-crud.preview.emergentagent.com/api"
 
 def test_chat_response_formatting():
     """Test the exact flow from the review request"""
