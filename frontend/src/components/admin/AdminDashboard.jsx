@@ -926,6 +926,7 @@ const ExpertsManager = () => (
 const RemediesCatalogManager = () => (
   <CatalogManager
     entityType="remedies-catalog"
+    dataKey="remedies"
     title="Remedies Catalog"
     icon="🙏"
     columns={[
