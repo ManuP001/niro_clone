@@ -417,15 +417,32 @@ class TestPublicAPIEdgeCases:
         print(f"✓ All {len(results)} concurrent requests succeeded")
     
     def test_response_excludes_mongodb_id(self):
-        """Test that response doesn't include MongoDB _id field"""
+        """Test that response doesn't include MongoDB _id field (ObjectId)"""
         response = requests.get(f"{BASE_URL}/api/admin/public/homepage-data")
         assert response.status_code == 200
         
         data = response.json()
-        response_text = str(data)
         
-        # Check that _id is not in the response
-        assert "_id" not in response_text, "Response should not contain MongoDB _id"
+        # Check that MongoDB ObjectId _id is not in the response
+        # Note: category_id and tile_id are valid fields, we're checking for MongoDB's _id
+        def check_for_mongodb_id(obj, path=""):
+            if isinstance(obj, dict):
+                # Check if '_id' key exists (MongoDB ObjectId)
+                if "_id" in obj:
+                    return f"Found '_id' at {path}"
+                for key, value in obj.items():
+                    result = check_for_mongodb_id(value, f"{path}.{key}")
+                    if result:
+                        return result
+            elif isinstance(obj, list):
+                for i, item in enumerate(obj):
+                    result = check_for_mongodb_id(item, f"{path}[{i}]")
+                    if result:
+                        return result
+            return None
+        
+        result = check_for_mongodb_id(data)
+        assert result is None, f"Response should not contain MongoDB _id: {result}"
         print("✓ Response excludes MongoDB _id field")
 
 
