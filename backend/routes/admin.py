@@ -2188,3 +2188,59 @@ async def get_public_homepage_data(request: Request):
         "tiles": tiles
     }
 
+
+@router.get("/public/package/{package_id}")
+async def get_public_package(request: Request, package_id: str):
+    """
+    Get package details for frontend landing page display.
+    No authentication required - this is public data for landing pages.
+    Returns package info including rich content.
+    """
+    db = await get_db(request)
+    
+    # Fetch the package/tier
+    package = await db.admin_tiers.find_one(
+        {"tier_id": package_id, "active": {"$ne": False}}, 
+        {"_id": 0}
+    )
+    
+    if not package:
+        return {"ok": False, "message": "Package not found"}
+    
+    return {
+        "ok": True,
+        "package": package
+    }
+
+
+@router.get("/public/tile/{tile_id}")
+async def get_public_tile(request: Request, tile_id: str):
+    """
+    Get tile details including linked package info.
+    No authentication required.
+    """
+    db = await get_db(request)
+    
+    # Fetch the tile
+    tile = await db.admin_tiles.find_one(
+        {"tile_id": tile_id, "active": {"$ne": False}}, 
+        {"_id": 0}
+    )
+    
+    if not tile:
+        return {"ok": False, "message": "Tile not found"}
+    
+    # If tile has a linked package, fetch that too
+    linked_package = None
+    if tile.get("linked_package_id"):
+        linked_package = await db.admin_tiers.find_one(
+            {"tier_id": tile.get("linked_package_id"), "active": {"$ne": False}}, 
+            {"_id": 0}
+        )
+    
+    return {
+        "ok": True,
+        "tile": tile,
+        "linked_package": linked_package
+    }
+
