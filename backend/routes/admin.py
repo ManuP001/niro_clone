@@ -1619,7 +1619,7 @@ async def delete_admin_remedy(
 class TierCreate(BaseModel):
     tier_id: str
     name: str  # e.g., "Focussed", "Supported", "Comprehensive"
-    topic_id: str  # Which topic this tier belongs to
+    topic_id: Optional[str] = None  # Which topic this tier belongs to (optional now)
     price: int
     duration_weeks: int = 4
     calls_included: int = 2
@@ -1628,6 +1628,8 @@ class TierCreate(BaseModel):
     description: str = ""
     popular: bool = False
     active: bool = True
+    # Expert assignment
+    expert_ids: List[str] = []  # Astrologers who can handle this package
 
 class TierUpdate(BaseModel):
     name: Optional[str] = None
@@ -1640,6 +1642,7 @@ class TierUpdate(BaseModel):
     description: Optional[str] = None
     popular: Optional[bool] = None
     active: Optional[bool] = None
+    expert_ids: Optional[List[str]] = None
 
 @router.get("/tiers")
 async def list_admin_tiers(
