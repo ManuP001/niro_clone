@@ -308,7 +308,48 @@ const StatCard = ({ title, value, subtitle }) => (
 // ============================================================================
 // DASHBOARD HOME
 // ============================================================================
-const DashboardHome = ({ stats, onNavigate, environment }) => {
+const DashboardHome = ({ stats, onNavigate, environment, onSeedData }) => {
+  const [seeding, setSeeding] = useState(false);
+  const [catalogStats, setCatalogStats] = useState(null);
+
+  useEffect(() => {
+    // Fetch catalog stats to show if data exists
+    const fetchCatalogStats = async () => {
+      try {
+        const [categories, tiles, topics, experts] = await Promise.all([
+          adminFetch('/api/admin/categories'),
+          adminFetch('/api/admin/tiles'),
+          adminFetch('/api/admin/topics'),
+          adminFetch('/api/admin/experts'),
+        ]);
+        setCatalogStats({
+          categories: categories.count || 0,
+          tiles: tiles.count || 0,
+          topics: topics.count || 0,
+          experts: experts.count || 0,
+        });
+      } catch (err) {
+        console.error('Failed to fetch catalog stats:', err);
+      }
+    };
+    fetchCatalogStats();
+  }, [seeding]);
+
+  const handleSeedData = async () => {
+    if (!window.confirm('This will seed/refresh all catalog data (Categories, Tiles, Topics, Experts, Remedies, Packages). Continue?')) return;
+    setSeeding(true);
+    try {
+      const result = await adminFetch('/api/admin/seed-catalog?force=true', { method: 'POST' });
+      alert(`✅ Catalog seeded successfully!\n\nResults:\n- Categories: ${result.results?.categories || 0}\n- Tiles: ${result.results?.tiles || 0}\n- Topics: ${result.results?.topics || 0}\n- Experts: ${result.results?.experts || 0}\n- Remedies: ${result.results?.remedies || 0}\n- Packages: ${result.results?.tiers || 0}`);
+    } catch (err) {
+      alert('❌ Seed failed: ' + err.message);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  const needsSeeding = catalogStats && (catalogStats.categories === 0 || catalogStats.topics === 0 || catalogStats.experts === 0);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -319,6 +360,52 @@ const DashboardHome = ({ stats, onNavigate, environment }) => {
           </span>
         )}
       </div>
+      
+      {/* Seed Data Banner - Show prominently if catalog is empty */}
+      {needsSeeding && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p className="font-semibold text-red-800">⚠️ Catalog data is empty!</p>
+            <p className="text-sm text-red-600 mt-1">Click "Seed Catalog Data" to populate Categories, Tiles, Topics, Experts, Remedies, and Packages.</p>
+          </div>
+          <button
+            onClick={handleSeedData}
+            disabled={seeding}
+            className="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+          >
+            {seeding ? (
+              <>
+                <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Seeding...
+              </>
+            ) : (
+              <>🌱 Seed Catalog Data</>
+            )}
+          </button>
+        </div>
+      )}
+      
+      {/* Catalog Stats */}
+      {catalogStats && !needsSeeding && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <p className="font-semibold text-green-800">✅ Catalog data loaded</p>
+            <p className="text-sm text-green-600 mt-1">
+              {catalogStats.categories} categories, {catalogStats.tiles} tiles, {catalogStats.topics} topics, {catalogStats.experts} experts
+            </p>
+          </div>
+          <button
+            onClick={handleSeedData}
+            disabled={seeding}
+            className="px-4 py-2 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 disabled:opacity-50"
+          >
+            {seeding ? 'Refreshing...' : '🔄 Refresh Catalog'}
+          </button>
+        </div>
+      )}
       
       {/* Info Banner for Preview Environment */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
