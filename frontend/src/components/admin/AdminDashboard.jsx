@@ -1803,6 +1803,298 @@ const RemediesCatalogManager = () => (
   />
 );
 
+// Package Content Editor - Full rich content editor for packages
+const PackageContentEditor = ({ content, onChange }) => {
+  const [expanded, setExpanded] = useState({
+    hero: true,
+    overview: false,
+    helps: false,
+    analysis: false,
+    deliverables: false
+  });
+
+  const toggleSection = (section) => {
+    setExpanded(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const updateContent = (path, value) => {
+    const newContent = { ...content };
+    const keys = path.split('.');
+    let obj = newContent;
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (!obj[keys[i]]) obj[keys[i]] = {};
+      obj = obj[keys[i]];
+    }
+    obj[keys[keys.length - 1]] = value;
+    onChange(newContent);
+  };
+
+  const addHelpSection = () => {
+    const sections = content?.help_sections || [];
+    updateContent('help_sections', [...sections, { title: '', items: [] }]);
+  };
+
+  const updateHelpSection = (index, field, value) => {
+    const sections = [...(content?.help_sections || [])];
+    sections[index] = { ...sections[index], [field]: value };
+    updateContent('help_sections', sections);
+  };
+
+  const removeHelpSection = (index) => {
+    const sections = (content?.help_sections || []).filter((_, i) => i !== index);
+    updateContent('help_sections', sections);
+  };
+
+  const addAnalysisSection = () => {
+    const sections = content?.analysis_sections || [];
+    updateContent('analysis_sections', [...sections, { title: '', items: [] }]);
+  };
+
+  const updateAnalysisSection = (index, field, value) => {
+    const sections = [...(content?.analysis_sections || [])];
+    sections[index] = { ...sections[index], [field]: value };
+    updateContent('analysis_sections', sections);
+  };
+
+  const removeAnalysisSection = (index) => {
+    const sections = (content?.analysis_sections || []).filter((_, i) => i !== index);
+    updateContent('analysis_sections', sections);
+  };
+
+  const SectionHeader = ({ title, section, hasContent }) => (
+    <button
+      type="button"
+      onClick={() => toggleSection(section)}
+      className={`w-full flex items-center justify-between p-3 rounded-lg text-left ${
+        hasContent ? 'bg-teal-50 border border-teal-200' : 'bg-gray-50 border border-gray-200'
+      }`}
+    >
+      <span className="font-medium text-gray-800">{title}</span>
+      <div className="flex items-center gap-2">
+        {hasContent && <span className="text-xs text-teal-600">✓ Has content</span>}
+        <LucideIcons.ChevronDown className={`w-4 h-4 transition-transform ${expanded[section] ? 'rotate-180' : ''}`} />
+      </div>
+    </button>
+  );
+
+  return (
+    <div className="space-y-3 border border-gray-200 rounded-lg p-3 bg-gray-50">
+      <p className="text-sm font-medium text-gray-700 mb-2">📝 Rich Package Content</p>
+      
+      {/* Hero Section */}
+      <div>
+        <SectionHeader 
+          title="1️⃣ Hero Section" 
+          section="hero" 
+          hasContent={content?.hero_title || content?.hero_subtitle}
+        />
+        {expanded.hero && (
+          <div className="mt-2 p-3 bg-white rounded-lg border space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Hero Title</label>
+              <input
+                type="text"
+                value={content?.hero_title || ''}
+                onChange={(e) => updateContent('hero_title', e.target.value)}
+                placeholder="e.g., Not Official Yet"
+                className="w-full px-3 py-2 border rounded text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Hero Subtitle</label>
+              <textarea
+                value={content?.hero_subtitle || ''}
+                onChange={(e) => updateContent('hero_subtitle', e.target.value)}
+                placeholder="e.g., You're dating. It feels meaningful. But it's still undefined."
+                className="w-full px-3 py-2 border rounded text-sm"
+                rows={2}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Trust Line</label>
+              <input
+                type="text"
+                value={content?.trust_line || ''}
+                onChange={(e) => updateContent('trust_line', e.target.value)}
+                placeholder="e.g., Senior experts • Unlimited follow-ups • Private & secure"
+                className="w-full px-3 py-2 border rounded text-sm"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Package Overview */}
+      <div>
+        <SectionHeader 
+          title="2️⃣ Package Overview" 
+          section="overview" 
+          hasContent={content?.overview_title || content?.overview_description}
+        />
+        {expanded.overview && (
+          <div className="mt-2 p-3 bg-white rounded-lg border space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Overview Title</label>
+              <input
+                type="text"
+                value={content?.overview_title || ''}
+                onChange={(e) => updateContent('overview_title', e.target.value)}
+                placeholder="e.g., Unlimited Guidance (7 Days)"
+                className="w-full px-3 py-2 border rounded text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Overview Description</label>
+              <textarea
+                value={content?.overview_description || ''}
+                onChange={(e) => updateContent('overview_description', e.target.value)}
+                placeholder="Describe what the package offers..."
+                className="w-full px-3 py-2 border rounded text-sm"
+                rows={4}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Includes (one per line)</label>
+              <textarea
+                value={(content?.includes || []).join('\n')}
+                onChange={(e) => updateContent('includes', e.target.value.split('\n').filter(Boolean))}
+                placeholder="Structured relationship analysis&#10;Unlimited chat for 7 days&#10;Written clarity note"
+                className="w-full px-3 py-2 border rounded text-sm font-mono"
+                rows={5}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* What This Helps With */}
+      <div>
+        <SectionHeader 
+          title="3️⃣ What This Helps With" 
+          section="helps" 
+          hasContent={(content?.help_sections || []).length > 0}
+        />
+        {expanded.helps && (
+          <div className="mt-2 p-3 bg-white rounded-lg border space-y-3">
+            {(content?.help_sections || []).map((section, idx) => (
+              <div key={idx} className="p-3 bg-gray-50 rounded border">
+                <div className="flex justify-between items-center mb-2">
+                  <input
+                    type="text"
+                    value={section.title || ''}
+                    onChange={(e) => updateHelpSection(idx, 'title', e.target.value)}
+                    placeholder="Section title (e.g., CLARITY, TIMELINE, SUPPORT)"
+                    className="flex-1 px-2 py-1 border rounded text-sm font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeHelpSection(idx)}
+                    className="ml-2 p-1 text-red-500 hover:bg-red-50 rounded"
+                  >
+                    <LucideIcons.Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                <textarea
+                  value={(section.items || []).join('\n')}
+                  onChange={(e) => updateHelpSection(idx, 'items', e.target.value.split('\n').filter(Boolean))}
+                  placeholder="Bullet points (one per line)&#10;Is this moving toward commitment?&#10;Are there hidden red flags?"
+                  className="w-full px-2 py-1 border rounded text-sm font-mono"
+                  rows={4}
+                />
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addHelpSection}
+              className="w-full py-2 border-2 border-dashed border-gray-300 rounded text-sm text-gray-500 hover:border-teal-400 hover:text-teal-600"
+            >
+              + Add Help Section (e.g., Clarity, Timeline, Support)
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* How We Analyse */}
+      <div>
+        <SectionHeader 
+          title="4️⃣ How We Analyse" 
+          section="analysis" 
+          hasContent={content?.analysis_intro || (content?.analysis_sections || []).length > 0}
+        />
+        {expanded.analysis && (
+          <div className="mt-2 p-3 bg-white rounded-lg border space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Intro Text</label>
+              <textarea
+                value={content?.analysis_intro || ''}
+                onChange={(e) => updateContent('analysis_intro', e.target.value)}
+                placeholder="Your guidance is based on structured Vedic analysis, not guesswork."
+                className="w-full px-3 py-2 border rounded text-sm"
+                rows={2}
+              />
+            </div>
+            {(content?.analysis_sections || []).map((section, idx) => (
+              <div key={idx} className="p-3 bg-gray-50 rounded border">
+                <div className="flex justify-between items-center mb-2">
+                  <input
+                    type="text"
+                    value={section.title || ''}
+                    onChange={(e) => updateAnalysisSection(idx, 'title', e.target.value)}
+                    placeholder="Section title (e.g., We look at:, If partner details available:)"
+                    className="flex-1 px-2 py-1 border rounded text-sm font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeAnalysisSection(idx)}
+                    className="ml-2 p-1 text-red-500 hover:bg-red-50 rounded"
+                  >
+                    <LucideIcons.Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                <textarea
+                  value={(section.items || []).join('\n')}
+                  onChange={(e) => updateAnalysisSection(idx, 'items', e.target.value.split('\n').filter(Boolean))}
+                  placeholder="Analysis points (one per line)&#10;5th house (romance & bonding)&#10;7th house (commitment potential)"
+                  className="w-full px-2 py-1 border rounded text-sm font-mono"
+                  rows={4}
+                />
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addAnalysisSection}
+              className="w-full py-2 border-2 border-dashed border-gray-300 rounded text-sm text-gray-500 hover:border-teal-400 hover:text-teal-600"
+            >
+              + Add Analysis Section
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Deliverables */}
+      <div>
+        <SectionHeader 
+          title="5️⃣ What You Receive" 
+          section="deliverables" 
+          hasContent={(content?.deliverables || []).length > 0}
+        />
+        {expanded.deliverables && (
+          <div className="mt-2 p-3 bg-white rounded-lg border">
+            <label className="block text-xs font-medium text-gray-600 mb-1">Deliverables (one per line)</label>
+            <textarea
+              value={(content?.deliverables || []).join('\n')}
+              onChange={(e) => updateContent('deliverables', e.target.value.split('\n').filter(Boolean))}
+              placeholder="Clear direction: Invest / Slow Down / Reconsider&#10;A written clarity summary&#10;A timing window table&#10;Unlimited topic-specific chat for 7 days"
+              className="w-full px-3 py-2 border rounded text-sm font-mono"
+              rows={5}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Tiers Manager - with Expert Assignment
 const TiersManager = () => {
   const [experts, setExperts] = useState([]);
