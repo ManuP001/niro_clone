@@ -991,10 +991,10 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
   };
 
   const handleSeedData = async () => {
-    if (!window.confirm('This will seed initial catalog data. Continue?')) return;
+    if (!window.confirm('This will seed/refresh ALL catalog data (Categories, Tiles, Topics, Experts, Remedies, Packages). Any existing catalog data will be replaced. Continue?')) return;
     try {
-      const result = await adminFetch('/api/admin/seed-catalog', { method: 'POST' });
-      alert(result.message || 'Seeded successfully');
+      const result = await adminFetch('/api/admin/seed-catalog?force=true', { method: 'POST' });
+      alert(`✅ Catalog seeded successfully!\n\nResults:\n- Categories: ${result.results?.categories || 0}\n- Tiles: ${result.results?.tiles || 0}\n- Topics: ${result.results?.topics || 0}\n- Experts: ${result.results?.experts || 0}\n- Remedies: ${result.results?.remedies || 0}\n- Packages: ${result.results?.tiers || 0}`);
       loadItems();
     } catch (err) {
       alert('Seed failed: ' + err.message);
