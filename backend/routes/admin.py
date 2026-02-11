@@ -23,7 +23,8 @@ router = APIRouter(prefix="/api/admin", tags=["Admin"])
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'NiroAdmin')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'NewAdmin@123')
 
-# Simple token store (in production, use Redis or DB)
+# Simple token store - NOW USES DATABASE for persistence across restarts
+# In-memory cache for performance (checked first, then DB)
 active_admin_sessions: Dict[str, datetime] = {}
 
 def generate_admin_token(username: str) -> str:
@@ -31,8 +32,41 @@ def generate_admin_token(username: str) -> str:
     token_data = f"{username}:{datetime.now(timezone.utc).isoformat()}:{os.urandom(16).hex()}"
     return hashlib.sha256(token_data.encode()).hexdigest()
 
+async def verify_admin_token_async(token: str, db) -> bool:
+    """Verify admin token is valid and not expired (async, checks DB)"""
+    if not token:
+        return False
+    
+    # Check in-memory cache first
+    if token in active_admin_sessions:
+        expiry = active_admin_sessions.get(token)
+        if expiry and expiry > datetime.now(timezone.utc):
+            return True
+        # Token expired, remove from cache
+        active_admin_sessions.pop(token, None)
+    
+    # Check database if not in cache
+    if db is not None:
+        try:
+            session = await db.admin_sessions.find_one({"token": token}, {"_id": 0})
+            if session:
+                expiry = session.get("expires_at")
+                if isinstance(expiry, str):
+                    expiry = datetime.fromisoformat(expiry)
+                if expiry and expiry.replace(tzinfo=timezone.utc) > datetime.now(timezone.utc):
+                    # Valid - add to cache
+                    active_admin_sessions[token] = expiry.replace(tzinfo=timezone.utc)
+                    return True
+                else:
+                    # Expired - remove from DB
+                    await db.admin_sessions.delete_one({"token": token})
+        except Exception as e:
+            logger.warning(f"Admin token DB check failed: {e}")
+    
+    return False
+
 def verify_admin_token(token: str) -> bool:
-    """Verify admin token is valid and not expired"""
+    """Verify admin token (sync, cache only - for backwards compatibility)"""
     if not token or token not in active_admin_sessions:
         return False
     expiry = active_admin_sessions.get(token)
@@ -41,6 +75,22 @@ def verify_admin_token(token: str) -> bool:
     # Token expired, remove it
     active_admin_sessions.pop(token, None)
     return False
+
+async def save_admin_session(token: str, username: str, expiry: datetime, db):
+    """Save admin session to database for persistence"""
+    try:
+        await db.admin_sessions.update_one(
+            {"token": token},
+            {"$set": {
+                "token": token,
+                "username": username,
+                "expires_at": expiry,
+                "created_at": datetime.now(timezone.utc)
+            }},
+            upsert=True
+        )
+    except Exception as e:
+        logger.warning(f"Failed to save admin session to DB: {e}")
 
 async def get_db(request: Request) -> AsyncIOMotorDatabase:
     """Get database from app state"""
