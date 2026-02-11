@@ -1205,6 +1205,9 @@ class TileCreate(BaseModel):
     icon_type: str = "star"
     order: int = 1
     active: bool = True
+    # Direct package linking (optional - tile can link directly to a package)
+    linked_package_id: Optional[str] = None  # Direct link to a specific package/tier
+    linked_topic_id: Optional[str] = None  # Or link to a topic (shows all tiers for that topic)
 
 class TileUpdate(BaseModel):
     category_id: Optional[str] = None
@@ -1213,6 +1216,8 @@ class TileUpdate(BaseModel):
     icon_type: Optional[str] = None
     order: Optional[int] = None
     active: Optional[bool] = None
+    linked_package_id: Optional[str] = None
+    linked_topic_id: Optional[str] = None
 
 @router.get("/tiles")
 async def list_admin_tiles(
