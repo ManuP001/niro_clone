@@ -640,6 +640,357 @@ const RemedyOrdersList = () => {
 };
 
 // ============================================================================
+// CATALOG MANAGER - Generic CRUD Component
+// ============================================================================
+const CatalogManager = ({ entityType, title, icon, columns, formFields }) => {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editItem, setEditItem] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [includeInactive, setIncludeInactive] = useState(false);
+
+  const loadItems = async () => {
+    setLoading(true);
+    try {
+      const data = await adminFetch(`/api/admin/${entityType}?include_inactive=${includeInactive}`);
+      setItems(data[entityType] || data.items || []);
+    } catch (err) {
+      console.error(`Failed to load ${entityType}:`, err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadItems(); }, [includeInactive]);
+
+  const handleCreate = () => {
+    setEditItem(null);
+    const defaultData = {};
+    formFields.forEach(f => { defaultData[f.name] = f.default || ''; });
+    setFormData(defaultData);
+    setShowModal(true);
+    setError('');
+  };
+
+  const handleEdit = (item) => {
+    setEditItem(item);
+    setFormData({ ...item });
+    setShowModal(true);
+    setError('');
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      const idField = formFields.find(f => f.isId)?.name || `${entityType.slice(0, -1)}_id`;
+      if (editItem) {
+        await adminFetch(`/api/admin/${entityType}/${editItem[idField]}`, {
+          method: 'PUT',
+          body: JSON.stringify(formData),
+        });
+      } else {
+        await adminFetch(`/api/admin/${entityType}`, {
+          method: 'POST',
+          body: JSON.stringify(formData),
+        });
+      }
+      setShowModal(false);
+      loadItems();
+    } catch (err) {
+      setError(err.message || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (item) => {
+    const idField = formFields.find(f => f.isId)?.name || `${entityType.slice(0, -1)}_id`;
+    if (!window.confirm(`Are you sure you want to deactivate this item?`)) return;
+    try {
+      await adminFetch(`/api/admin/${entityType}/${item[idField]}`, { method: 'DELETE' });
+      loadItems();
+    } catch (err) {
+      alert('Failed to delete: ' + err.message);
+    }
+  };
+
+  const handleSeedData = async () => {
+    if (!window.confirm('This will seed initial catalog data. Continue?')) return;
+    try {
+      const result = await adminFetch('/api/admin/seed-catalog', { method: 'POST' });
+      alert(result.message || 'Seeded successfully');
+      loadItems();
+    } catch (err) {
+      alert('Seed failed: ' + err.message);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-gray-800">{icon} {title}</h2>
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 text-sm text-gray-600">
+            <input type="checkbox" checked={includeInactive} onChange={(e) => setIncludeInactive(e.target.checked)} />
+            Show inactive
+          </label>
+          {entityType === 'topics' && (
+            <button onClick={handleSeedData} className="px-4 py-2 text-sm bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200">
+              Seed Data
+            </button>
+          )}
+          <button onClick={handleCreate} className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">
+            + Add New
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              {columns.map(col => (
+                <th key={col.key} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{col.label}</th>
+              ))}
+              <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {loading ? (
+              <tr><td colSpan={columns.length + 1} className="px-4 py-8 text-center text-gray-500">Loading...</td></tr>
+            ) : items.length === 0 ? (
+              <tr><td colSpan={columns.length + 1} className="px-4 py-8 text-center text-gray-500">No items found. Click "Seed Data" to initialize catalog.</td></tr>
+            ) : (
+              items.map((item, idx) => (
+                <tr key={idx} className={`hover:bg-gray-50 ${item.active === false ? 'opacity-50' : ''}`}>
+                  {columns.map(col => (
+                    <td key={col.key} className="px-4 py-3 text-sm text-gray-900">
+                      {col.render ? col.render(item[col.key], item) : (
+                        Array.isArray(item[col.key]) ? item[col.key].join(', ') : String(item[col.key] ?? '-')
+                      )}
+                    </td>
+                  ))}
+                  <td className="px-4 py-3 text-right">
+                    <button onClick={() => handleEdit(item)} className="text-blue-600 hover:text-blue-800 mr-3">Edit</button>
+                    <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-800">{item.active === false ? 'Delete' : 'Deactivate'}</button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-4">{editItem ? 'Edit' : 'Create'} {title.slice(0, -1)}</h3>
+            {error && <div className="text-red-600 text-sm bg-red-50 p-2 rounded mb-4">{error}</div>}
+            <div className="space-y-4">
+              {formFields.map(field => (
+                <div key={field.name}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                  {field.type === 'textarea' ? (
+                    <textarea
+                      value={formData[field.name] || ''}
+                      onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      rows={3}
+                      disabled={field.isId && editItem}
+                    />
+                  ) : field.type === 'select' ? (
+                    <select
+                      value={formData[field.name] || ''}
+                      onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    >
+                      {field.options?.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                    </select>
+                  ) : field.type === 'checkbox' ? (
+                    <input
+                      type="checkbox"
+                      checked={formData[field.name] || false}
+                      onChange={(e) => setFormData({ ...formData, [field.name]: e.target.checked })}
+                      className="w-5 h-5"
+                    />
+                  ) : field.type === 'number' ? (
+                    <input
+                      type="number"
+                      value={formData[field.name] || 0}
+                      onChange={(e) => setFormData({ ...formData, [field.name]: parseInt(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    />
+                  ) : field.type === 'array' ? (
+                    <input
+                      type="text"
+                      value={Array.isArray(formData[field.name]) ? formData[field.name].join(', ') : formData[field.name] || ''}
+                      onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      placeholder="Comma-separated values"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={formData[field.name] || ''}
+                      onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      disabled={field.isId && editItem}
+                    />
+                  )}
+                  {field.hint && <p className="text-xs text-gray-500 mt-1">{field.hint}</p>}
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
+              <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50">
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Topics Manager
+const TopicsManager = () => (
+  <CatalogManager
+    entityType="topics"
+    title="Topics"
+    icon="📌"
+    columns={[
+      { key: 'topic_id', label: 'ID' },
+      { key: 'icon', label: 'Icon' },
+      { key: 'label', label: 'Name' },
+      { key: 'tagline', label: 'Tagline' },
+      { key: 'order', label: 'Order' },
+      { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
+    ]}
+    formFields={[
+      { name: 'topic_id', label: 'Topic ID', isId: true, hint: 'Unique identifier (e.g., career, money, vastu)' },
+      { name: 'label', label: 'Display Name' },
+      { name: 'icon', label: 'Icon (emoji)', default: '📌' },
+      { name: 'tagline', label: 'Tagline' },
+      { name: 'color', label: 'Color', default: 'teal' },
+      { name: 'order', label: 'Display Order', type: 'number', default: 99 },
+      { name: 'modalities', label: 'Modalities', type: 'array', hint: 'Expert types: vedic_astrologer, numerologist, life_coach' },
+      { name: 'active', label: 'Active', type: 'checkbox', default: true },
+    ]}
+  />
+);
+
+// Experts Manager
+const ExpertsManager = () => (
+  <CatalogManager
+    entityType="experts"
+    title="Experts"
+    icon="👤"
+    columns={[
+      { key: 'expert_id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'modality', label: 'Modality' },
+      { key: 'topics', label: 'Topics' },
+      { key: 'rating', label: 'Rating' },
+      { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
+    ]}
+    formFields={[
+      { name: 'expert_id', label: 'Expert ID', isId: true, hint: 'Unique identifier' },
+      { name: 'name', label: 'Full Name' },
+      { name: 'modality', label: 'Primary Modality', hint: 'e.g., vedic_astrologer, numerologist, tarot' },
+      { name: 'modality_label', label: 'Modality Display Name', hint: 'e.g., Vedic Astrologer' },
+      { name: 'bio', label: 'Bio', type: 'textarea' },
+      { name: 'languages', label: 'Languages', default: 'Hindi, English' },
+      { name: 'years_experience', label: 'Years Experience', type: 'number', default: 5 },
+      { name: 'rating', label: 'Rating', type: 'number', default: 4.5 },
+      { name: 'total_consults', label: 'Total Consults', type: 'number', default: 0 },
+      { name: 'topics', label: 'Topics', type: 'array', hint: 'Topic IDs this expert can serve' },
+      { name: 'photo_url', label: 'Photo URL' },
+      { name: 'tags', label: 'Tags', type: 'array' },
+      { name: 'active', label: 'Active', type: 'checkbox', default: true },
+    ]}
+  />
+);
+
+// Remedies Manager
+const RemediesCatalogManager = () => (
+  <CatalogManager
+    entityType="remedies-catalog"
+    title="Remedies Catalog"
+    icon="🙏"
+    columns={[
+      { key: 'remedy_id', label: 'ID' },
+      { key: 'image', label: '' },
+      { key: 'title', label: 'Title' },
+      { key: 'category', label: 'Category' },
+      { key: 'price', label: 'Price', render: (v) => formatCurrency(v) },
+      { key: 'featured', label: 'Featured', render: (v) => v ? '⭐' : '' },
+      { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
+    ]}
+    formFields={[
+      { name: 'remedy_id', label: 'Remedy ID', isId: true, hint: 'Unique identifier (e.g., chakra_balance)' },
+      { name: 'title', label: 'Title' },
+      { name: 'subtitle', label: 'Subtitle' },
+      { name: 'category', label: 'Category', type: 'select', options: [
+        { value: 'healing', label: 'Healing Programs' },
+        { value: 'pooja', label: 'Pooja' },
+        { value: 'gemstone', label: 'Gemstone' },
+        { value: 'kit', label: 'Kit' },
+        { value: 'ritual', label: 'Ritual' },
+      ]},
+      { name: 'price', label: 'Price (INR)', type: 'number' },
+      { name: 'description', label: 'Description', type: 'textarea' },
+      { name: 'benefits', label: 'Benefits', type: 'array', hint: 'Comma-separated benefits' },
+      { name: 'helps_with', label: 'Helps With', type: 'array', hint: 'What problems it solves' },
+      { name: 'image', label: 'Icon (emoji)', default: '✨' },
+      { name: 'expert_name', label: 'Expert Name (optional)' },
+      { name: 'expert_title', label: 'Expert Title (optional)' },
+      { name: 'expert_bio', label: 'Expert Bio (optional)', type: 'textarea' },
+      { name: 'featured', label: 'Featured', type: 'checkbox', default: false },
+      { name: 'active', label: 'Active', type: 'checkbox', default: true },
+    ]}
+  />
+);
+
+// Tiers Manager
+const TiersManager = () => (
+  <CatalogManager
+    entityType="tiers"
+    title="Packages / Tiers"
+    icon="📦"
+    columns={[
+      { key: 'tier_id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'topic_id', label: 'Topic' },
+      { key: 'price', label: 'Price', render: (v) => formatCurrency(v) },
+      { key: 'duration_weeks', label: 'Duration' },
+      { key: 'calls_included', label: 'Calls' },
+      { key: 'popular', label: 'Popular', render: (v) => v ? '⭐' : '' },
+      { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
+    ]}
+    formFields={[
+      { name: 'tier_id', label: 'Tier ID', isId: true, hint: 'Unique identifier (e.g., career_focussed)' },
+      { name: 'name', label: 'Display Name', hint: 'e.g., Focussed, Supported, Comprehensive' },
+      { name: 'topic_id', label: 'Topic ID', hint: 'Which topic this tier belongs to' },
+      { name: 'price', label: 'Price (INR)', type: 'number' },
+      { name: 'duration_weeks', label: 'Duration (weeks)', type: 'number', default: 4 },
+      { name: 'calls_included', label: 'Calls Included', type: 'number', default: 2 },
+      { name: 'call_duration_mins', label: 'Call Duration (mins)', type: 'number', default: 30 },
+      { name: 'features', label: 'Features', type: 'array', hint: 'Comma-separated feature list' },
+      { name: 'description', label: 'Description', type: 'textarea' },
+      { name: 'popular', label: 'Mark as Popular', type: 'checkbox', default: false },
+      { name: 'active', label: 'Active', type: 'checkbox', default: true },
+    ]}
+  />
+);
+
+// ============================================================================
 // MAIN ADMIN DASHBOARD
 // ============================================================================
 export default function AdminDashboard() {
