@@ -415,11 +415,35 @@ async def create_order(
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
     
+    # First try catalog (hardcoded tiers)
     catalog = get_simplified_catalog()
     tier = catalog.get_tier(request_data.tier_id)
     
-    if not tier:
+    # If not in catalog, check admin_tiers database (for standalone packages like Valentine's)
+    tier_from_db = None
+    if not tier and db:
+        tier_from_db = await db.admin_tiers.find_one(
+            {"tier_id": request_data.tier_id, "active": {"$ne": False}},
+            {"_id": 0}
+        )
+        if tier_from_db:
+            logger.info(f"Found tier in admin_tiers: {request_data.tier_id}")
+    
+    if not tier and not tier_from_db:
         raise HTTPException(status_code=404, detail="Tier not found")
+    
+    # Get price and tier info
+    if tier:
+        price_inr = tier.price_inr
+        tier_id = tier.tier_id
+        tier_level = tier.tier_level
+        topic_id = tier.topic_id
+    else:
+        # From admin_tiers database
+        price_inr = tier_from_db.get("price", 0)
+        tier_id = tier_from_db.get("tier_id")
+        tier_level = "standalone_package"
+        topic_id = tier_from_db.get("topic_id", "standalone")
     
     # Detect environment
     origin = request.headers.get('origin', '')
@@ -428,7 +452,7 @@ async def create_order(
     
     # Create Razorpay order
     order_id = f"order_{uuid.uuid4().hex[:12]}"
-    amount_paise = tier.price_inr * 100  # Convert to paise
+    amount_paise = price_inr * 100  # Convert to paise
     
     razorpay_order_id = f"rzp_order_{uuid.uuid4().hex[:12]}"
     
@@ -439,7 +463,7 @@ async def create_order(
                 "currency": "INR",
                 "receipt": order_id,
                 "notes": {
-                    "tier_id": tier.tier_id,
+                    "tier_id": tier_id,
                     "user_id": user_id
                 }
             })
@@ -454,11 +478,11 @@ async def create_order(
             "order_id": order_id,
             "razorpay_order_id": razorpay_order_id,
             "user_id": user_id,
-            "tier_id": tier.tier_id,
-            "tier_level": tier.tier_level,
-            "topic_id": tier.topic_id,
+            "tier_id": tier_id,
+            "tier_level": tier_level,
+            "topic_id": topic_id,
             "amount": amount_paise,
-            "amount_inr": tier.price_inr,
+            "amount_inr": price_inr,
             "scenario_ids": request_data.scenario_ids,
             "intake_notes": request_data.intake_notes,
             "expert_id": request_data.expert_id,
