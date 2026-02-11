@@ -1695,37 +1695,58 @@ const RemediesCatalogManager = () => (
   />
 );
 
-// Tiers Manager
-const TiersManager = () => (
-  <CatalogManager
-    entityType="tiers"
-    title="Packages / Tiers"
-    icon="📦"
-    columns={[
-      { key: 'tier_id', label: 'ID' },
-      { key: 'name', label: 'Name' },
-      { key: 'topic_id', label: 'Topic' },
-      { key: 'price', label: 'Price', render: (v) => formatCurrency(v) },
-      { key: 'duration_weeks', label: 'Duration' },
-      { key: 'calls_included', label: 'Calls' },
-      { key: 'popular', label: 'Popular', render: (v) => v ? '⭐' : '' },
-      { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
-    ]}
-    formFields={[
-      { name: 'tier_id', label: 'Tier ID', isId: true, hint: 'Unique identifier (e.g., career_focussed)' },
-      { name: 'name', label: 'Display Name', hint: 'e.g., Focussed, Supported, Comprehensive' },
-      { name: 'topic_id', label: 'Topic ID', hint: 'Which topic this tier belongs to' },
-      { name: 'price', label: 'Price (INR)', type: 'number' },
-      { name: 'duration_weeks', label: 'Duration (weeks)', type: 'number', default: 4 },
-      { name: 'calls_included', label: 'Calls Included', type: 'number', default: 2 },
-      { name: 'call_duration_mins', label: 'Call Duration (mins)', type: 'number', default: 30 },
-      { name: 'features', label: 'Features', type: 'array', hint: 'Comma-separated feature list' },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'popular', label: 'Mark as Popular', type: 'checkbox', default: false },
-      { name: 'active', label: 'Active', type: 'checkbox', default: true },
-    ]}
-  />
-);
+// Tiers Manager - with Expert Assignment
+const TiersManager = () => {
+  const [experts, setExperts] = useState([]);
+  const [topics, setTopics] = useState([]);
+  
+  useEffect(() => {
+    Promise.all([
+      adminFetch('/api/admin/experts'),
+      adminFetch('/api/admin/topics'),
+    ]).then(([expertData, topicData]) => {
+      setExperts(expertData.experts || []);
+      setTopics(topicData.topics || []);
+    }).catch(err => console.error('Failed to load data:', err));
+  }, []);
+
+  const topicOptions = [
+    { value: '', label: '-- No Topic (Standalone Package) --' },
+    ...topics.map(t => ({ value: t.topic_id, label: `${t.label} ${t.icon || ''}` }))
+  ];
+
+  return (
+    <CatalogManager
+      entityType="tiers"
+      title="Packages / Tiers"
+      icon="📦"
+      columns={[
+        { key: 'tier_id', label: 'ID' },
+        { key: 'name', label: 'Name' },
+        { key: 'topic_id', label: 'Topic', render: (v) => v || '(Standalone)' },
+        { key: 'price', label: 'Price', render: (v) => formatCurrency(v) },
+        { key: 'calls_included', label: 'Calls' },
+        { key: 'expert_ids', label: 'Experts', render: (v) => Array.isArray(v) && v.length > 0 ? `${v.length} assigned` : '-' },
+        { key: 'popular', label: 'Popular', render: (v) => v ? '⭐' : '' },
+        { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
+      ]}
+      formFields={[
+        { name: 'tier_id', label: 'Package ID', isId: true, hint: 'Unique identifier (e.g., career_focussed)' },
+        { name: 'name', label: 'Display Name', hint: 'e.g., Focussed, Supported, Comprehensive' },
+        { name: 'topic_id', label: 'Link to Topic', type: 'select', options: topicOptions, hint: 'Optional: Link to a topic or leave as standalone package' },
+        { name: 'price', label: 'Price (INR)', type: 'number' },
+        { name: 'duration_weeks', label: 'Duration (weeks)', type: 'number', default: 4 },
+        { name: 'calls_included', label: 'Calls Included', type: 'number', default: 2 },
+        { name: 'call_duration_mins', label: 'Call Duration (mins)', type: 'number', default: 30 },
+        { name: 'features', label: 'Features', type: 'array', hint: 'Comma-separated feature list' },
+        { name: 'description', label: 'Description', type: 'textarea' },
+        { name: 'expert_ids', label: 'Assigned Astrologers', type: 'expert-multi-select', experts: experts, hint: 'Select astrologers who can handle this package' },
+        { name: 'popular', label: 'Mark as Popular', type: 'checkbox', default: false },
+        { name: 'active', label: 'Active', type: 'checkbox', default: true },
+      ]}
+    />
+  );
+};
 
 // ============================================================================
 // MAIN ADMIN DASHBOARD
