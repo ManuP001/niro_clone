@@ -877,3 +877,661 @@ async def export_remedies_csv(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename=niro_remedies_{datetime.now().strftime('%Y%m%d')}.csv"}
     )
+
+
+# ============================================================================
+# TOPICS CRUD
+# ============================================================================
+
+class TopicCreate(BaseModel):
+    topic_id: str
+    label: str
+    icon: str = "📌"
+    tagline: str = ""
+    color: str = "gray"
+    order: int = 99
+    modalities: List[str] = []
+    active: bool = True
+
+class TopicUpdate(BaseModel):
+    label: Optional[str] = None
+    icon: Optional[str] = None
+    tagline: Optional[str] = None
+    color: Optional[str] = None
+    order: Optional[int] = None
+    modalities: Optional[List[str]] = None
+    active: Optional[bool] = None
+
+@router.get("/topics")
+async def list_admin_topics(
+    request: Request,
+    x_admin_token: str = Header(None),
+    include_inactive: bool = Query(default=False)
+):
+    """List all topics for admin management"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    query = {} if include_inactive else {"active": {"$ne": False}}
+    topics = await db.admin_topics.find(query, {"_id": 0}).sort("order", 1).to_list(100)
+    
+    return {"ok": True, "topics": topics, "count": len(topics)}
+
+@router.post("/topics")
+async def create_admin_topic(
+    request: Request,
+    topic: TopicCreate,
+    x_admin_token: str = Header(None)
+):
+    """Create a new topic"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    # Check if topic_id already exists
+    existing = await db.admin_topics.find_one({"topic_id": topic.topic_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Topic ID already exists")
+    
+    topic_dict = topic.model_dump()
+    topic_dict["created_at"] = datetime.now(timezone.utc)
+    topic_dict["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.admin_topics.insert_one(topic_dict)
+    
+    logger.info(f"Admin created topic: {topic.topic_id}")
+    return {"ok": True, "topic": {k: v for k, v in topic_dict.items() if k != "_id"}}
+
+@router.put("/topics/{topic_id}")
+async def update_admin_topic(
+    request: Request,
+    topic_id: str,
+    topic: TopicUpdate,
+    x_admin_token: str = Header(None)
+):
+    """Update an existing topic"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    update_data = {k: v for k, v in topic.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.admin_topics.update_one(
+        {"topic_id": topic_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    
+    updated = await db.admin_topics.find_one({"topic_id": topic_id}, {"_id": 0})
+    logger.info(f"Admin updated topic: {topic_id}")
+    return {"ok": True, "topic": updated}
+
+@router.delete("/topics/{topic_id}")
+async def delete_admin_topic(
+    request: Request,
+    topic_id: str,
+    x_admin_token: str = Header(None),
+    hard_delete: bool = Query(default=False)
+):
+    """Delete (soft or hard) a topic"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    if hard_delete:
+        result = await db.admin_topics.delete_one({"topic_id": topic_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Topic not found")
+        logger.info(f"Admin hard deleted topic: {topic_id}")
+    else:
+        result = await db.admin_topics.update_one(
+            {"topic_id": topic_id},
+            {"$set": {"active": False, "updated_at": datetime.now(timezone.utc)}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Topic not found")
+        logger.info(f"Admin soft deleted topic: {topic_id}")
+    
+    return {"ok": True, "message": f"Topic {'deleted' if hard_delete else 'deactivated'}"}
+
+
+# ============================================================================
+# EXPERTS CRUD
+# ============================================================================
+
+class ExpertCreate(BaseModel):
+    expert_id: str
+    name: str
+    modality: str
+    modality_label: str = ""
+    bio: str = ""
+    languages: str = "Hindi, English"
+    years_experience: int = 5
+    rating: float = 4.5
+    total_consults: int = 0
+    topics: List[str] = []
+    photo_url: str = ""
+    tags: List[str] = []
+    active: bool = True
+
+class ExpertUpdate(BaseModel):
+    name: Optional[str] = None
+    modality: Optional[str] = None
+    modality_label: Optional[str] = None
+    bio: Optional[str] = None
+    languages: Optional[str] = None
+    years_experience: Optional[int] = None
+    rating: Optional[float] = None
+    total_consults: Optional[int] = None
+    topics: Optional[List[str]] = None
+    photo_url: Optional[str] = None
+    tags: Optional[List[str]] = None
+    active: Optional[bool] = None
+
+@router.get("/experts")
+async def list_admin_experts(
+    request: Request,
+    x_admin_token: str = Header(None),
+    include_inactive: bool = Query(default=False),
+    topic: str = Query(default=None)
+):
+    """List all experts for admin management"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    query = {} if include_inactive else {"active": {"$ne": False}}
+    if topic:
+        query["topics"] = topic
+    
+    experts = await db.admin_experts.find(query, {"_id": 0}).sort("name", 1).to_list(500)
+    
+    return {"ok": True, "experts": experts, "count": len(experts)}
+
+@router.post("/experts")
+async def create_admin_expert(
+    request: Request,
+    expert: ExpertCreate,
+    x_admin_token: str = Header(None)
+):
+    """Create a new expert"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    existing = await db.admin_experts.find_one({"expert_id": expert.expert_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Expert ID already exists")
+    
+    expert_dict = expert.model_dump()
+    expert_dict["created_at"] = datetime.now(timezone.utc)
+    expert_dict["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.admin_experts.insert_one(expert_dict)
+    
+    logger.info(f"Admin created expert: {expert.expert_id}")
+    return {"ok": True, "expert": {k: v for k, v in expert_dict.items() if k != "_id"}}
+
+@router.put("/experts/{expert_id}")
+async def update_admin_expert(
+    request: Request,
+    expert_id: str,
+    expert: ExpertUpdate,
+    x_admin_token: str = Header(None)
+):
+    """Update an existing expert"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    update_data = {k: v for k, v in expert.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.admin_experts.update_one(
+        {"expert_id": expert_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Expert not found")
+    
+    updated = await db.admin_experts.find_one({"expert_id": expert_id}, {"_id": 0})
+    logger.info(f"Admin updated expert: {expert_id}")
+    return {"ok": True, "expert": updated}
+
+@router.delete("/experts/{expert_id}")
+async def delete_admin_expert(
+    request: Request,
+    expert_id: str,
+    x_admin_token: str = Header(None),
+    hard_delete: bool = Query(default=False)
+):
+    """Delete (soft or hard) an expert"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    if hard_delete:
+        result = await db.admin_experts.delete_one({"expert_id": expert_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Expert not found")
+        logger.info(f"Admin hard deleted expert: {expert_id}")
+    else:
+        result = await db.admin_experts.update_one(
+            {"expert_id": expert_id},
+            {"$set": {"active": False, "updated_at": datetime.now(timezone.utc)}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Expert not found")
+        logger.info(f"Admin soft deleted expert: {expert_id}")
+    
+    return {"ok": True, "message": f"Expert {'deleted' if hard_delete else 'deactivated'}"}
+
+
+# ============================================================================
+# REMEDIES CRUD
+# ============================================================================
+
+class RemedyCreate(BaseModel):
+    remedy_id: str
+    title: str
+    category: str  # healing, pooja, gemstone, kit, ritual
+    price: int
+    description: str = ""
+    subtitle: str = ""
+    benefits: List[str] = []
+    helps_with: List[str] = []
+    image: str = "✨"
+    featured: bool = False
+    active: bool = True
+    expert_name: Optional[str] = None
+    expert_title: Optional[str] = None
+    expert_bio: Optional[str] = None
+
+class RemedyUpdate(BaseModel):
+    title: Optional[str] = None
+    category: Optional[str] = None
+    price: Optional[int] = None
+    description: Optional[str] = None
+    subtitle: Optional[str] = None
+    benefits: Optional[List[str]] = None
+    helps_with: Optional[List[str]] = None
+    image: Optional[str] = None
+    featured: Optional[bool] = None
+    active: Optional[bool] = None
+    expert_name: Optional[str] = None
+    expert_title: Optional[str] = None
+    expert_bio: Optional[str] = None
+
+@router.get("/remedies-catalog")
+async def list_admin_remedies(
+    request: Request,
+    x_admin_token: str = Header(None),
+    include_inactive: bool = Query(default=False),
+    category: str = Query(default=None)
+):
+    """List all remedies for admin management"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    query = {} if include_inactive else {"active": {"$ne": False}}
+    if category:
+        query["category"] = category
+    
+    remedies = await db.admin_remedies.find(query, {"_id": 0}).sort("title", 1).to_list(200)
+    
+    return {"ok": True, "remedies": remedies, "count": len(remedies)}
+
+@router.post("/remedies-catalog")
+async def create_admin_remedy(
+    request: Request,
+    remedy: RemedyCreate,
+    x_admin_token: str = Header(None)
+):
+    """Create a new remedy"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    existing = await db.admin_remedies.find_one({"remedy_id": remedy.remedy_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Remedy ID already exists")
+    
+    remedy_dict = remedy.model_dump()
+    remedy_dict["created_at"] = datetime.now(timezone.utc)
+    remedy_dict["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.admin_remedies.insert_one(remedy_dict)
+    
+    logger.info(f"Admin created remedy: {remedy.remedy_id}")
+    return {"ok": True, "remedy": {k: v for k, v in remedy_dict.items() if k != "_id"}}
+
+@router.put("/remedies-catalog/{remedy_id}")
+async def update_admin_remedy(
+    request: Request,
+    remedy_id: str,
+    remedy: RemedyUpdate,
+    x_admin_token: str = Header(None)
+):
+    """Update an existing remedy"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    update_data = {k: v for k, v in remedy.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.admin_remedies.update_one(
+        {"remedy_id": remedy_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Remedy not found")
+    
+    updated = await db.admin_remedies.find_one({"remedy_id": remedy_id}, {"_id": 0})
+    logger.info(f"Admin updated remedy: {remedy_id}")
+    return {"ok": True, "remedy": updated}
+
+@router.delete("/remedies-catalog/{remedy_id}")
+async def delete_admin_remedy(
+    request: Request,
+    remedy_id: str,
+    x_admin_token: str = Header(None),
+    hard_delete: bool = Query(default=False)
+):
+    """Delete (soft or hard) a remedy"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    if hard_delete:
+        result = await db.admin_remedies.delete_one({"remedy_id": remedy_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Remedy not found")
+        logger.info(f"Admin hard deleted remedy: {remedy_id}")
+    else:
+        result = await db.admin_remedies.update_one(
+            {"remedy_id": remedy_id},
+            {"$set": {"active": False, "updated_at": datetime.now(timezone.utc)}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Remedy not found")
+        logger.info(f"Admin soft deleted remedy: {remedy_id}")
+    
+    return {"ok": True, "message": f"Remedy {'deleted' if hard_delete else 'deactivated'}"}
+
+
+# ============================================================================
+# TIERS/PACKAGES CRUD
+# ============================================================================
+
+class TierCreate(BaseModel):
+    tier_id: str
+    name: str  # e.g., "Focussed", "Supported", "Comprehensive"
+    topic_id: str  # Which topic this tier belongs to
+    price: int
+    duration_weeks: int = 4
+    calls_included: int = 2
+    call_duration_mins: int = 30
+    features: List[str] = []
+    description: str = ""
+    popular: bool = False
+    active: bool = True
+
+class TierUpdate(BaseModel):
+    name: Optional[str] = None
+    topic_id: Optional[str] = None
+    price: Optional[int] = None
+    duration_weeks: Optional[int] = None
+    calls_included: Optional[int] = None
+    call_duration_mins: Optional[int] = None
+    features: Optional[List[str]] = None
+    description: Optional[str] = None
+    popular: Optional[bool] = None
+    active: Optional[bool] = None
+
+@router.get("/tiers")
+async def list_admin_tiers(
+    request: Request,
+    x_admin_token: str = Header(None),
+    include_inactive: bool = Query(default=False),
+    topic_id: str = Query(default=None)
+):
+    """List all tiers for admin management"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    query = {} if include_inactive else {"active": {"$ne": False}}
+    if topic_id:
+        query["topic_id"] = topic_id
+    
+    tiers = await db.admin_tiers.find(query, {"_id": 0}).sort([("topic_id", 1), ("price", 1)]).to_list(500)
+    
+    return {"ok": True, "tiers": tiers, "count": len(tiers)}
+
+@router.post("/tiers")
+async def create_admin_tier(
+    request: Request,
+    tier: TierCreate,
+    x_admin_token: str = Header(None)
+):
+    """Create a new tier"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    existing = await db.admin_tiers.find_one({"tier_id": tier.tier_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Tier ID already exists")
+    
+    tier_dict = tier.model_dump()
+    tier_dict["created_at"] = datetime.now(timezone.utc)
+    tier_dict["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.admin_tiers.insert_one(tier_dict)
+    
+    logger.info(f"Admin created tier: {tier.tier_id}")
+    return {"ok": True, "tier": {k: v for k, v in tier_dict.items() if k != "_id"}}
+
+@router.put("/tiers/{tier_id}")
+async def update_admin_tier(
+    request: Request,
+    tier_id: str,
+    tier: TierUpdate,
+    x_admin_token: str = Header(None)
+):
+    """Update an existing tier"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    update_data = {k: v for k, v in tier.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.admin_tiers.update_one(
+        {"tier_id": tier_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Tier not found")
+    
+    updated = await db.admin_tiers.find_one({"tier_id": tier_id}, {"_id": 0})
+    logger.info(f"Admin updated tier: {tier_id}")
+    return {"ok": True, "tier": updated}
+
+@router.delete("/tiers/{tier_id}")
+async def delete_admin_tier(
+    request: Request,
+    tier_id: str,
+    x_admin_token: str = Header(None),
+    hard_delete: bool = Query(default=False)
+):
+    """Delete (soft or hard) a tier"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    
+    if hard_delete:
+        result = await db.admin_tiers.delete_one({"tier_id": tier_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Tier not found")
+        logger.info(f"Admin hard deleted tier: {tier_id}")
+    else:
+        result = await db.admin_tiers.update_one(
+            {"tier_id": tier_id},
+            {"$set": {"active": False, "updated_at": datetime.now(timezone.utc)}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Tier not found")
+        logger.info(f"Admin soft deleted tier: {tier_id}")
+    
+    return {"ok": True, "message": f"Tier {'deleted' if hard_delete else 'deactivated'}"}
+
+
+# ============================================================================
+# SEED DATA ENDPOINT (One-time migration from hardcoded to DB)
+# ============================================================================
+
+@router.post("/seed-catalog")
+async def seed_catalog_data(
+    request: Request,
+    x_admin_token: str = Header(None),
+    force: bool = Query(default=False, description="Force reseed even if data exists")
+):
+    """Seed initial catalog data from hardcoded values to database"""
+    if not verify_admin_token(x_admin_token):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    db = await get_db(request)
+    results = {"topics": 0, "experts": 0, "remedies": 0, "tiers": 0}
+    
+    # Check if data already exists
+    if not force:
+        existing_topics = await db.admin_topics.count_documents({})
+        existing_experts = await db.admin_experts.count_documents({})
+        existing_remedies = await db.admin_remedies.count_documents({})
+        
+        if existing_topics > 0 or existing_experts > 0 or existing_remedies > 0:
+            return {
+                "ok": False,
+                "message": "Data already exists. Use force=true to reseed.",
+                "existing": {
+                    "topics": existing_topics,
+                    "experts": existing_experts,
+                    "remedies": existing_remedies
+                }
+            }
+    
+    # Seed Topics
+    topics_data = [
+        {"topic_id": "career", "label": "Career & Work", "icon": "💼", "tagline": "Navigate your professional path", "color": "blue", "order": 1, "modalities": ["vedic_astrologer", "numerologist", "life_coach"], "active": True},
+        {"topic_id": "money", "label": "Money & Financial Stability", "icon": "💰", "tagline": "Achieve financial clarity", "color": "yellow", "order": 2, "modalities": ["vedic_astrologer", "numerologist", "life_coach"], "active": True},
+        {"topic_id": "health", "label": "Health & Wellbeing", "icon": "🏥", "tagline": "Optimize your vitality", "color": "green", "order": 3, "modalities": ["vedic_astrologer", "healer", "life_coach", "spiritual_guide"], "active": True},
+        {"topic_id": "marriage", "label": "Marriage & Family", "icon": "💑", "tagline": "Strengthen family bonds", "color": "purple", "order": 4, "modalities": ["vedic_astrologer", "marriage_counselor", "relationship_counselor", "palmist"], "active": True},
+        {"topic_id": "children", "label": "Children & Education", "icon": "👶", "tagline": "Guide your child's future", "color": "orange", "order": 5, "modalities": ["vedic_astrologer", "numerologist", "life_coach", "healer"], "active": True},
+        {"topic_id": "love", "label": "Love & Relationships", "icon": "💕", "tagline": "Find harmony in love", "color": "pink", "order": 6, "modalities": ["vedic_astrologer", "tarot", "relationship_counselor", "psychic"], "active": True},
+        {"topic_id": "business", "label": "Business & Entrepreneurship", "icon": "🚀", "tagline": "Grow your venture", "color": "indigo", "order": 7, "modalities": ["vedic_astrologer", "numerologist", "life_coach"], "active": True},
+        {"topic_id": "travel", "label": "Travel / Relocation / Foreign Settlement", "icon": "✈️", "tagline": "Plan your move", "color": "cyan", "order": 8, "modalities": ["vedic_astrologer", "numerologist", "life_coach"], "active": True},
+        {"topic_id": "property", "label": "Property & Home", "icon": "🏠", "tagline": "Make smart property decisions", "color": "amber", "order": 9, "modalities": ["vedic_astrologer", "numerologist"], "active": True},
+        {"topic_id": "mental_health", "label": "Mental Health / Stress / Emotional Balance", "icon": "🧠", "tagline": "Find inner peace", "color": "teal", "order": 10, "modalities": ["healer", "life_coach", "spiritual_guide", "psychic", "wellness_counselor"], "active": True},
+        {"topic_id": "spiritual", "label": "Spiritual Growth / Purpose", "icon": "🙏", "tagline": "Discover your path", "color": "violet", "order": 11, "modalities": ["spiritual_guide", "vedic_astrologer", "healer", "psychic"], "active": True},
+        {"topic_id": "legal", "label": "Legal / Conflict / Disputes", "icon": "⚖️", "tagline": "Resolve with clarity", "color": "slate", "order": 12, "modalities": ["vedic_astrologer", "numerologist"], "active": True},
+        {"topic_id": "meditation", "label": "Meditation & Mindfulness", "icon": "🧘", "tagline": "Cultivate inner stillness", "color": "indigo", "order": 13, "modalities": ["meditation_guru", "spiritual_guide", "healer", "life_coach"], "active": True},
+        {"topic_id": "counseling", "label": "Counseling & Life Guidance", "icon": "💬", "tagline": "Professional support for life challenges", "color": "emerald", "order": 14, "modalities": ["wellness_counselor", "life_coach", "relationship_counselor", "spiritual_guide"], "active": True},
+    ]
+    
+    for topic in topics_data:
+        topic["created_at"] = datetime.now(timezone.utc)
+        topic["updated_at"] = datetime.now(timezone.utc)
+        await db.admin_topics.update_one(
+            {"topic_id": topic["topic_id"]},
+            {"$set": topic},
+            upsert=True
+        )
+        results["topics"] += 1
+    
+    # Seed Remedies
+    remedies_data = [
+        {"remedy_id": "chakra_balance", "title": "Chakra Balance Program", "subtitle": "3 Guided Sessions", "category": "healing", "price": 3500, "description": "A structured 3-session chakra healing plan to feel calmer, clearer, and more grounded", "benefits": ["3 × guided chakra healing sessions", "Daily micro-practice plan (5-10 mins)", "Guided meditation support", "Diet guidance for energy balance", "24-hour follow-up support"], "helps_with": ["Stress, anxiety, overthinking", "Emotional heaviness, feeling stuck", "Low confidence, low energy"], "image": "🧘", "featured": True, "active": True, "expert_name": "Anu Khanna", "expert_title": "Vedic Astrology + Chakra Healing", "expert_bio": "Anu blends chakra healing with yoga and meditation to help you find calm, clarity, and alignment."},
+        {"remedy_id": "santan_pooja", "title": "Santan / Fertility Pooja", "category": "pooja", "price": 2499, "description": "Verified blessing for fertility and conception support", "benefits": ["Performed by verified priests", "Includes prasad delivery", "60-day prayer cycle"], "image": "🙏", "featured": False, "active": True},
+        {"remedy_id": "shanti_pooja", "title": "Shanti / Peace Pooja", "category": "pooja", "price": 1999, "description": "Calming ritual for mental peace and harmony", "benefits": ["Reduces stress and anxiety", "Promotes peaceful environment", "7-day ritual cycle"], "image": "🕯️", "featured": False, "active": True},
+        {"remedy_id": "lakshmi_pooja", "title": "Lakshmi Prosperity Pooja", "category": "pooja", "price": 2499, "description": "Attract abundance and prosperity", "benefits": ["Attracts wealth energy", "Removes financial blocks", "Includes lakshmi yantra"], "image": "✨", "featured": False, "active": True},
+        {"remedy_id": "obstacle_removal", "title": "Obstacle Removal Pooja", "category": "pooja", "price": 1999, "description": "Clear obstacles from your path", "benefits": ["Removes negative influences", "Clears karmic blocks", "Ganesh blessing"], "image": "🔱", "featured": False, "active": True},
+        {"remedy_id": "gemstone_career", "title": "Career & Abundance Gemstone", "category": "gemstone", "price": 1499, "description": "Certified gemstone for career growth", "benefits": ["Lab certified", "Energized gemstone", "Career focus"], "image": "💎", "featured": False, "active": True},
+        {"remedy_id": "gemstone_calm", "title": "Calm & Grounding Gemstone", "category": "gemstone", "price": 1499, "description": "Natural stone for emotional balance", "benefits": ["Reduces anxiety", "Better sleep", "Emotional stability"], "image": "💎", "featured": False, "active": True},
+        {"remedy_id": "gemstone_relationship", "title": "Relationship Harmony Gemstone", "category": "gemstone", "price": 1499, "description": "Stone for love and relationships", "benefits": ["Attracts love", "Heals heart chakra", "Improves communication"], "image": "💎", "featured": False, "active": True},
+        {"remedy_id": "stress_sleep_kit", "title": "Stress & Sleep Kit", "category": "kit", "price": 899, "description": "Natural remedies for better rest", "benefits": ["Herbal supplements", "Sleep aid aromatherapy", "Guided meditation audio"], "image": "😴", "featured": False, "active": True},
+        {"remedy_id": "protection_kit", "title": "Protection Kit", "category": "kit", "price": 799, "description": "Ward off negative energies", "benefits": ["Protection amulet", "Cleansing herbs", "Daily protection mantra"], "image": "🛡️", "featured": False, "active": True},
+        {"remedy_id": "prosperity_kit", "title": "Prosperity Kit", "category": "kit", "price": 999, "description": "Attract abundance and success", "benefits": ["Wealth yantra", "Prosperity herbs", "Abundance affirmations"], "image": "💫", "featured": False, "active": True},
+        {"remedy_id": "vitality_kit", "title": "Vitality Kit", "category": "kit", "price": 799, "description": "Boost your energy naturally", "benefits": ["Energy supplements", "Vitality herbs", "Morning ritual guide"], "image": "⚡", "featured": False, "active": True},
+        {"remedy_id": "venus_harmony", "title": "Venus Harmony Ritual", "category": "ritual", "price": 999, "description": "Enhance love and beauty in life", "benefits": ["Venus mantra practice", "Relationship healing", "Beauty ritual"], "image": "💖", "featured": False, "active": True},
+        {"remedy_id": "mercury_focus", "title": "Mercury Focus Ritual", "category": "ritual", "price": 799, "description": "Sharpen mind and communication", "benefits": ["Mercury mantra", "Communication enhancement", "Mental clarity"], "image": "🧠", "featured": False, "active": True},
+        {"remedy_id": "moon_calm", "title": "Moon-Mercury Calm Ritual", "category": "ritual", "price": 899, "description": "Balance emotions and thoughts", "benefits": ["Moon mantra", "Emotional balance", "Mental peace"], "image": "🌙", "featured": False, "active": True},
+    ]
+    
+    for remedy in remedies_data:
+        remedy["created_at"] = datetime.now(timezone.utc)
+        remedy["updated_at"] = datetime.now(timezone.utc)
+        await db.admin_remedies.update_one(
+            {"remedy_id": remedy["remedy_id"]},
+            {"$set": remedy},
+            upsert=True
+        )
+        results["remedies"] += 1
+    
+    # Seed sample tiers for career topic
+    tiers_data = [
+        {"tier_id": "career_focussed", "name": "Focussed", "topic_id": "career", "price": 2999, "duration_weeks": 4, "calls_included": 2, "call_duration_mins": 30, "features": ["2 expert calls (30 mins each)", "Unlimited chat support", "Career roadmap"], "description": "Quick guidance for immediate career decisions", "popular": False, "active": True},
+        {"tier_id": "career_supported", "name": "Supported", "topic_id": "career", "price": 4999, "duration_weeks": 6, "calls_included": 3, "call_duration_mins": 45, "features": ["3 expert calls (45 mins each)", "Unlimited chat support", "Detailed career analysis", "Monthly follow-up"], "description": "Comprehensive support for career growth", "popular": True, "active": True},
+        {"tier_id": "career_comprehensive", "name": "Comprehensive", "topic_id": "career", "price": 7999, "duration_weeks": 8, "calls_included": 5, "call_duration_mins": 60, "features": ["5 expert calls (60 mins each)", "Priority chat support", "Complete career blueprint", "Quarterly reviews"], "description": "Full career transformation program", "popular": False, "active": True},
+    ]
+    
+    for tier in tiers_data:
+        tier["created_at"] = datetime.now(timezone.utc)
+        tier["updated_at"] = datetime.now(timezone.utc)
+        await db.admin_tiers.update_one(
+            {"tier_id": tier["tier_id"]},
+            {"$set": tier},
+            upsert=True
+        )
+        results["tiers"] += 1
+    
+    logger.info(f"Admin seeded catalog data: {results}")
+    return {"ok": True, "message": "Catalog data seeded successfully", "results": results}
+
