@@ -129,15 +129,17 @@ Preview Modal (Live Data)
 - Close button to dismiss
 
 ### Hierarchical Structure
-**Categories (3)**
+**Categories (4)**
 - Love & Relationships: Dating, commitment, healing, family dynamics
+- **Valentine's Special**: NOT OFFICIAL YET, READY FOR MARRIAGE?, MOVE ON OR STAY?
 - Career & Money: Work direction, stability, timing, growth
 - Health & Wellness: Stress, recovery, energy, emotional balance
 
-**Tiles (18 total, 6 per category)**
-- Love: Healing, Dating, Marriage, Trust, Family, Closure
-- Career: Clarity, Job Change, Money, Timing, Work Stress, Office
-- Health: Stress, Sleep, Energy, Timing, Emotional, Recovery
+**Tiles (21 total)**
+- Love: Healing, Dating, Marriage, Trust, Family, Closure (6)
+- **Valentine's Special**: NOT OFFICIAL YET, READY FOR MARRIAGE?, MOVE ON OR STAY? (3) - NEW
+- Career: Clarity, Job Change, Money, Timing, Work Stress, Office (6)
+- Health: Stress, Sleep, Energy, Timing, Emotional, Recovery (6)
 
 ---
 
