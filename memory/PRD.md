@@ -7,7 +7,7 @@ Build a comprehensive astrology consultation platform with:
 - Razorpay payment integration
 - Kundli/birth chart generation via Vedic API
 - AI-powered chat (Mira)
-- Admin dashboard for business monitoring
+- Admin dashboard for business monitoring with hierarchical content management
 
 ## User Personas
 1. **Seekers** - Users looking for astrological guidance
@@ -20,7 +20,7 @@ Build a comprehensive astrology consultation platform with:
 - Topic-based consultation packages (Career, Relationships, etc.)
 - Expert chat threads
 - Razorpay payment processing
-- Admin dashboard with full CRUD for catalog management
+- Admin dashboard with full CRUD for hierarchical catalog management
 
 ---
 
@@ -40,6 +40,8 @@ Build a comprehensive astrology consultation platform with:
 
 ### Phase 3: Admin Dashboard CRUD ✅
 **Backend APIs** (`/app/backend/routes/admin.py`):
+- Categories CRUD: `GET/POST/PUT/DELETE /api/admin/categories`
+- Tiles CRUD: `GET/POST/PUT/DELETE /api/admin/tiles`
 - Topics CRUD: `GET/POST/PUT/DELETE /api/admin/topics`
 - Experts CRUD: `GET/POST/PUT/DELETE /api/admin/experts`
 - Remedies CRUD: `GET/POST/PUT/DELETE /api/admin/remedies-catalog`
@@ -48,43 +50,71 @@ Build a comprehensive astrology consultation platform with:
 
 **Frontend Admin UI** (`/app/frontend/src/components/admin/AdminDashboard.jsx`):
 - Generic `CatalogManager` component for all CRUD operations
-- `TopicsManager` - Manage topics shown on home screen
-- `ExpertsManager` - Manage expert profiles
-- `RemediesCatalogManager` - Manage remedies catalog
-- `TiersManager` - Manage consultation packages/tiers
+- **Homepage Section:**
+  - `CategoriesManager` - Manage 3 homepage categories
+  - `TilesManager` - Manage 18 homepage tiles
+- **Catalog Section:**
+  - `TopicsManager` - Manage topics
+  - `ExpertsManager` - Manage expert profiles
+  - `RemediesCatalogManager` - Manage remedies catalog
+  - `TiersManager` - Manage consultation packages/tiers
 
 **New MongoDB Collections:**
+- `admin_categories` - 3 homepage category groupings
+- `admin_tiles` - 18 homepage tiles (6 per category)
 - `admin_topics` - Dynamic topics configuration
-- `admin_experts` - Expert profiles
-- `admin_remedies` - Remedies catalog
-- `admin_tiers` - Consultation packages
+- `admin_experts` - Expert profiles (31 total)
+- `admin_remedies` - Remedies catalog (15 total)
+- `admin_tiers` - Consultation packages (112+ total)
 
 ---
 
 ## Admin Dashboard Features
 
+### Hierarchical Structure (New!)
+**Categories (3)**
+- Love & Relationships: Dating, commitment, healing, family dynamics
+- Career & Money: Work direction, stability, timing, growth
+- Health & Wellness: Stress, recovery, energy, emotional balance
+
+**Tiles (18 total, 6 per category)**
+- Love: Healing, Dating, Marriage, Trust, Family, Closure
+- Career: Clarity, Job Change, Money, Timing, Work Stress, Office
+- Health: Stress, Sleep, Energy, Timing, Emotional, Recovery
+
 ### What Admins Can Do:
-1. **Topics Management**
+1. **Categories Management**
+   - Add new homepage category groupings
+   - Edit category title, helper copy, order
+   - Activate/deactivate categories
+
+2. **Tiles Management**
+   - Add new homepage tiles
+   - Assign tiles to categories
+   - Edit short title, full title, icon, order
+   - Activate/deactivate tiles
+
+3. **Topics Management**
    - Add new topics (appears as tile on home screen)
    - Edit topic name, icon, tagline, color, order
    - Assign modalities (expert types) to topics
    - Activate/deactivate topics
 
-2. **Experts Management**
+4. **Experts Management**
    - Add new expert profiles
    - Edit name, bio, modality, languages, experience
    - Assign experts to topics
    - Set rating and total consults
    - Add photo URL
 
-3. **Remedies Management**
+5. **Remedies Management**
    - Add new remedies (appears in Remedies section)
    - Edit price, description, benefits
    - Categorize: healing, pooja, gemstone, kit, ritual
    - Mark as featured
    - Activate/deactivate
 
-4. **Packages/Tiers Management**
+6. **Packages/Tiers Management**
    - Create tiers for each topic
    - Set price, duration, calls included
    - Define features list
@@ -97,17 +127,23 @@ Build a comprehensive astrology consultation platform with:
 
 ### P0 - Deploy Required
 - [x] All Phase 1-3 changes complete
+- [x] Admin Dashboard hierarchical refactor complete
 - [ ] Redeploy to production
 
 ### P1 - Enhancements
-- [ ] Connect Topics/Tiers from admin DB to frontend display
+- [ ] Connect Categories/Tiles from admin DB to frontend homepage display
 - [ ] Expert photo upload functionality
 - [ ] Schedule call integration
+- [ ] Expert Chat Selection - Allow customers to choose specific astrologer
 
 ### P2 - Tech Debt
 - [ ] Remove obsolete JWT auth code
 - [ ] Data migration script for existing data
 - [ ] Cache catalog data for performance
+
+### P3 - Verification Pending
+- [ ] Verify Google OAuth double login is fully resolved
+- [ ] Verify Admin Dashboard revenue calculation accuracy
 
 ---
 
@@ -116,12 +152,13 @@ Build a comprehensive astrology consultation platform with:
 ### Frontend
 - React with Tailwind CSS
 - Runtime backend URL via `getBackendUrl()`
-- Admin dashboard with CRUD components
+- Admin dashboard with hierarchical CRUD components
 
 ### Backend
 - FastAPI on port 8001
 - MongoDB collections for catalog data
 - Session token + JWT authentication
+- Persistent admin sessions in MongoDB
 
 ### Key Files
 - `/app/frontend/src/components/admin/AdminDashboard.jsx` - Admin UI with CRUD
@@ -130,10 +167,13 @@ Build a comprehensive astrology consultation platform with:
 - `/app/frontend/src/config.js` - Backend URL configuration
 
 ### Database Collections (Catalog)
-- `admin_topics` - Topics configuration
-- `admin_experts` - Expert profiles  
-- `admin_remedies` - Remedies catalog
-- `admin_tiers` - Package tiers
+- `admin_categories` - Homepage categories (3)
+- `admin_tiles` - Homepage tiles (18)
+- `admin_topics` - Topics configuration (14)
+- `admin_experts` - Expert profiles (31)
+- `admin_remedies` - Remedies catalog (15)
+- `admin_tiers` - Package tiers (112+)
+- `admin_sessions` - Persistent admin login sessions
 
 ---
 
@@ -141,3 +181,9 @@ Build a comprehensive astrology consultation platform with:
 - **Admin Dashboard:** NiroAdmin / NewAdmin@123
 - **Vedic API Key:** `6792dc58-2dda-530b-82de-87777c7ecfe5`
 - **Preview URL:** https://hierarchy-crud.preview.emergentagent.com/admin
+
+---
+
+## Test Reports
+- `/app/test_reports/iteration_10.json` - Admin hierarchy CRUD tests (100% pass rate)
+- `/app/backend/tests/test_admin_hierarchy_crud.py` - Backend test file
