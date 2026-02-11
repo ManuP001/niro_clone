@@ -1504,6 +1504,108 @@ const TileIconPicker = ({ value, onChange }) => {
   );
 };
 
+// Expert Multi-Select Component for assigning astrologers to packages
+const ExpertMultiSelect = ({ experts, selectedIds, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const toggleExpert = (expertId) => {
+    const newSelection = selectedIds.includes(expertId)
+      ? selectedIds.filter(id => id !== expertId)
+      : [...selectedIds, expertId];
+    onChange(newSelection);
+  };
+
+  const filteredExperts = experts.filter(e => 
+    e.name?.toLowerCase().includes(search.toLowerCase()) ||
+    e.modality?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const selectedExperts = experts.filter(e => selectedIds.includes(e.expert_id));
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg flex items-center gap-2 bg-white hover:bg-gray-50 text-left"
+      >
+        {selectedExperts.length > 0 ? (
+          <div className="flex flex-wrap gap-1 flex-1">
+            {selectedExperts.slice(0, 3).map(e => (
+              <span key={e.expert_id} className="px-2 py-0.5 bg-teal-100 text-teal-700 text-xs rounded">
+                {e.name}
+              </span>
+            ))}
+            {selectedExperts.length > 3 && (
+              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded">
+                +{selectedExperts.length - 3} more
+              </span>
+            )}
+          </div>
+        ) : (
+          <span className="text-gray-400 flex-1">Select astrologers...</span>
+        )}
+        <LucideIcons.ChevronDown className="w-4 h-4 text-gray-400" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-xl max-h-80 overflow-hidden">
+          {/* Search */}
+          <div className="p-2 border-b sticky top-0 bg-white">
+            <input
+              type="text"
+              placeholder="Search experts..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full px-2 py-1 text-sm border border-gray-200 rounded"
+            />
+          </div>
+          
+          {/* Expert List */}
+          <div className="p-2 overflow-y-auto max-h-56">
+            {filteredExperts.length === 0 ? (
+              <p className="text-sm text-gray-500 text-center py-2">No experts found</p>
+            ) : (
+              filteredExperts.map(expert => (
+                <label
+                  key={expert.expert_id}
+                  className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-50 ${
+                    selectedIds.includes(expert.expert_id) ? 'bg-teal-50' : ''
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.includes(expert.expert_id)}
+                    onChange={() => toggleExpert(expert.expert_id)}
+                    className="w-4 h-4 text-teal-600"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{expert.name}</p>
+                    <p className="text-xs text-gray-500">{expert.modality_label || expert.modality} • ⭐ {expert.rating}</p>
+                  </div>
+                </label>
+              ))
+            )}
+          </div>
+          
+          {/* Footer */}
+          <div className="p-2 border-t bg-gray-50 flex justify-between items-center">
+            <span className="text-xs text-gray-500">{selectedIds.length} selected</span>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="px-3 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Topics Manager - with visual Lucide icon picker
 const TopicsManager = () => (
   <CatalogManager
