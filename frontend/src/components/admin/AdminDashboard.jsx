@@ -1058,13 +1058,17 @@ export default function AdminDashboard() {
         <div className="p-6 border-b border-gray-800"><h1 className="text-xl font-bold">Niro Admin</h1></div>
         <nav className="flex-1 p-4">
           {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setCurrentPage(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 ${currentPage === item.id ? 'bg-teal-600' : 'hover:bg-gray-800'}`}
-            >
-              <span>{item.icon}</span><span>{item.label}</span>
-            </button>
+            item.id.startsWith('divider') ? (
+              <div key={item.id} className="text-xs text-gray-500 px-4 py-3 mt-2">{item.label}</div>
+            ) : (
+              <button
+                key={item.id}
+                onClick={() => setCurrentPage(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg mb-1 ${currentPage === item.id ? 'bg-teal-600' : 'hover:bg-gray-800'}`}
+              >
+                <span>{item.icon}</span><span>{item.label}</span>
+              </button>
+            )
           ))}
         </nav>
         <div className="p-4 border-t border-gray-800">
