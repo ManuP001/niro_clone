@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import HomeScreen from './HomeScreen';
 import TopicLandingPage from './TopicLandingPage';
+import PackageLandingPage from './PackageLandingPage';
 import CheckoutScreen from './CheckoutScreen';
 import PlanDashboard from './PlanDashboard';
 import MyPackScreen from './MyPackScreen';
