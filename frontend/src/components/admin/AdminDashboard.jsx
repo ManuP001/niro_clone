@@ -19,13 +19,21 @@ const adminFetch = async (endpoint, options = {}) => {
   };
   
   const response = await fetch(`${backendUrl}${endpoint}`, { ...options, headers });
+  const data = await response.json();
   
-  if (response.status === 401) {
+  // Only clear token on explicit auth failures, not network errors
+  if (response.status === 401 && !endpoint.includes('/login')) {
+    console.warn('Admin session expired or invalid');
     clearAdminToken();
-    window.location.reload();
+    // Don't auto-reload, let the component handle re-login
+    throw new Error('Session expired. Please login again.');
   }
   
-  return response.json();
+  if (!response.ok) {
+    throw new Error(data.detail || data.message || 'Request failed');
+  }
+  
+  return data;
 };
 
 const formatCurrency = (amount) => {
