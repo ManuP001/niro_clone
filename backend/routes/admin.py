@@ -256,7 +256,8 @@ async def list_users(
     sort_order: str = Query(default="desc", description="Sort order: asc, desc")
 ):
     """List all users with pagination, filtering, and sorting"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -391,7 +392,8 @@ async def get_user_detail(
     x_admin_token: str = Header(None)
 ):
     """Get detailed user info including all orders"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -470,7 +472,8 @@ async def list_orders(
     sort_order: str = Query(default="desc", description="Sort order: asc, desc")
 ):
     """List all orders from both simplified and v2 collections"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -593,7 +596,8 @@ async def list_plans(
     topic: str = Query(default=None)
 ):
     """List all plans"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -645,7 +649,8 @@ async def list_remedy_orders(
     category: str = Query(default=None)
 ):
     """List all remedy orders"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -707,7 +712,8 @@ async def export_users_csv(
     source: str = Query(default="all")
 ):
     """Export users as CSV"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -772,7 +778,8 @@ async def export_orders_csv(
     x_admin_token: str = Header(None)
 ):
     """Export all orders as CSV"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -839,7 +846,8 @@ async def export_plans_csv(
     x_admin_token: str = Header(None)
 ):
     """Export plans as CSV"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -888,7 +896,8 @@ async def export_remedies_csv(
     x_admin_token: str = Header(None)
 ):
     """Export remedy orders as CSV"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -967,7 +976,8 @@ async def list_admin_topics(
     include_inactive: bool = Query(default=False)
 ):
     """List all topics for admin management"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -984,7 +994,8 @@ async def create_admin_topic(
     x_admin_token: str = Header(None)
 ):
     """Create a new topic"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1011,7 +1022,8 @@ async def update_admin_topic(
     x_admin_token: str = Header(None)
 ):
     """Update an existing topic"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1042,7 +1054,8 @@ async def delete_admin_topic(
     hard_delete: bool = Query(default=False)
 ):
     """Delete (soft or hard) a topic"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1105,7 +1118,8 @@ async def list_admin_experts(
     topic: str = Query(default=None)
 ):
     """List all experts for admin management"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1125,7 +1139,8 @@ async def create_admin_expert(
     x_admin_token: str = Header(None)
 ):
     """Create a new expert"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1151,7 +1166,8 @@ async def update_admin_expert(
     x_admin_token: str = Header(None)
 ):
     """Update an existing expert"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1182,7 +1198,8 @@ async def delete_admin_expert(
     hard_delete: bool = Query(default=False)
 ):
     """Delete (soft or hard) an expert"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1247,7 +1264,8 @@ async def list_admin_remedies(
     category: str = Query(default=None)
 ):
     """List all remedies for admin management"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1267,7 +1285,8 @@ async def create_admin_remedy(
     x_admin_token: str = Header(None)
 ):
     """Create a new remedy"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1293,7 +1312,8 @@ async def update_admin_remedy(
     x_admin_token: str = Header(None)
 ):
     """Update an existing remedy"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1324,7 +1344,8 @@ async def delete_admin_remedy(
     hard_delete: bool = Query(default=False)
 ):
     """Delete (soft or hard) a remedy"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1383,7 +1404,8 @@ async def list_admin_tiers(
     topic_id: str = Query(default=None)
 ):
     """List all tiers for admin management"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1403,7 +1425,8 @@ async def create_admin_tier(
     x_admin_token: str = Header(None)
 ):
     """Create a new tier"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1429,7 +1452,8 @@ async def update_admin_tier(
     x_admin_token: str = Header(None)
 ):
     """Update an existing tier"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1460,7 +1484,8 @@ async def delete_admin_tier(
     hard_delete: bool = Query(default=False)
 ):
     """Delete (soft or hard) a tier"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
@@ -1493,7 +1518,8 @@ async def seed_catalog_data(
     force: bool = Query(default=False, description="Force reseed even if data exists")
 ):
     """Seed initial catalog data from hardcoded values to database"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
