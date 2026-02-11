@@ -2248,3 +2248,113 @@ async def get_public_tile(request: Request, tile_id: str):
         "linked_package": linked_package
     }
 
+
+@router.get("/export/valentine-data")
+async def export_valentine_data(
+    request: Request,
+    x_admin_token: str = Header(None),
+):
+    """
+    Export all Valentine's Special data (category, tiles, packages) for syncing to production.
+    Returns JSON that can be directly imported via /admin/import/catalog-data endpoint.
+    """
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    # Get Valentine's category
+    category = await db.admin_categories.find_one(
+        {"category_id": "valentine-special"},
+        {"_id": 0}
+    )
+    
+    # Get Valentine's tiles
+    tiles = await db.admin_tiles.find(
+        {"category_id": "valentine-special"},
+        {"_id": 0}
+    ).to_list(20)
+    
+    # Get linked packages
+    package_ids = [t.get("linked_package_id") for t in tiles if t.get("linked_package_id")]
+    packages = await db.admin_tiers.find(
+        {"tier_id": {"$in": package_ids}},
+        {"_id": 0}
+    ).to_list(20)
+    
+    return {
+        "ok": True,
+        "export_type": "valentine_special",
+        "data": {
+            "category": category,
+            "tiles": tiles,
+            "packages": packages
+        }
+    }
+
+
+@router.post("/import/catalog-data")
+async def import_catalog_data(
+    request: Request,
+    x_admin_token: str = Header(None),
+):
+    """
+    Import catalog data (categories, tiles, packages).
+    Used to sync data from testing to production environment.
+    """
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    body = await request.json()
+    data = body.get("data", {})
+    
+    results = {
+        "categories_imported": 0,
+        "tiles_imported": 0,
+        "packages_imported": 0,
+        "errors": []
+    }
+    
+    # Import category
+    if data.get("category"):
+        cat = data["category"]
+        try:
+            await db.admin_categories.update_one(
+                {"category_id": cat.get("category_id")},
+                {"$set": cat},
+                upsert=True
+            )
+            results["categories_imported"] += 1
+        except Exception as e:
+            results["errors"].append(f"Category error: {str(e)}")
+    
+    # Import tiles
+    for tile in data.get("tiles", []):
+        try:
+            await db.admin_tiles.update_one(
+                {"tile_id": tile.get("tile_id")},
+                {"$set": tile},
+                upsert=True
+            )
+            results["tiles_imported"] += 1
+        except Exception as e:
+            results["errors"].append(f"Tile error: {str(e)}")
+    
+    # Import packages
+    for pkg in data.get("packages", []):
+        try:
+            await db.admin_tiers.update_one(
+                {"tier_id": pkg.get("tier_id")},
+                {"$set": pkg},
+                upsert=True
+            )
+            results["packages_imported"] += 1
+        except Exception as e:
+            results["errors"].append(f"Package error: {str(e)}")
+    
+    return {
+        "ok": True,
+        "message": "Import completed",
+        "results": results
+    }
+
