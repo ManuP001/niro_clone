@@ -421,7 +421,7 @@ async def create_order(
     
     # If not in catalog, check admin_tiers database (for standalone packages like Valentine's)
     tier_from_db = None
-    if not tier and db:
+    if not tier and db is not None:
         logger.info(f"Tier {request_data.tier_id} not in catalog, checking admin_tiers database...")
         try:
             tier_from_db = await db.admin_tiers.find_one(
@@ -437,7 +437,7 @@ async def create_order(
                 logger.info(f"Sample tiers in DB: {[t.get('tier_id') for t in sample_tiers]}")
         except Exception as e:
             logger.error(f"Error checking admin_tiers: {e}")
-    elif not db:
+    elif db is None:
         logger.warning("Database connection not available for admin_tiers lookup")
     
     if not tier and not tier_from_db:
