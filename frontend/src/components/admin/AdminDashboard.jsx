@@ -1044,7 +1044,10 @@ export default function AdminDashboard() {
     { id: 'orders', label: 'Orders', icon: '💰' },
     { id: 'plans', label: 'Plans', icon: '📦' },
     { id: 'remedies', label: 'Remedy Orders', icon: '🙏' },
-    { id: 'divider1', label: '─── Catalog Management ───', icon: '' },
+    { id: 'divider1', label: '─── Homepage ───', icon: '' },
+    { id: 'manage-categories', label: 'Categories (3)', icon: '📂' },
+    { id: 'manage-tiles', label: 'Tiles (18)', icon: '🎯' },
+    { id: 'divider2', label: '─── Catalog ───', icon: '' },
     { id: 'manage-topics', label: 'Topics', icon: '📌' },
     { id: 'manage-experts', label: 'Experts', icon: '👤' },
     { id: 'manage-remedies', label: 'Remedies', icon: '✨' },
@@ -1057,6 +1060,8 @@ export default function AdminDashboard() {
       case 'orders': return <OrdersList environment={environment} />;
       case 'plans': return <PlansList environment={environment} />;
       case 'remedies': return <RemedyOrdersList environment={environment} />;
+      case 'manage-categories': return <CategoriesManager />;
+      case 'manage-tiles': return <TilesManager />;
       case 'manage-topics': return <TopicsManager />;
       case 'manage-experts': return <ExpertsManager />;
       case 'manage-remedies': return <RemediesCatalogManager />;
