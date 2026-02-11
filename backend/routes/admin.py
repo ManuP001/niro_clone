@@ -2177,8 +2177,12 @@ async def get_public_homepage_data(request: Request):
             "id": cat_id,
             "title": cat.get("title"),
             "helperCopy": cat.get("helper_copy", ""),
+            "order": cat.get("order", 99),
             "tiles": tiles_by_category.get(cat_id, [])
         })
+    
+    # Sort by order to ensure correct display
+    homepage_data.sort(key=lambda x: x.get("order", 99))
     
     return {
         "ok": True,
