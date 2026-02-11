@@ -3,6 +3,7 @@ import HomeScreen from './HomeScreen';
 import TopicLandingPage from './TopicLandingPage';
 import CheckoutScreen from './CheckoutScreen';
 import PlanDashboard from './PlanDashboard';
+import MyPackScreen from './MyPackScreen';
 import ExpertsScreen from './ExpertsScreen';
 import ExpertProfileScreen from './ExpertProfileScreen';
 import AskMiraScreen from './AskMiraScreen';
