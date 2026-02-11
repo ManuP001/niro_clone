@@ -1748,6 +1748,76 @@ async def delete_admin_tier(
 
 
 # ============================================================================
+# CLEAN DUPLICATES ENDPOINT
+# ============================================================================
+
+@router.post("/clean-duplicates")
+async def clean_duplicates(
+    request: Request,
+    x_admin_token: str = Header(None)
+):
+    """Remove duplicate entries from catalog collections, keeping the first occurrence"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    results = {"categories": 0, "tiles": 0, "topics": 0, "experts": 0, "remedies": 0, "tiers": 0}
+    
+    # Clean categories duplicates
+    seen_categories = set()
+    async for cat in db.admin_categories.find({}, {"_id": 1, "category_id": 1}):
+        if cat.get("category_id") in seen_categories:
+            await db.admin_categories.delete_one({"_id": cat["_id"]})
+            results["categories"] += 1
+        else:
+            seen_categories.add(cat.get("category_id"))
+    
+    # Clean tiles duplicates
+    seen_tiles = set()
+    async for tile in db.admin_tiles.find({}, {"_id": 1, "tile_id": 1}):
+        if tile.get("tile_id") in seen_tiles:
+            await db.admin_tiles.delete_one({"_id": tile["_id"]})
+            results["tiles"] += 1
+        else:
+            seen_tiles.add(tile.get("tile_id"))
+    
+    # Clean topics duplicates
+    seen_topics = set()
+    async for topic in db.admin_topics.find({}, {"_id": 1, "topic_id": 1}):
+        if topic.get("topic_id") in seen_topics:
+            await db.admin_topics.delete_one({"_id": topic["_id"]})
+            results["topics"] += 1
+        else:
+            seen_topics.add(topic.get("topic_id"))
+    
+    # Clean experts duplicates
+    seen_experts = set()
+    async for expert in db.admin_experts.find({}, {"_id": 1, "expert_id": 1}):
+        if expert.get("expert_id") in seen_experts:
+            await db.admin_experts.delete_one({"_id": expert["_id"]})
+            results["experts"] += 1
+        else:
+            seen_experts.add(expert.get("expert_id"))
+    
+    # Clean tiers duplicates
+    seen_tiers = set()
+    async for tier in db.admin_tiers.find({}, {"_id": 1, "tier_id": 1}):
+        if tier.get("tier_id") in seen_tiers:
+            await db.admin_tiers.delete_one({"_id": tier["_id"]})
+            results["tiers"] += 1
+        else:
+            seen_tiers.add(tier.get("tier_id"))
+    
+    total_removed = sum(results.values())
+    logger.info(f"Admin cleaned duplicates: {results}")
+    
+    return {
+        "ok": True,
+        "message": f"Removed {total_removed} duplicate entries",
+        "removed": results
+    }
+
+# ============================================================================
 # SEED DATA ENDPOINT (One-time migration from hardcoded to DB)
 # ============================================================================
 
