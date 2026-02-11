@@ -1594,7 +1594,7 @@ const TilesManager = () => {
         { name: 'category_id', label: 'Category', type: 'select', options: categoryOptions, hint: 'Select parent category' },
         { name: 'short_title', label: 'Short Title', hint: 'Shown on tile (e.g., Healing)' },
         { name: 'full_title', label: 'Full Title', hint: 'Full name (e.g., Relationship Healing)' },
-        { name: 'icon_type', label: 'Icon', type: 'select', options: TILE_ICON_OPTIONS, hint: 'Visual icon shown on tile' },
+        { name: 'icon_type', label: 'Icon', type: 'tile-icon-picker', hint: 'Visual icon shown on tile' },
         { name: 'order', label: 'Order in Category', type: 'number', default: 1 },
         { name: 'active', label: 'Active', type: 'checkbox', default: true },
       ]}
