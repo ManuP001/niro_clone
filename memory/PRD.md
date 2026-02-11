@@ -8,6 +8,7 @@ Build a comprehensive astrology consultation platform with:
 - Kundli/birth chart generation via Vedic API
 - AI-powered chat (Mira)
 - Admin dashboard for business monitoring with hierarchical content management
+- **Dynamic homepage** that reflects admin changes in real-time
 
 ## User Personas
 1. **Seekers** - Users looking for astrological guidance
@@ -21,6 +22,7 @@ Build a comprehensive astrology consultation platform with:
 - Expert chat threads
 - Razorpay payment processing
 - Admin dashboard with full CRUD for hierarchical catalog management
+- **Homepage dynamically renders admin-managed categories and tiles**
 
 ---
 
@@ -47,6 +49,7 @@ Build a comprehensive astrology consultation platform with:
 - Remedies CRUD: `GET/POST/PUT/DELETE /api/admin/remedies-catalog`
 - Tiers CRUD: `GET/POST/PUT/DELETE /api/admin/tiers`
 - Seed endpoint: `POST /api/admin/seed-catalog`
+- **Public homepage endpoint: `GET /api/admin/public/homepage-data` (no auth required)**
 
 **Frontend Admin UI** (`/app/frontend/src/components/admin/AdminDashboard.jsx`):
 - Generic `CatalogManager` component for all CRUD operations
@@ -59,6 +62,13 @@ Build a comprehensive astrology consultation platform with:
   - `RemediesCatalogManager` - Manage remedies catalog
   - `TiersManager` - Manage consultation packages/tiers
 
+### Phase 4: Dynamic Homepage ✅ (NEW)
+**Frontend (`/app/frontend/src/components/screens/simplified/HomeScreen.jsx`):**
+- Fetches categories and tiles from `/api/admin/public/homepage-data`
+- Falls back to hardcoded defaults if API fails
+- Changes in admin dashboard reflect immediately on homepage
+- No frontend redeployment needed for content changes
+
 **New MongoDB Collections:**
 - `admin_categories` - 3 homepage category groupings
 - `admin_tiles` - 18 homepage tiles (6 per category)
@@ -69,9 +79,32 @@ Build a comprehensive astrology consultation platform with:
 
 ---
 
+## How Homepage Management Works
+
+### For Admins:
+1. Login to `/admin` with NiroAdmin credentials
+2. Click "Categories (3)" to manage the 3 main sections
+3. Click "Tiles (18)" to manage the 18 tiles under each category
+4. Changes are **immediately** visible on the user-facing homepage
+
+### Data Flow:
+```
+Admin Dashboard → MongoDB → Public API → Homepage
+     ↓                          ↓
+ CRUD Operations          No Auth Required
+```
+
+### Example Admin Actions:
+- **Rename category:** "Love & Relationships" → "Relationships & Love"
+- **Reorder tiles:** Change "Healing" from order 1 to order 3
+- **Add new tile:** Create "Astrology Reports" tile under Career
+- **Hide tile:** Deactivate "Office Politics" tile (hidden from users)
+
+---
+
 ## Admin Dashboard Features
 
-### Hierarchical Structure (New!)
+### Hierarchical Structure
 **Categories (3)**
 - Love & Relationships: Dating, commitment, healing, family dynamics
 - Career & Money: Work direction, stability, timing, growth
@@ -82,56 +115,17 @@ Build a comprehensive astrology consultation platform with:
 - Career: Clarity, Job Change, Money, Timing, Work Stress, Office
 - Health: Stress, Sleep, Energy, Timing, Emotional, Recovery
 
-### What Admins Can Do:
-1. **Categories Management**
-   - Add new homepage category groupings
-   - Edit category title, helper copy, order
-   - Activate/deactivate categories
-
-2. **Tiles Management**
-   - Add new homepage tiles
-   - Assign tiles to categories
-   - Edit short title, full title, icon, order
-   - Activate/deactivate tiles
-
-3. **Topics Management**
-   - Add new topics (appears as tile on home screen)
-   - Edit topic name, icon, tagline, color, order
-   - Assign modalities (expert types) to topics
-   - Activate/deactivate topics
-
-4. **Experts Management**
-   - Add new expert profiles
-   - Edit name, bio, modality, languages, experience
-   - Assign experts to topics
-   - Set rating and total consults
-   - Add photo URL
-
-5. **Remedies Management**
-   - Add new remedies (appears in Remedies section)
-   - Edit price, description, benefits
-   - Categorize: healing, pooja, gemstone, kit, ritual
-   - Mark as featured
-   - Activate/deactivate
-
-6. **Packages/Tiers Management**
-   - Create tiers for each topic
-   - Set price, duration, calls included
-   - Define features list
-   - Mark as popular
-   - Link to specific topics
-
 ---
 
 ## Prioritized Backlog
 
 ### P0 - Deploy Required
-- [x] All Phase 1-3 changes complete
+- [x] All Phase 1-4 changes complete
 - [x] Admin Dashboard hierarchical refactor complete
+- [x] Homepage dynamic data integration complete
 - [ ] Redeploy to production
 
 ### P1 - Enhancements
-- [ ] Connect Categories/Tiles from admin DB to frontend homepage display
 - [ ] Expert photo upload functionality
 - [ ] Schedule call integration
 - [ ] Expert Chat Selection - Allow customers to choose specific astrologer
@@ -153,17 +147,19 @@ Build a comprehensive astrology consultation platform with:
 - React with Tailwind CSS
 - Runtime backend URL via `getBackendUrl()`
 - Admin dashboard with hierarchical CRUD components
+- **Homepage dynamically fetches from public API**
 
 ### Backend
 - FastAPI on port 8001
 - MongoDB collections for catalog data
 - Session token + JWT authentication
 - Persistent admin sessions in MongoDB
+- **Public API for homepage data (no auth)**
 
 ### Key Files
 - `/app/frontend/src/components/admin/AdminDashboard.jsx` - Admin UI with CRUD
-- `/app/backend/routes/admin.py` - Admin API endpoints
-- `/app/frontend/src/components/screens/simplified/MyPackScreen.jsx` - My Pack tab
+- `/app/frontend/src/components/screens/simplified/HomeScreen.jsx` - **Dynamic homepage**
+- `/app/backend/routes/admin.py` - Admin API endpoints + **public homepage endpoint**
 - `/app/frontend/src/config.js` - Backend URL configuration
 
 ### Database Collections (Catalog)
@@ -177,6 +173,24 @@ Build a comprehensive astrology consultation platform with:
 
 ---
 
+## API Reference
+
+### Public Endpoints (No Auth)
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/admin/public/homepage-data` | GET | Get categories and tiles for homepage |
+
+### Admin Endpoints (Requires X-Admin-Token)
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/admin/categories` | GET/POST | List/Create categories |
+| `/api/admin/categories/{id}` | PUT/DELETE | Update/Delete category |
+| `/api/admin/tiles` | GET/POST | List/Create tiles |
+| `/api/admin/tiles/{id}` | PUT/DELETE | Update/Delete tile |
+| `/api/admin/seed-catalog` | POST | Seed initial data |
+
+---
+
 ## Credentials
 - **Admin Dashboard:** NiroAdmin / NewAdmin@123
 - **Vedic API Key:** `6792dc58-2dda-530b-82de-87777c7ecfe5`
@@ -185,5 +199,7 @@ Build a comprehensive astrology consultation platform with:
 ---
 
 ## Test Reports
-- `/app/test_reports/iteration_10.json` - Admin hierarchy CRUD tests (100% pass rate)
-- `/app/backend/tests/test_admin_hierarchy_crud.py` - Backend test file
+- `/app/test_reports/iteration_10.json` - Admin hierarchy CRUD tests (100% pass)
+- `/app/test_reports/iteration_11.json` - Public homepage API tests (100% pass)
+- `/app/backend/tests/test_admin_hierarchy_crud.py` - Backend CRUD tests
+- `/app/backend/tests/test_public_homepage_api.py` - Public API tests
