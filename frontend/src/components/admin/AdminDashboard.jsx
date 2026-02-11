@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BACKEND_URL } from '../../config';
+import { getBackendUrl } from '../../config';
 
 /**
  * Admin Dashboard - Full featured admin panel
@@ -11,13 +11,14 @@ const clearAdminToken = () => sessionStorage.removeItem('niro_admin_token');
 
 const adminFetch = async (endpoint, options = {}) => {
   const token = getAdminToken();
+  const backendUrl = getBackendUrl();
   const headers = {
     'Content-Type': 'application/json',
     ...(token && { 'X-Admin-Token': token }),
     ...options.headers,
   };
   
-  const response = await fetch(`${BACKEND_URL}${endpoint}`, { ...options, headers });
+  const response = await fetch(`${backendUrl}${endpoint}`, { ...options, headers });
   
   if (response.status === 401) {
     clearAdminToken();
