@@ -2096,6 +2096,125 @@ const PackageContentEditor = ({ content, onChange }) => {
           </div>
         )}
       </div>
+
+      {/* Custom Sections - Add unlimited additional sections */}
+      <div>
+        <SectionHeader 
+          title="➕ Custom Sections" 
+          section="custom" 
+          hasContent={(content?.custom_sections || []).length > 0}
+        />
+        {expanded.custom && (
+          <div className="mt-2 p-3 bg-white rounded-lg border space-y-3">
+            <p className="text-xs text-gray-500 mb-2">Add any additional sections you need. Each section can have a title and content (bullet points or paragraphs).</p>
+            
+            {(content?.custom_sections || []).map((section, idx) => (
+              <div key={idx} className="p-3 bg-gray-50 rounded border">
+                <div className="flex justify-between items-start gap-2 mb-2">
+                  <div className="flex-1 space-y-2">
+                    <input
+                      type="text"
+                      value={section.title || ''}
+                      onChange={(e) => {
+                        const sections = [...(content?.custom_sections || [])];
+                        sections[idx] = { ...sections[idx], title: e.target.value };
+                        updateContent('custom_sections', sections);
+                      }}
+                      placeholder="Section Title (e.g., PRICING OPTIONS, FAQ, GUARANTEE)"
+                      className="w-full px-2 py-1 border rounded text-sm font-medium"
+                    />
+                    <select
+                      value={section.type || 'bullets'}
+                      onChange={(e) => {
+                        const sections = [...(content?.custom_sections || [])];
+                        sections[idx] = { ...sections[idx], type: e.target.value };
+                        updateContent('custom_sections', sections);
+                      }}
+                      className="px-2 py-1 border rounded text-xs"
+                    >
+                      <option value="bullets">Bullet Points</option>
+                      <option value="text">Paragraph Text</option>
+                      <option value="numbered">Numbered List</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-1">
+                    {idx > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const sections = [...(content?.custom_sections || [])];
+                          [sections[idx-1], sections[idx]] = [sections[idx], sections[idx-1]];
+                          updateContent('custom_sections', sections);
+                        }}
+                        className="p-1 text-gray-500 hover:bg-gray-200 rounded"
+                        title="Move Up"
+                      >
+                        <LucideIcons.ChevronUp className="w-4 h-4" />
+                      </button>
+                    )}
+                    {idx < (content?.custom_sections || []).length - 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const sections = [...(content?.custom_sections || [])];
+                          [sections[idx], sections[idx+1]] = [sections[idx+1], sections[idx]];
+                          updateContent('custom_sections', sections);
+                        }}
+                        className="p-1 text-gray-500 hover:bg-gray-200 rounded"
+                        title="Move Down"
+                      >
+                        <LucideIcons.ChevronDown className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sections = (content?.custom_sections || []).filter((_, i) => i !== idx);
+                        updateContent('custom_sections', sections);
+                      }}
+                      className="p-1 text-red-500 hover:bg-red-50 rounded"
+                      title="Delete Section"
+                    >
+                      <LucideIcons.Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+                <textarea
+                  value={section.type === 'text' 
+                    ? (section.content || '') 
+                    : (section.items || []).join('\n')}
+                  onChange={(e) => {
+                    const sections = [...(content?.custom_sections || [])];
+                    if (section.type === 'text') {
+                      sections[idx] = { ...sections[idx], content: e.target.value };
+                    } else {
+                      sections[idx] = { ...sections[idx], items: e.target.value.split('\n').filter(Boolean) };
+                    }
+                    updateContent('custom_sections', sections);
+                  }}
+                  placeholder={section.type === 'text' 
+                    ? "Enter paragraph text..." 
+                    : "Enter items (one per line)..."}
+                  className="w-full px-2 py-1 border rounded text-sm font-mono"
+                  rows={4}
+                />
+              </div>
+            ))}
+            
+            <button
+              type="button"
+              onClick={() => {
+                const sections = content?.custom_sections || [];
+                updateContent('custom_sections', [...sections, { title: '', type: 'bullets', items: [] }]);
+              }}
+              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-teal-400 hover:text-teal-600 flex items-center justify-center gap-2"
+            >
+              <LucideIcons.Plus className="w-4 h-4" />
+              Add Custom Section
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
