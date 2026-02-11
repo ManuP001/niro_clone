@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://hierarchy-crud.preview.emergentagent.com/api"
+BACKEND_URL = "https://astro-admin-5.preview.emergentagent.com/api"
 
 class NiroSimplifiedTester:
     def __init__(self):

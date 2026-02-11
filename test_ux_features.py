@@ -7,7 +7,7 @@ import requests
 import json
 import uuid
 
-BACKEND_URL = "https://hierarchy-crud.preview.emergentagent.com/api"
+BACKEND_URL = "https://astro-admin-5.preview.emergentagent.com/api"
 
 def test_feedback_endpoint():
     """Test the feedback endpoint quickly"""
