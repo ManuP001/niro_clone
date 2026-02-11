@@ -1762,26 +1762,82 @@ async def seed_catalog_data(
     if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
-    results = {"topics": 0, "experts": 0, "remedies": 0, "tiers": 0}
+    results = {"categories": 0, "tiles": 0, "topics": 0, "experts": 0, "remedies": 0, "tiers": 0}
     
     # Check if data already exists
     if not force:
+        existing_categories = await db.admin_categories.count_documents({})
+        existing_tiles = await db.admin_tiles.count_documents({})
         existing_topics = await db.admin_topics.count_documents({})
         existing_experts = await db.admin_experts.count_documents({})
         existing_tiers = await db.admin_tiers.count_documents({})
         
-        if existing_topics > 0 or existing_experts > 0 or existing_tiers > 0:
+        if existing_categories > 0 or existing_tiles > 0 or existing_topics > 0 or existing_experts > 0 or existing_tiers > 0:
             return {
                 "ok": False,
                 "message": "Data already exists. Use force=true to reseed.",
                 "existing": {
+                    "categories": existing_categories,
+                    "tiles": existing_tiles,
                     "topics": existing_topics,
                     "experts": existing_experts,
                     "tiers": existing_tiers
                 }
             }
     
-    # Import the live catalog
+    # Seed Categories (3 main homepage groupings)
+    categories_data = [
+        {"category_id": "love", "title": "Love & Relationships", "helper_copy": "Dating, commitment, healing, family dynamics", "order": 1, "active": True},
+        {"category_id": "career", "title": "Career & Money", "helper_copy": "Work direction, stability, timing, growth", "order": 2, "active": True},
+        {"category_id": "health", "title": "Health & Wellness", "helper_copy": "Stress, recovery, energy, emotional balance", "order": 3, "active": True},
+    ]
+    
+    for cat in categories_data:
+        cat["created_at"] = datetime.now(timezone.utc)
+        cat["updated_at"] = datetime.now(timezone.utc)
+        await db.admin_categories.update_one(
+            {"category_id": cat["category_id"]},
+            {"$set": cat},
+            upsert=True
+        )
+        results["categories"] += 1
+    
+    # Seed Tiles (18 tiles grouped under 3 categories)
+    tiles_data = [
+        # Love & Relationships (6 tiles)
+        {"tile_id": "relationship_healing", "category_id": "love", "short_title": "Healing", "full_title": "Relationship Healing", "icon_type": "healing", "order": 1, "active": True},
+        {"tile_id": "dating_compatibility", "category_id": "love", "short_title": "Dating", "full_title": "Dating & Compatibility", "icon_type": "heart", "order": 2, "active": True},
+        {"tile_id": "marriage_planning", "category_id": "love", "short_title": "Marriage", "full_title": "Marriage Planning", "icon_type": "rings", "order": 3, "active": True},
+        {"tile_id": "communication_trust", "category_id": "love", "short_title": "Trust", "full_title": "Communication & Trust", "icon_type": "chat", "order": 4, "active": True},
+        {"tile_id": "family_relationships", "category_id": "love", "short_title": "Family", "full_title": "Family Relationships", "icon_type": "family", "order": 5, "active": True},
+        {"tile_id": "breakup_closure", "category_id": "love", "short_title": "Closure", "full_title": "Breakup & Closure", "icon_type": "breakup", "order": 6, "active": True},
+        # Career & Money (6 tiles)
+        {"tile_id": "career_clarity", "category_id": "career", "short_title": "Clarity", "full_title": "Career Clarity", "icon_type": "compass", "order": 1, "active": True},
+        {"tile_id": "job_transition", "category_id": "career", "short_title": "Job Change", "full_title": "Job Transition", "icon_type": "briefcase", "order": 2, "active": True},
+        {"tile_id": "money_stability", "category_id": "career", "short_title": "Money", "full_title": "Money & Stability", "icon_type": "wallet", "order": 3, "active": True},
+        {"tile_id": "big_decision_timing", "category_id": "career", "short_title": "Timing", "full_title": "Big Decision Timing", "icon_type": "clock", "order": 4, "active": True},
+        {"tile_id": "work_stress", "category_id": "career", "short_title": "Work Stress", "full_title": "Work Stress", "icon_type": "stress", "order": 5, "active": True},
+        {"tile_id": "office_politics", "category_id": "career", "short_title": "Office", "full_title": "Office Politics", "icon_type": "office", "order": 6, "active": True},
+        # Health & Wellness (6 tiles)
+        {"tile_id": "stress_management", "category_id": "health", "short_title": "Stress", "full_title": "Stress Management", "icon_type": "stress", "order": 1, "active": True},
+        {"tile_id": "sleep_reset", "category_id": "health", "short_title": "Sleep", "full_title": "Sleep Reset", "icon_type": "sleep", "order": 2, "active": True},
+        {"tile_id": "energy_balance", "category_id": "health", "short_title": "Energy", "full_title": "Energy Balance", "icon_type": "energy", "order": 3, "active": True},
+        {"tile_id": "health_timing", "category_id": "health", "short_title": "Timing", "full_title": "Health Timing", "icon_type": "healing", "order": 4, "active": True},
+        {"tile_id": "emotional_wellbeing", "category_id": "health", "short_title": "Emotional", "full_title": "Emotional Wellbeing", "icon_type": "emotional", "order": 5, "active": True},
+        {"tile_id": "recovery_support", "category_id": "health", "short_title": "Recovery", "full_title": "Recovery Support", "icon_type": "wellness", "order": 6, "active": True},
+    ]
+    
+    for tile in tiles_data:
+        tile["created_at"] = datetime.now(timezone.utc)
+        tile["updated_at"] = datetime.now(timezone.utc)
+        await db.admin_tiles.update_one(
+            {"tile_id": tile["tile_id"]},
+            {"$set": tile},
+            upsert=True
+        )
+        results["tiles"] += 1
+    
+    # Import the live catalog for topics, experts, tiers
     try:
         from backend.niro_simplified.catalog import get_simplified_catalog
         catalog = get_simplified_catalog()
