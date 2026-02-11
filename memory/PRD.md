@@ -219,6 +219,37 @@ Preview Modal (Live Data)
 
 ---
 
+## Valentine's Special Packages (Feb 2026)
+Three new packages with rich landing page content:
+
+### 1. NOT OFFICIAL YET (₹1,999 - 7 days)
+- **Target:** Users in undefined relationships approaching Valentine's
+- **Value:** Unlimited guidance on one relationship topic
+- **Rich Content Sections:**
+  - Hero: "You're seeing each other. It feels meaningful. But it's still undefined."
+  - Overview: Structured relationship analysis
+  - Help Sections: Clarity, Timeline, Next Steps
+  - Analysis: 5th/7th house, Venus/Moon, Navamsa, Dasha timing
+  - Custom: Guidance Till You Find Answers, How It Works, Choose Your Expert, Ethics
+
+### 2. READY FOR MARRIAGE? (₹2,499 - 7 days)
+- **Target:** Users facing proposal/commitment decisions
+- **Value:** Structured compatibility and timing analysis
+- **Rich Content Sections:**
+  - Hero: "A proposal or commitment moment is here. You want to decide calmly."
+  - Help Sections: Clarity, Timeline, Decision Support
+  - Analysis: 7th/5th/8th house, Venus/Jupiter, Navamsa, transit windows
+
+### 3. MOVE ON OR STAY? (₹1,999 - 7 days)
+- **Target:** Users stuck in emotional loops
+- **Value:** Continuation vs closure analysis
+- **Rich Content Sections:**
+  - Hero: "You're stuck in a loop. You want clarity, not confusion."
+  - Help Sections: Clarity, Timeline, Stability
+  - Analysis: 5th/7th/8th/12th houses, Rahu/Ketu, Moon, Dasha cycle
+
+---
+
 ## Credentials
 - **Admin Dashboard:** NiroAdmin / NewAdmin@123
 - **Vedic API Key:** `6792dc58-2dda-530b-82de-87777c7ecfe5`
