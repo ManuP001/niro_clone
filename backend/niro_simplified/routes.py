@@ -502,6 +502,7 @@ async def create_order(
 
 @router.post("/checkout/verify", response_model=VerifyPaymentResponse)
 async def verify_payment(
+    request: Request,
     request_data: VerifyPaymentRequest,
     authorization: str = Header(default=None),
     background_tasks: BackgroundTasks = None
@@ -538,22 +539,46 @@ async def verify_payment(
             logger.error(f"Payment verification failed: {e}")
             # Continue anyway for testing
     
-    # Get tier
-    tier = catalog.get_tier(order.get("tier_id", ""))
-    if not tier:
+    # Get tier - first try catalog, then admin_tiers database
+    tier_id = order.get("tier_id", "")
+    tier = catalog.get_tier(tier_id)
+    tier_from_db = None
+    
+    if not tier and db:
+        tier_from_db = await db.admin_tiers.find_one(
+            {"tier_id": tier_id, "active": {"$ne": False}},
+            {"_id": 0}
+        )
+    
+    if not tier and not tier_from_db:
         raise HTTPException(status_code=404, detail="Tier not found")
+    
+    # Get tier properties
+    if tier:
+        topic_id = tier.topic_id
+        tier_level = tier.tier_level
+        price_inr = tier.price_inr
+        validity_weeks = tier.validity_weeks
+        tier_name = tier.name
+    else:
+        # From admin_tiers database (standalone packages like Valentine's)
+        topic_id = tier_from_db.get("topic_id", "standalone")
+        tier_level = "standalone_package"
+        price_inr = tier_from_db.get("price", 0)
+        validity_weeks = tier_from_db.get("duration_weeks", 1)
+        tier_name = tier_from_db.get("name", tier_id)
     
     # Create plan
     now = datetime.utcnow()
-    expires_at = now + timedelta(weeks=tier.validity_weeks)
+    expires_at = now + timedelta(weeks=validity_weeks)
     
     plan_data = {
         "plan_id": f"plan_{uuid.uuid4().hex[:12]}",
         "user_id": user_id,
-        "topic_id": tier.topic_id,
-        "tier_id": tier.tier_id,
-        "tier_level": tier.tier_level,
-        "price_paid_inr": tier.price_inr,
+        "topic_id": topic_id,
+        "tier_id": tier_id,
+        "tier_level": tier_level,
+        "price_paid_inr": price_inr,
         "status": "active",
         "purchased_at": now,
         "starts_at": now,
@@ -593,8 +618,8 @@ async def verify_payment(
         user_gender = user_profile.get('gender', '') if user_profile else ''
         
         # Get topic name
-        topic = catalog.get_topic(tier.topic_id)
-        topic_name = topic.title if topic else tier.topic_id
+        topic = catalog.get_topic(topic_id)
+        topic_name = topic.title if topic else topic_id
         
         # Prepare comprehensive additional info
         additional_info = {
@@ -602,7 +627,7 @@ async def verify_payment(
             "plan_id": plan_id,
             "user_id": user_id,
             "scenarios": order.get("scenario_ids", []),
-            "validity_weeks": tier.validity_weeks,
+            "validity_weeks": validity_weeks,
             "dob": user_dob,
             "tob": user_tob,
             "pob": user_pob,
@@ -616,8 +641,8 @@ async def verify_payment(
                 user_email=user_email or f"user_{user_id}@niro.app",
                 user_name=user_name,
                 user_phone=user_phone,
-                package_name=f"{topic_name} - {tier.tier_level}",
-                package_tier=tier.tier_level,
+                package_name=f"{topic_name} - {tier_level}",
+                package_tier=tier_level,
                 package_price=tier.price_inr,
                 topic_name=topic_name,
                 transaction_id=request_data.razorpay_payment_id,
