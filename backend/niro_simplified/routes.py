@@ -422,12 +422,23 @@ async def create_order(
     # If not in catalog, check admin_tiers database (for standalone packages like Valentine's)
     tier_from_db = None
     if not tier and db:
-        tier_from_db = await db.admin_tiers.find_one(
-            {"tier_id": request_data.tier_id, "active": {"$ne": False}},
-            {"_id": 0}
-        )
-        if tier_from_db:
-            logger.info(f"Found tier in admin_tiers: {request_data.tier_id}")
+        logger.info(f"Tier {request_data.tier_id} not in catalog, checking admin_tiers database...")
+        try:
+            tier_from_db = await db.admin_tiers.find_one(
+                {"tier_id": request_data.tier_id, "active": {"$ne": False}},
+                {"_id": 0}
+            )
+            if tier_from_db:
+                logger.info(f"Found tier in admin_tiers: {request_data.tier_id} - {tier_from_db.get('name')}")
+            else:
+                logger.warning(f"Tier {request_data.tier_id} NOT found in admin_tiers")
+                # Debug: list some tiers
+                sample_tiers = await db.admin_tiers.find({}, {"tier_id": 1, "_id": 0}).to_list(5)
+                logger.info(f"Sample tiers in DB: {[t.get('tier_id') for t in sample_tiers]}")
+        except Exception as e:
+            logger.error(f"Error checking admin_tiers: {e}")
+    elif not db:
+        logger.warning("Database connection not available for admin_tiers lookup")
     
     if not tier and not tier_from_db:
         raise HTTPException(status_code=404, detail="Tier not found")
