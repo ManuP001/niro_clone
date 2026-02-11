@@ -429,8 +429,8 @@ export default function HomeScreen({
       {/* Scrollable Tiles Section - Reduced Bottom Padding */}
       <div className="px-4 pt-3" style={{ paddingBottom: '12px' }}>
 
-        {/* Life Situations - Premium Module Cards */}
-        {V6_LIFE_SITUATIONS.map((situation) => (
+        {/* Life Situations - Premium Module Cards - Now Dynamic */}
+        {lifeSituations.map((situation) => (
           <CategoryModule 
             key={situation.id}
             situation={situation}
