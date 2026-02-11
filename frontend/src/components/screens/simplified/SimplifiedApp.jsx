@@ -254,8 +254,17 @@ export default function SimplifiedApp({ token, userId, user }) {
         setScreen('home');
         setActiveTab('home');
         break;
+      case 'packageLanding':
+        setScreen('home');
+        setActiveTab('home');
+        break;
       case 'checkout':
-        setScreen('topic');
+        // Go back to the previous landing page
+        if (screenParams.fromPackage) {
+          setScreen('packageLanding');
+        } else {
+          setScreen('topic');
+        }
         break;
       case 'plan':
         setScreen('home');
