@@ -898,6 +898,56 @@ const TopicsManager = () => (
   />
 );
 
+// Categories Manager (Homepage groupings)
+const CategoriesManager = () => (
+  <CatalogManager
+    entityType="categories"
+    title="Homepage Categories"
+    icon="📂"
+    columns={[
+      { key: 'category_id', label: 'ID' },
+      { key: 'title', label: 'Title' },
+      { key: 'helper_copy', label: 'Helper Copy' },
+      { key: 'order', label: 'Order' },
+      { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
+    ]}
+    formFields={[
+      { name: 'category_id', label: 'Category ID', isId: true, hint: 'Unique identifier (e.g., love, career, health)' },
+      { name: 'title', label: 'Display Title', hint: 'e.g., Love & Relationships' },
+      { name: 'helper_copy', label: 'Helper Copy', hint: 'Subtitle shown under category' },
+      { name: 'order', label: 'Display Order', type: 'number', default: 1 },
+      { name: 'active', label: 'Active', type: 'checkbox', default: true },
+    ]}
+  />
+);
+
+// Tiles Manager (Homepage tiles, grouped under categories)
+const TilesManager = () => (
+  <CatalogManager
+    entityType="tiles"
+    title="Homepage Tiles"
+    icon="🎯"
+    columns={[
+      { key: 'tile_id', label: 'ID' },
+      { key: 'short_title', label: 'Short Title' },
+      { key: 'full_title', label: 'Full Title' },
+      { key: 'category_id', label: 'Category' },
+      { key: 'icon_type', label: 'Icon' },
+      { key: 'order', label: 'Order' },
+      { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
+    ]}
+    formFields={[
+      { name: 'tile_id', label: 'Tile ID', isId: true, hint: 'Unique identifier (e.g., relationship_healing)' },
+      { name: 'category_id', label: 'Category', hint: 'Parent category: love, career, or health' },
+      { name: 'short_title', label: 'Short Title', hint: 'Shown on tile (e.g., Healing)' },
+      { name: 'full_title', label: 'Full Title', hint: 'Full name (e.g., Relationship Healing)' },
+      { name: 'icon_type', label: 'Icon Type', hint: 'Icon name: healing, heart, rings, chat, family, etc.' },
+      { name: 'order', label: 'Order in Category', type: 'number', default: 1 },
+      { name: 'active', label: 'Active', type: 'checkbox', default: true },
+    ]}
+  />
+);
+
 // Experts Manager
 const ExpertsManager = () => (
   <CatalogManager
