@@ -2156,12 +2156,18 @@ async def get_public_homepage_data(request: Request):
         cat_id = tile.get("category_id", "other")
         if cat_id not in tiles_by_category:
             tiles_by_category[cat_id] = []
-        tiles_by_category[cat_id].append({
+        tile_data = {
             "id": tile.get("tile_id"),
             "shortTitle": tile.get("short_title"),
             "fullTitle": tile.get("full_title"),
             "iconType": tile.get("icon_type", "star")
-        })
+        }
+        # Include linked_package_id if present (for standalone packages like Valentine's)
+        if tile.get("linked_package_id"):
+            tile_data["linkedPackageId"] = tile.get("linked_package_id")
+        if tile.get("linked_topic_id"):
+            tile_data["linkedTopicId"] = tile.get("linked_topic_id")
+        tiles_by_category[cat_id].append(tile_data)
     
     # Build response in frontend-friendly format
     homepage_data = []
