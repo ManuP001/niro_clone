@@ -39,34 +39,53 @@ Build a comprehensive astrology consultation platform with:
 - Remedy purchase flow
 - Environment tagging for orders
 
-### Feb 2026 - Session 2 (Current)
-- **FIXED:** Payment "Authentication required" error
-  - Root cause: Session tokens from Google OAuth weren't being validated
-  - Solution: Added async session token validation in `get_user_id_from_token_async()`
-  - Affected file: `/app/backend/niro_simplified/routes.py`
-  
-- **IDENTIFIED:** Google OAuth redirect_uri_mismatch on production
-  - Requires adding `https://getniro.ai/auth/callback` to Google Cloud Console
+### Feb 2026 - Session 2
+- **FIXED:** Payment "Authentication required" error (session token validation)
+- **FIXED:** Google OAuth double login issue (router order fix)
+- **FIXED:** OAuth loop in production (runtime URL resolution)
+- **FIXED:** Vedic API key updated to correct key
+- **ADDED:** Chakra Healing remedy (₹3,500, 3 sessions)
+
+### Feb 2026 - Session 3 (Current) - Phase 2 Complete
+- **IMPLEMENTED:** "My Pack" tab for paying customers
+  - New `MyPackScreen.jsx` component
+  - Shows package details, days remaining, deliverables
+  - Schedule call option
+  - Suggested remedies section
+  - Quick actions (Mira, Kundli)
+  - Support contact
+  - File: `/app/frontend/src/components/screens/simplified/MyPackScreen.jsx`
+
+- **IMPLEMENTED:** Removed per-minute pricing from landing pages
+  - Updated `TopicLandingPage.jsx` sticky CTA bar
+  - Now shows total package price instead of ₹/min
+  - File: `/app/frontend/src/components/screens/simplified/TopicLandingPage.jsx`
+
+- **FIXED:** "Buy Now" bar visibility on Remedy page
+  - Changed modal z-index from z-50 to z-[60]
+  - File: `/app/frontend/src/components/screens/simplified/RemediesScreen.jsx`
 
 ---
 
 ## Prioritized Backlog
 
-### P0 - Critical (Blocking Users)
-- [ ] Add production redirect URI to Google Cloud Console
-- [ ] Redeploy to production
+### P0 - Critical (Deploy Required)
+- [x] Phase 1 bug fixes complete
+- [x] Phase 2 UI refinements complete
+- [ ] Redeploy to production to apply all changes
 
-### P1 - High Priority (Phase 2)
-- [ ] Implement "My Pack" tab for paying customers
-- [ ] Remove per-minute pricing from landing pages
-- [ ] Fix "Buy Now" bar visibility on Remedy page
+### P1 - High Priority (Phase 3)
+- [ ] Admin Dashboard CRUD for Plans
+- [ ] Admin Dashboard CRUD for Remedies
+- [ ] Admin Dashboard CRUD for Experts
+- [ ] Admin Dashboard CRUD for Topics
 
-### P2 - Medium Priority (Phase 3)
-- [ ] Admin Dashboard CRUD for Plans, Remedies, Experts, Topics
+### P2 - Medium Priority
 - [ ] Admin dashboard revenue fix verification on production
+- [ ] Schedule call integration (currently placeholder)
 
 ### P3 - Low Priority (Tech Debt)
-- [ ] Remove obsolete JWT authentication code
+- [ ] Remove obsolete JWT authentication code (`/app/backend/auth/`)
 - [ ] Remove legacy V5 UI components
 - [ ] Data migration to unified schema
 
@@ -78,17 +97,24 @@ Build a comprehensive astrology consultation platform with:
 - React with Tailwind CSS
 - Shadcn/UI components
 - Google OAuth via redirect flow
+- Runtime backend URL resolution via `getBackendUrl()`
 
 ### Backend
 - FastAPI on port 8001
 - MongoDB for data storage
 - Razorpay SDK for payments
 - Vedic API for astrology calculations
+- Session token + JWT dual authentication support
 
 ### Key Files
-- `/app/backend/niro_simplified/routes.py` - Main API routes with auth fix
+- `/app/frontend/src/config.js` - Backend URL configuration with `getBackendUrl()`
+- `/app/frontend/src/components/screens/simplified/MyPackScreen.jsx` - New My Pack screen
+- `/app/frontend/src/components/screens/simplified/TopicLandingPage.jsx` - Landing page (pricing updated)
+- `/app/frontend/src/components/screens/simplified/RemediesScreen.jsx` - Remedies with z-index fix
+- `/app/frontend/src/components/screens/simplified/BottomNav.jsx` - Navigation with My Pack tab
+- `/app/backend/niro_simplified/routes.py` - Main API routes with session token auth
 - `/app/backend/routes/google_oauth_direct.py` - OAuth flow
-- `/app/frontend/src/components/screens/simplified/` - Main UI
+- `/app/backend/server.py` - Router order (Google auth before legacy JWT)
 
 ### Database Collections
 - `users` - User accounts
@@ -100,5 +126,5 @@ Build a comprehensive astrology consultation platform with:
 
 ## Credentials (Preview Environment)
 - **Admin Dashboard:** NiroAdmin / NewAdmin@123
-- **Vedic API Key:** In `/app/backend/.env`
+- **Vedic API Key:** `6792dc58-2dda-530b-82de-87777c7ecfe5` (in `/app/backend/.env`)
 - **Razorpay:** Live keys in `.env`
