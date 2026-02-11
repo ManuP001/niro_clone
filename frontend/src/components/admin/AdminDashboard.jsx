@@ -1172,7 +1172,63 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
   );
 };
 
-// Topics Manager
+// Icon options for Topics and Tiles - matching the app's existing icons
+const ICON_OPTIONS = [
+  { value: '', label: '-- Select Icon --' },
+  // Emoji icons for Topics
+  { value: '💼', label: '💼 Career' },
+  { value: '💰', label: '💰 Money' },
+  { value: '❤️', label: '❤️ Love' },
+  { value: '💑', label: '💑 Relationship' },
+  { value: '💍', label: '💍 Marriage' },
+  { value: '🏠', label: '🏠 Home/Vastu' },
+  { value: '🌟', label: '🌟 Star/Astrology' },
+  { value: '🔮', label: '🔮 Prediction' },
+  { value: '🧘', label: '🧘 Wellness' },
+  { value: '💪', label: '💪 Health' },
+  { value: '🧠', label: '🧠 Mind' },
+  { value: '📈', label: '📈 Growth' },
+  { value: '🎯', label: '🎯 Focus' },
+  { value: '⚖️', label: '⚖️ Balance' },
+  { value: '🌙', label: '🌙 Sleep' },
+  { value: '✨', label: '✨ Energy' },
+  { value: '🙏', label: '🙏 Spiritual' },
+  { value: '📊', label: '📊 Numbers' },
+  { value: '👶', label: '👶 Children' },
+  { value: '👨‍👩‍👧', label: '👨‍👩‍👧 Family' },
+  { value: '🎓', label: '🎓 Education' },
+  { value: '✈️', label: '✈️ Travel' },
+  { value: '⏰', label: '⏰ Timing' },
+  { value: '🔄', label: '🔄 Change' },
+];
+
+// SVG Icon types for Tiles (matching HomeScreen icons)
+const TILE_ICON_OPTIONS = [
+  { value: '', label: '-- Select Icon --' },
+  // Love category icons
+  { value: 'heart', label: '❤️ Heart (Dating)' },
+  { value: 'healing', label: '💚 Healing' },
+  { value: 'rings', label: '💍 Rings (Marriage)' },
+  { value: 'chat', label: '💬 Chat (Trust)' },
+  { value: 'family', label: '👨‍👩‍👧 Family' },
+  { value: 'breakup', label: '💔 Breakup (Closure)' },
+  // Career category icons
+  { value: 'compass', label: '🧭 Compass (Clarity)' },
+  { value: 'briefcase', label: '💼 Briefcase (Job)' },
+  { value: 'wallet', label: '💰 Wallet (Money)' },
+  { value: 'clock', label: '⏰ Clock (Timing)' },
+  { value: 'stress', label: '😰 Stress' },
+  { value: 'office', label: '🏢 Office' },
+  // Health category icons
+  { value: 'energy', label: '⚡ Energy' },
+  { value: 'sleep', label: '🌙 Sleep' },
+  { value: 'emotional', label: '🎭 Emotional' },
+  { value: 'wellness', label: '🌿 Wellness' },
+  // Generic
+  { value: 'star', label: '⭐ Star' },
+];
+
+// Topics Manager - with icon dropdown
 const TopicsManager = () => (
   <CatalogManager
     entityType="topics"
@@ -1189,9 +1245,17 @@ const TopicsManager = () => (
     formFields={[
       { name: 'topic_id', label: 'Topic ID', isId: true, hint: 'Unique identifier (e.g., career, money, vastu)' },
       { name: 'label', label: 'Display Name' },
-      { name: 'icon', label: 'Icon (emoji)', default: '📌' },
+      { name: 'icon', label: 'Icon', type: 'select', options: ICON_OPTIONS, default: '🌟' },
       { name: 'tagline', label: 'Tagline' },
-      { name: 'color', label: 'Color', default: 'teal' },
+      { name: 'color', label: 'Color', type: 'select', options: [
+        { value: 'teal', label: 'Teal' },
+        { value: 'blue', label: 'Blue' },
+        { value: 'purple', label: 'Purple' },
+        { value: 'pink', label: 'Pink' },
+        { value: 'orange', label: 'Orange' },
+        { value: 'green', label: 'Green' },
+        { value: 'red', label: 'Red' },
+      ], default: 'teal' },
       { name: 'order', label: 'Display Order', type: 'number', default: 99 },
       { name: 'modalities', label: 'Modalities', type: 'array', hint: 'Expert types: vedic_astrologer, numerologist, life_coach' },
       { name: 'active', label: 'Active', type: 'checkbox', default: true },
