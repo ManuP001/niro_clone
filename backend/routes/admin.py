@@ -1078,6 +1078,246 @@ async def delete_admin_topic(
 
 
 # ============================================================================
+# CATEGORIES CRUD (Parent groupings for tiles on homepage)
+# ============================================================================
+
+class CategoryCreate(BaseModel):
+    category_id: str
+    title: str
+    helper_copy: str = ""
+    order: int = 1
+    active: bool = True
+
+class CategoryUpdate(BaseModel):
+    title: Optional[str] = None
+    helper_copy: Optional[str] = None
+    order: Optional[int] = None
+    active: Optional[bool] = None
+
+@router.get("/categories")
+async def list_admin_categories(
+    request: Request,
+    x_admin_token: str = Header(None),
+    include_inactive: bool = Query(default=False)
+):
+    """List all categories (homepage groupings)"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    query = {} if include_inactive else {"active": {"$ne": False}}
+    categories = await db.admin_categories.find(query, {"_id": 0}).sort("order", 1).to_list(50)
+    
+    return {"ok": True, "categories": categories, "count": len(categories)}
+
+@router.post("/categories")
+async def create_admin_category(
+    request: Request,
+    category: CategoryCreate,
+    x_admin_token: str = Header(None)
+):
+    """Create a new category"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    existing = await db.admin_categories.find_one({"category_id": category.category_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Category ID already exists")
+    
+    category_dict = category.model_dump()
+    category_dict["created_at"] = datetime.now(timezone.utc)
+    category_dict["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.admin_categories.insert_one(category_dict)
+    
+    logger.info(f"Admin created category: {category.category_id}")
+    return {"ok": True, "category": {k: v for k, v in category_dict.items() if k != "_id"}}
+
+@router.put("/categories/{category_id}")
+async def update_admin_category(
+    request: Request,
+    category_id: str,
+    category: CategoryUpdate,
+    x_admin_token: str = Header(None)
+):
+    """Update an existing category"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    update_data = {k: v for k, v in category.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.admin_categories.update_one(
+        {"category_id": category_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    updated = await db.admin_categories.find_one({"category_id": category_id}, {"_id": 0})
+    logger.info(f"Admin updated category: {category_id}")
+    return {"ok": True, "category": updated}
+
+@router.delete("/categories/{category_id}")
+async def delete_admin_category(
+    request: Request,
+    category_id: str,
+    x_admin_token: str = Header(None),
+    hard_delete: bool = Query(default=False)
+):
+    """Delete (soft or hard) a category"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    if hard_delete:
+        result = await db.admin_categories.delete_one({"category_id": category_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Category not found")
+        logger.info(f"Admin hard deleted category: {category_id}")
+    else:
+        result = await db.admin_categories.update_one(
+            {"category_id": category_id},
+            {"$set": {"active": False, "updated_at": datetime.now(timezone.utc)}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Category not found")
+        logger.info(f"Admin soft deleted category: {category_id}")
+    
+    return {"ok": True, "message": f"Category {'deleted' if hard_delete else 'deactivated'}"}
+
+
+# ============================================================================
+# TILES CRUD (Individual tiles on homepage, grouped under categories)
+# ============================================================================
+
+class TileCreate(BaseModel):
+    tile_id: str
+    category_id: str  # Parent category (love, career, health)
+    short_title: str
+    full_title: str = ""
+    icon_type: str = "star"
+    order: int = 1
+    active: bool = True
+
+class TileUpdate(BaseModel):
+    category_id: Optional[str] = None
+    short_title: Optional[str] = None
+    full_title: Optional[str] = None
+    icon_type: Optional[str] = None
+    order: Optional[int] = None
+    active: Optional[bool] = None
+
+@router.get("/tiles")
+async def list_admin_tiles(
+    request: Request,
+    x_admin_token: str = Header(None),
+    include_inactive: bool = Query(default=False),
+    category_id: str = Query(default=None)
+):
+    """List all tiles (homepage items)"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    query = {} if include_inactive else {"active": {"$ne": False}}
+    if category_id:
+        query["category_id"] = category_id
+    
+    tiles = await db.admin_tiles.find(query, {"_id": 0}).sort([("category_id", 1), ("order", 1)]).to_list(100)
+    
+    return {"ok": True, "tiles": tiles, "count": len(tiles)}
+
+@router.post("/tiles")
+async def create_admin_tile(
+    request: Request,
+    tile: TileCreate,
+    x_admin_token: str = Header(None)
+):
+    """Create a new tile"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    existing = await db.admin_tiles.find_one({"tile_id": tile.tile_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Tile ID already exists")
+    
+    tile_dict = tile.model_dump()
+    tile_dict["created_at"] = datetime.now(timezone.utc)
+    tile_dict["updated_at"] = datetime.now(timezone.utc)
+    
+    await db.admin_tiles.insert_one(tile_dict)
+    
+    logger.info(f"Admin created tile: {tile.tile_id}")
+    return {"ok": True, "tile": {k: v for k, v in tile_dict.items() if k != "_id"}}
+
+@router.put("/tiles/{tile_id}")
+async def update_admin_tile(
+    request: Request,
+    tile_id: str,
+    tile: TileUpdate,
+    x_admin_token: str = Header(None)
+):
+    """Update an existing tile"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    update_data = {k: v for k, v in tile.model_dump().items() if v is not None}
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_data["updated_at"] = datetime.now(timezone.utc)
+    
+    result = await db.admin_tiles.update_one(
+        {"tile_id": tile_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Tile not found")
+    
+    updated = await db.admin_tiles.find_one({"tile_id": tile_id}, {"_id": 0})
+    logger.info(f"Admin updated tile: {tile_id}")
+    return {"ok": True, "tile": updated}
+
+@router.delete("/tiles/{tile_id}")
+async def delete_admin_tile(
+    request: Request,
+    tile_id: str,
+    x_admin_token: str = Header(None),
+    hard_delete: bool = Query(default=False)
+):
+    """Delete (soft or hard) a tile"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    if hard_delete:
+        result = await db.admin_tiles.delete_one({"tile_id": tile_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Tile not found")
+        logger.info(f"Admin hard deleted tile: {tile_id}")
+    else:
+        result = await db.admin_tiles.update_one(
+            {"tile_id": tile_id},
+            {"$set": {"active": False, "updated_at": datetime.now(timezone.utc)}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Tile not found")
+        logger.info(f"Admin soft deleted tile: {tile_id}")
+    
+    return {"ok": True, "message": f"Tile {'deleted' if hard_delete else 'deactivated'}"}
+
+
+# ============================================================================
 # EXPERTS CRUD
 # ============================================================================
 
