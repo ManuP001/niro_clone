@@ -137,10 +137,11 @@ async def admin_logout(x_admin_token: str = Header(None)):
     return {"ok": True, "message": "Logged out"}
 
 @router.get("/verify")
-async def verify_session(x_admin_token: str = Header(None)):
-    """Verify admin session is valid"""
-    if verify_admin_token(x_admin_token):
-        return {"ok": True, "valid": True}
+async def verify_session(request: Request, x_admin_token: str = Header(None)):
+    """Verify admin session is still valid"""
+    db = await get_db(request)
+    if await verify_admin_token_async(x_admin_token, db):
+        return {"ok": True, "message": "Session valid"}
     raise HTTPException(status_code=401, detail="Invalid or expired session")
 
 
