@@ -959,15 +959,28 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
     setError('');
     try {
       const idField = formFields.find(f => f.isId)?.name || `${entityType.slice(0, -1)}_id`;
+      
+      // Clean up form data - remove empty strings for optional fields, keep only changed values
+      const cleanedData = {};
+      for (const [key, value] of Object.entries(formData)) {
+        // Skip empty strings (treat as "no change" for PUT)
+        if (value === '' || value === null || value === undefined) continue;
+        // For arrays, skip empty arrays
+        if (Array.isArray(value) && value.length === 0) continue;
+        cleanedData[key] = value;
+      }
+      
       if (editItem) {
+        // For updates, only send fields that have values
         await adminFetch(`/api/admin/${entityType}/${editItem[idField]}`, {
           method: 'PUT',
-          body: JSON.stringify(formData),
+          body: JSON.stringify(cleanedData),
         });
       } else {
+        // For creates, send all data including required fields
         await adminFetch(`/api/admin/${entityType}`, {
           method: 'POST',
-          body: JSON.stringify(formData),
+          body: JSON.stringify(cleanedData),
         });
       }
       setShowModal(false);
