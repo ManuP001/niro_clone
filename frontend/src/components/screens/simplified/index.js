@@ -6,6 +6,7 @@ export { default as HomeScreen } from './HomeScreen';
 export { default as TopicLandingPage } from './TopicLandingPage';
 export { default as CheckoutScreen } from './CheckoutScreen';
 export { default as PlanDashboard } from './PlanDashboard';
+export { default as MyPackScreen } from './MyPackScreen';
 export { default as ExpertsScreen } from './ExpertsScreen';
 export { default as ExpertProfileScreen } from './ExpertProfileScreen';
 export { default as AskMiraScreen } from './AskMiraScreen';
