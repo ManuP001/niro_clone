@@ -407,6 +407,17 @@ const DashboardHome = ({ stats, onNavigate, environment, onSeedData }) => {
         </div>
       )}
       
+      {/* How Changes Work Info */}
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+        <strong>💡 How changes work:</strong>
+        <ul className="mt-2 space-y-1 list-disc list-inside">
+          <li>Changes to Categories, Tiles, Topics, etc. are saved to the database instantly</li>
+          <li>Use "Preview Homepage" button to see how changes will look</li>
+          <li>Changes go live immediately on this environment's homepage</li>
+          <li><strong>For production:</strong> Deploy from Emergent, then seed data on production admin</li>
+        </ul>
+      </div>
+      
       {/* Info Banner for Preview Environment */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
         <strong>Note:</strong> This preview environment contains test data only. Production payment data (actual paying customers) will be visible after deployment when connected to the production MongoDB instance.
