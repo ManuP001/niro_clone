@@ -344,9 +344,14 @@ export default function HomeScreen({
     trackEvent('home_viewed', { flow_version: 'v6_premium', data_source: dataSource }, token);
   }, [token, dataSource]);
 
-  const handleTileClick = (tileId) => {
-    trackEvent('tile_clicked', { tile_id: tileId }, token);
-    onNavigate('topic', { topicId: tileId });
+  const handleTileClick = (tileId, tileData) => {
+    trackEvent('tile_clicked', { tile_id: tileId, has_linked_package: !!tileData?.linkedPackageId }, token);
+    // If tile has a linked package, navigate to package landing page
+    if (tileData?.linkedPackageId) {
+      onNavigate('packageLanding', { packageId: tileData.linkedPackageId, tileData });
+    } else {
+      onNavigate('topic', { topicId: tileId });
+    }
   };
 
   return (
