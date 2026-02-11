@@ -1639,12 +1639,43 @@ async def delete_admin_remedy(
 # TIERS/PACKAGES CRUD
 # ============================================================================
 
+# Rich content structure for packages
+class HelpSection(BaseModel):
+    title: str
+    items: List[str] = []
+
+class AnalysisSection(BaseModel):
+    title: str
+    items: List[str] = []
+
+class PackageContent(BaseModel):
+    # Hero Section
+    hero_title: str = ""
+    hero_subtitle: str = ""
+    trust_line: str = ""
+    
+    # Package Overview
+    overview_title: str = ""
+    overview_description: str = ""
+    includes: List[str] = []
+    
+    # What This Helps With (multiple sections like Clarity, Timeline, Support)
+    help_sections: List[HelpSection] = []
+    
+    # How We Analyse
+    analysis_intro: str = ""
+    analysis_sections: List[AnalysisSection] = []
+    
+    # What You Receive / Deliverables
+    deliverables: List[str] = []
+
 class TierCreate(BaseModel):
     tier_id: str
     name: str  # e.g., "Focussed", "Supported", "Comprehensive"
     topic_id: Optional[str] = None  # Which topic this tier belongs to (optional now)
     price: int
     duration_weeks: int = 4
+    duration_days: int = 7  # Alternative to weeks
     calls_included: int = 2
     call_duration_mins: int = 30
     features: List[str] = []
@@ -1653,6 +1684,8 @@ class TierCreate(BaseModel):
     active: bool = True
     # Expert assignment
     expert_ids: List[str] = []  # Astrologers who can handle this package
+    # Rich content
+    content: Optional[dict] = None  # Full package content (PackageContent structure)
 
 class TierUpdate(BaseModel):
     name: Optional[str] = None
