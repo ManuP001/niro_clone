@@ -1188,6 +1188,11 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
                       selectedIds={formData[field.name] || []}
                       onChange={(ids) => setFormData({ ...formData, [field.name]: ids })}
                     />
+                  ) : field.type === 'package-content' ? (
+                    <PackageContentEditor
+                      content={formData[field.name] || {}}
+                      onChange={(content) => setFormData({ ...formData, [field.name]: content })}
+                    />
                   ) : (
                     <input
                       type="text"
