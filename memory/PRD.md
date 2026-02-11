@@ -9,6 +9,7 @@ Build a comprehensive astrology consultation platform with:
 - AI-powered chat (Mira)
 - Admin dashboard for business monitoring with hierarchical content management
 - **Dynamic homepage** that reflects admin changes in real-time
+- **Live preview** of homepage changes before they go live
 
 ## User Personas
 1. **Seekers** - Users looking for astrological guidance
@@ -23,6 +24,7 @@ Build a comprehensive astrology consultation platform with:
 - Razorpay payment processing
 - Admin dashboard with full CRUD for hierarchical catalog management
 - **Homepage dynamically renders admin-managed categories and tiles**
+- **Live preview modal to see changes before deployment**
 
 ---
 
@@ -62,20 +64,29 @@ Build a comprehensive astrology consultation platform with:
   - `RemediesCatalogManager` - Manage remedies catalog
   - `TiersManager` - Manage consultation packages/tiers
 
-### Phase 4: Dynamic Homepage ✅ (NEW)
+### Phase 4: Dynamic Homepage ✅
 **Frontend (`/app/frontend/src/components/screens/simplified/HomeScreen.jsx`):**
 - Fetches categories and tiles from `/api/admin/public/homepage-data`
 - Falls back to hardcoded defaults if API fails
 - Changes in admin dashboard reflect immediately on homepage
 - No frontend redeployment needed for content changes
 
+### Phase 5: Live Homepage Preview ✅ (NEW)
+**Frontend (`/app/frontend/src/components/admin/AdminDashboard.jsx`):**
+- Added `HomepagePreview` modal component
+- "Preview Homepage" button in admin header
+- Mobile phone frame showing exact homepage layout
+- Shows all 3 categories with their tiles and icons
+- Real-time data from database with refresh capability
+- "Live data from database" indicator
+
 **New MongoDB Collections:**
-- `admin_categories` - 3 homepage category groupings
-- `admin_tiles` - 18 homepage tiles (6 per category)
-- `admin_topics` - Dynamic topics configuration
-- `admin_experts` - Expert profiles (31 total)
-- `admin_remedies` - Remedies catalog (15 total)
-- `admin_tiers` - Consultation packages (112+ total)
+- `admin_categories` - Homepage categories (3)
+- `admin_tiles` - Homepage tiles (18)
+- `admin_topics` - Topics configuration (14)
+- `admin_experts` - Expert profiles (31)
+- `admin_remedies` - Remedies catalog (15)
+- `admin_tiers` - Package tiers (112+)
 
 ---
 
@@ -83,15 +94,19 @@ Build a comprehensive astrology consultation platform with:
 
 ### For Admins:
 1. Login to `/admin` with NiroAdmin credentials
-2. Click "Categories (3)" to manage the 3 main sections
-3. Click "Tiles (18)" to manage the 18 tiles under each category
-4. Changes are **immediately** visible on the user-facing homepage
+2. Click **"Preview Homepage"** button in header to see current state
+3. Click "Categories (3)" to manage the 3 main sections
+4. Click "Tiles (18)" to manage the 18 tiles under each category
+5. Click **"Preview Homepage"** again to see your changes
+6. Changes are **immediately** visible on the user-facing homepage
 
 ### Data Flow:
 ```
 Admin Dashboard → MongoDB → Public API → Homepage
      ↓                          ↓
  CRUD Operations          No Auth Required
+     ↓
+Preview Modal (Live Data)
 ```
 
 ### Example Admin Actions:
@@ -99,10 +114,19 @@ Admin Dashboard → MongoDB → Public API → Homepage
 - **Reorder tiles:** Change "Healing" from order 1 to order 3
 - **Add new tile:** Create "Astrology Reports" tile under Career
 - **Hide tile:** Deactivate "Office Politics" tile (hidden from users)
+- **Preview changes:** Click "Preview Homepage" to see how it looks
 
 ---
 
 ## Admin Dashboard Features
+
+### Homepage Preview
+- Click "Preview Homepage" button in top-right header
+- Shows mobile phone frame with exact homepage layout
+- Displays all categories and tiles with icons
+- Shows "Live data from database" indicator
+- Refresh button to reload latest changes
+- Close button to dismiss
 
 ### Hierarchical Structure
 **Categories (3)**
@@ -120,9 +144,10 @@ Admin Dashboard → MongoDB → Public API → Homepage
 ## Prioritized Backlog
 
 ### P0 - Deploy Required
-- [x] All Phase 1-4 changes complete
+- [x] All Phase 1-5 changes complete
 - [x] Admin Dashboard hierarchical refactor complete
 - [x] Homepage dynamic data integration complete
+- [x] Live homepage preview modal complete
 - [ ] Redeploy to production
 
 ### P1 - Enhancements
@@ -148,6 +173,7 @@ Admin Dashboard → MongoDB → Public API → Homepage
 - Runtime backend URL via `getBackendUrl()`
 - Admin dashboard with hierarchical CRUD components
 - **Homepage dynamically fetches from public API**
+- **Live preview modal with mobile phone frame**
 
 ### Backend
 - FastAPI on port 8001
@@ -157,7 +183,7 @@ Admin Dashboard → MongoDB → Public API → Homepage
 - **Public API for homepage data (no auth)**
 
 ### Key Files
-- `/app/frontend/src/components/admin/AdminDashboard.jsx` - Admin UI with CRUD
+- `/app/frontend/src/components/admin/AdminDashboard.jsx` - Admin UI with CRUD + **Preview Modal**
 - `/app/frontend/src/components/screens/simplified/HomeScreen.jsx` - **Dynamic homepage**
 - `/app/backend/routes/admin.py` - Admin API endpoints + **public homepage endpoint**
 - `/app/frontend/src/config.js` - Backend URL configuration
