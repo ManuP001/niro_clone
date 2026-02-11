@@ -155,7 +155,8 @@ async def get_dashboard_stats(
     x_admin_token: str = Header(None)
 ):
     """Get dashboard statistics - all data combined"""
-    if not verify_admin_token(x_admin_token):
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     db = await get_db(request)
