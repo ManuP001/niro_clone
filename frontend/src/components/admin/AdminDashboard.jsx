@@ -1815,7 +1815,8 @@ const PackageContentEditor = ({ content, onChange }) => {
     overview: false,
     helps: false,
     analysis: false,
-    deliverables: false
+    deliverables: false,
+    custom: false
   });
 
   const toggleSection = (section) => {
