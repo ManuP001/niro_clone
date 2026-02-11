@@ -555,7 +555,7 @@ async def verify_payment(
     tier = catalog.get_tier(tier_id)
     tier_from_db = None
     
-    if not tier and db:
+    if not tier and db is not None:
         tier_from_db = await db.admin_tiers.find_one(
             {"tier_id": tier_id, "active": {"$ne": False}},
             {"_id": 0}
