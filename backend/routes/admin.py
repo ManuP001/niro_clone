@@ -1126,13 +1126,24 @@ async def create_admin_category(
         raise HTTPException(status_code=400, detail="Category ID already exists")
     
     category_dict = category.model_dump()
+    
+    # New categories must start as inactive (can't go live without tiles)
+    # They can be activated later after adding tiles
+    if category_dict.get("active", True):
+        category_dict["active"] = False  # Force inactive on creation
+        logger.info(f"Category '{category.category_id}' created as inactive - add tiles before activating")
+    
     category_dict["created_at"] = datetime.now(timezone.utc)
     category_dict["updated_at"] = datetime.now(timezone.utc)
     
     await db.admin_categories.insert_one(category_dict)
     
     logger.info(f"Admin created category: {category.category_id}")
-    return {"ok": True, "category": {k: v for k, v in category_dict.items() if k != "_id"}}
+    return {
+        "ok": True, 
+        "category": {k: v for k, v in category_dict.items() if k != "_id"},
+        "message": "Category created as inactive. Add tiles before activating."
+    }
 
 @router.put("/categories/{category_id}")
 async def update_admin_category(
