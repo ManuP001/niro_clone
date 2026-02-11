@@ -1004,12 +1004,27 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
   };
 
   const handleDelete = async (item, hardDelete = false) => {
-    const idField = formFields.find(f => f.isId)?.name || `${entityType.slice(0, -1)}_id`;
+    // Find the correct ID field from form fields or derive it
+    const idField = formFields.find(f => f.isId)?.name || 
+                    (entityType === 'categories' ? 'category_id' : 
+                     entityType === 'tiles' ? 'tile_id' :
+                     entityType === 'topics' ? 'topic_id' :
+                     entityType === 'experts' ? 'expert_id' :
+                     entityType === 'remedies-catalog' ? 'remedy_id' :
+                     entityType === 'tiers' ? 'tier_id' : 'id');
+    
+    const itemId = item[idField];
+    if (!itemId) {
+      alert(`Error: Could not find ID field (${idField}) in item`);
+      console.error('Item:', item, 'ID Field:', idField);
+      return;
+    }
+    
     const action = hardDelete ? 'permanently delete' : (item.active === false ? 'permanently delete' : 'deactivate');
-    if (!window.confirm(`Are you sure you want to ${action} this item?`)) return;
+    if (!window.confirm(`Are you sure you want to ${action} "${item.title || item.name || item.label || itemId}"?`)) return;
     try {
       const useHardDelete = hardDelete || item.active === false;
-      await adminFetch(`/api/admin/${entityType}/${item[idField]}?hard_delete=${useHardDelete}`, { method: 'DELETE' });
+      await adminFetch(`/api/admin/${entityType}/${itemId}?hard_delete=${useHardDelete}`, { method: 'DELETE' });
       loadItems();
     } catch (err) {
       alert('Failed to delete: ' + err.message);
