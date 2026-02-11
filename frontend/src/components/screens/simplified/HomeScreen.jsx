@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { colors } from './theme';
 import { SparklesIcon, PhoneIcon, ConsultIcon, ShieldIcon } from './icons';
 import { trackEvent } from './utils';
+import { getBackendUrl } from '../../../config';
 
 /**
  * HomeScreen V6 - Premium UI Upgrade
@@ -13,10 +14,14 @@ import { trackEvent } from './utils';
  * - Category modules with premium card containers
  * - Premium CTA area with "Talk to Expert" as primary
  * - Trust microcopy under CTAs
+ * 
+ * V7 UPDATE: Now fetches categories/tiles from admin API
+ * - Data is managed from /admin dashboard
+ * - Falls back to defaults if API fails
  */
 
-// V6 Tile Order - Premium + Highest Intent First
-const V6_LIFE_SITUATIONS = [
+// Default fallback data (same as before)
+const DEFAULT_LIFE_SITUATIONS = [
   {
     id: 'love',
     title: 'Love & Relationships',
