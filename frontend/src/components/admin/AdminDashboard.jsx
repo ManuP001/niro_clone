@@ -524,14 +524,11 @@ const UsersList = () => {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-xl font-bold text-gray-800">Users ({pagination.total || 0})</h2>
         <a
-          href={`${BACKEND_URL}/api/admin/export/users?source=${source}`}
-          target="_blank"
-          rel="noopener noreferrer"
+          href="#"
           className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm"
           onClick={(e) => {
             e.preventDefault();
-            const token = getAdminToken();
-            window.open(`${BACKEND_URL}/api/admin/export/users?source=${source}`, '_blank');
+            window.open(`${getBackendUrl()}/api/admin/export/users?source=${source}`, '_blank');
           }}
         >
           Export CSV
@@ -709,7 +706,7 @@ const OrdersList = () => {
           </p>
         </div>
         <button
-          onClick={() => window.open(`${BACKEND_URL}/api/admin/export/orders`, '_blank')}
+          onClick={() => window.open(`${getBackendUrl()}/api/admin/export/orders`, '_blank')}
           className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm"
         >
           Export CSV
