@@ -167,20 +167,20 @@ export default function PackageLandingPage({
           className="text-2xl font-bold text-center mb-3"
           style={{ color: colors.text.dark }}
         >
-          {content.hero_title || packageData.name}
+          {heroTitle}
         </h2>
         <p 
           className="text-base text-center leading-relaxed mb-4"
           style={{ color: colors.text.secondary }}
         >
-          {content.hero_subtitle || packageData.description}
+          {heroSubtitle}
         </p>
-        {content.trust_line && (
+        {trustLine && (
           <p 
             className="text-sm text-center italic"
             style={{ color: colors.teal.primary }}
           >
-            {content.trust_line}
+            {trustLine}
           </p>
         )}
       </section>
