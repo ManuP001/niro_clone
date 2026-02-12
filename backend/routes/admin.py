@@ -2358,3 +2358,251 @@ async def import_catalog_data(
         "results": results
     }
 
+
+
+# ============================================================================
+# BULK UPLOAD ENDPOINT
+# ============================================================================
+
+class BulkUploadTile(BaseModel):
+    tile_id: str
+    short_title: str
+    full_title: str = ""
+    icon_type: str = "star"
+    order: int = 1
+    active: bool = True
+    linked_package_id: Optional[str] = None  # Will auto-link to package if created in same upload
+
+class BulkUploadPackage(BaseModel):
+    tier_id: str
+    name: str
+    price: int
+    duration_days: int = 7
+    features: List[str] = []
+    description: str = ""
+    content: Optional[dict] = None  # Rich content (hero_title, help_sections, etc.)
+    active: bool = True
+
+class BulkUploadPayload(BaseModel):
+    """Single payload to create a category + tiles + packages in one go"""
+    category: Optional[dict] = None  # {category_id, title, helper_copy, order, active}
+    tiles: List[BulkUploadTile] = []
+    packages: List[BulkUploadPackage] = []
+
+
+@router.post("/bulk-upload")
+async def bulk_upload(
+    request: Request,
+    x_admin_token: str = Header(None)
+):
+    """
+    Bulk upload: create category + tiles + packages in one request.
+    Accepts JSON with {category, tiles, packages}.
+    Auto-links tiles to packages when tile.linked_package_id matches a package.tier_id in the same upload.
+    """
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    body = await request.json()
+    now = datetime.now(timezone.utc)
+
+    results = {
+        "category_created": False,
+        "tiles_created": 0,
+        "packages_created": 0,
+        "tiles_skipped": [],
+        "packages_skipped": [],
+        "errors": []
+    }
+
+    # 1. Create category (if provided)
+    cat_data = body.get("category")
+    if cat_data:
+        cat_id = cat_data.get("category_id")
+        if not cat_id:
+            results["errors"].append("Category missing 'category_id'")
+        else:
+            existing = await db.admin_categories.find_one({"category_id": cat_id})
+            if existing:
+                # Update existing
+                cat_data["updated_at"] = now
+                await db.admin_categories.update_one(
+                    {"category_id": cat_id},
+                    {"$set": cat_data}
+                )
+                results["category_created"] = True
+                logger.info(f"Bulk upload: updated category {cat_id}")
+            else:
+                cat_data["created_at"] = now
+                cat_data["updated_at"] = now
+                await db.admin_categories.insert_one(cat_data)
+                results["category_created"] = True
+                logger.info(f"Bulk upload: created category {cat_id}")
+
+    # 2. Create packages first (so tiles can link to them)
+    created_package_ids = set()
+    for pkg in body.get("packages", []):
+        tier_id = pkg.get("tier_id")
+        if not tier_id:
+            results["errors"].append(f"Package missing 'tier_id': {pkg.get('name', '?')}")
+            continue
+
+        existing = await db.admin_tiers.find_one({"tier_id": tier_id})
+        if existing:
+            # Update existing
+            pkg["updated_at"] = now
+            await db.admin_tiers.update_one(
+                {"tier_id": tier_id},
+                {"$set": pkg}
+            )
+            results["packages_created"] += 1
+            created_package_ids.add(tier_id)
+            logger.info(f"Bulk upload: updated package {tier_id}")
+        else:
+            pkg["created_at"] = now
+            pkg["updated_at"] = now
+            await db.admin_tiers.insert_one(pkg)
+            results["packages_created"] += 1
+            created_package_ids.add(tier_id)
+            logger.info(f"Bulk upload: created package {tier_id}")
+
+    # 3. Create tiles
+    for tile in body.get("tiles", []):
+        tile_id = tile.get("tile_id")
+        if not tile_id:
+            results["errors"].append(f"Tile missing 'tile_id': {tile.get('short_title', '?')}")
+            continue
+
+        # Auto-set category_id from the uploaded category
+        if cat_data and not tile.get("category_id"):
+            tile["category_id"] = cat_data.get("category_id")
+
+        existing = await db.admin_tiles.find_one({"tile_id": tile_id})
+        if existing:
+            # Update existing
+            tile["updated_at"] = now
+            await db.admin_tiles.update_one(
+                {"tile_id": tile_id},
+                {"$set": tile}
+            )
+            results["tiles_created"] += 1
+            logger.info(f"Bulk upload: updated tile {tile_id}")
+        else:
+            tile["created_at"] = now
+            tile["updated_at"] = now
+            await db.admin_tiles.insert_one(tile)
+            results["tiles_created"] += 1
+            logger.info(f"Bulk upload: created tile {tile_id}")
+
+    total = (1 if results["category_created"] else 0) + results["tiles_created"] + results["packages_created"]
+    logger.info(f"Bulk upload complete: {results}")
+
+    return {
+        "ok": True,
+        "message": f"Bulk upload complete: {total} items processed",
+        "results": results
+    }
+
+
+@router.get("/bulk-upload/template")
+async def get_bulk_upload_template(
+    request: Request,
+    x_admin_token: str = Header(None)
+):
+    """Return a JSON template for bulk upload"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    template = {
+        "_instructions": "Fill in this template and upload via Bulk Upload. All IDs must be unique. Tiles auto-link to the category if category_id is omitted from tiles.",
+        "category": {
+            "category_id": "my-category",
+            "title": "My Category Name",
+            "helper_copy": "Short description of what this category covers",
+            "order": 1,
+            "active": True
+        },
+        "tiles": [
+            {
+                "tile_id": "my-tile-1",
+                "short_title": "Tile 1",
+                "full_title": "Full Title for Tile 1",
+                "icon_type": "star",
+                "order": 1,
+                "active": True,
+                "linked_package_id": "my-package-1"
+            },
+            {
+                "tile_id": "my-tile-2",
+                "short_title": "Tile 2",
+                "full_title": "Full Title for Tile 2",
+                "icon_type": "heart",
+                "order": 2,
+                "active": True,
+                "linked_package_id": "my-package-2"
+            }
+        ],
+        "packages": [
+            {
+                "tier_id": "my-package-1",
+                "name": "Package 1 Name",
+                "price": 1999,
+                "duration_days": 7,
+                "features": [
+                    "Feature 1",
+                    "Feature 2",
+                    "Feature 3"
+                ],
+                "description": "Short description for listings",
+                "active": True,
+                "content": {
+                    "hero_title": "Package 1 Headline",
+                    "hero_subtitle": "A compelling subtitle that explains the value",
+                    "trust_line": "Senior experts . Unlimited follow-ups . Private & secure",
+                    "overview_title": "7-Day Guidance",
+                    "overview_description": "What the user gets in detail",
+                    "includes": [
+                        "1 structured analysis",
+                        "Unlimited chat for 7 days",
+                        "Written summary within 24 hours"
+                    ],
+                    "help_sections": [
+                        {
+                            "title": "CLARITY",
+                            "items": [
+                                "Question 1 this helps answer",
+                                "Question 2 this helps answer"
+                            ]
+                        },
+                        {
+                            "title": "TIMELINE",
+                            "items": [
+                                "When to act",
+                                "Key timing windows"
+                            ]
+                        }
+                    ],
+                    "analysis_intro": "Your guidance is based on structured analysis, not guesswork.",
+                    "analysis_sections": [
+                        {
+                            "title": "We look at:",
+                            "items": [
+                                "Analysis point 1",
+                                "Analysis point 2"
+                            ]
+                        }
+                    ],
+                    "deliverables": [
+                        "Clear direction summary",
+                        "A timing window table",
+                        "Unlimited topic-specific chat for 7 days"
+                    ]
+                }
+            }
+        ]
+    }
+
+    return {"ok": True, "template": template}
+
