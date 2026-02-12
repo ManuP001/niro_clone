@@ -3,16 +3,17 @@ import { colors } from './theme';
 import { HomeIcon, ConsultIcon, ChatIcon, RemediesIcon, AstroIcon, PackageIcon } from './icons';
 
 /**
- * BottomNav - Updated navigation with teal color scheme (V6)
- * Tabs: Home, Consult, Mira (Free AI Chat), My Pack (for returning users), Astro
- * Profile moved to top-right avatar
+ * BottomNav - Navigation with teal color scheme (V6)
+ * New users: Home, Consult, Remedies, Astro (4 tabs)
+ * Returning users: Home, Consult, Remedies, My Pack, Astro (5 tabs)
+ * Mira removed from nav — accessible from homepage
  */
 
-// Base tabs for all users
+// Base tabs for all users (Mira removed)
 const baseTabs = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
   { id: 'consult', label: 'Consult', Icon: ConsultIcon },
-  { id: 'mira', label: 'Mira', Icon: ChatIcon },
+  { id: 'remedies', label: 'Remedies', Icon: RemediesIcon },
 ];
 
 // Tab for returning users with active plans
@@ -25,9 +26,11 @@ const endTabs = [
 
 export default function BottomNav({ activeTab, onTabChange, hasActivePlan = false }) {
   // Build tabs based on user state
+  // New users: Home, Consult, Remedies, Astro (4 tabs)
+  // Returning users: Home, Consult, Remedies, My Pack, Astro (5 tabs)
   const tabs = hasActivePlan 
     ? [...baseTabs, myPackTab, ...endTabs]
-    : [...baseTabs, { id: 'remedies', label: 'Remedies', Icon: RemediesIcon }, ...endTabs];
+    : [...baseTabs, ...endTabs];
   
   return (
     <nav 
