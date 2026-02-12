@@ -484,9 +484,8 @@ async def create_order(
             logger.error(f"Razorpay order creation failed: {e}")
     
     # Store order in DB
-    storage = get_simplified_storage()
-    if storage:
-        await storage.db.niro_simplified_orders.insert_one({
+    if db is not None:
+        await db.niro_simplified_orders.insert_one({
             "order_id": order_id,
             "razorpay_order_id": razorpay_order_id,
             "user_id": user_id,
@@ -520,8 +519,11 @@ async def verify_payment(
     background_tasks: BackgroundTasks = None
 ):
     """Verify Razorpay payment and create plan"""
-    storage = get_simplified_storage()
-    db = storage.db if storage else None
+    # Use app.state.db as primary DB source (reliable)
+    db = getattr(request.app.state, 'db', None)
+    if db is None:
+        storage = get_simplified_storage()
+        db = storage.db if storage else None
     user_id = await get_user_id_from_token_async(authorization, db)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
