@@ -1076,7 +1076,13 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
       await adminFetch(`/api/admin/${entityType}/${itemId}?hard_delete=${useHardDelete}`, { method: 'DELETE' });
       loadItems();
     } catch (err) {
-      alert('Failed to delete: ' + err.message);
+      const msg = err.message || 'Failed to delete';
+      if (msg.includes('not found')) {
+        alert(`Item not found. It may have already been removed. Refreshing list...`);
+        loadItems();
+      } else {
+        alert('Failed: ' + msg);
+      }
     }
   };
 
