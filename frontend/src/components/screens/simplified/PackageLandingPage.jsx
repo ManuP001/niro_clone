@@ -214,10 +214,10 @@ export default function PackageLandingPage({
           <div className="flex justify-between items-start mb-3">
             <div>
               <h3 className="text-lg font-semibold" style={{ color: colors.text.dark }}>
-                {content.overview_title || `${durationDays}-Day Guidance`}
+                {overviewTitle}
               </h3>
               <p className="text-sm" style={{ color: colors.text.secondary }}>
-                {content.overview_description || 'Unlimited guidance on your topic'}
+                {overviewDescription}
               </p>
             </div>
             <div className="text-right">
@@ -231,13 +231,13 @@ export default function PackageLandingPage({
           </div>
 
           {/* What's Included */}
-          {content.includes && content.includes.length > 0 && (
+          {includes.length > 0 && (
             <div className="pt-3 border-t" style={{ borderColor: DIVIDER_COLOR }}>
               <p className="text-sm font-medium mb-2" style={{ color: colors.text.dark }}>
                 What's included:
               </p>
               <ul className="space-y-2">
-                {content.includes.map((item, i) => (
+                {includes.map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <CheckIcon className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: colors.teal.primary }} />
                     <span className="text-sm" style={{ color: colors.text.secondary }}>{item}</span>
