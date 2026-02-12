@@ -409,8 +409,12 @@ async def create_order(
     authorization: str = Header(default=None)
 ):
     """Create a Razorpay order for pack purchase"""
-    storage = get_simplified_storage()
-    db = storage.db if storage else None
+    # Use app.state.db as primary DB source (reliable), fall back to storage singleton
+    db = getattr(request.app.state, 'db', None)
+    if db is None:
+        storage = get_simplified_storage()
+        db = storage.db if storage else None
+    
     user_id = await get_user_id_from_token_async(authorization, db)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
@@ -432,9 +436,6 @@ async def create_order(
                 logger.info(f"Found tier in admin_tiers: {request_data.tier_id} - {tier_from_db.get('name')}")
             else:
                 logger.warning(f"Tier {request_data.tier_id} NOT found in admin_tiers")
-                # Debug: list some tiers
-                sample_tiers = await db.admin_tiers.find({}, {"tier_id": 1, "_id": 0}).to_list(5)
-                logger.info(f"Sample tiers in DB: {[t.get('tier_id') for t in sample_tiers]}")
         except Exception as e:
             logger.error(f"Error checking admin_tiers: {e}")
     elif db is None:
