@@ -363,6 +363,20 @@ const DashboardHome = ({ stats, onNavigate, environment, onSeedData }) => {
     }
   };
 
+  const handleCleanOrphaned = async () => {
+    if (!window.confirm('This will remove entries with missing IDs (e.g., categories created without a category_id). Continue?')) return;
+    setSeeding(true);
+    try {
+      const result = await adminFetch('/api/admin/clean-orphaned', { method: 'POST' });
+      alert(`Orphaned entries cleaned!\n\nRemoved:\n- Categories: ${result.removed?.categories || 0}\n- Tiles: ${result.removed?.tiles || 0}\n- Topics: ${result.removed?.topics || 0}\n- Tiers: ${result.removed?.tiers || 0}`);
+    } catch (err) {
+      alert('Clean failed: ' + err.message);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+
   const needsSeeding = catalogStats && (catalogStats.categories === 0 || catalogStats.topics === 0 || catalogStats.experts === 0);
 
   return (
