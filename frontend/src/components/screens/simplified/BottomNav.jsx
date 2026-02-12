@@ -1,6 +1,6 @@
 import React from 'react';
 import { colors } from './theme';
-import { HomeIcon, ConsultIcon, ChatIcon, RemediesIcon, AstroIcon, PackageIcon } from './icons';
+import { HomeIcon, ConsultIcon, RemediesIcon, AstroIcon, PackageIcon } from './icons';
 
 /**
  * BottomNav - Navigation with teal color scheme (V6)
