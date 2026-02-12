@@ -993,24 +993,37 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
     try {
       const idField = formFields.find(f => f.isId)?.name || `${entityType.slice(0, -1)}_id`;
       
-      // Clean up form data - remove empty strings for optional fields, keep only changed values
+      // Clean up form data - remove empty strings for optional fields, keep booleans and numbers
       const cleanedData = {};
       for (const [key, value] of Object.entries(formData)) {
-        // Skip empty strings (treat as "no change" for PUT)
-        if (value === '' || value === null || value === undefined) continue;
+        // Skip null/undefined
+        if (value === null || value === undefined) continue;
+        // Skip empty strings (treat as "no change" for PUT), but keep for ID fields on create
+        if (value === '' && !(key === idField && !editItem)) continue;
         // For arrays, skip empty arrays
         if (Array.isArray(value) && value.length === 0) continue;
+        // Keep false values (important for active toggle), keep 0 values
         cleanedData[key] = value;
       }
       
       if (editItem) {
-        // For updates, only send fields that have values
-        await adminFetch(`/api/admin/${entityType}/${editItem[idField]}`, {
+        const itemId = editItem[idField];
+        if (!itemId) {
+          setError(`Cannot update: missing ${idField}. Try refreshing the page.`);
+          setSaving(false);
+          return;
+        }
+        await adminFetch(`/api/admin/${entityType}/${itemId}`, {
           method: 'PUT',
           body: JSON.stringify(cleanedData),
         });
       } else {
-        // For creates, send all data including required fields
+        // Validate required ID field on create
+        if (!cleanedData[idField]) {
+          setError(`${idField.replace(/_/g, ' ')} is required.`);
+          setSaving(false);
+          return;
+        }
         await adminFetch(`/api/admin/${entityType}`, {
           method: 'POST',
           body: JSON.stringify(cleanedData),
@@ -1019,7 +1032,21 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
       setShowModal(false);
       loadItems();
     } catch (err) {
-      setError(err.message || 'Failed to save');
+      // Map technical errors to user-friendly messages
+      const msg = err.message || 'Failed to save';
+      if (msg.includes('already exists')) {
+        setError(`This ID is already taken. Please choose a different one.`);
+      } else if (msg.includes('not found')) {
+        setError(`Item not found in database. It may have been deleted. Try refreshing.`);
+      } else if (msg.includes('No fields to update')) {
+        setError(`No changes detected. Modify at least one field.`);
+      } else if (msg.includes('Cannot activate')) {
+        setError(msg); // This message is already descriptive
+      } else if (msg.includes('Session expired')) {
+        setError('Your session has expired. Please log in again.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setSaving(false);
     }
