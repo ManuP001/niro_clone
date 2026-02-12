@@ -1028,7 +1028,7 @@ async def update_admin_topic(
     
     db = await get_db(request)
     
-    update_data = {k: v for k, v in topic.model_dump().items() if v is not None}
+    update_data = {k: v for k, v in topic.model_dump(exclude_unset=True).items()}
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
@@ -1157,7 +1157,7 @@ async def update_admin_category(
     if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
-    update_data = {k: v for k, v in category.model_dump().items() if v is not None}
+    update_data = {k: v for k, v in category.model_dump(exclude_unset=True).items()}
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
@@ -1298,7 +1298,7 @@ async def update_admin_tile(
     if not await verify_admin_token_async(x_admin_token, db):
         raise HTTPException(status_code=401, detail="Unauthorized")
     
-    update_data = {k: v for k, v in tile.model_dump().items() if v is not None}
+    update_data = {k: v for k, v in tile.model_dump(exclude_unset=True).items()}
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
@@ -1440,7 +1440,7 @@ async def update_admin_expert(
     
     db = await get_db(request)
     
-    update_data = {k: v for k, v in expert.model_dump().items() if v is not None}
+    update_data = {k: v for k, v in expert.model_dump(exclude_unset=True).items()}
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
@@ -1586,7 +1586,7 @@ async def update_admin_remedy(
     
     db = await get_db(request)
     
-    update_data = {k: v for k, v in remedy.model_dump().items() if v is not None}
+    update_data = {k: v for k, v in remedy.model_dump(exclude_unset=True).items()}
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
@@ -1764,7 +1764,7 @@ async def update_admin_tier(
     
     db = await get_db(request)
     
-    update_data = {k: v for k, v in tier.model_dump().items() if v is not None}
+    update_data = {k: v for k, v in tier.model_dump(exclude_unset=True).items()}
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
