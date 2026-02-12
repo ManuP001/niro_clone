@@ -234,10 +234,9 @@ export default function SimplifiedApp({ token, userId, user }) {
     }
   };
 
-  // Handle Chat with Mira CTA
+  // Handle Chat with Mira CTA (accessible from homepage, not bottom nav)
   const handleChatWithMira = () => {
     trackEvent('cta_chat_with_mira', {}, token);
-    setActiveTab('mira');
     setScreen('mira');
     setMiraInitialMessage('');
   };
