@@ -290,19 +290,67 @@ async def get_all_experts_grouped():
 
 
 @router.get("/tiers/{tier_id}")
-async def get_tier_detail(tier_id: str):
-    """Get tier details"""
+async def get_tier_detail(tier_id: str, request: Request):
+    """Get tier details from catalog or admin_tiers database"""
     catalog = get_simplified_catalog()
     tier = catalog.get_tier(tier_id)
     
-    if not tier:
-        raise HTTPException(status_code=404, detail="Tier not found")
+    if tier:
+        return {
+            "ok": True,
+            "tier": tier.model_dump(),
+            "catalog_version": CATALOG_VERSION
+        }
     
-    return {
-        "ok": True,
-        "tier": tier.model_dump(),
-        "catalog_version": CATALOG_VERSION
-    }
+    # Not in catalog — check admin_tiers database
+    db = getattr(request.app.state, 'db', None)
+    if db is None:
+        storage = get_simplified_storage()
+        db = storage.db if storage else None
+    if db is None:
+        try:
+            from backend.server import db as server_db
+            db = server_db
+        except Exception:
+            pass
+    
+    if db is not None:
+        try:
+            tier_from_db = await db.admin_tiers.find_one(
+                {"tier_id": tier_id, "active": {"$ne": False}},
+                {"_id": 0}
+            )
+            if tier_from_db:
+                # Map DB fields to match the catalog tier format expected by CheckoutScreen
+                return {
+                    "ok": True,
+                    "tier": {
+                        "tier_id": tier_from_db.get("tier_id"),
+                        "topic_id": tier_from_db.get("topic_id", "standalone"),
+                        "tier_level": tier_from_db.get("tier_level", "standalone_package"),
+                        "name": tier_from_db.get("name"),
+                        "tagline": tier_from_db.get("description", ""),
+                        "price_inr": tier_from_db.get("price", 0),
+                        "validity_weeks": tier_from_db.get("duration_weeks", 0) or (tier_from_db.get("duration_days", 7) // 7),
+                        "is_recommended": tier_from_db.get("popular", False),
+                        "features": tier_from_db.get("features", []),
+                        "display_order": 0,
+                        "access_policy": {
+                            "chat_sla_hours": 24,
+                            "calls_enabled": tier_from_db.get("calls_included", 0) > 0,
+                            "calls_per_month": tier_from_db.get("calls_included", 0),
+                            "call_duration_minutes": tier_from_db.get("call_duration_mins", 30),
+                            "max_active_expert_threads": 1,
+                            "free_tools_access": True,
+                        },
+                    },
+                    "source": "admin_tiers",
+                    "catalog_version": CATALOG_VERSION
+                }
+        except Exception as e:
+            logger.error(f"Error fetching tier from admin_tiers: {e}")
+    
+    raise HTTPException(status_code=404, detail="Tier not found")
 
 
 # ============================================================================
