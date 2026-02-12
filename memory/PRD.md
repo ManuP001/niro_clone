@@ -30,141 +30,31 @@ Build a comprehensive astrology consultation platform with:
 
 ## What's Been Implemented
 
-### Phase 1: Critical Bug Fixes ✅
-- Fixed Payment "Authentication required" error (session token validation)
-- Fixed Google OAuth double login issue (router order fix)
-- Fixed OAuth loop in production (runtime URL resolution via `getBackendUrl()`)
-- Updated Vedic API key
-- Added Chakra Healing remedy (₹3,500, 3 sessions)
+### Phase 1-5: Core Platform (Previous Sessions)
+- Google OAuth, birth details, Kundli, AI chat (Mira)
+- Payment flow with Razorpay
+- Admin dashboard with hierarchical CRUD
+- Dynamic homepage from DB
+- Live homepage preview modal
+- Valentine's Special category + 3 packages
 
-### Phase 2: UI & UX Refinements ✅
-- Implemented "My Pack" tab for paying customers (`MyPackScreen.jsx`)
-- Removed per-minute pricing from landing pages
-- Fixed "Buy Now" bar visibility on Remedy page (z-index fix)
+### Phase 6: Admin Dashboard Bug Fixes (Feb 12, 2026)
+1. **Fixed BACKEND_URL crash** — Users & Orders pages crashed due to undefined `BACKEND_URL`. Replaced with `getBackendUrl()`.
+2. **Fixed deactivation broken** — All entity update endpoints used `model_dump()` with `if v is not None` which dropped `false`/`0` values. Changed to `model_dump(exclude_unset=True)`.
+3. **Fixed Valentine's content display** — `PackageLandingPage` now falls back to basic package fields (name, features, description) when rich `content` object is empty.
+4. **Fixed checkout DB lookup** — `niro_simplified/routes.py` now uses `request.app.state.db` as primary DB source instead of unreliable storage singleton.
+5. **Improved error messages** — `CatalogManager` maps technical errors to user-friendly messages.
 
-### Phase 3: Admin Dashboard CRUD ✅
-**Backend APIs** (`/app/backend/routes/admin.py`):
-- Categories CRUD: `GET/POST/PUT/DELETE /api/admin/categories`
-- Tiles CRUD: `GET/POST/PUT/DELETE /api/admin/tiles`
-- Topics CRUD: `GET/POST/PUT/DELETE /api/admin/topics`
-- Experts CRUD: `GET/POST/PUT/DELETE /api/admin/experts`
-- Remedies CRUD: `GET/POST/PUT/DELETE /api/admin/remedies-catalog`
-- Tiers CRUD: `GET/POST/PUT/DELETE /api/admin/tiers`
-- Seed endpoint: `POST /api/admin/seed-catalog`
-- **Public homepage endpoint: `GET /api/admin/public/homepage-data` (no auth required)**
+### Phase 7: Bottom Nav Restructure (Feb 12, 2026)
+- Removed **Mira** from bottom navigation (still accessible from homepage CTA)
+- **New users** (no active plan): Home, Consult, Remedies, Astro (4 tabs)
+- **Returning users** (active plan): Home, Consult, Remedies, My Pack, Astro (5 tabs)
 
-**Frontend Admin UI** (`/app/frontend/src/components/admin/AdminDashboard.jsx`):
-- Generic `CatalogManager` component for all CRUD operations
-- **Homepage Section:**
-  - `CategoriesManager` - Manage 3 homepage categories
-  - `TilesManager` - Manage 18 homepage tiles
-- **Catalog Section:**
-  - `TopicsManager` - Manage topics
-  - `ExpertsManager` - Manage expert profiles
-  - `RemediesCatalogManager` - Manage remedies catalog
-  - `TiersManager` - Manage consultation packages/tiers
-
-### Phase 4: Dynamic Homepage ✅
-**Frontend (`/app/frontend/src/components/screens/simplified/HomeScreen.jsx`):**
-- Fetches categories and tiles from `/api/admin/public/homepage-data`
-- Falls back to hardcoded defaults if API fails
-- Changes in admin dashboard reflect immediately on homepage
-- No frontend redeployment needed for content changes
-
-### Phase 5: Live Homepage Preview ✅ (NEW)
-**Frontend (`/app/frontend/src/components/admin/AdminDashboard.jsx`):**
-- Added `HomepagePreview` modal component
-- "Preview Homepage" button in admin header
-- Mobile phone frame showing exact homepage layout
-- Shows all 3 categories with their tiles and icons
-- Real-time data from database with refresh capability
-- "Live data from database" indicator
-
-**New MongoDB Collections:**
-- `admin_categories` - Homepage categories (3)
-- `admin_tiles` - Homepage tiles (18)
-- `admin_topics` - Topics configuration (14)
-- `admin_experts` - Expert profiles (31)
-- `admin_remedies` - Remedies catalog (15)
-- `admin_tiers` - Package tiers (112+)
-
----
-
-## How Homepage Management Works
-
-### For Admins:
-1. Login to `/admin` with NiroAdmin credentials
-2. Click **"Preview Homepage"** button in header to see current state
-3. Click "Categories (3)" to manage the 3 main sections
-4. Click "Tiles (18)" to manage the 18 tiles under each category
-5. Click **"Preview Homepage"** again to see your changes
-6. Changes are **immediately** visible on the user-facing homepage
-
-### Data Flow:
-```
-Admin Dashboard → MongoDB → Public API → Homepage
-     ↓                          ↓
- CRUD Operations          No Auth Required
-     ↓
-Preview Modal (Live Data)
-```
-
-### Example Admin Actions:
-- **Rename category:** "Love & Relationships" → "Relationships & Love"
-- **Reorder tiles:** Change "Healing" from order 1 to order 3
-- **Add new tile:** Create "Astrology Reports" tile under Career
-- **Hide tile:** Deactivate "Office Politics" tile (hidden from users)
-- **Preview changes:** Click "Preview Homepage" to see how it looks
-
----
-
-## Admin Dashboard Features
-
-### Homepage Preview
-- Click "Preview Homepage" button in top-right header
-- Shows mobile phone frame with exact homepage layout
-- Displays all categories and tiles with icons
-- Shows "Live data from database" indicator
-- Refresh button to reload latest changes
-- Close button to dismiss
-
-### Hierarchical Structure
-**Categories (4)**
-- Love & Relationships: Dating, commitment, healing, family dynamics
-- **Valentine's Special**: NOT OFFICIAL YET, READY FOR MARRIAGE?, MOVE ON OR STAY?
-- Career & Money: Work direction, stability, timing, growth
-- Health & Wellness: Stress, recovery, energy, emotional balance
-
-**Tiles (21 total)**
-- Love: Healing, Dating, Marriage, Trust, Family, Closure (6)
-- **Valentine's Special**: NOT OFFICIAL YET, READY FOR MARRIAGE?, MOVE ON OR STAY? (3) - NEW
-- Career: Clarity, Job Change, Money, Timing, Work Stress, Office (6)
-- Health: Stress, Sleep, Energy, Timing, Emotional, Recovery (6)
-
----
-
-## Prioritized Backlog
-
-### P0 - Deploy Required
-- [x] All Phase 1-5 changes complete
-- [x] Admin Dashboard hierarchical refactor complete
-- [x] Homepage dynamic data integration complete
-- [x] Live homepage preview modal complete
-- [ ] Redeploy to production
-
-### P1 - Enhancements
-- [ ] Expert photo upload functionality
-- [ ] Schedule call integration
-- [ ] Expert Chat Selection - Allow customers to choose specific astrologer
-
-### P2 - Tech Debt
-- [ ] Remove obsolete JWT auth code
-- [ ] Data migration script for existing data
-- [ ] Cache catalog data for performance
-
-### P3 - Verification Pending
-- [ ] Verify Google OAuth double login is fully resolved
-- [ ] Verify Admin Dashboard revenue calculation accuracy
+### Phase 8: Bulk Upload Flow (Feb 12, 2026)
+- **Backend**: `POST /api/admin/bulk-upload` — creates category + tiles + packages in one request (upserts)
+- **Backend**: `GET /api/admin/bulk-upload/template` — downloadable JSON template
+- **Frontend**: Bulk Upload page in admin sidebar under "Tools" section
+- File upload + JSON paste + preview before upload + success/error reporting
 
 ---
 
@@ -173,87 +63,63 @@ Preview Modal (Live Data)
 ### Frontend
 - React with Tailwind CSS
 - Runtime backend URL via `getBackendUrl()`
-- Admin dashboard with hierarchical CRUD components
-- **Homepage dynamically fetches from public API**
-- **Live preview modal with mobile phone frame**
+- Admin dashboard with hierarchical CRUD + Bulk Upload
+- Homepage dynamically fetches from public API
 
 ### Backend
 - FastAPI on port 8001
 - MongoDB collections for catalog data
 - Session token + JWT authentication
-- Persistent admin sessions in MongoDB
-- **Public API for homepage data (no auth)**
+- Public API for homepage data (no auth)
 
 ### Key Files
-- `/app/frontend/src/components/admin/AdminDashboard.jsx` - Admin UI with CRUD + **Preview Modal**
-- `/app/frontend/src/components/screens/simplified/HomeScreen.jsx` - **Dynamic homepage**
-- `/app/backend/routes/admin.py` - Admin API endpoints + **public homepage endpoint**
-- `/app/frontend/src/config.js` - Backend URL configuration
+- `/app/frontend/src/components/admin/AdminDashboard.jsx` - Admin UI (CRUD + Bulk Upload + Preview)
+- `/app/frontend/src/components/screens/simplified/HomeScreen.jsx` - Dynamic homepage
+- `/app/frontend/src/components/screens/simplified/BottomNav.jsx` - Restructured bottom nav
+- `/app/frontend/src/components/screens/simplified/PackageLandingPage.jsx` - Package landing with fallback
+- `/app/backend/routes/admin.py` - Admin API (CRUD + Bulk Upload + Public endpoints)
+- `/app/backend/niro_simplified/routes.py` - Checkout with fixed DB lookup
+- `/app/backend/niro_simplified/catalog.py` - Hardcoded tiers including Valentine's
 
-### Database Collections (Catalog)
-- `admin_categories` - Homepage categories (4 - added Valentine's Special)
-- `admin_tiles` - Homepage tiles (21 - added 3 Valentine's tiles)
-- `admin_topics` - Topics configuration (14)
+### Database Collections
+- `admin_categories` - Homepage categories (4)
+- `admin_tiles` - Homepage tiles (21)
+- `admin_topics` - Topics (14)
 - `admin_experts` - Expert profiles (31)
 - `admin_remedies` - Remedies catalog (15)
-- `admin_tiers` - Package tiers (112+)
-- `admin_sessions` - Persistent admin login sessions
-
----
-
-## API Reference
-
-### Public Endpoints (No Auth)
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/admin/public/homepage-data` | GET | Get categories and tiles for homepage |
-
-### Admin Endpoints (Requires X-Admin-Token)
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/admin/categories` | GET/POST | List/Create categories |
-| `/api/admin/categories/{id}` | PUT/DELETE | Update/Delete category |
-| `/api/admin/tiles` | GET/POST | List/Create tiles |
-| `/api/admin/tiles/{id}` | PUT/DELETE | Update/Delete tile |
-| `/api/admin/seed-catalog` | POST | Seed initial data |
-
----
-
-## Valentine's Special Packages (Feb 2026)
-Three new packages with rich landing page content:
-
-### 1. NOT OFFICIAL YET (₹1,999 - 7 days)
-- **Target:** Users in undefined relationships approaching Valentine's
-- **Value:** Unlimited guidance on one relationship topic
-- **Landing Page:** `/packageLanding` screen with rich content sections
-
-### 2. READY FOR MARRIAGE? (₹2,499 - 7 days)
-- **Target:** Users facing proposal/commitment decisions
-- **Value:** Structured compatibility and timing analysis
-- **Landing Page:** `/packageLanding` screen with rich content sections
-
-### 3. MOVE ON OR STAY? (₹1,999 - 7 days)
-- **Target:** Users stuck in emotional loops
-- **Value:** Continuation vs closure analysis
-- **Landing Page:** `/packageLanding` screen with rich content sections
-
-### Technical Implementation
-- **Category Order:** Valentine's Special is now order 0 (displays first on homepage)
-- **New Component:** `PackageLandingPage.jsx` - Renders rich content from database
-- **New API:** `/api/admin/public/package/{package_id}` - Public endpoint for package data
-- **Tile Routing:** Tiles with `linkedPackageId` navigate to `packageLanding` instead of `topic`
+- `admin_tiers` - Package tiers (118)
+- `admin_sessions` - Admin login sessions
 
 ---
 
 ## Credentials
 - **Admin Dashboard:** NiroAdmin / NewAdmin@123
-- **Vedic API Key:** `6792dc58-2dda-530b-82de-87777c7ecfe5`
 - **Preview URL:** https://heart-payment-test.preview.emergentagent.com/admin
 
 ---
 
+## Prioritized Backlog
+
+### P0 - Deploy Required
+- [x] All Phase 1-8 changes complete and tested
+
+### P1 - Deferred UX (To-Do)
+- [ ] Issue #5: Expand tile icons from 16 to full Lucide set
+- [ ] Issue #7: Dynamic sidebar counts (replace hardcoded "Categories (3)", "Tiles (18)")
+- [ ] Issue #9: Show feedback when categories are force-created as inactive
+
+### P2 - Enhancements
+- [ ] Expert Chat Selection — Allow customers to choose specific astrologer
+- [ ] Countdown Timer — Valentine's Special category banner
+
+### P3 - Tech Debt
+- [ ] Remove obsolete JWT auth code
+- [ ] Data migration script for existing data
+- [ ] Cache catalog data for performance
+
+---
+
 ## Test Reports
-- `/app/test_reports/iteration_10.json` - Admin hierarchy CRUD tests (100% pass)
-- `/app/test_reports/iteration_11.json` - Public homepage API tests (100% pass)
-- `/app/backend/tests/test_admin_hierarchy_crud.py` - Backend CRUD tests
-- `/app/backend/tests/test_public_homepage_api.py` - Public API tests
+- `/app/test_reports/iteration_12.json` - Phase 1 bug fixes (18/18 pass)
+- `/app/test_reports/iteration_13.json` - Phase 1-3 comprehensive (all pass)
+- `/app/backend/tests/test_phase1_bug_fixes.py` - Backend regression tests
