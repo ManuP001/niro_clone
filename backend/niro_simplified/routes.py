@@ -452,7 +452,8 @@ async def create_order(
         logger.error("Database connection NOT available for checkout - all 3 sources failed")
     
     if not tier and not tier_from_db:
-        raise HTTPException(status_code=404, detail="Tier not found")
+        logger.error(f"CHECKOUT FAILED: Tier '{request_data.tier_id}' not found in catalog ({len(catalog.tiers)} tiers) or admin_tiers DB (db={'connected' if db else 'NONE'})")
+        raise HTTPException(status_code=404, detail=f"Package not found: {request_data.tier_id}. Please check if the package exists and is active.")
     
     # Get price and tier info
     if tier:
