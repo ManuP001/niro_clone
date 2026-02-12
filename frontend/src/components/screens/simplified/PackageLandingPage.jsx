@@ -250,13 +250,13 @@ export default function PackageLandingPage({
       </section>
 
       {/* Help Sections (Clarity, Timeline, etc.) */}
-      {content.help_sections && content.help_sections.length > 0 && (
+      {helpSections.length > 0 && (
         <section className="px-5 py-3">
           <h3 className="text-base font-semibold mb-3" style={{ color: colors.text.dark }}>
             What This Helps You With
           </h3>
           <div className="space-y-2">
-            {content.help_sections.map((section, i) => (
+            {helpSections.map((section, i) => (
               <div 
                 key={i}
                 className="rounded-xl overflow-hidden"
@@ -296,7 +296,7 @@ export default function PackageLandingPage({
       )}
 
       {/* Deliverables */}
-      {content.deliverables && content.deliverables.length > 0 && (
+      {deliverables.length > 0 && (
         <section className="px-5 py-3">
           <h3 className="text-base font-semibold mb-3" style={{ color: colors.text.dark }}>
             What You'll Leave With
@@ -309,7 +309,7 @@ export default function PackageLandingPage({
             }}
           >
             <ul className="space-y-2">
-              {content.deliverables.map((item, i) => (
+              {deliverables.map((item, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <CheckIcon className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: colors.teal.primary }} />
                   <span className="text-sm" style={{ color: colors.text.secondary }}>{item}</span>
@@ -321,18 +321,18 @@ export default function PackageLandingPage({
       )}
 
       {/* Analysis Section */}
-      {content.analysis_sections && content.analysis_sections.length > 0 && (
+      {analysisSections.length > 0 && (
         <section className="px-5 py-3">
           <h3 className="text-base font-semibold mb-2" style={{ color: colors.text.dark }}>
             How We Analyse Your Situation
           </h3>
-          {content.analysis_intro && (
+          {analysisIntro && (
             <p className="text-sm mb-3" style={{ color: colors.text.secondary }}>
-              {content.analysis_intro}
+              {analysisIntro}
             </p>
           )}
           <div className="space-y-2">
-            {content.analysis_sections.map((section, i) => (
+            {analysisSections.map((section, i) => (
               <div 
                 key={i}
                 className="rounded-xl overflow-hidden"
@@ -372,9 +372,9 @@ export default function PackageLandingPage({
       )}
 
       {/* Custom Sections */}
-      {content.custom_sections && content.custom_sections.length > 0 && (
+      {customSections.length > 0 && (
         <section className="px-5 py-3">
-          {content.custom_sections.map((section, i) => (
+          {customSections.map((section, i) => (
             <div key={i} className="mb-4">
               <h3 className="text-base font-semibold mb-2" style={{ color: colors.text.dark }}>
                 {section.title}
