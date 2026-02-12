@@ -157,7 +157,7 @@ export default function PackageLandingPage({
           <ArrowLeftIcon className="w-5 h-5" style={{ color: colors.text.dark }} />
         </button>
         <h1 className="text-lg font-semibold flex-1 truncate" style={{ color: colors.text.dark }}>
-          {content.hero_title || packageData.name}
+          {heroTitle}
         </h1>
       </header>
 
