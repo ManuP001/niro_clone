@@ -2588,6 +2588,8 @@ export default function AdminDashboard() {
     { id: 'manage-experts', label: 'Experts', icon: '👤' },
     { id: 'manage-remedies', label: 'Remedies', icon: '✨' },
     { id: 'manage-tiers', label: 'Packages', icon: '🎁' },
+    { id: 'divider3', label: '─── Tools ───', icon: '' },
+    { id: 'bulk-upload', label: 'Bulk Upload', icon: '📤' },
   ];
 
   const renderContent = () => {
