@@ -2306,6 +2306,239 @@ const TiersManager = () => {
 };
 
 // ============================================================================
+// BULK UPLOAD
+// ============================================================================
+const BulkUpload = () => {
+  const [jsonInput, setJsonInput] = useState('');
+  const [preview, setPreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+
+  const downloadTemplate = async () => {
+    try {
+      const data = await adminFetch('/api/admin/bulk-upload/template');
+      if (data.ok) {
+        const blob = new Blob([JSON.stringify(data.template, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'niro_bulk_upload_template.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      setError('Failed to download template: ' + err.message);
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target.result;
+      setJsonInput(text);
+      try {
+        const parsed = JSON.parse(text);
+        setPreview(parsed);
+        setError('');
+      } catch (err) {
+        setError('Invalid JSON file. Please check the format.');
+        setPreview(null);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleTextParse = () => {
+    try {
+      const parsed = JSON.parse(jsonInput);
+      setPreview(parsed);
+      setError('');
+    } catch (err) {
+      setError('Invalid JSON. Please check syntax.');
+      setPreview(null);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!preview) return;
+    setUploading(true);
+    setError('');
+    setResult(null);
+    try {
+      const data = await adminFetch('/api/admin/bulk-upload', {
+        method: 'POST',
+        body: JSON.stringify(preview),
+      });
+      setResult(data);
+    } catch (err) {
+      setError('Upload failed: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-gray-800" data-testid="bulk-upload-title">Bulk Upload</h2>
+        <button
+          onClick={downloadTemplate}
+          className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center gap-2"
+          data-testid="download-template-btn"
+        >
+          <LucideIcons.Download className="w-4 h-4" />
+          Download Template
+        </button>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+        <strong>How it works:</strong>
+        <ol className="mt-2 space-y-1 list-decimal list-inside">
+          <li>Download the JSON template and fill in your data</li>
+          <li>Upload the file or paste JSON below</li>
+          <li>Preview what will be created</li>
+          <li>Click "Upload" to create everything in one go</li>
+        </ol>
+        <p className="mt-2 text-xs text-blue-600">Creates a category + tiles + packages with all content in a single upload. Existing items with the same ID will be updated.</p>
+      </div>
+
+      {/* File Upload */}
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <h3 className="font-semibold text-gray-800 mb-3">Upload JSON File</h3>
+        <div className="flex items-center gap-4">
+          <label className="flex-1 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-teal-400 hover:bg-teal-50/30 transition-colors">
+            <LucideIcons.Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
+            <p className="text-sm text-gray-600">Click to upload JSON file</p>
+            <p className="text-xs text-gray-400 mt-1">.json files only</p>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleFileUpload}
+              className="hidden"
+              data-testid="bulk-upload-file-input"
+            />
+          </label>
+        </div>
+
+        <div className="mt-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Or paste JSON directly:</h4>
+          <textarea
+            value={jsonInput}
+            onChange={(e) => setJsonInput(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg font-mono text-sm"
+            rows={8}
+            placeholder='{"category": {...}, "tiles": [...], "packages": [...]}'
+            data-testid="bulk-upload-json-input"
+          />
+          <button
+            onClick={handleTextParse}
+            className="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+            data-testid="bulk-upload-parse-btn"
+          >
+            Parse JSON
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700" data-testid="bulk-upload-error">
+          {error}
+        </div>
+      )}
+
+      {/* Preview */}
+      {preview && (
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100" data-testid="bulk-upload-preview">
+          <h3 className="font-semibold text-gray-800 mb-4">Preview — What will be created:</h3>
+
+          {preview.category && (
+            <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+              <h4 className="text-sm font-semibold text-purple-800 mb-1">Category</h4>
+              <p className="text-sm text-purple-700">
+                <strong>{preview.category.title}</strong> (ID: {preview.category.category_id}) — Order: {preview.category.order ?? '?'}
+              </p>
+            </div>
+          )}
+
+          {preview.tiles?.length > 0 && (
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <h4 className="text-sm font-semibold text-blue-800 mb-2">Tiles ({preview.tiles.length})</h4>
+              <div className="space-y-1">
+                {preview.tiles.map((t, i) => (
+                  <p key={i} className="text-sm text-blue-700">
+                    {i + 1}. <strong>{t.short_title}</strong> (ID: {t.tile_id})
+                    {t.linked_package_id && <span className="text-blue-500"> → links to {t.linked_package_id}</span>}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {preview.packages?.length > 0 && (
+            <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
+              <h4 className="text-sm font-semibold text-green-800 mb-2">Packages ({preview.packages.length})</h4>
+              <div className="space-y-1">
+                {preview.packages.map((p, i) => (
+                  <p key={i} className="text-sm text-green-700">
+                    {i + 1}. <strong>{p.name}</strong> (ID: {p.tier_id}) — {formatCurrency(p.price)} / {p.duration_days || 7} days
+                    {p.content?.hero_title && <span className="text-green-500"> — has rich content</span>}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={handleUpload}
+            disabled={uploading}
+            className="w-full mt-4 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 disabled:opacity-50 flex items-center justify-center gap-2"
+            data-testid="bulk-upload-submit-btn"
+          >
+            {uploading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <LucideIcons.Upload className="w-4 h-4" />
+                Upload & Create All
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Result */}
+      {result && (
+        <div className={`rounded-xl p-4 border ${result.ok ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`} data-testid="bulk-upload-result">
+          <h3 className={`font-semibold mb-2 ${result.ok ? 'text-green-800' : 'text-red-800'}`}>
+            {result.ok ? 'Upload Successful' : 'Upload Failed'}
+          </h3>
+          <p className="text-sm text-gray-700 mb-2">{result.message}</p>
+          {result.results && (
+            <div className="text-sm space-y-1">
+              <p>Category: {result.results.category_created ? 'Created/Updated' : 'Not included'}</p>
+              <p>Tiles: {result.results.tiles_created} created/updated</p>
+              <p>Packages: {result.results.packages_created} created/updated</p>
+              {result.results.errors?.length > 0 && (
+                <div className="mt-2 p-2 bg-red-100 rounded text-red-700">
+                  <p className="font-medium">Errors:</p>
+                  {result.results.errors.map((e, i) => <p key={i} className="text-xs">{e}</p>)}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
 // MAIN ADMIN DASHBOARD
 // ============================================================================
 export default function AdminDashboard() {
