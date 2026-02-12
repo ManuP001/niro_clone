@@ -756,46 +756,6 @@ class SimplifiedCatalog:
             )
         
         # =========================================================================
-        # VALENTINE'S SPECIAL PACKAGES (Standalone - 7 days unlimited guidance)
-        # =========================================================================
-        valentine_packages = [
-            ("not-official-yet-pkg", "love", "Not Official Yet", 1999, 1,
-             "Unlimited guidance on one relationship topic for 7 days",
-             ["1 structured relationship analysis", "Unlimited follow-ups for 7 days", "Written clarity note (within 24 hours)", "Timing windows for important conversations", "Optional call support"]),
-            
-            ("ready-for-marriage-pkg", "marriage", "Ready for Marriage?", 2499, 1,
-             "Make this decision with structure and clarity",
-             ["Structured compatibility and timing analysis", "Unlimited follow-ups for 7 days", "Written decision note (within 24 hours)", "Timing windows for proposal conversations", "Optional call support"]),
-            
-            ("move-on-or-stay-pkg", "love", "Move On or Stay?", 1999, 1,
-             "Resolve this emotional cycle with structure",
-             ["Continuation vs closure analysis", "Unlimited follow-ups for 7 days", "Written closure plan (within 24 hours)", "Timing windows for conversations or detachment", "Optional call support"]),
-        ]
-        
-        for tier_id, topic_id, name, price, weeks, tagline, features in valentine_packages:
-            self.tiers[tier_id] = PackTier(
-                tier_id=tier_id,
-                topic_id=topic_id,
-                tier_level="valentine_special",
-                name=name,
-                tagline=tagline,
-                price_inr=price,
-                validity_weeks=weeks,
-                is_recommended=True,
-                access_policy=AccessPolicy(
-                    chat_sla_hours=24,
-                    calls_enabled=True,
-                    calls_per_month=1,
-                    call_duration_minutes=30,
-                    max_active_expert_threads=1,
-                    free_tools_access=True
-                ),
-                features=features,
-                display_order=0,  # Show first
-                catalog_version=CATALOG_VERSION
-            )
-        
-        # =========================================================================
         # V5 18 SUB-TOPIC TIERS (3 tiers per sub-topic: Focussed, Supported, Comprehensive)
         # =========================================================================
         # V6 SUBTOPIC TIERS - Prices synced with frontend landingPageContentV6.js
