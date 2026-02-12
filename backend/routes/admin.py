@@ -1817,6 +1817,87 @@ async def delete_admin_tier(
 # CLEAN DUPLICATES ENDPOINT
 # ============================================================================
 
+@router.post("/clean-orphaned")
+async def clean_orphaned_entries(
+    request: Request,
+    x_admin_token: str = Header(None)
+):
+    """Remove catalog entries that have no ID or empty IDs (orphaned data)"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    results = {"categories": 0, "tiles": 0, "topics": 0, "tiers": 0}
+
+    # Delete categories without category_id
+    r = await db.admin_categories.delete_many({
+        "$or": [
+            {"category_id": {"$exists": False}},
+            {"category_id": None},
+            {"category_id": ""},
+        ]
+    })
+    results["categories"] = r.deleted_count
+
+    # Delete tiles without tile_id
+    r = await db.admin_tiles.delete_many({
+        "$or": [
+            {"tile_id": {"$exists": False}},
+            {"tile_id": None},
+            {"tile_id": ""},
+        ]
+    })
+    results["tiles"] = r.deleted_count
+
+    # Delete topics without topic_id
+    r = await db.admin_topics.delete_many({
+        "$or": [
+            {"topic_id": {"$exists": False}},
+            {"topic_id": None},
+            {"topic_id": ""},
+        ]
+    })
+    results["topics"] = r.deleted_count
+
+    # Delete tiers without tier_id
+    r = await db.admin_tiers.delete_many({
+        "$or": [
+            {"tier_id": {"$exists": False}},
+            {"tier_id": None},
+            {"tier_id": ""},
+        ]
+    })
+    results["tiers"] = r.deleted_count
+
+    total = sum(results.values())
+    logger.info(f"Admin cleaned orphaned entries: {results}")
+    return {
+        "ok": True,
+        "message": f"Removed {total} orphaned entries (items with missing IDs)",
+        "removed": results
+    }
+
+
+@router.delete("/categories/by-title/{title}")
+async def delete_category_by_title(
+    request: Request,
+    title: str,
+    x_admin_token: str = Header(None)
+):
+    """Delete a category by its title — for cases where category_id is missing"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    result = await db.admin_categories.delete_many({"title": {"$regex": title, "$options": "i"}})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail=f"No category found with title matching '{title}'")
+
+    logger.info(f"Admin deleted {result.deleted_count} categories matching title '{title}'")
+    return {"ok": True, "message": f"Deleted {result.deleted_count} categories matching '{title}'"}
+
+
+
 @router.post("/clean-duplicates")
 async def clean_duplicates(
     request: Request,
