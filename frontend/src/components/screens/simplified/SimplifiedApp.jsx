@@ -228,7 +228,9 @@ export default function SimplifiedApp({ token, userId, user }) {
     
     if (newScreen === 'mira' && params.initialMessage) {
       setMiraInitialMessage(params.initialMessage);
-      setActiveTab('mira');
+    }
+    if (newScreen === 'mira') {
+      // Mira is no longer a nav tab — keep current tab highlighted
     }
   };
 
