@@ -121,7 +121,20 @@ export default function PackageLandingPage({
 
   const content = packageData.content || {};
   const price = packageData.price || 0;
-  const durationDays = packageData.duration_days || 7;
+  const durationDays = packageData.duration_days || (packageData.duration_weeks ? packageData.duration_weeks * 7 : 7);
+
+  // Build display content from rich content OR fall back to basic package fields
+  const heroTitle = content.hero_title || packageData.name || 'Package';
+  const heroSubtitle = content.hero_subtitle || packageData.description || '';
+  const trustLine = content.trust_line || '';
+  const overviewTitle = content.overview_title || `${durationDays}-Day Guidance`;
+  const overviewDescription = content.overview_description || packageData.description || 'Unlimited guidance on your topic';
+  const includes = content.includes || packageData.features || [];
+  const helpSections = content.help_sections || [];
+  const analysisSections = content.analysis_sections || [];
+  const analysisIntro = content.analysis_intro || '';
+  const deliverables = content.deliverables || [];
+  const customSections = content.custom_sections || [];
 
   return (
     <div 
