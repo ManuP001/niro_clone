@@ -2604,6 +2604,7 @@ export default function AdminDashboard() {
       case 'manage-experts': return <ExpertsManager />;
       case 'manage-remedies': return <RemediesCatalogManager />;
       case 'manage-tiers': return <TiersManager />;
+      case 'bulk-upload': return <BulkUpload />;
       default: return <DashboardHome stats={stats} onNavigate={setCurrentPage} environment={environment} />;
     }
   };
