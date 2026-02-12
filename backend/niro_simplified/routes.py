@@ -409,11 +409,19 @@ async def create_order(
     authorization: str = Header(default=None)
 ):
     """Create a Razorpay order for pack purchase"""
-    # Use app.state.db as primary DB source (reliable), fall back to storage singleton
+    # Get DB connection - try multiple sources for reliability
     db = getattr(request.app.state, 'db', None)
     if db is None:
         storage = get_simplified_storage()
         db = storage.db if storage else None
+    if db is None:
+        try:
+            from backend.server import db as server_db
+            db = server_db
+        except Exception:
+            pass
+    
+    logger.info(f"Checkout create-order: db available = {db is not None}, tier_id = {request_data.tier_id}")
     
     user_id = await get_user_id_from_token_async(authorization, db)
     if not user_id:
@@ -423,7 +431,7 @@ async def create_order(
     catalog = get_simplified_catalog()
     tier = catalog.get_tier(request_data.tier_id)
     
-    # If not in catalog, check admin_tiers database (for standalone packages like Valentine's)
+    # If not in catalog, check admin_tiers database
     tier_from_db = None
     if not tier and db is not None:
         logger.info(f"Tier {request_data.tier_id} not in catalog, checking admin_tiers database...")
@@ -435,11 +443,13 @@ async def create_order(
             if tier_from_db:
                 logger.info(f"Found tier in admin_tiers: {request_data.tier_id} - {tier_from_db.get('name')}")
             else:
-                logger.warning(f"Tier {request_data.tier_id} NOT found in admin_tiers")
+                # Log all tier_ids to debug
+                all_ids = await db.admin_tiers.distinct("tier_id")
+                logger.warning(f"Tier {request_data.tier_id} NOT found. DB has {len(all_ids)} tiers. First 5: {all_ids[:5]}")
         except Exception as e:
-            logger.error(f"Error checking admin_tiers: {e}")
+            logger.error(f"Error checking admin_tiers: {e}", exc_info=True)
     elif db is None:
-        logger.warning("Database connection not available for admin_tiers lookup")
+        logger.error("Database connection NOT available for checkout - all 3 sources failed")
     
     if not tier and not tier_from_db:
         raise HTTPException(status_code=404, detail="Tier not found")
