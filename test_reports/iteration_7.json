@@ -10,7 +10,7 @@
     "design_issues": [],
     "platform_issues": [
       {
-        "issue": "Preview URL (https://astro-admin-5.preview.emergentagent.com) showing 'Preview Unavailable' due to Emergent platform inactivity timeout",
+        "issue": "Preview URL (https://heart-payment-test.preview.emergentagent.com) showing 'Preview Unavailable' due to Emergent platform inactivity timeout",
         "impact": "Cannot perform UI testing via browser automation",
         "resolution": "Platform needs to be woken up via app.emergent.sh"
       }

@@ -10,7 +10,7 @@ import uuid
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://astro-admin-5.preview.emergentagent.com/api"
+BACKEND_URL = "https://heart-payment-test.preview.emergentagent.com/api"
 
 def test_welcome_message_endpoint():
     """Test Welcome Message Endpoint Fix - POST /api/profile/welcome"""

@@ -248,7 +248,7 @@ Three new packages with rich landing page content:
 ## Credentials
 - **Admin Dashboard:** NiroAdmin / NewAdmin@123
 - **Vedic API Key:** `6792dc58-2dda-530b-82de-87777c7ecfe5`
-- **Preview URL:** https://astro-admin-5.preview.emergentagent.com/admin
+- **Preview URL:** https://heart-payment-test.preview.emergentagent.com/admin
 
 ---
 
