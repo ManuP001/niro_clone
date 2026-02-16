@@ -248,6 +248,32 @@ async def get_topic_detail(
     )
 
 
+def _normalize_db_expert(exp: dict) -> dict:
+    """Normalize admin_experts DB fields to match catalog ExpertProfile format"""
+    langs = exp.get("languages", "")
+    if isinstance(langs, str):
+        langs = [l.strip() for l in langs.split(",") if l.strip()]
+    return {
+        "expert_id": exp.get("expert_id", ""),
+        "name": exp.get("name", ""),
+        "photo_url": exp.get("photo_url", ""),
+        "modality": exp.get("modality", ""),
+        "modality_label": exp.get("modality_label", ""),
+        "languages": langs,
+        "topics": exp.get("topics", []),
+        "best_for_tags": exp.get("tags", []),
+        "short_bio": exp.get("bio", ""),
+        "experience_years": exp.get("years_experience", 5),
+        "rating": exp.get("rating", 4.5),
+        "total_consultations": exp.get("total_consults", 0),
+        "consultations": exp.get("total_consults", 0),
+        "availability_status": "available",
+        "is_active": exp.get("active", True),
+        "display_order": 0,
+    }
+
+
+
 @router.get("/experts")
 async def get_experts(request: Request, topic_id: str = Query(default=None)):
     """Get experts, optionally filtered by topic - merges catalog + DB"""
