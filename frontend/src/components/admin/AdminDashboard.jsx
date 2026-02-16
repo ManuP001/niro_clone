@@ -546,16 +546,32 @@ const UsersList = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-xl font-bold text-gray-800">Users ({pagination.total || 0})</h2>
-        <a
-          href="#"
+        <button
+          data-testid="export-users-csv-btn"
           className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm"
-          onClick={(e) => {
-            e.preventDefault();
-            window.open(`${getBackendUrl()}/api/admin/export/users?source=${source}`, '_blank');
+          onClick={async () => {
+            try {
+              const token = getAdminToken();
+              const res = await fetch(`${getBackendUrl()}/api/admin/export/users?source=${source}`, {
+                headers: { 'X-Admin-Token': token }
+              });
+              if (!res.ok) throw new Error('Export failed');
+              const blob = await res.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `niro_users_${new Date().toISOString().slice(0,10)}.csv`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              window.URL.revokeObjectURL(url);
+            } catch (err) {
+              alert('Export failed: ' + err.message);
+            }
           }}
         >
           Export CSV
-        </a>
+        </button>
       </div>
 
       {/* Filters */}
@@ -729,8 +745,28 @@ const OrdersList = () => {
           </p>
         </div>
         <button
-          onClick={() => window.open(`${getBackendUrl()}/api/admin/export/orders`, '_blank')}
+          data-testid="export-orders-csv-btn"
           className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm"
+          onClick={async () => {
+            try {
+              const token = getAdminToken();
+              const res = await fetch(`${getBackendUrl()}/api/admin/export/orders`, {
+                headers: { 'X-Admin-Token': token }
+              });
+              if (!res.ok) throw new Error('Export failed');
+              const blob = await res.blob();
+              const url = window.URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `niro_orders_${new Date().toISOString().slice(0,10)}.csv`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              window.URL.revokeObjectURL(url);
+            } catch (err) {
+              alert('Export failed: ' + err.message);
+            }
+          }}
         >
           Export CSV
         </button>
