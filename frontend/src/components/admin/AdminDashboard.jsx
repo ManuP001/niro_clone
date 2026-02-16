@@ -1012,6 +1012,8 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [includeInactive, setIncludeInactive] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [bulkProcessing, setBulkProcessing] = useState(false);
 
   // Use dataKey or derive from entityType (remove hyphens)
   const responseKey = dataKey || entityType.replace(/-/g, '_').replace('_catalog', '');
