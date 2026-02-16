@@ -60,7 +60,9 @@ export default function ExpertsScreen({ token, userState, onNavigate }) {
     filteredExperts = filteredExperts.filter(e => 
       e.name.toLowerCase().includes(query) ||
       e.modality_label?.toLowerCase().includes(query) ||
-      e.best_for_tags?.some(tag => tag.toLowerCase().includes(query))
+      e.best_for_tags?.some(tag => tag.toLowerCase().includes(query)) ||
+      e.life_situation_tags?.some(tag => tag.toLowerCase().includes(query)) ||
+      e.method_tags?.some(tag => tag.toLowerCase().includes(query))
     );
   }
 
