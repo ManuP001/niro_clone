@@ -275,7 +275,7 @@ async def get_experts(request: Request, topic_id: str = Query(default=None)):
             db_experts = await db.admin_experts.find(query, {"_id": 0}).to_list(500)
             for exp in db_experts:
                 if exp.get("expert_id") not in catalog_ids:
-                    experts_list.append(exp)
+                    experts_list.append(_normalize_db_expert(exp))
         except Exception as e:
             logger.warning(f"Failed to fetch experts from DB: {e}")
     
@@ -307,7 +307,7 @@ async def get_all_experts_grouped(request: Request):
             ).to_list(500)
             for exp in db_experts:
                 if exp.get("expert_id") not in catalog_ids:
-                    experts_list.append(exp)
+                    experts_list.append(_normalize_db_expert(exp))
         except Exception as e:
             logger.warning(f"Failed to fetch experts from DB: {e}")
     
