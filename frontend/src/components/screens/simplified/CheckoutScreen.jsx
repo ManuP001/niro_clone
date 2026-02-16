@@ -3,8 +3,7 @@ import { apiSimplified, formatPrice, trackEvent } from './utils';
 import { colors, shadows } from './theme';
 
 /**
- * CheckoutScreen - Razorpay payment flow (V5)
- * Enhanced with RefundBadge and new color scheme
+ * CheckoutScreen - Razorpay payment flow
  */
 export default function CheckoutScreen({ token, tierId, scenarioIds = [], onSuccess, onBack }) {
   const [loading, setLoading] = useState(true);
