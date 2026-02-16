@@ -1700,6 +1700,127 @@ const ExpertMultiSelect = ({ experts, selectedIds, onChange }) => {
   );
 };
 
+// Tag Multi-Select Component for expert tags (life-situation, method, remedy)
+const TagMultiSelect = ({ tagType, selectedTags, onChange, maxTags }) => {
+  const [tagOptions, setTagOptions] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const data = await adminFetch('/api/admin/tag-options');
+        setTagOptions(data.tag_options || {});
+      } catch (err) {
+        console.error('Failed to load tag options:', err);
+      }
+    };
+    loadTags();
+  }, []);
+
+  if (!tagOptions) return <p className="text-xs text-gray-400">Loading tags...</p>;
+
+  const rawOptions = tagOptions[tagType];
+  // life_situation is grouped by category, method & remedy_support are flat arrays
+  const isGrouped = rawOptions && !Array.isArray(rawOptions);
+  
+  let flatOptions = [];
+  if (isGrouped) {
+    Object.entries(rawOptions).forEach(([category, tags]) => {
+      tags.forEach(tag => flatOptions.push({ category, tag }));
+    });
+  } else if (Array.isArray(rawOptions)) {
+    flatOptions = rawOptions.map(tag => ({ category: null, tag }));
+  }
+
+  const filtered = search.trim()
+    ? flatOptions.filter(o => o.tag.toLowerCase().includes(search.toLowerCase()))
+    : flatOptions;
+
+  const toggleTag = (tag) => {
+    const current = selectedTags || [];
+    if (current.includes(tag)) {
+      onChange(current.filter(t => t !== tag));
+    } else {
+      if (maxTags && current.length >= maxTags) return;
+      onChange([...current, tag]);
+    }
+  };
+
+  const selected = selectedTags || [];
+
+  return (
+    <div className="relative">
+      {/* Selected tags display */}
+      <div
+        className="min-h-[40px] w-full px-3 py-2 border border-gray-300 rounded-lg cursor-pointer flex flex-wrap gap-1 items-center"
+        onClick={() => setIsOpen(!isOpen)}
+        data-testid={`tag-select-${tagType}`}
+      >
+        {selected.length > 0 ? selected.map(tag => (
+          <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 bg-teal-100 text-teal-700 text-xs rounded-full">
+            {tag}
+            <button onClick={(e) => { e.stopPropagation(); toggleTag(tag); }} className="hover:text-red-500">&times;</button>
+          </span>
+        )) : (
+          <span className="text-sm text-gray-400">
+            Select tags{maxTags ? ` (max ${maxTags})` : ''}...
+          </span>
+        )}
+      </div>
+      
+      {/* Dropdown */}
+      {isOpen && (
+        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-hidden">
+          <div className="p-2 border-b">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search tags..."
+              className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded"
+              autoFocus
+            />
+          </div>
+          <div className="overflow-y-auto max-h-48">
+            {isGrouped ? (
+              // Grouped display for life_situation tags
+              Object.entries(
+                filtered.reduce((acc, o) => { (acc[o.category] = acc[o.category] || []).push(o.tag); return acc; }, {})
+              ).map(([category, tags]) => (
+                <div key={category}>
+                  <p className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase bg-gray-50 sticky top-0">{category}</p>
+                  {tags.map(tag => (
+                    <label key={tag} className={`flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 ${selected.includes(tag) ? 'bg-teal-50' : ''} ${maxTags && selected.length >= maxTags && !selected.includes(tag) ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                      <input type="checkbox" checked={selected.includes(tag)} onChange={() => toggleTag(tag)} className="w-3.5 h-3.5 accent-teal-600" disabled={maxTags && selected.length >= maxTags && !selected.includes(tag)} />
+                      <span className="truncate">{tag}</span>
+                    </label>
+                  ))}
+                </div>
+              ))
+            ) : (
+              // Flat display for method/remedy tags
+              filtered.map(o => (
+                <label key={o.tag} className={`flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-gray-50 ${selected.includes(o.tag) ? 'bg-teal-50' : ''} ${maxTags && selected.length >= maxTags && !selected.includes(o.tag) ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                  <input type="checkbox" checked={selected.includes(o.tag)} onChange={() => toggleTag(o.tag)} className="w-3.5 h-3.5 accent-teal-600" disabled={maxTags && selected.length >= maxTags && !selected.includes(o.tag)} />
+                  <span className="truncate">{o.tag}</span>
+                </label>
+              ))
+            )}
+            {filtered.length === 0 && <p className="text-sm text-gray-400 text-center py-3">No tags match</p>}
+          </div>
+          <div className="border-t px-3 py-1.5 flex justify-between items-center bg-gray-50">
+            <span className="text-xs text-gray-500">{selected.length} selected{maxTags ? ` / ${maxTags} max` : ''}</span>
+            <button onClick={() => setIsOpen(false)} className="text-xs text-teal-600 font-medium">Done</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+
 // Topics Manager - with visual Lucide icon picker
 const TopicsManager = () => (
   <CatalogManager
