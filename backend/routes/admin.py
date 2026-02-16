@@ -1499,6 +1499,57 @@ async def get_tag_options(
     return {"ok": True, "tag_options": EXPERT_TAG_OPTIONS}
 
 
+# Ensure upload directory exists
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+@router.post("/upload/image")
+async def upload_image(
+    request: Request,
+    file: UploadFile = File(...),
+    x_admin_token: str = Header(None)
+):
+    """Upload an image file and return its URL"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    # Validate file type
+    allowed = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+    if file.content_type not in allowed:
+        raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed. Use JPEG, PNG, WebP, or GIF.")
+    
+    # Generate unique filename
+    ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "jpg"
+    filename = f"{uuid.uuid4().hex[:12]}.{ext}"
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    
+    # Save file
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:  # 5MB limit
+        raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB.")
+    
+    with open(filepath, "wb") as f:
+        f.write(content)
+    
+    # Build URL using request base URL
+    image_url = f"/api/admin/uploads/{filename}"
+    
+    logger.info(f"Admin uploaded image: {filename} ({len(content)} bytes)")
+    return {"ok": True, "url": image_url, "filename": filename}
+
+from fastapi.responses import FileResponse
+
+@router.get("/uploads/{filename}")
+async def serve_upload(filename: str):
+    """Serve uploaded files"""
+    filepath = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.exists(filepath):
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(filepath)
+
+
+
 
 @router.get("/experts")
 async def list_admin_experts(
