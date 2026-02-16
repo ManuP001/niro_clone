@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiSimplified, formatPrice, trackEvent } from './utils';
 import { colors, shadows } from './theme';
-import RefundBadge from './RefundBadge';
 
 /**
  * CheckoutScreen - Razorpay payment flow (V5)
