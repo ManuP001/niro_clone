@@ -2024,7 +2024,7 @@ const ExpertsManager = () => (
       { name: 'rating', label: 'Rating', type: 'number', default: 4.5 },
       { name: 'total_consults', label: 'Total Consults', type: 'number', default: 0 },
       { name: 'topics', label: 'Topics', type: 'array', hint: 'Topic IDs this expert can serve' },
-      { name: 'photo_url', label: 'Photo URL' },
+      { name: 'photo_url', label: 'Photo', type: 'image-upload' },
       { name: 'life_situation_tags', label: 'Best For Tags (Life Situations)', type: 'tag-multi-select', tagType: 'life_situation', maxTags: 5, hint: '3-5 tags shown on profile as "Best for"' },
       { name: 'method_tags', label: 'Method Tags', type: 'tag-multi-select', tagType: 'method', maxTags: 3, hint: '1-3 tags for how the expert works' },
       { name: 'remedy_tags', label: 'Remedy/Support Tags', type: 'tag-multi-select', tagType: 'remedy_support', maxTags: 2, hint: '0-2 tags for additional services' },
