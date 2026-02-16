@@ -576,13 +576,6 @@ export default function SimplifiedApp({ token, userId, user }) {
       className="simplified-app min-h-screen relative" 
       style={{ backgroundColor: colors.background.primary }}
     >
-      {/* DevToggle */}
-      <DevToggle 
-        userMode={userMode}
-        onModeChange={handleModeChange}
-        onReset={handleReset}
-      />
-
       {renderScreen()}
       
       {/* Bottom Navigation */}
