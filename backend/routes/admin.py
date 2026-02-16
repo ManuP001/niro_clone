@@ -6,10 +6,11 @@ Secure endpoints for viewing users, orders, plans, and remedies
 import os
 import csv
 import io
+import uuid
 import hashlib
 from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
-from fastapi import APIRouter, HTTPException, Header, Query, Request, Response
+from fastapi import APIRouter, HTTPException, Header, Query, Request, Response, UploadFile, File
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorDatabase
