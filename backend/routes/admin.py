@@ -1486,6 +1486,19 @@ EXPERT_TAG_OPTIONS = {
     ],
 }
 
+@router.get("/tag-options")
+async def get_tag_options(
+    request: Request,
+    x_admin_token: str = Header(None)
+):
+    """Get all available expert tag options grouped by type"""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return {"ok": True, "tag_options": EXPERT_TAG_OPTIONS}
+
+
+
 @router.get("/experts")
 async def list_admin_experts(
     request: Request,
