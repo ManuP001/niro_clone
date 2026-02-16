@@ -1158,6 +1158,66 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
     }
   };
 
+  // Bulk selection helpers
+  const getIdField = () => formFields.find(f => f.isId)?.name || 
+    (entityType === 'categories' ? 'category_id' : 
+     entityType === 'tiles' ? 'tile_id' :
+     entityType === 'topics' ? 'topic_id' :
+     entityType === 'experts' ? 'expert_id' :
+     entityType === 'remedies-catalog' ? 'remedy_id' :
+     entityType === 'tiers' ? 'tier_id' : 'id');
+
+  const toggleSelect = (itemId) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(itemId) ? next.delete(itemId) : next.add(itemId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const idField = getIdField();
+    if (selectedIds.size === items.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(items.map(i => i[idField])));
+    }
+  };
+
+  const handleBulkDeactivate = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Deactivate ${selectedIds.size} item(s)?`)) return;
+    setBulkProcessing(true);
+    let success = 0, failed = 0;
+    for (const id of selectedIds) {
+      try {
+        await adminFetch(`/api/admin/${entityType}/${id}`, { method: 'DELETE' });
+        success++;
+      } catch { failed++; }
+    }
+    setBulkProcessing(false);
+    setSelectedIds(new Set());
+    loadItems();
+    alert(`Deactivated: ${success}${failed ? `, Failed: ${failed}` : ''}`);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`PERMANENTLY delete ${selectedIds.size} item(s)? This cannot be undone.`)) return;
+    setBulkProcessing(true);
+    let success = 0, failed = 0;
+    for (const id of selectedIds) {
+      try {
+        await adminFetch(`/api/admin/${entityType}/${id}?hard_delete=true`, { method: 'DELETE' });
+        success++;
+      } catch { failed++; }
+    }
+    setBulkProcessing(false);
+    setSelectedIds(new Set());
+    loadItems();
+    alert(`Deleted: ${success}${failed ? `, Failed: ${failed}` : ''}`);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
