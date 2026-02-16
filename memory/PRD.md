@@ -54,9 +54,22 @@ Build a comprehensive astrology consultation platform with:
 - Admin UI with file upload + JSON paste + preview
 
 ### Phase 9: P0 Bug Fixes (Feb 16, 2026)
-1. **Export CSV fix** — Replaced window.open() with authenticated fetch + blob download for Users and Orders export
-2. **Checkout back button fix** — Preserves previous screen context (_prevScreen, _prevParams) when navigating to checkout, restores on back
-3. **Expert visibility fix** — Public /api/simplified/experts and /api/simplified/experts/all now merge admin_experts DB collection with hardcoded catalog, with field normalization (_normalize_db_expert)
+1. **Export CSV fix** — Authenticated fetch + blob download
+2. **Checkout back button fix** — Preserves/restores previous screen context
+3. **Expert visibility fix** — Public endpoints merge DB + catalog experts
+
+### Phase 10: Expert Tag System & Image Upload (Feb 16, 2026)
+1. **3-Type Expert Tag System:**
+   - **Life-situation tags** (A): 58 tags across 7 categories (Career & Work, Business & Finance, Relationships, Marriage, Health & Wellness, Spiritual, Other) — shown as "Best For" on profile
+   - **Method tags** (B): 10 tags (Dasha analysis, Transit guidance, etc.)
+   - **Remedy/Support tags** (C): 10 tags (Breathwork, Chakra meditation, etc.)
+   - Profile display: life-situation tags + optionally 1 method tag
+   - Backend: `GET /api/admin/tag-options`, updated ExpertCreate/ExpertUpdate models
+   - Frontend: TagMultiSelect component with grouped categories, max limits (5/3/2)
+2. **Expert Image Upload:**
+   - Backend: `POST /api/admin/upload/image` (saves to /assets/uploads/, max 5MB)
+   - Backend: `GET /api/admin/uploads/{filename}` (serves uploaded files)
+   - Frontend: Image upload field with file chooser + URL paste option
 
 ---
 
@@ -75,20 +88,19 @@ Build a comprehensive astrology consultation platform with:
 - Public API for homepage data (no auth)
 
 ### Key Files
-- `/app/frontend/src/components/admin/AdminDashboard.jsx` - Admin UI
+- `/app/frontend/src/components/admin/AdminDashboard.jsx` - Admin UI (CRUD + Tags + Upload)
 - `/app/frontend/src/components/screens/simplified/HomeScreen.jsx` - Dynamic homepage
-- `/app/frontend/src/components/screens/simplified/BottomNav.jsx` - Restructured bottom nav
-- `/app/frontend/src/components/screens/simplified/SimplifiedApp.jsx` - Main app container with navigation
-- `/app/frontend/src/components/screens/simplified/CheckoutScreen.jsx` - Checkout flow
-- `/app/backend/routes/admin.py` - Admin API
+- `/app/frontend/src/components/screens/simplified/BottomNav.jsx` - Bottom nav
+- `/app/frontend/src/components/screens/simplified/SimplifiedApp.jsx` - Main app container
+- `/app/frontend/src/components/screens/simplified/ExpertsScreen.jsx` - Expert listing with tag display
+- `/app/backend/routes/admin.py` - Admin API (CRUD + Tags + Upload)
 - `/app/backend/niro_simplified/routes.py` - Public API (experts, tiers, checkout)
-- `/app/backend/niro_simplified/catalog.py` - Hardcoded catalog data
 
 ### Database Collections
 - `admin_categories` - Homepage categories
 - `admin_tiles` - Homepage tiles
 - `admin_topics` - Topics
-- `admin_experts` - Expert profiles
+- `admin_experts` - Expert profiles (with life_situation_tags, method_tags, remedy_tags)
 - `admin_remedies` - Remedies catalog
 - `admin_tiers` - Package tiers
 - `admin_sessions` - Admin login sessions
@@ -102,16 +114,14 @@ Build a comprehensive astrology consultation platform with:
 
 ## Prioritized Backlog
 
-### P1 - Next Up
-- [ ] Expert image upload (backend endpoint + admin UI file input)
-- [ ] Expert 'best for' tags dropdown (multi-select in admin form)
-- [ ] Fix tile sizing (make production tiles compact like admin preview)
-
-### P2 - UI Cleanup & Features
+### P2 - UI Cleanup
 - [ ] Remove "New/Returning/Reset" tag from homepage
 - [ ] Remove duplicate package summary from checkout
 - [ ] Remove "No questions asked" & "100% satisfaction" from checkout
 - [ ] Bulk CRUD (multi-select + bulk edit/delete in admin)
+
+### P2 - Tile Sizing (deferred by user)
+- [ ] Fix tile sizing — make production tiles compact like admin preview
 
 ### P3 - Deferred UX
 - [ ] Expand tile icon picker to full Lucide set
@@ -128,4 +138,5 @@ Build a comprehensive astrology consultation platform with:
 ## Test Reports
 - `/app/test_reports/iteration_12.json` - Phase 1 bug fixes
 - `/app/test_reports/iteration_13.json` - Phase 1-3 comprehensive
-- `/app/test_reports/iteration_14.json` - Phase 9 P0 bug fixes (9/9 backend pass + frontend verified)
+- `/app/test_reports/iteration_14.json` - Phase 9 P0 bug fixes (9/9 pass)
+- `/app/test_reports/iteration_15.json` - Phase 10 Tags & Upload (15/15 pass + UI verified)
