@@ -249,10 +249,31 @@ async def get_topic_detail(
 
 
 def _normalize_db_expert(exp: dict) -> dict:
-    """Normalize admin_experts DB fields to match catalog ExpertProfile format"""
+    """Normalize admin_experts DB fields to match catalog ExpertProfile format.
+    
+    New tag system: life_situation_tags (Best For), method_tags, remedy_tags.
+    For best_for_tags (shown on profile), combine life_situation_tags + up to 1 method tag.
+    Falls back to legacy 'tags' field if new fields are empty.
+    """
     langs = exp.get("languages", "")
     if isinstance(langs, str):
         langs = [l.strip() for l in langs.split(",") if l.strip()]
+    
+    life_tags = exp.get("life_situation_tags", [])
+    method_tags = exp.get("method_tags", [])
+    remedy_tags = exp.get("remedy_tags", [])
+    legacy_tags = exp.get("tags", [])
+    
+    # Build best_for_tags: life-situation tags + optionally 1 method tag
+    if life_tags:
+        best_for = list(life_tags)
+        if method_tags:
+            best_for.append(method_tags[0])
+    elif legacy_tags:
+        best_for = list(legacy_tags)
+    else:
+        best_for = []
+    
     return {
         "expert_id": exp.get("expert_id", ""),
         "name": exp.get("name", ""),
@@ -261,7 +282,10 @@ def _normalize_db_expert(exp: dict) -> dict:
         "modality_label": exp.get("modality_label", ""),
         "languages": langs,
         "topics": exp.get("topics", []),
-        "best_for_tags": exp.get("tags", []),
+        "best_for_tags": best_for,
+        "life_situation_tags": life_tags,
+        "method_tags": method_tags,
+        "remedy_tags": remedy_tags,
         "short_bio": exp.get("bio", ""),
         "experience_years": exp.get("years_experience", 5),
         "rating": exp.get("rating", 4.5),
