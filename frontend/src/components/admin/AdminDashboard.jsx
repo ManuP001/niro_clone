@@ -1284,6 +1284,52 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
                       onChange={(tags) => setFormData({ ...formData, [field.name]: tags })}
                       maxTags={field.maxTags}
                     />
+                  ) : field.type === 'image-upload' ? (
+                    <div className="space-y-2">
+                      {formData[field.name] && (
+                        <div className="w-16 h-16 rounded-full overflow-hidden border border-gray-200">
+                          <img src={formData[field.name].startsWith('/') ? `${getBackendUrl()}${formData[field.name]}` : formData[field.name]} alt="Preview" className="w-full h-full object-cover" onError={(e) => { e.target.style.display='none'; }} />
+                        </div>
+                      )}
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          data-testid={`image-upload-${field.name}`}
+                          className="text-sm"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            try {
+                              const fd = new FormData();
+                              fd.append('file', file);
+                              const token = getAdminToken();
+                              const res = await fetch(`${getBackendUrl()}/api/admin/upload/image`, {
+                                method: 'POST',
+                                headers: { 'X-Admin-Token': token },
+                                body: fd,
+                              });
+                              const data = await res.json();
+                              if (data.ok) {
+                                setFormData(prev => ({ ...prev, [field.name]: data.url }));
+                              } else {
+                                alert(data.detail || 'Upload failed');
+                              }
+                            } catch (err) {
+                              alert('Upload failed: ' + err.message);
+                            }
+                          }}
+                        />
+                        <span className="text-xs text-gray-400">or</span>
+                        <input
+                          type="text"
+                          value={formData[field.name] || ''}
+                          onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                          className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                          placeholder="Paste URL"
+                        />
+                      </div>
+                    </div>
                   ) : field.type === 'package-content' ? (
                     <PackageContentEditor
                       content={formData[field.name] || {}}
