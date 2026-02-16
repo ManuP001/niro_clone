@@ -94,7 +94,7 @@ Build a comprehensive astrology consultation platform with:
 
 ## Credentials
 - **Admin Dashboard:** NiroAdmin / NewAdmin@123
-- **Preview URL:** https://heart-payment-test.preview.emergentagent.com/admin
+- **Preview URL:** https://catalog-data-cleanup.preview.emergentagent.com/admin
 
 ---
 

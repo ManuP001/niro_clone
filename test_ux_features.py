@@ -7,7 +7,7 @@ import requests
 import json
 import uuid
 
-BACKEND_URL = "https://heart-payment-test.preview.emergentagent.com/api"
+BACKEND_URL = "https://catalog-data-cleanup.preview.emergentagent.com/api"
 
 def test_feedback_endpoint():
     """Test the feedback endpoint quickly"""

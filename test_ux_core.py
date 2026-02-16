@@ -8,7 +8,7 @@ import json
 import uuid
 import re
 
-BACKEND_URL = "https://heart-payment-test.preview.emergentagent.com/api"
+BACKEND_URL = "https://catalog-data-cleanup.preview.emergentagent.com/api"
 
 def test_basic_chat_ux_features():
     """Test basic chat UX features without authentication"""

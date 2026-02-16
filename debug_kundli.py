@@ -7,7 +7,7 @@ import requests
 import json
 
 # Backend URL from environment
-BACKEND_URL = "https://heart-payment-test.preview.emergentagent.com/api"
+BACKEND_URL = "https://catalog-data-cleanup.preview.emergentagent.com/api"
 
 def debug_kundli_api():
     """Debug the Kundli API endpoint"""
