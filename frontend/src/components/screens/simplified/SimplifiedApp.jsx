@@ -290,9 +290,11 @@ export default function SimplifiedApp({ token, userId, user }) {
     setScreenParams({});
   };
 
-  // Checkout handler
+  // Checkout handler - preserve previous screen context for back navigation
   const handleCheckout = (tierId, scenarioIds = []) => {
-    navigate('checkout', { tierId, scenarioIds });
+    const prevScreen = screen;
+    const prevParams = { ...screenParams };
+    navigate('checkout', { tierId, scenarioIds, _prevScreen: prevScreen, _prevParams: prevParams });
   };
 
   // Purchase success handler
