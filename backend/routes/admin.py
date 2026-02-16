@@ -1361,7 +1361,10 @@ class ExpertCreate(BaseModel):
     total_consults: int = 0
     topics: List[str] = []
     photo_url: str = ""
-    tags: List[str] = []
+    tags: List[str] = []  # legacy flat tags
+    life_situation_tags: List[str] = []
+    method_tags: List[str] = []
+    remedy_tags: List[str] = []
     active: bool = True
 
 class ExpertUpdate(BaseModel):
@@ -1376,7 +1379,112 @@ class ExpertUpdate(BaseModel):
     topics: Optional[List[str]] = None
     photo_url: Optional[str] = None
     tags: Optional[List[str]] = None
+    life_situation_tags: Optional[List[str]] = None
+    method_tags: Optional[List[str]] = None
+    remedy_tags: Optional[List[str]] = None
     active: Optional[bool] = None
+
+# Master tag options by type
+EXPERT_TAG_OPTIONS = {
+    "life_situation": {
+        "Career & Work": [
+            "Career direction clarity",
+            "Job switch decision (stay vs leave)",
+            "Job change / transition support",
+            "Interview + offer timing",
+            "Promotion timing",
+            "Salary growth / negotiation clarity",
+            "Layoff / job loss recovery",
+            "Career break + re-entry",
+            "Workplace conflict / toxic manager",
+            "Workplace politics / team friction",
+            "Relocation for job",
+            "Burnout / work stress management",
+            "Work-life balance reset",
+            "Leadership growth / people management",
+        ],
+        "Business & Finance": [
+            "Business launch timing",
+            "Business slowdown / recovery phase",
+            "Partnership / cofounder compatibility",
+            "Cashflow stress / debt phase",
+            "Investment timing (buy/hold/sell windows)",
+            "Major purchase timing (house/vehicle)",
+            "Property purchase timing",
+            "Tax / compliance decision timing",
+            "Legal/contract decision timing",
+        ],
+        "Relationships": [
+            "Relationship clarity (where is this going?)",
+            "On/off relationship clarity",
+            "Breakup recovery",
+            "Trust issues / cheating suspicion",
+            "Communication fights / repeated conflict",
+            "Long-distance relationship",
+            "Family opposition to relationship",
+            "In-law issues / family dynamics",
+            "Emotional dependency / attachment patterns",
+        ],
+        "Marriage": [
+            "Marriage delay (why isn't it happening?)",
+            "Finding the right partner (what suits me)",
+            "Shortlisting profiles (who is a good match?)",
+            "Kundli matching deep-dive (beyond score)",
+            "Manglik / non-manglik / anshik guidance",
+            "Inter-caste / inter-faith marriage clarity",
+            "Second marriage / remarriage",
+            "Engagement-to-marriage planning",
+            "Family pressure management",
+        ],
+        "Health & Wellness": [
+            "Stress + anxiety management",
+            "Sleep issues support",
+            "Energy drain / fatigue phase",
+            "Recovery phase guidance",
+            "Holistic health routine support",
+            "Disease-prevention mindset (non-medical)",
+        ],
+        "Spiritual": [
+            "Faith crisis / loss of direction",
+            "Life purpose clarity",
+            "Meditation habit building",
+            "Karma / repeating pattern clarity",
+            "Inner peace / emotional steadiness",
+            "Spiritual practice guidance (daily routine)",
+        ],
+        "Other": [
+            "Moving abroad / foreign settlement",
+            "Visa / immigration timing",
+            "Education / exam timing",
+            "Goal clarity + planning",
+            "Confidence building for decisions",
+        ],
+    },
+    "method": [
+        "Dasha analysis",
+        "Transit guidance",
+        "Good vs caution periods (phase guidance)",
+        "Sade Sati guidance",
+        "Rahu-Ketu phase guidance",
+        "Retrograde impact guidance",
+        "Muhurat selection (wedding/engagement/roka)",
+        "Court case / legal timing guidance",
+        "Travel muhurat",
+        "Vastu timing / direction guidance",
+    ],
+    "remedy_support": [
+        "Breathwork guidance",
+        "Chakra meditation",
+        "Daily practice / routines",
+        "Mantra guidance (basic)",
+        "Pooja guidance",
+        "Gemstone guidance",
+        "Energy healing session",
+        "Sound healing",
+        "Wellness kits guidance",
+        "Rituals / sankalp guidance",
+    ],
+}
 
 @router.get("/experts")
 async def list_admin_experts(
