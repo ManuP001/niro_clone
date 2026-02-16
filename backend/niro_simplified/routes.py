@@ -249,42 +249,82 @@ async def get_topic_detail(
 
 
 @router.get("/experts")
-async def get_experts(topic_id: str = Query(default=None)):
-    """Get experts, optionally filtered by topic"""
+async def get_experts(request: Request, topic_id: str = Query(default=None)):
+    """Get experts, optionally filtered by topic - merges catalog + DB"""
     catalog = get_simplified_catalog()
     
     if topic_id:
-        experts = catalog.get_experts_for_topic(topic_id)
+        catalog_experts = catalog.get_experts_for_topic(topic_id)
     else:
-        experts = list(catalog.experts.values())
+        catalog_experts = list(catalog.experts.values())
+    
+    experts_list = [e.model_dump() for e in catalog_experts]
+    catalog_ids = {e.expert_id for e in catalog_experts}
+    
+    # Merge experts from admin_experts DB collection
+    db = getattr(request.app.state, 'db', None)
+    if db is None:
+        storage = get_simplified_storage()
+        db = storage.db if storage else None
+    
+    if db is not None:
+        try:
+            query = {"active": {"$ne": False}}
+            if topic_id:
+                query["topics"] = topic_id
+            db_experts = await db.admin_experts.find(query, {"_id": 0}).to_list(500)
+            for exp in db_experts:
+                if exp.get("expert_id") not in catalog_ids:
+                    experts_list.append(exp)
+        except Exception as e:
+            logger.warning(f"Failed to fetch experts from DB: {e}")
     
     return {
         "ok": True,
-        "experts": [e.model_dump() for e in experts],
+        "experts": experts_list,
         "catalog_version": CATALOG_VERSION
     }
 
 
 @router.get("/experts/all")
-async def get_all_experts_grouped():
-    """Get all experts grouped by modality - V1.5"""
+async def get_all_experts_grouped(request: Request):
+    """Get all experts grouped by modality - merges catalog + DB"""
     catalog = get_simplified_catalog()
-    experts = list(catalog.experts.values())
+    catalog_experts = list(catalog.experts.values())
+    experts_list = [e.model_dump() for e in catalog_experts]
+    catalog_ids = {e.expert_id for e in catalog_experts}
+    
+    # Merge experts from admin_experts DB collection
+    db = getattr(request.app.state, 'db', None)
+    if db is None:
+        storage = get_simplified_storage()
+        db = storage.db if storage else None
+    
+    if db is not None:
+        try:
+            db_experts = await db.admin_experts.find(
+                {"active": {"$ne": False}}, {"_id": 0}
+            ).to_list(500)
+            for exp in db_experts:
+                if exp.get("expert_id") not in catalog_ids:
+                    experts_list.append(exp)
+        except Exception as e:
+            logger.warning(f"Failed to fetch experts from DB: {e}")
     
     # Group by modality
     grouped = {}
-    for expert in experts:
-        modality = expert.modality
+    for expert in experts_list:
+        modality = expert.get("modality", "Other")
         if modality not in grouped:
             grouped[modality] = []
-        grouped[modality].append(expert.model_dump())
+        grouped[modality].append(expert)
     
     return {
         "ok": True,
-        "experts": [e.model_dump() for e in experts],
+        "experts": experts_list,
         "grouped_by_modality": grouped,
         "modalities": list(grouped.keys()),
-        "total_count": len(experts),
+        "total_count": len(experts_list),
         "catalog_version": CATALOG_VERSION
     }
 
