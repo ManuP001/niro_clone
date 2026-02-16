@@ -13,7 +13,6 @@ import KundliScreenSimplified from './KundliScreenSimplified';
 import RemediesScreen from './RemediesScreen';
 import BottomNav from './BottomNav';
 import CategoryListingPage from './CategoryListingPage';
-import DevToggle from './DevToggle';
 import BirthDetailsModal from './BirthDetailsModal';
 import { apiSimplified, trackEvent } from './utils';
 import { colors } from './theme';
