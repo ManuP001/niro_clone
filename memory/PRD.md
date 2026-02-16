@@ -36,25 +36,27 @@ Build a comprehensive astrology consultation platform with:
 - Admin dashboard with hierarchical CRUD
 - Dynamic homepage from DB
 - Live homepage preview modal
-- Valentine's Special category + 3 packages
 
 ### Phase 6: Admin Dashboard Bug Fixes (Feb 12, 2026)
-1. **Fixed BACKEND_URL crash** — Users & Orders pages crashed due to undefined `BACKEND_URL`. Replaced with `getBackendUrl()`.
-2. **Fixed deactivation broken** — All entity update endpoints used `model_dump()` with `if v is not None` which dropped `false`/`0` values. Changed to `model_dump(exclude_unset=True)`.
-3. **Fixed Valentine's content display** — `PackageLandingPage` now falls back to basic package fields (name, features, description) when rich `content` object is empty.
-4. **Fixed checkout DB lookup** — `niro_simplified/routes.py` now uses `request.app.state.db` as primary DB source instead of unreliable storage singleton.
-5. **Improved error messages** — `CatalogManager` maps technical errors to user-friendly messages.
+1. Fixed BACKEND_URL crash on Users & Orders pages
+2. Fixed deactivation broken (model_dump exclude_unset)
+3. Fixed Valentine's content display fallback
+4. Fixed checkout DB lookup
+5. Improved error messages
 
 ### Phase 7: Bottom Nav Restructure (Feb 12, 2026)
-- Removed **Mira** from bottom navigation (still accessible from homepage CTA)
-- **New users** (no active plan): Home, Consult, Remedies, Astro (4 tabs)
-- **Returning users** (active plan): Home, Consult, Remedies, My Pack, Astro (5 tabs)
+- New users: Home, Consult, Remedies, Astro (4 tabs)
+- Returning users: Home, Consult, Remedies, My Pack, Astro (5 tabs)
 
 ### Phase 8: Bulk Upload Flow (Feb 12, 2026)
-- **Backend**: `POST /api/admin/bulk-upload` — creates category + tiles + packages in one request (upserts)
-- **Backend**: `GET /api/admin/bulk-upload/template` — downloadable JSON template
-- **Frontend**: Bulk Upload page in admin sidebar under "Tools" section
-- File upload + JSON paste + preview before upload + success/error reporting
+- POST /api/admin/bulk-upload
+- GET /api/admin/bulk-upload/template
+- Admin UI with file upload + JSON paste + preview
+
+### Phase 9: P0 Bug Fixes (Feb 16, 2026)
+1. **Export CSV fix** — Replaced window.open() with authenticated fetch + blob download for Users and Orders export
+2. **Checkout back button fix** — Preserves previous screen context (_prevScreen, _prevParams) when navigating to checkout, restores on back
+3. **Expert visibility fix** — Public /api/simplified/experts and /api/simplified/experts/all now merge admin_experts DB collection with hardcoded catalog, with field normalization (_normalize_db_expert)
 
 ---
 
@@ -73,53 +75,57 @@ Build a comprehensive astrology consultation platform with:
 - Public API for homepage data (no auth)
 
 ### Key Files
-- `/app/frontend/src/components/admin/AdminDashboard.jsx` - Admin UI (CRUD + Bulk Upload + Preview)
+- `/app/frontend/src/components/admin/AdminDashboard.jsx` - Admin UI
 - `/app/frontend/src/components/screens/simplified/HomeScreen.jsx` - Dynamic homepage
 - `/app/frontend/src/components/screens/simplified/BottomNav.jsx` - Restructured bottom nav
-- `/app/frontend/src/components/screens/simplified/PackageLandingPage.jsx` - Package landing with fallback
-- `/app/backend/routes/admin.py` - Admin API (CRUD + Bulk Upload + Public endpoints)
-- `/app/backend/niro_simplified/routes.py` - Checkout with fixed DB lookup
-- `/app/backend/niro_simplified/catalog.py` - Hardcoded tiers including Valentine's
+- `/app/frontend/src/components/screens/simplified/SimplifiedApp.jsx` - Main app container with navigation
+- `/app/frontend/src/components/screens/simplified/CheckoutScreen.jsx` - Checkout flow
+- `/app/backend/routes/admin.py` - Admin API
+- `/app/backend/niro_simplified/routes.py` - Public API (experts, tiers, checkout)
+- `/app/backend/niro_simplified/catalog.py` - Hardcoded catalog data
 
 ### Database Collections
-- `admin_categories` - Homepage categories (4)
-- `admin_tiles` - Homepage tiles (21)
-- `admin_topics` - Topics (14)
-- `admin_experts` - Expert profiles (31)
-- `admin_remedies` - Remedies catalog (15)
-- `admin_tiers` - Package tiers (118)
+- `admin_categories` - Homepage categories
+- `admin_tiles` - Homepage tiles
+- `admin_topics` - Topics
+- `admin_experts` - Expert profiles
+- `admin_remedies` - Remedies catalog
+- `admin_tiers` - Package tiers
 - `admin_sessions` - Admin login sessions
 
 ---
 
 ## Credentials
 - **Admin Dashboard:** NiroAdmin / NewAdmin@123
-- **Preview URL:** https://catalog-data-cleanup.preview.emergentagent.com/admin
 
 ---
 
 ## Prioritized Backlog
 
-### P0 - Deploy Required
-- [x] All Phase 1-8 changes complete and tested
+### P1 - Next Up
+- [ ] Expert image upload (backend endpoint + admin UI file input)
+- [ ] Expert 'best for' tags dropdown (multi-select in admin form)
+- [ ] Fix tile sizing (make production tiles compact like admin preview)
 
-### P1 - Deferred UX (To-Do)
-- [ ] Issue #5: Expand tile icons from 16 to full Lucide set
-- [ ] Issue #7: Dynamic sidebar counts (replace hardcoded "Categories (3)", "Tiles (18)")
-- [ ] Issue #9: Show feedback when categories are force-created as inactive
+### P2 - UI Cleanup & Features
+- [ ] Remove "New/Returning/Reset" tag from homepage
+- [ ] Remove duplicate package summary from checkout
+- [ ] Remove "No questions asked" & "100% satisfaction" from checkout
+- [ ] Bulk CRUD (multi-select + bulk edit/delete in admin)
 
-### P2 - Enhancements
-- [ ] Expert Chat Selection — Allow customers to choose specific astrologer
-- [ ] Countdown Timer — Valentine's Special category banner
+### P3 - Deferred UX
+- [ ] Expand tile icon picker to full Lucide set
+- [ ] Dynamic sidebar counts (Categories, Tiles)
+- [ ] Show feedback on entity creation
 
-### P3 - Tech Debt
+### Tech Debt
 - [ ] Remove obsolete JWT auth code
-- [ ] Data migration script for existing data
+- [ ] Data migration script
 - [ ] Cache catalog data for performance
 
 ---
 
 ## Test Reports
-- `/app/test_reports/iteration_12.json` - Phase 1 bug fixes (18/18 pass)
-- `/app/test_reports/iteration_13.json` - Phase 1-3 comprehensive (all pass)
-- `/app/backend/tests/test_phase1_bug_fixes.py` - Backend regression tests
+- `/app/test_reports/iteration_12.json` - Phase 1 bug fixes
+- `/app/test_reports/iteration_13.json` - Phase 1-3 comprehensive
+- `/app/test_reports/iteration_14.json` - Phase 9 P0 bug fixes (9/9 backend pass + frontend verified)
