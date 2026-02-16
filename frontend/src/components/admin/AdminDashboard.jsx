@@ -1963,6 +1963,7 @@ const ExpertsManager = () => (
       { key: 'name', label: 'Name' },
       { key: 'modality', label: 'Modality' },
       { key: 'topics', label: 'Topics' },
+      { key: 'life_situation_tags', label: 'Best For', render: (v) => Array.isArray(v) && v.length > 0 ? v.slice(0, 2).join(', ') + (v.length > 2 ? '...' : '') : '-' },
       { key: 'rating', label: 'Rating' },
       { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
     ]}
@@ -1978,7 +1979,9 @@ const ExpertsManager = () => (
       { name: 'total_consults', label: 'Total Consults', type: 'number', default: 0 },
       { name: 'topics', label: 'Topics', type: 'array', hint: 'Topic IDs this expert can serve' },
       { name: 'photo_url', label: 'Photo URL' },
-      { name: 'tags', label: 'Tags', type: 'array' },
+      { name: 'life_situation_tags', label: 'Best For Tags (Life Situations)', type: 'tag-multi-select', tagType: 'life_situation', maxTags: 5, hint: '3-5 tags shown on profile as "Best for"' },
+      { name: 'method_tags', label: 'Method Tags', type: 'tag-multi-select', tagType: 'method', maxTags: 3, hint: '1-3 tags for how the expert works' },
+      { name: 'remedy_tags', label: 'Remedy/Support Tags', type: 'tag-multi-select', tagType: 'remedy_support', maxTags: 2, hint: '0-2 tags for additional services' },
       { name: 'active', label: 'Active', type: 'checkbox', default: true },
     ]}
   />
