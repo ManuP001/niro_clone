@@ -1277,6 +1277,13 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
                       selectedIds={formData[field.name] || []}
                       onChange={(ids) => setFormData({ ...formData, [field.name]: ids })}
                     />
+                  ) : field.type === 'tag-multi-select' ? (
+                    <TagMultiSelect
+                      tagType={field.tagType}
+                      selectedTags={formData[field.name] || []}
+                      onChange={(tags) => setFormData({ ...formData, [field.name]: tags })}
+                      maxTags={field.maxTags}
+                    />
                   ) : field.type === 'package-content' ? (
                     <PackageContentEditor
                       content={formData[field.name] || {}}
