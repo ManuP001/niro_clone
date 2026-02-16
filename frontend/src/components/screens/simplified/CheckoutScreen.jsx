@@ -228,44 +228,6 @@ export default function CheckoutScreen({ token, tierId, scenarioIds = [], onSucc
           </div>
         </div>
 
-        {/* What You Get */}
-        <div 
-          className="rounded-2xl p-6 mb-6"
-          style={{ 
-            backgroundColor: `${colors.teal.primary}10`, 
-            border: `1px solid ${colors.teal.primary}30`,
-          }}
-        >
-          <h3 className="font-semibold mb-3" style={{ color: colors.teal.dark }}>What you&apos;ll get:</h3>
-          <ul className="space-y-2">
-            <li className="text-sm flex items-center" style={{ color: colors.teal.dark }}>
-              <span className="mr-2">💬</span>
-              Unlimited chat with experts (24hr response)
-            </li>
-            {tier.access_policy?.calls_enabled && (
-              <li className="text-sm flex items-center" style={{ color: colors.teal.dark }}>
-                <span className="mr-2">📞</span>
-                {tier.access_policy.calls_per_month} video calls per month (60 min each)
-              </li>
-            )}
-            <li className="text-sm flex items-center" style={{ color: colors.teal.dark }}>
-              <span className="mr-2">👥</span>
-              Access to {tier.access_policy?.max_active_expert_threads === -1 ? 'unlimited' : tier.access_policy?.max_active_expert_threads} expert(s)
-            </li>
-            {tier.access_policy?.free_tools_access && (
-              <li className="text-sm flex items-center" style={{ color: colors.teal.dark }}>
-                <span className="mr-2">🛠️</span>
-                Free tools and resources
-              </li>
-            )}
-          </ul>
-        </div>
-
-        {/* Refund Badge */}
-        <div className="mb-6">
-          <RefundBadge variant="card" />
-        </div>
-
         {/* Error Display */}
         {error && (
           <div 
