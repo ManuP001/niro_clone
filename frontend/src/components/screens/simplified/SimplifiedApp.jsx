@@ -254,40 +254,49 @@ export default function SimplifiedApp({ token, userId, user }) {
       case 'topic':
         setScreen('home');
         setActiveTab('home');
+        setScreenParams({});
         break;
       case 'packageLanding':
         setScreen('home');
         setActiveTab('home');
+        setScreenParams({});
         break;
       case 'checkout':
-        // Go back to the previous landing page
-        if (screenParams.fromPackage) {
-          setScreen('packageLanding');
+        // Restore previous screen and its params
+        if (screenParams._prevScreen && screenParams._prevParams) {
+          setScreen(screenParams._prevScreen);
+          setScreenParams(screenParams._prevParams);
         } else {
-          setScreen('topic');
+          setScreen('home');
+          setActiveTab('home');
+          setScreenParams({});
         }
         break;
       case 'plan':
         setScreen('home');
         setActiveTab('home');
+        setScreenParams({});
         break;
       case 'expertProfile':
         if (screenParams.fromTopic) {
           setScreen('topic');
+          setScreenParams({ topicId: screenParams.fromTopic });
         } else {
           setScreen('experts');
           setActiveTab('consult');
+          setScreenParams({});
         }
         break;
       case 'categoryListing':
         setScreen('home');
         setActiveTab('home');
+        setScreenParams({});
         break;
       default:
         setScreen('home');
         setActiveTab('home');
+        setScreenParams({});
     }
-    setScreenParams({});
   };
 
   // Checkout handler - preserve previous screen context for back navigation
