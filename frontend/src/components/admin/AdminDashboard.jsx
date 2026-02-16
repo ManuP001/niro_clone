@@ -1238,10 +1238,48 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
         </div>
       </div>
 
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2" data-testid="bulk-action-bar">
+          <span className="text-sm font-medium text-blue-700">{selectedIds.size} selected</span>
+          <button
+            onClick={handleBulkDeactivate}
+            disabled={bulkProcessing}
+            className="px-3 py-1 text-sm bg-amber-500 text-white rounded hover:bg-amber-600 disabled:opacity-50"
+            data-testid="bulk-deactivate-btn"
+          >
+            {bulkProcessing ? 'Processing...' : 'Deactivate'}
+          </button>
+          <button
+            onClick={handleBulkDelete}
+            disabled={bulkProcessing}
+            className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+            data-testid="bulk-delete-btn"
+          >
+            {bulkProcessing ? 'Processing...' : 'Delete Permanently'}
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-3 py-3 w-10">
+                <input
+                  type="checkbox"
+                  checked={items.length > 0 && selectedIds.size === items.length}
+                  onChange={toggleSelectAll}
+                  className="w-4 h-4 accent-teal-600"
+                  data-testid="bulk-select-all"
+                />
+              </th>
               {columns.map(col => (
                 <th key={col.key} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{col.label}</th>
               ))}
@@ -1250,25 +1288,37 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading ? (
-              <tr><td colSpan={columns.length + 1} className="px-4 py-8 text-center text-gray-500">Loading...</td></tr>
+              <tr><td colSpan={columns.length + 2} className="px-4 py-8 text-center text-gray-500">Loading...</td></tr>
             ) : items.length === 0 ? (
-              <tr><td colSpan={columns.length + 1} className="px-4 py-8 text-center text-gray-500">No items found. Click "Seed Data" to initialize catalog.</td></tr>
+              <tr><td colSpan={columns.length + 2} className="px-4 py-8 text-center text-gray-500">No items found. Click "Seed Data" to initialize catalog.</td></tr>
             ) : (
-              items.map((item, idx) => (
-                <tr key={idx} className={`hover:bg-gray-50 ${item.active === false ? 'opacity-50' : ''}`}>
-                  {columns.map(col => (
-                    <td key={col.key} className="px-4 py-3 text-sm text-gray-900">
-                      {col.render ? col.render(item[col.key], item) : (
-                        Array.isArray(item[col.key]) ? item[col.key].join(', ') : String(item[col.key] ?? '-')
-                      )}
+              items.map((item, idx) => {
+                const itemId = item[getIdField()];
+                return (
+                  <tr key={idx} className={`hover:bg-gray-50 ${item.active === false ? 'opacity-50' : ''} ${selectedIds.has(itemId) ? 'bg-blue-50' : ''}`}>
+                    <td className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(itemId)}
+                        onChange={() => toggleSelect(itemId)}
+                        className="w-4 h-4 accent-teal-600"
+                        data-testid={`bulk-select-${itemId}`}
+                      />
                     </td>
-                  ))}
-                  <td className="px-4 py-3 text-right">
-                    <button onClick={() => handleEdit(item)} className="text-blue-600 hover:text-blue-800 mr-3">Edit</button>
-                    <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-800">{item.active === false ? 'Delete' : 'Deactivate'}</button>
-                  </td>
-                </tr>
-              ))
+                    {columns.map(col => (
+                      <td key={col.key} className="px-4 py-3 text-sm text-gray-900">
+                        {col.render ? col.render(item[col.key], item) : (
+                          Array.isArray(item[col.key]) ? item[col.key].join(', ') : String(item[col.key] ?? '-')
+                        )}
+                      </td>
+                    ))}
+                    <td className="px-4 py-3 text-right">
+                      <button onClick={() => handleEdit(item)} className="text-blue-600 hover:text-blue-800 mr-3">Edit</button>
+                      <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-800">{item.active === false ? 'Delete' : 'Deactivate'}</button>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
