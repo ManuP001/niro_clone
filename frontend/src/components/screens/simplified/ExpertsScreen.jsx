@@ -276,20 +276,30 @@ function ExpertCard({ expert, hasAccess, onClick }) {
         </div>
       </div>
       
-      {/* Tags */}
-      {expert.best_for_tags && expert.best_for_tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-3">
-          {expert.best_for_tags.slice(0, 3).map((tag, idx) => (
-            <span 
-              key={idx}
-              className="text-[10px] px-2 py-0.5 rounded-full"
-              style={{ backgroundColor: `${colors.teal.primary}10`, color: colors.teal.primary }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Tags - show life-situation tags + optionally 1 method tag */}
+      {(() => {
+        const lifeTags = expert.life_situation_tags || [];
+        const methodTags = expert.method_tags || [];
+        const displayTags = lifeTags.length > 0
+          ? [...lifeTags.slice(0, 3), ...(methodTags.length > 0 ? [methodTags[0]] : [])].slice(0, 4)
+          : (expert.best_for_tags || []).slice(0, 3);
+        return displayTags.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            {displayTags.map((tag, idx) => (
+              <span 
+                key={idx}
+                className="text-[10px] px-2 py-0.5 rounded-full"
+                style={{ 
+                  backgroundColor: idx >= (lifeTags.length > 0 ? lifeTags.slice(0, 3).length : 999) ? `${colors.gold.accent}20` : `${colors.teal.primary}10`,
+                  color: idx >= (lifeTags.length > 0 ? lifeTags.slice(0, 3).length : 999) ? colors.gold.accent : colors.teal.primary
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        ) : null;
+      })()}
     </div>
   );
 }
