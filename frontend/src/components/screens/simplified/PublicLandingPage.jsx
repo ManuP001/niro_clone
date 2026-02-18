@@ -167,7 +167,7 @@ export default function PublicLandingPage({
           backdrop-filter: blur(20px);
         }
 
-        .landing-logo {
+        .landing-nav .landing-logo {
           font-family: 'Lexend', sans-serif;
           font-size: 36px;
           font-weight: 700;
