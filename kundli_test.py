@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://niro-refresh.preview.emergentagent.com/api"
+BACKEND_URL = "https://responsive-dashboard-14.preview.emergentagent.com/api"
 
 class KundliAPITester:
     def __init__(self):

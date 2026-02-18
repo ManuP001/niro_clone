@@ -9,7 +9,7 @@ import json
 import uuid
 import re
 
-BACKEND_URL = "https://niro-refresh.preview.emergentagent.com/api"
+BACKEND_URL = "https://responsive-dashboard-14.preview.emergentagent.com/api"
 
 def test_chat_response_formatting():
     """Test the exact flow from the review request"""
