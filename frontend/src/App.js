@@ -215,15 +215,13 @@ function App() {
   if (useSimplified) {
     return (
       <ChatProvider>
-        <div className="App min-h-screen bg-gray-50 flex flex-col lg:items-center lg:justify-center lg:p-4">
-          {/* Desktop: centered container with max width - overflow-auto for scrolling */}
-          <div className="w-full lg:max-w-md lg:h-[85vh] lg:max-h-[900px] lg:rounded-2xl lg:shadow-xl lg:overflow-auto flex-1 flex flex-col">
-            <SimplifiedApp 
-              token={authState.token} 
-              userId={authState.userId}
-              user={authState.user}
-            />
-          </div>
+        <div className="App min-h-screen bg-gray-50">
+          {/* Full-width responsive container - no phone frame */}
+          <SimplifiedApp 
+            token={authState.token} 
+            userId={authState.userId}
+            user={authState.user}
+          />
         </div>
       </ChatProvider>
     );
