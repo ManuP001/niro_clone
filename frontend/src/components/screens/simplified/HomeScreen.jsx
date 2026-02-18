@@ -552,30 +552,40 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* Life Situations - Category Cards with Responsive Grid */}
+      {/* Life Situations - Category Cards with Responsive Grid and Scroll Reveal */}
       <div className="px-4 md:px-8 lg:px-12 pb-8 md:pb-12">
         <div className="max-w-5xl mx-auto">
           {/* Desktop: Show all categories in a grid layout */}
           <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-            {filteredSituations.map((situation) => (
-              <CategoryModule 
+            {filteredSituations.map((situation, index) => (
+              <ScrollReveal 
                 key={situation.id}
-                situation={situation}
-                onTileClick={handleTileClick}
-                isDesktop={true}
-              />
+                animation="up"
+                delay={Math.min(index * 100, 400)}
+              >
+                <CategoryModule 
+                  situation={situation}
+                  onTileClick={handleTileClick}
+                  isDesktop={true}
+                />
+              </ScrollReveal>
             ))}
           </div>
           
           {/* Mobile: Stack categories vertically */}
           <div className="md:hidden space-y-4">
-            {filteredSituations.map((situation) => (
-              <CategoryModule 
+            {filteredSituations.map((situation, index) => (
+              <ScrollReveal 
                 key={situation.id}
-                situation={situation}
-                onTileClick={handleTileClick}
-                isDesktop={false}
-              />
+                animation="up"
+                delay={Math.min(index * 100, 300)}
+              >
+                <CategoryModule 
+                  situation={situation}
+                  onTileClick={handleTileClick}
+                  isDesktop={false}
+                />
+              </ScrollReveal>
             ))}
           </div>
         </div>
