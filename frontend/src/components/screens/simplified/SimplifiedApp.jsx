@@ -555,11 +555,14 @@ export default function SimplifiedApp({
         <ProfileScreen
           token={token}
           userId={userId}
+          onResetDemo={onResetDemo}
+          hasBottomNav={false}
           onBack={() => {
             setScreen('home');
             setActiveTab('home');
           }}
-          hasBottomNav={false}
+          onNavigate={navigate}
+          onTabChange={handleTabChange}
         />
       );
     }
