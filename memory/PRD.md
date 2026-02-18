@@ -392,3 +392,4 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 - `/app/test_reports/iteration_25.json` - Phase 18 Landing Pages Redesign (100% pass, code review + live tests)
 - `/app/test_reports/iteration_26.json` - Phase 19 Public Access & Nav Improvements (100% pass)
 - `/app/test_reports/iteration_27.json` - Phase 20 Login Wall Removal (100% pass, 7/7 features)
+- `/app/test_reports/iteration_28.json` - Phase 21 Admin API Integration (100% pass, 6/6 features)
