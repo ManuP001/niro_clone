@@ -1357,7 +1357,7 @@ export default function PublicLandingPage({
                 <span className="topic-expert">Vedic Astrologer · Career Timing</span>
                 <span className="topic-price">Starting ₹2,999</span>
               </div>
-              <button className="topic-cta" data-testid="begin-consultation-career">Begin consultation</button>
+              <button className="topic-cta" data-testid="begin-consultation-career">Talk about Career</button>
             </div>
 
             {/* Health */}
@@ -1381,7 +1381,7 @@ export default function PublicLandingPage({
                 <span className="topic-expert">Vedic Astrologer + Healer</span>
                 <span className="topic-price">Starting ₹2,999</span>
               </div>
-              <button className="topic-cta" data-testid="begin-consultation-health">Begin consultation</button>
+              <button className="topic-cta" data-testid="begin-consultation-health">Talk about Health</button>
             </div>
 
             {/* Love */}
@@ -1403,7 +1403,7 @@ export default function PublicLandingPage({
                 <span className="topic-expert">Vedic Astrologer · Compatibility</span>
                 <span className="topic-price">Starting ₹3,999</span>
               </div>
-              <button className="topic-cta" data-testid="begin-consultation-love">Begin consultation</button>
+              <button className="topic-cta" data-testid="begin-consultation-love">Explore Marriage</button>
             </div>
 
             {/* Fertility */}
@@ -1423,7 +1423,7 @@ export default function PublicLandingPage({
                 <span className="topic-expert">Vedic Astrologer · Fertility Timing</span>
                 <span className="topic-price">Starting ₹3,999</span>
               </div>
-              <button className="topic-cta" data-testid="begin-consultation-fertility">Begin consultation</button>
+              <button className="topic-cta" data-testid="begin-consultation-fertility">Plan Family</button>
             </div>
           </div>
 
