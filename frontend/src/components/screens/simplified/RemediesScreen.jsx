@@ -222,7 +222,7 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-export default function RemediesScreen({ hasBottomNav }) {
+export default function RemediesScreen({ hasBottomNav, onTabChange, onNavigate }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedRemedy, setSelectedRemedy] = useState(null);
   const [purchasing, setPurchasing] = useState(false);
