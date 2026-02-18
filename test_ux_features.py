@@ -7,7 +7,7 @@ import requests
 import json
 import uuid
 
-BACKEND_URL = "https://responsive-dashboard-14.preview.emergentagent.com/api"
+BACKEND_URL = "https://responsive-refactor-2.preview.emergentagent.com/api"
 
 def test_feedback_endpoint():
     """Test the feedback endpoint quickly"""

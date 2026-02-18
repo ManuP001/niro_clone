@@ -12,7 +12,7 @@ import re
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://responsive-dashboard-14.preview.emergentagent.com/api"
+BACKEND_URL = "https://responsive-refactor-2.preview.emergentagent.com/api"
 
 class NiroSimplifiedV15Tester:
     def __init__(self):
