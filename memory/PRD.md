@@ -187,6 +187,30 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
    - Staggered delays for category cards
    - Smooth transition effects
 
+### Phase 17: Public Access & Navigation (Feb 2026)
+1. **Public Experts Page** - /experts route accessible without login
+   - PublicExpertsPage.jsx - Lists all experts with search and filters
+   - Back button navigates to home (/)
+   - CTA button links to /login for unauthenticated users
+   - Responsive grid layout with expert cards
+2. **Public Expert Profile Page** - /experts/:expertId route
+   - PublicExpertProfilePage.jsx - Shows individual expert details
+   - CTA to book consultation (redirects to login)
+   - Responsive layout with stats and info sections
+3. **Public Life Topics Page** - /topics route accessible without login
+   - PublicTopicsPage.jsx - Shows all life topic categories
+   - Includes new "Fertility & Family Planning" category with "Coming Soon" badge
+   - Topics: Fertility Support, Baby Naming & Muhurat, Delivery Muhurat, Teenagers Mental Health
+   - Search functionality for filtering topics
+   - Back button navigates to home
+4. **Landing Page Navigation Updates**
+   - "See More Life Topics" button now navigates to /topics (no login required)
+   - "View Profile" buttons navigate to /experts (no login required)
+   - "View all certified experts" card navigates to /experts
+5. **ResponsiveHeader Home Link** - Added "Home" nav item for logged-in users
+   - NAV_ITEMS includes { id: 'home', label: 'Home', href: '/' }
+   - Provides seamless navigation back to public landing page
+
 ---
 
 ## Technical Architecture
