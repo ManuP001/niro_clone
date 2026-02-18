@@ -47,7 +47,7 @@ const CARD_BG = 'rgba(255, 255, 255, 0.85)';
 const CARD_BORDER = 'rgba(0,0,0,0.06)';
 const DIVIDER_COLOR = 'rgba(0,0,0,0.06)';
 
-export default function TopicLandingPage({ token, topicId, onCheckout, onBack, onNavigate, hasBottomNav, userName }) {
+export default function TopicLandingPage({ token, topicId, onCheckout, onBack, onNavigate, hasBottomNav, userName, onTabChange }) {
   const [selectedTier, setSelectedTier] = useState(DEFAULT_TIER);
   const [expandedFaq, setExpandedFaq] = useState(null);
 
