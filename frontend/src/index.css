@@ -61,22 +61,23 @@ code {
   font-family: 'Lexend', -apple-system, system-ui, sans-serif;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Niro themed */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--niro-cream-warm);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d4d4d4;
+  background: var(--niro-teal-soft);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a3a3a3;
+  background: var(--niro-teal);
 }
 
 /* Line clamp utility */
