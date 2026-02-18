@@ -603,6 +603,7 @@ export default function SimplifiedApp({
             onOpenProfile={() => {
               setScreen('profile');
             }}
+            onTabChange={handleTabChange}
           />
         );
       
@@ -611,6 +612,7 @@ export default function SimplifiedApp({
           <ExpertsScreen 
             token={token}
             userState={userState}
+            hasBottomNav={showBottomNav}
             onNavigate={(dest, params) => {
               if (dest === 'topic') {
                 navigate('topic', params);
@@ -620,6 +622,7 @@ export default function SimplifiedApp({
                 navigate(dest, params);
               }
             }}
+            onTabChange={handleTabChange}
           />
         );
       
