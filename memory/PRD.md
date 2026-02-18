@@ -31,7 +31,7 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 |-------|-------------|--------|
 | 1 | Foundation & Theme Swap | ✅ COMPLETE |
 | 2 | Navigation Overhaul | ✅ COMPLETE (via Landing Page) |
-| 3 | Layout & Grid Transformation | 🔲 PENDING |
+| 3 | Layout & Grid Transformation | ✅ COMPLETE |
 | 4 | Component Refactoring & CTA Mapping | ✅ PARTIAL (Landing page CTAs done) |
 | 5 | Backlog & Polish | 🔲 PENDING |
 
