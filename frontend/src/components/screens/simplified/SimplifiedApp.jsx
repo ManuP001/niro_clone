@@ -40,33 +40,53 @@ const ONBOARDING_STEPS = {
 };
 
 /**
- * SimplifiedApp - Main app container for NIRO V6
+ * SimplifiedApp - Main app container for NIRO V10
  * 
  * Features:
+ * - Intent-based routing from PublicLandingPage
  * - Guided Onboarding: User Details (new users) → How It Works → Trust & Safety → Home
  * - Home Tour Overlay (first time only)
- * - Bottom Navigation: Home, Consult, Mira, Remedies, Astro
+ * - Bottom Navigation: Home, Consult, Remedies, My Pack, Astro
  * - Profile button in top-right on HomeScreen
- * - DevToggle for testing (enabled via ?dev=true)
- * - CategoryListingPage for "View all" and "Talk to human" CTAs
+ * - Schedule Call screen with Google Calendar integration
  * 
  * User Types:
- * - Returning User (for birth details): Someone with email/phone in database
- * - Paying Customer (for My Pack): Someone with paid order/remedy
+ * - New User: No birth details → Goes through full onboarding
+ * - Returning User: Has birth details → Skips birth details screen
+ * - Paying Customer: Has active packs → Shows My Pack tab
+ * 
+ * Intent Flows:
+ * - free_call: New → Birth Details → Schedule | Returning → Schedule
+ * - consultation:{topic}: New → Birth Details → Topics → Packages | Returning → Topics/MyPack
  */
-export default function SimplifiedApp({ token, userId, user }) {
+export default function SimplifiedApp({ 
+  token, 
+  userId, 
+  user,
+  initialIntent = null,
+  initialScreen = null,
+  initialParams = null,
+  onBackToLanding = null,
+  onLogout = null,
+}) {
+  // Track if we have a pending intent to process after onboarding
+  const [pendingIntent, setPendingIntent] = useState(initialIntent);
+  
   // Onboarding state - start from appropriate step based on saved state AND user profile
   const [onboardingStep, setOnboardingStep] = useState(() => {
     const onboardingComplete = localStorage.getItem(ONBOARDING_KEY) === 'true';
     const userDetailsComplete = localStorage.getItem(USER_DETAILS_KEY) === 'true';
     
     // If user has profile_complete from server, they're a returning user
-    // Skip birth details for returning users
     const isReturningUser = user?.profile_complete || user?.dob;
+    
+    // If we have an intent, we need to check if we need birth details
+    if (initialIntent && !isReturningUser && !userDetailsComplete) {
+      return ONBOARDING_STEPS.USER_DETAILS;
+    }
     
     if (onboardingComplete) return ONBOARDING_STEPS.HOME;
     if (userDetailsComplete || isReturningUser) {
-      // Mark as complete if returning user
       if (isReturningUser && !userDetailsComplete) {
         localStorage.setItem(USER_DETAILS_KEY, 'true');
       }
