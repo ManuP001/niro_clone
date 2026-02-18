@@ -15,6 +15,7 @@ import { colors } from './theme';
  */
 
 const NAV_ITEMS = [
+  { id: 'home', label: 'Home', href: '/' },
   { id: 'topics', label: 'Life topics', scrollTo: 'topics-section' },
   { id: 'experts', label: 'Experts', screen: 'experts', tab: 'consult' },
   { id: 'remedies', label: 'Remedies', screen: 'remedies', tab: 'remedies' },
@@ -36,6 +37,13 @@ export default function ResponsiveHeader({
 
   const handleNavClick = (item) => {
     setMobileMenuOpen(false);
+    
+    // Handle external href (like Home -> /)
+    if (item.href) {
+      window.location.href = item.href;
+      return;
+    }
+    
     if (item.scrollTo) {
       const section = document.getElementById(item.scrollTo);
       if (section) {
