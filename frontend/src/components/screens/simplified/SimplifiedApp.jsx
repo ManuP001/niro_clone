@@ -519,6 +519,7 @@ export default function SimplifiedApp({
           scenarioIds={screenParams.scenarioIds}
           onSuccess={handlePurchaseSuccess}
           onBack={goBack}
+          onTabChange={handleTabChange}
         />
       );
     }
