@@ -395,9 +395,11 @@ export default function PublicTopicsPage({ isAuthenticated }) {
   }, [searchQuery, lifeSituations]);
 
   const handleTileClick = (tileId, tileData) => {
-    // Navigate to public topic landing page (no login required)
-    // Login is only required before checkout
-    navigate(`/topic/${tileId}`);
+    // Only navigate to topics that have packages
+    if (TOPICS_WITH_PACKAGES.includes(tileId)) {
+      navigate(`/topic/${tileId}`);
+    }
+    // For topics without packages, the tile will show "Coming Soon" and be disabled
   };
 
   return (
