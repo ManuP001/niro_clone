@@ -1,26 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { colors } from './theme';
+import { colors, shadows, borderRadius } from './theme';
 import { SparklesIcon, PhoneIcon, ConsultIcon, ShieldIcon } from './icons';
 import { trackEvent } from './utils';
 import { getBackendUrl } from '../../../config';
 
 /**
- * HomeScreen V6 - Premium UI Upgrade
+ * HomeScreen V10 - Redesigned for niro-final-marquee
  * 
- * Changes from V4:
- * - Reordered 18 tiles (premium + highest intent first)
- * - Reduced bottom whitespace by 60%+
- * - Gradient background (same as onboarding)
- * - Category modules with premium card containers
- * - Premium CTA area with "Talk to Expert" as primary
- * - Trust microcopy under CTAs
- * 
- * V7 UPDATE: Now fetches categories/tiles from admin API
- * - Data is managed from /admin dashboard
- * - Falls back to defaults if API fails
+ * Changes from V6:
+ * - New Lexend font and teal/peach/cream color scheme
+ * - Responsive layout (mobile-first, desktop-enhanced)
+ * - Removed phone-frame constraint
+ * - Updated CTAs and styling to match new design
  */
 
-// Default fallback data (same as before)
+// Default fallback data
 const DEFAULT_LIFE_SITUATIONS = [
   {
     id: 'love',
@@ -63,64 +57,24 @@ const DEFAULT_LIFE_SITUATIONS = [
   }
 ];
 
-// Premium Gradient Background (same as login screen)
-const GRADIENT_BG = 'linear-gradient(180deg, #3E827A 0%, rgba(255, 255, 195, 0.58) 100%)';
-const MODULE_BG = 'rgba(255, 255, 255, 0.85)';
-const HEADER_GRADIENT = 'linear-gradient(180deg, #3E827A 0%, #4A8F87 100%)';
-
-// Animated Logo Component (from Splash Screen)
-function AnimatedLogo() {
+// Niro Logo Component (new design)
+function NiroLogo({ size = 'md' }) {
+  const sizes = {
+    sm: 'text-2xl',
+    md: 'text-3xl',
+    lg: 'text-4xl',
+  };
+  
   return (
-    <div className="relative w-32 h-32 mx-auto">
-      {/* Animated Ring */}
-      <svg 
-        className="absolute inset-0 w-full h-full animate-spin-slow" 
-        viewBox="0 0 160 160"
-        style={{ animationDuration: '20s' }}
-      >
-        <g stroke="rgba(255,255,255,0.4)" strokeWidth="1" fill="none">
-          <polygon points="80,8 100,25 120,25 112,48 120,72 100,72 80,88 60,72 40,72 48,48 40,25 60,25" />
-        </g>
-        <g fill="rgba(255,255,255,0.6)">
-          <circle cx="80" cy="8" r="2.5" />
-          <circle cx="100" cy="25" r="1.5" />
-          <circle cx="120" cy="25" r="2" />
-          <circle cx="112" cy="48" r="1.5" />
-          <circle cx="120" cy="72" r="2" />
-          <circle cx="100" cy="72" r="1.5" />
-          <circle cx="80" cy="88" r="2.5" />
-          <circle cx="60" cy="72" r="1.5" />
-          <circle cx="40" cy="72" r="2" />
-          <circle cx="48" cy="48" r="1.5" />
-          <circle cx="40" cy="25" r="2" />
-          <circle cx="60" cy="25" r="1.5" />
-        </g>
-      </svg>
-      
-      {/* Inner Glow */}
-      <div 
-        className="absolute inset-4 rounded-full"
-        style={{ 
-          background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 100%)',
-        }}
-      />
-      
-      {/* Logo Text */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span 
-          className="text-4xl font-bold tracking-wide"
-          style={{ 
-            fontFamily: "'Kumbh Sans', 'Inter', sans-serif",
-            background: 'linear-gradient(135deg, #EFE1A9 0%, #FFFFFF 50%, #EFE1A9 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
-          niro
-        </span>
-      </div>
-    </div>
+    <span 
+      className={`font-bold tracking-tight ${sizes[size]}`}
+      style={{ 
+        fontFamily: "'Lexend', sans-serif",
+        color: colors.teal.dark,
+      }}
+    >
+      niro
+    </span>
   );
 }
 
