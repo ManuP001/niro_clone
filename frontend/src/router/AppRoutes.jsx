@@ -3,6 +3,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Public pages
 import PublicLandingPage from '../components/screens/simplified/PublicLandingPage';
+import PublicExpertsPage from '../components/screens/simplified/PublicExpertsPage';
+import PublicExpertProfilePage from '../components/screens/simplified/PublicExpertProfilePage';
+import PublicTopicsPage from '../components/screens/simplified/PublicTopicsPage';
 import LoginScreen from '../components/screens/LoginScreen';
 import AuthCallback from '../components/screens/AuthCallback';
 
