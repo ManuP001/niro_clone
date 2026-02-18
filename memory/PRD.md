@@ -215,11 +215,11 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 - [x] Testimonial section CTA ("Start Your Journey Today")
 - [x] AppFooter component on authenticated HomeScreen (desktop only)
 
-### Phase 3: Polish & Advanced (P1 - NEXT)
-- [ ] Search/filter for topics
-- [ ] React Router - proper URL routing (/app/topic/:id)
-- [ ] Deep-linking & browser back/forward
-- [ ] Scroll reveal animations
+### Phase 3: Polish & Advanced ✅ COMPLETE (Dec 2025)
+- [x] React Router - proper URL routing (/app/topic/:id, /app/experts, etc.)
+- [x] Deep-linking & browser back/forward working
+- [x] Search/filter for topics (HomeScreen)
+- [x] Scroll reveal animations (IntersectionObserver based)
 
 ### Future Phase: UI Changes (P2)
 - [ ] Change free call CTA text to: "Get a Free 10 mins consultation 📞"
