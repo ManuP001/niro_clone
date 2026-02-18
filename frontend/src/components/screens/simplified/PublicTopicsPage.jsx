@@ -320,14 +320,20 @@ function CategoryModule({ situation, onTileClick }) {
       
       {/* Grid of Tiles */}
       <div className="grid gap-2 grid-cols-3 md:grid-cols-4">
-        {situation.tiles.map((tile) => (
-          <MinimalistTile 
-            key={tile.id}
-            tile={tile}
-            onClick={onTileClick}
-            comingSoon={isComingSoon || tile.comingSoon}
-          />
-        ))}
+        {situation.tiles.map((tile) => {
+          // Check if this tile has packages available
+          const tileHasPackages = TOPICS_WITH_PACKAGES.includes(tile.id);
+          const tileComingSoon = isComingSoon || tile.comingSoon || !tileHasPackages;
+          
+          return (
+            <MinimalistTile 
+              key={tile.id}
+              tile={tile}
+              onClick={onTileClick}
+              comingSoon={tileComingSoon}
+            />
+          );
+        })}
       </div>
     </div>
   );
