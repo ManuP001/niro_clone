@@ -71,6 +71,19 @@ export default function PublicLandingPage({
   onNavigateToApp,
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showStickyCTA, setShowStickyCTA] = useState(false);
+
+  // Track scroll to show/hide sticky CTA
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const heroHeight = 600; // Approximate hero section height
+      setShowStickyCTA(scrollY > heroHeight);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Handle Free Call CTA
   const handleFreeCallClick = (e) => {
