@@ -2456,6 +2456,8 @@ async def get_topics_with_packages(request: Request):
     Returns both:
     - topic_id values from tiers (e.g., 'career_clarity', 'stress_management')
     - tier_id root names that match frontend tiles (e.g., 'dating_compatibility', 'job_transition')
+    
+    Normalizes hyphen format to underscore format for frontend compatibility.
     """
     db = await get_db(request)
     
@@ -2467,23 +2469,27 @@ async def get_topics_with_packages(request: Request):
         {"_id": 0, "topic_id": 1, "tier_id": 1}
     ).to_list(500)
     
+    def normalize_id(id_str):
+        """Convert hyphen format to underscore format for frontend compatibility"""
+        return id_str.replace("-", "_")
+    
     for tier in tiers:
-        # Add topic_id
+        # Add topic_id (normalized)
         if tier.get("topic_id"):
-            available_ids.add(tier["topic_id"])
+            available_ids.add(normalize_id(tier["topic_id"]))
         
         # Also extract root name from tier_id (before _focussed, _supported, _comprehensive, _starter, _plus, _pro)
         tier_id = tier.get("tier_id", "")
         for suffix in ["_focussed", "_supported", "_comprehensive", "_starter", "_plus", "_pro"]:
             if tier_id.endswith(suffix):
                 root_name = tier_id.replace(suffix, "")
-                available_ids.add(root_name)
+                available_ids.add(normalize_id(root_name))
                 break
         else:
             # No suffix found - the tier_id itself might be a tile ID (like 'dating_compatibility')
-            # Only add if it looks like a tile ID (contains underscore)
-            if "_" in tier_id:
-                available_ids.add(tier_id)
+            # Only add if it looks like a tile ID (contains underscore or hyphen)
+            if "_" in tier_id or "-" in tier_id:
+                available_ids.add(normalize_id(tier_id))
     
     return {
         "ok": True,
