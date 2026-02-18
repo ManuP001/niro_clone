@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://expert-browse-demo.preview.emergentagent.com/api"
+BACKEND_URL = "https://public-api-rollout.preview.emergentagent.com/api"
 
 class NiroSimplifiedTester:
     def __init__(self):
