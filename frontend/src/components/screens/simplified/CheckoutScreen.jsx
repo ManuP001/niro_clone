@@ -160,7 +160,7 @@ export default function CheckoutScreen({ token, tierId, scenarioIds = [], onSucc
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background.card }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.background.primary }}>
         <div 
           className="w-12 h-12 border-4 rounded-full animate-spin" 
           style={{ borderColor: `${colors.teal.light}`, borderTopColor: colors.teal.primary }}
@@ -171,7 +171,7 @@ export default function CheckoutScreen({ token, tierId, scenarioIds = [], onSucc
 
   if (!tier) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: colors.background.card }}>
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: colors.background.primary }}>
         <div className="text-center">
           <p className="text-red-500 mb-4">Tier not found</p>
           <button onClick={onBack} style={{ color: colors.teal.primary }} className="font-medium">Go back</button>
@@ -181,45 +181,39 @@ export default function CheckoutScreen({ token, tierId, scenarioIds = [], onSucc
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: colors.gold.cream }}>
-      {/* Header */}
-      <div 
-        className="px-6 pt-12 pb-6 border-b"
-        style={{ backgroundColor: colors.background.card, borderColor: colors.ui.borderDark }}
-      >
-        <button 
-          onClick={onBack} 
-          className="mb-4 flex items-center hover:opacity-70 transition-opacity"
-          style={{ color: colors.text.secondary }}
-        >
-          <span className="mr-2">←</span> Back
-        </button>
-        <h1 className="text-2xl font-bold" style={{ color: colors.text.dark }}>Checkout</h1>
-      </div>
+    <div className="min-h-screen" style={{ backgroundColor: colors.background.primary }}>
+      {/* Responsive Header */}
+      <ResponsiveHeader
+        title="Checkout"
+        showBackButton={true}
+        onBack={onBack}
+        onTabChange={onTabChange}
+      />
 
-      <div className="p-6">
+      {/* Content Container - Centered max-width */}
+      <div className="max-w-2xl mx-auto p-4 md:p-8">
         {/* Order Summary */}
         <div 
-          className="rounded-2xl p-6 mb-6"
+          className="rounded-2xl p-6 md:p-8 mb-6"
           style={{ 
-            backgroundColor: colors.background.card, 
+            backgroundColor: '#ffffff', 
             border: `1px solid ${colors.ui.borderDark}`,
             boxShadow: shadows.sm,
           }}
         >
-          <h2 className="text-lg font-semibold mb-4" style={{ color: colors.text.dark }}>Order Summary</h2>
+          <h2 className="text-lg md:text-xl font-semibold mb-4" style={{ color: colors.text.dark }}>Order Summary</h2>
           
           <div className="flex items-start justify-between mb-4">
             <div>
-              <p className="font-medium" style={{ color: colors.text.dark }}>{tier.name}</p>
-              <p className="text-sm" style={{ color: colors.text.secondary }}>{tier.validity_weeks} weeks access</p>
+              <p className="font-medium md:text-lg" style={{ color: colors.text.dark }}>{tier.name}</p>
+              <p className="text-sm md:text-base" style={{ color: colors.text.secondary }}>{tier.validity_weeks} weeks access</p>
             </div>
-            <p className="text-xl font-bold" style={{ color: colors.text.dark }}>{formatPrice(tier.price_inr)}</p>
+            <p className="text-xl md:text-2xl font-bold" style={{ color: colors.text.dark }}>{formatPrice(tier.price_inr)}</p>
           </div>
           
           <div className="border-t pt-4 space-y-2" style={{ borderColor: colors.ui.borderDark }}>
             {tier.features?.slice(0, 4).map((feature, idx) => (
-              <p key={idx} className="text-sm flex items-center" style={{ color: colors.text.secondary }}>
+              <p key={idx} className="text-sm md:text-base flex items-center" style={{ color: colors.text.secondary }}>
                 <span className="mr-2" style={{ color: colors.teal.primary }}>✓</span>
                 {feature}
               </p>
@@ -236,9 +230,9 @@ export default function CheckoutScreen({ token, tierId, scenarioIds = [], onSucc
             <div className="flex items-start">
               <span className="text-red-500 mr-2">⚠️</span>
               <div className="flex-1">
-                <p className="text-sm font-medium text-red-700">{error}</p>
+                <p className="text-sm md:text-base font-medium text-red-700">{error}</p>
                 {errorType === 'verification' && (
-                  <p className="text-xs mt-1 text-red-600">
+                  <p className="text-xs md:text-sm mt-1 text-red-600">
                     Contact support at help@niro.ai with your transaction details.
                   </p>
                 )}
@@ -259,12 +253,13 @@ export default function CheckoutScreen({ token, tierId, scenarioIds = [], onSucc
         <button
           onClick={handlePayment}
           disabled={processing}
-          className="w-full font-semibold py-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
+          className="w-full font-semibold py-4 md:py-5 rounded-xl text-base md:text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99] hover:shadow-md"
           style={{ 
-            backgroundColor: colors.gold.primary,
+            backgroundColor: colors.peach.primary,
             color: colors.text.dark,
             boxShadow: shadows.md,
           }}
+          data-testid="pay-btn"
         >
           {processing ? (
             <span className="flex items-center justify-center">
@@ -279,14 +274,14 @@ export default function CheckoutScreen({ token, tierId, scenarioIds = [], onSucc
           )}
         </button>
 
-        <p className="text-center text-xs mt-4" style={{ color: colors.text.mutedDark }}>
+        <p className="text-center text-xs md:text-sm mt-4" style={{ color: colors.text.muted }}>
           🔒 Secure payment via Razorpay
         </p>
 
         {/* Payment Methods */}
         <div className="mt-6 text-center">
-          <p className="text-xs mb-2" style={{ color: colors.text.mutedDark }}>Accepted payment methods</p>
-          <div className="flex items-center justify-center space-x-3 text-sm" style={{ color: colors.text.mutedDark }}>
+          <p className="text-xs md:text-sm mb-2" style={{ color: colors.text.muted }}>Accepted payment methods</p>
+          <div className="flex items-center justify-center space-x-4 md:space-x-6 text-sm md:text-base" style={{ color: colors.text.muted }}>
             <span>💳 Cards</span>
             <span>🏦 UPI</span>
             <span>🏛️ Net Banking</span>
