@@ -12,6 +12,7 @@ import {
   PhoneIcon
 } from './icons';
 import { trackEvent } from './utils';
+import ResponsiveHeader from './ResponsiveHeader';
 
 // Import V6 content
 import { 
