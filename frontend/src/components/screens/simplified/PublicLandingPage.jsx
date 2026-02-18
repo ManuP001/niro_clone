@@ -1478,7 +1478,7 @@ export default function PublicLandingPage({
 
           <div className="topic-grid">
             {/* Career */}
-            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'career')}>
+            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'career_clarity')}>
               <div className="topic-header">
                 <div className="topic-icon">
                   <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
@@ -1500,7 +1500,7 @@ export default function PublicLandingPage({
             </div>
 
             {/* Health */}
-            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'health')}>
+            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'stress_management')}>
               <div className="topic-header">
                 <div className="topic-icon">
                   <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
@@ -1524,7 +1524,7 @@ export default function PublicLandingPage({
             </div>
 
             {/* Love */}
-            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'love')}>
+            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'marriage_planning')}>
               <div className="topic-header">
                 <div className="topic-icon">
                   <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
@@ -1546,7 +1546,7 @@ export default function PublicLandingPage({
             </div>
 
             {/* Fertility */}
-            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'fertility')}>
+            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'relationship_healing')}>
               <div className="topic-header">
                 <div className="topic-icon">
                   <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
