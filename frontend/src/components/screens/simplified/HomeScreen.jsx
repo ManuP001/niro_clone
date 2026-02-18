@@ -505,11 +505,12 @@ export default function HomeScreen({
               placeholder="Search topics... (e.g., career, love, health)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-10 py-3 rounded-xl border text-sm md:text-base transition-all focus:outline-none focus:ring-2"
+              className="w-full pl-12 pr-10 py-3 rounded-xl border text-sm md:text-base transition-all focus:outline-none focus:ring-2 focus:border-transparent"
               style={{
                 backgroundColor: '#FFFFFF',
                 borderColor: colors.ui.borderDark,
                 color: colors.text.dark,
+                '--tw-ring-color': colors.teal.primary,
               }}
               data-testid="topics-search-input"
             />
