@@ -276,6 +276,7 @@ export default function HomeScreen({
   onChatWithMira,
   onTalkToHuman,
   onOpenProfile,
+  onTabChange,
 }) {
   // State for dynamic homepage data
   const [lifeSituations, setLifeSituations] = useState(DEFAULT_LIFE_SITUATIONS);
