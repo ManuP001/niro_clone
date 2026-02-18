@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 /**
  * PublicLandingPage - EXACT implementation of niro-final-marquee_1.html
