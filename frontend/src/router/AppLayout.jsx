@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
 import { ChatProvider } from '../context/ChatContext';
 import { colors } from '../components/screens/simplified/theme';
 import { apiSimplified, trackEvent } from '../components/screens/simplified/utils';
