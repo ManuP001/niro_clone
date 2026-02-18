@@ -114,6 +114,16 @@ export default function AppRoutes({
           />
         } 
       />
+
+      {/* Public Topic Landing Page - No login required, only checkout requires login */}
+      <Route 
+        path="/topic/:topicId" 
+        element={
+          <PublicTopicLandingPage
+            isAuthenticated={authState.isAuthenticated}
+          />
+        } 
+      />
       
       <Route 
         path="/login" 
