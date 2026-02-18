@@ -3,13 +3,14 @@ import { colors } from './theme';
 import { HomeIcon, ConsultIcon, RemediesIcon, AstroIcon, PackageIcon } from './icons';
 
 /**
- * BottomNav - Navigation with teal color scheme (V6)
+ * BottomNav - Navigation with new design system (V10)
  * New users: Home, Consult, Remedies, Astro (4 tabs)
  * Returning users: Home, Consult, Remedies, My Pack, Astro (5 tabs)
- * Mira removed from nav — accessible from homepage
+ * 
+ * Only shown on mobile (< 768px) - Desktop uses DesktopNav
  */
 
-// Base tabs for all users (Mira removed)
+// Base tabs for all users
 const baseTabs = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
   { id: 'consult', label: 'Consult', Icon: ConsultIcon },
@@ -26,19 +27,18 @@ const endTabs = [
 
 export default function BottomNav({ activeTab, onTabChange, hasActivePlan = false }) {
   // Build tabs based on user state
-  // New users: Home, Consult, Remedies, Astro (4 tabs)
-  // Returning users: Home, Consult, Remedies, My Pack, Astro (5 tabs)
   const tabs = hasActivePlan 
     ? [...baseTabs, myPackTab, ...endTabs]
     : [...baseTabs, ...endTabs];
   
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 border-t z-50"
+      className="fixed bottom-0 left-0 right-0 border-t z-50 md:hidden"
       style={{ 
         backgroundColor: '#ffffff',
         borderColor: colors.ui.borderDark,
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.05)',
       }}
     >
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
@@ -61,12 +61,12 @@ export default function BottomNav({ activeTab, onTabChange, hasActivePlan = fals
               >
                 <Icon 
                   className="w-5 h-5" 
-                  style={{ color: isActive ? colors.teal.primary : colors.text.mutedDark }}
+                  style={{ color: isActive ? colors.teal.primary : colors.text.muted }}
                 />
               </div>
               <span 
                 className="text-[10px] font-medium"
-                style={{ color: isActive ? colors.teal.primary : colors.text.mutedDark }}
+                style={{ color: isActive ? colors.teal.primary : colors.text.muted }}
               >
                 {tab.label}
               </span>
