@@ -7,7 +7,7 @@ import requests
 import json
 
 # Backend URL from environment
-BACKEND_URL = "https://catalog-data-cleanup.preview.emergentagent.com/api"
+BACKEND_URL = "https://niro-refresh.preview.emergentagent.com/api"
 
 def test_welcome_simple():
     """Test Welcome Message Endpoint with detailed error logging"""

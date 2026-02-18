@@ -1,209 +1,153 @@
 <analysis>**original_problem_statement:**
-The user's initial requests were to fix several critical bugs and implement a multi-phase feature plan. The primary focus of this session was on Phase 3: implementing and then significantly enhancing a full-featured Admin Dashboard.
+The user has provided a new HTML webpage design () and has requested a complete redesign and refactoring of the current application. The core goals are:
+1.  **Adopt the New Design:** Update the entire app's UI/UX (colors, fonts, components) to match the new webpage design.
+2.  **Eliminate Phone View:** Transition the app from its current phone simulator layout to a responsive website experience that works well on mobile and looks intentional on desktop, without creating entirely new pages.
+3.  **Implement Webpage & Link CTAs:** Integrate the new webpage as the app's shell, ensuring all Call-to-Actions (CTAs) are correctly mapped to their respective landing pages or functions within the app.
+4.  **Incorporate Improvements:** Address a list of UX improvement suggestions for the new webpage design (e.g., adding a mobile hamburger menu, improving the footer, fixing CTA mismatches).
+5.  **Carry Forward Backlog:** Ensure that all previously deferred or backlogged tasks are included in the new overall plan.
 
-**Initial Bugs & Features:**
-*   A range of bugs including Google OAuth issues, payment errors, and UI glitches.
-*   **Phase 3 Goal:** Implement full CRUD in the admin dashboard for a hierarchical structure: **Categories -> Tiles (Topics) -> Packages**.
-
-**Subsequent User Requests during this session:**
-1.  Make the homepage content (Categories & Tiles) dynamic and editable from the admin dashboard.
-2.  Add a live preview feature for the homepage within the admin dashboard.
-3.  Fix an issue where the admin dashboard appeared empty on the user's production environment.
-4.  Address several usability issues in the admin CRUD forms:
-    *   Make the Category field a dropdown when editing Tiles.
-    *   Fix broken delete functionality for Categories and Topics.
-    *   Fix a bug preventing updates when fields were left blank.
-    *   Address duplicate categories appearing on production.
-    *   Improve the icon selection for Topics/Tiles with a larger, style-matching icon pack.
-5.  Implement advanced package/content management features:
-    *   Prevent a Category from going live if it has no Tiles under it.
-    *   Allow mapping multiple astrologers to each package.
-    *   Decouple Packages from Topics, allowing Tiles to link directly to a Package. Make Tiers (pricing levels) optional.
-    *   Create a rich content editor for package landing pages to manage sections like Hero, Overview, Features, etc.
-    *   Allow the admin to add/edit/delete unlimited custom sections on a package's landing page.
+The user has approved a specific B+D Hybrid implementation strategy and has explicitly asked for a detailed, **5-phase plan** before any code is written.
 
 **User's preferred language**: en-US
 
 **what currently exists?**
-The application is a full-stack React and FastAPI app with a MongoDB database. The core focus of this session was the Admin Dashboard, which is now a comprehensive content management system.
+The application is a functional full-stack React/FastAPI app. In this session, the agent completed three major phases of work:
+1.  **Phase 9 (P0 Bug Fixes):** Fixed the unauthorized user export, the broken checkout page 'back' button, and the bug preventing newly created experts from appearing in the app.
+2.  **Phase 10 (Expert Management Overhaul):** Implemented a new three-category tag system ('Life-situation', 'Method', 'Remedy-support') for expert profiles, including a new admin UI with multi-select dropdowns. Also added an image upload feature for expert profiles.
+3.  **Phase 11 (Admin UI/UX):** Cleaned up UI clutter from the homepage and checkout screen and implemented bulk CRUD (multi-select with Deactivate/Delete) functionality in the admin dashboard's catalog manager.
 
--   **Hierarchical CRUD:** The admin dashboard at  supports full CRUD for Categories, Tiles, Topics, Experts, Remedies, and Packages (Tiers).
--   **Dynamic Homepage:** The user-facing homepage is no longer hardcoded. It dynamically fetches and displays the Categories and Tiles directly from the data managed in the admin dashboard.
--   **Live Homepage Preview:** A Preview Homepage button exists in the admin dashboard header, which opens a modal showing a pixel-perfect, mobile-sized preview of the live homepage using the current database data.
--   **Advanced UI Components:** The admin forms have been enhanced with user-friendly components like a visual, searchable  icon picker (150+ icons), multi-select dropdowns for assigning experts, and dependent dropdowns.
--   **Rich Package Content Editor:** A new interface allows for detailed management of package landing page content. It includes fixed sections (Hero, Overview, etc.) and a feature to add, edit, delete, and reorder unlimited custom sections, each with its own title and content type (bullets, paragraph).
--   **Database Utilities:** The dashboard includes buttons to Seed Catalog (to populate a fresh database) and Clean Duplicates to resolve data integrity issues on the user's production environment.
--   **Backend Validation:** Logic has been added to prevent activating a category if it doesn't contain any active tiles.
+The application's UI is currently rendered inside a fixed-width, phone-shaped container.
 
 **Last working item**:
-- Last item agent was working: Implementing a feature to add, edit, and delete **unlimited custom sections** within the rich package content editor. This allows the admin to dynamically build out the content for a package's landing page beyond the 5 standard sections.
-- Status: **USER VERIFICATION PENDING**
-- Agent Testing Done: Y
-- Which testing method agent to use? **screenshot tool**. The agent should take a screenshot of the package editor, showing the ability to add a new custom section with a title and content, and the delete/reorder controls.
-- User Testing Done: N
+-   Last item agent was working: The agent was in the process of formulating a comprehensive 5-phase implementation plan for the complete application redesign, as requested by the user. This plan is based on the approved Option B+D Hybrid strategy and must incorporate the new webpage design, CTA mapping, UX improvements, and all previously pending tasks.
+-   Status: **IN PROGRESS**
+-   Agent Testing Done: N/A (Planning phase)
+-   Which testing method agent to use? **both**. The upcoming redesign will involve significant frontend and some backend changes. Each phase should be followed by targeted frontend and backend testing.
+-   User Testing Done: N/A
 
 **All Pending/In progress Issue list**:
--   **Issue 1:** Verify newly implemented package/content management features (P0)
--   **Issue 2:** Resolve blank Admin Dashboard on production via user action (P1)
--   **Issue 3:** Resolve duplicate categories on production via user action (P1)
--   **Issue 4:** Re-verify Google OAuth Double Login (P2)
--   **Issue 5:** Verify Admin Dashboard Revenue Calculation (P2)
-
-**Issues Detail:**
--   **Issue 1: Verify newly implemented package/content management features**
-    -   **Attempted fixes:** The agent has implemented several features based on the user's last request:
-        1.  Backend validation to prevent activating categories without tiles.
-        2.  A multi-select dropdown to assign multiple astrologers to a package.
-        3.  Refactored models to allow tiles to link directly to packages (making tiers optional).
-        4.  A rich content editor for packages, including the ability to add unlimited custom sections.
-    -   **Next debug checklist:** The user needs to test all these new features in the preview environment to confirm they meet the requirements.
-    -   **Why fix this issue and what will be achieved with the fix?** This will complete the advanced content management capabilities requested by the user, giving them full control over the app's offerings.
-    -   **Status:** USER VERIFICATION PENDING
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** both
-
--   **Issue 2: Resolve blank Admin Dashboard on production via user action**
-    -   **Attempted fixes:** The user reported a blank dashboard on their production site. The agent diagnosed this as an unseeded production database. A prominent Seed Catalog Data button was added to the dashboard home, and the underlying API call was fixed to use  to handle reseeding.
-    -   **Next debug checklist:** The user needs to deploy the latest code to their production environment and then click the Seed Catalog Data button on the admin dashboard.
-    -   **Why fix this issue and what will be achieved with the fix?** This will populate the production database, making all the content (Categories, Tiles, Topics, etc.) appear in the admin UI.
-    -   **Status:** USER VERIFICATION PENDING
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** frontend
-
--   **Issue 3: Resolve duplicate categories on production via user action**
-    -   **Attempted fixes:** The user reported duplicate categories on their production site. The agent added a Clean Duplicates button to the admin dashboard, which calls a new backend endpoint designed to remove these duplicates safely.
-    -   **Next debug checklist:** After deploying, the user should click the 🧹 Clean Duplicates button on the admin dashboard.
-    -   **Why fix this issue and what will be achieved with the fix?** This will clean up the production data and resolve the user-facing issue of seeing the same category multiple times.
-    -   **Status:** USER VERIFICATION PENDING
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** both
-
--   **Issue 4: Re-verify Google OAuth Double Login**
-    -   **Attempted fixes:** (From previous session) The agent fixed a major server-side cause by reordering API routers. However, the user reported the issue might still persist. This was not addressed in the current session.
-    -   **Next debug checklist:**
-        1.  Clear all browser data for the preview site.
-        2.  Log in with Google.
-        3.  Observe if the login screen reappears.
-        4.  If it does, inspect the browser's network tab and console logs to find the cause.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a critical user experience bug that harms user trust.
-    -   **Status:** TESTING PENDING
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** frontend
-
--   **Issue 5: Verify Admin Dashboard Revenue Calculation**
-    -   **Attempted fixes:** (From previous session) The agent updated the backend logic to include more order statuses in the revenue calculation.
-    -   **Next debug checklist:** The user needs to check the revenue figure on their production dashboard after deployment to confirm its accuracy.
-    -   **Why fix this issue and what will be achieved with the fix?** Provides accurate business metrics to the admin.
-    -   **Status:** USER VERIFICATION PENDING
-    -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** backend
+There are no pending bugs. All previously identified critical issues have been resolved. The current focus is on the new redesign task.
 
 **In progress Task List**:
-None. All current development tasks are complete and pending user verification.
+-   **Task 1: Create the 5-Phase Redesign Plan** (P0 - HIGHEST PRIORITY)
+    -   **Where to resume:** The agent needs to structure the detailed B+D Hybrid plan into five distinct, independently implementable phases.
+    -   **What will be achieved with this?** A clear, user-approved roadmap for the entire application redesign, which is the mandatory next step before any implementation begins.
+    -   **Status:** IN PROGRESS
+    -   **Blocked on something:** Nothing. Awaiting agent action to create and present the plan.
 
 **Upcoming and Future Tasks**
-*   **Upcoming Tasks:**
-    *   **P1: Implement Expert Chat Selection:** Allow customers to choose a specific astrologer to chat with. This will involve creating a UI for expert selection and connecting it to the existing chat backend.
-*   **Future Tasks:**
-    *   **P2: Code Refactoring:** Remove obsolete JWT authentication code () and legacy V5 UI components.
-    *   **P3: Data Migration:** Create a script to unify legacy data (, ) and new data into a single, consistent schema.
-    *   **P4: Performance Caching:** Cache the homepage catalog data to improve load times.
+The primary upcoming task is the entire application redesign, which will be broken down into the 5 phases that the agent needs to define. The plan should be structured to cover the following work, grouped logically into phases.
+
+-   **Phase 1: Foundation & Theme Swap (Global Impact)**
+    -   Integrate the  font.
+    -   Create a new  or update CSS variables with the new design tokens (colors, shadows, text styles) from .
+    -   Apply these new tokens globally to immediately reskin the entire application.
+    -   Remove the phone frame container from  and replace it with a responsive container that allows the background to fill the screen.
+
+-   **Phase 2: Navigation Overhaul (Desktop vs. Mobile)**
+    -   Create a new  component based on the header in .
+    -   Conditionally render the new  on screens >= 768px and hide the existing .
+    -   On mobile, continue to show  and hide .
+    -   Implement the mobile hamburger menu for the new design's navigation links.
+
+-   **Phase 3: Layout & Grid Transformation (Responsive Content)**
+    -   Apply media queries to  and  to transform single-column mobile layouts into multi-column grids on desktop.
+    -   Adjust other key screens (, , ) to use centered, max-width containers on desktop for a more intentional and polished look.
+
+-   **Phase 4: Component Refactoring & CTA Mapping**
+    -   Refactor key visual components (, , buttons) to match the new design's style (e.g., gradients, border-radius, shadows).
+    -   Implement the full CTA sitemap, ensuring all links in the new navigation and on the homepage content correctly route to the intended pages/app states (e.g., , ).
+
+-   **Phase 5: Backlog & Polish**
+    -   **Tile sizing fix:** Make production tiles compact to match the admin preview (P2 from previous plan).
+    -   **Footer Implementation:** Add the new footer from the design file, visible on desktop.
+    -   **Backlog UX tasks (P3):**
+        -   Expand tile icon picker to use the full Lucide icon set.
+        -   Make sidebar counts in admin dynamic.
+        -   Show feedback messages on entity creation.
+    -   **Tech Debt:**
+        -   Remove obsolete JWT auth code.
 
 **Completed work in this session**
--   **Admin CRUD Refactor:** Completed the hierarchical admin dashboard for Categories and Tiles.
--   **Dynamic Homepage:** Replaced the hardcoded homepage with a dynamic one that fetches data from new public API endpoints, controlled by the admin dashboard.
--   **Live Homepage Preview:** Implemented a modal in the admin dashboard that shows a real-time, mobile-sized preview of the user-facing homepage.
--   **Data Seeding & Cleaning Tools:** Added prominent Seed Catalog and Clean Duplicates buttons to the admin dashboard to help the user manage their production database.
--   **Fixed Delete Functionality:** Corrected a bug in the frontend handler that was preventing items from being deleted in the admin dashboard.
--   **Advanced Admin Forms:**
-    -   Replaced a text input with a dropdown for selecting a Category when editing a Tile.
-    -   Fixed a bug where blank fields in forms were not being saved correctly.
-    -   Upgraded the emoji-based icon dropdown to a full-featured, searchable, visual icon picker using  icons that match the app's aesthetic.
--   **Advanced Package Management:**
-    -   Implemented a rich content editor for packages with 5 standard sections (Hero, Overview, etc.) and support for **unlimited, re-orderable custom sections**.
-    -   Added backend validation to prevent activating a category unless it has active tiles.
-    -   Added a multi-select dropdown to assign multiple astrologers to a package.
-    -   Modified the data model to allow tiles to link directly to a package, making topics/tiers optional for a package.
-
-**Earlier issues found/mentioned but not fixed**
--   **Issue 1: Google OAuth Double Login**
-    -   **Debug checklist:** As detailed in the All Pending/In progress Issue list.
-    -   **Why to solve this issue and what will be achieved with this?** It's a critical UX flaw that makes the application feel unprofessional and buggy.
-    -   **Should Test frontend/backend/both after fix:** frontend
-    -   **Is recurring issue?** Y
-
-**Known issue recurrence from previous fork**
--   **Issue:** Google OAuth double login.
--   **Recurrence count:** 2+
--   **Status:** TESTING PENDING. This issue was inherited from the previous fork and has not been prioritized in this session based on user feedback.
+-   **Phase 9 - P0 Bug Fixes (DONE):**
+    -   Fixed user export unauthorized error by switching to  with a blob download.
+    -   Fixed checkout 'back' button navigation by preserving state.
+    -   Fixed new experts not appearing by making the  endpoint query the database.
+-   **Phase 10 - Expert Management Overhaul (DONE):**
+    -   Implemented a 3-category tag system (Life-situation, Method, Remedy) for experts.
+    -   Added an expert profile image upload feature.
+-   **Phase 11 - Admin UI Cleanup & Bulk CRUD (DONE):**
+    -   Removed clutter (DevToggle, redundant text) from homepage and checkout.
+    -   Added bulk selection and actions (Deactivate/Delete) to the admin Catalog Manager.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Dynamic Homepage from API:** The frontend  now uses  and  to populate its content from a new public API endpoint (), making the app a true CMS.
--   **Live Preview Modal:** A React component that re-renders a mobile view of the homepage within a modal, fetching fresh data on demand.
--   **Rich Content Editor:** A complex form component built in React with collapsible sections and dynamic sub-forms (for custom sections) to manage a nested JSON object () in the database.
--   **Custom Reusable Form Components:** Created several advanced form components within , such as , , and , which are used declaratively by the generic  component.
--   **Database Seeding/Cleaning:** The admin dashboard now has UI controls that trigger backend jobs to populate or clean the database, a crucial feature for managing different environments (preview vs. production).
--   **Conditional Backend Validation:** The  endpoint now contains logic to check for child documents (tiles) before allowing a parent document (category) to be set to .
+-   **Responsive Design:** Using CSS media queries to adapt layouts for different screen sizes (mobile vs. desktop).
+-   **Design Tokens:** Centralizing UI properties (colors, fonts, spacing) in a theme file or CSS variables for global styling.
+-   **Conditional Rendering:** Using JavaScript logic in React to render different components based on conditions like screen size.
+-   **Component-Based Refactoring:** Updating individual, reusable components to match a new design system, allowing changes to propagate throughout the app.
+-   **Backend File Storage:** Creating an endpoint to handle file uploads, save them to a public directory, and return a URL.
 
 **key DB schema**
--   **categories**: 
--   **tiles**: 
--   **tiers (Packages)**: 
-    -    is a large JSON blob containing fields like , , , etc.
+-   **admin_experts**:  (The  and  fields are now legacy, populated for backward compatibility).
 
 **All files of reference**
--   : The single source of truth for all admin backend logic, including all CRUD APIs, data models (Pydantic), and the new public homepage API.
--   : A single, large file containing the entire admin dashboard UI, including the  and all custom components like the  and .
--   : The main user-facing homepage, now updated to fetch its data from an API.
+-   : The main container for the app, which needs to be modified to remove the phone frame.
+-   : Contains the recently added bulk CRUD logic.
+-   : Contains the recently added endpoints for expert image uploads and tag options.
+-   : The user-provided artifact containing the new design specification.
+
+**key api endpoints**
+-   : (NEW) Uploads an expert's profile image.
+-   : (NEW) Provides the master list of all available tags, categorized by type.
 
 **Critical Info for New Agent**
--   **Your priority is to guide the user through testing and deploying the numerous features you've just built.** Many of the pending issues are actually completed features awaiting user verification on their production environment.
--   **Explain the Environment Difference:** The user has been confused about why the preview environment works but their production site doesn't. Clearly explain that they have separate databases and they **must** use the Seed Catalog button on their production admin dashboard after deploying the new code.
--   **Follow the User's Lead:** The user has been driving the priorities. After they have verified the current set of features, present the Upcoming Tasks (like Expert Chat Selection) and let them choose what to work on next.
--   **The Admin Dashboard is complex but modular.** Most functionality is driven by the generic  component. To add/change fields for an entity (like Topics or Packages), you typically only need to modify its definition within . For new field *types* (like the icon picker), you need to add the component and the corresponding case in the 's render logic.
+-   **DO NOT START IMPLEMENTING.** Your immediate and only task is to create and present the 5-phase redesign plan to the user for approval.
+-   The plan must be based on the Option B+D Hybrid strategy discussed in the chat history.
+-   The plan must be broken into **five distinct, independently implementable phases**.
+-   Ensure the plan explicitly includes all items from the user's last request (Message 241): the B+D implementation details, UX improvements for the webpage, the CTA sitemap, and the carried-forward backlog tasks.
+-   Your first action should be to use  to present this detailed, phased plan.
 
 **documents and test reports created in this job**
--    (Continuously updated throughout the session)
--   
--   
+-    (Phase 9 test report)
+-    (Phase 10 test report)
+-    (Phase 11 test report)
+-    (Updated with completion of Phases 9, 10, 11)
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **User:** Asks how to upload rich content for a new Not Ready Yet package. (Status: Addressed)
-9.  **Agent:** Implements a rich content editor for packages. (Status: Done)
-8.  **User:** Asks if it's possible to add/edit/delete sections of packages. (Status: Addressed)
-7.  **Agent:** Implements a Custom Sections feature in the package editor. (Status: Done)
-6.  **User:** Provides a link to the testing environment and credentials. (Status: N/A - This was the agent providing info to the user)
-5.  **User:** Reports issues with the icon dropdown: the list is too short and the style doesn't match the live app. (Status: Addressed)
-4.  **Agent:** Replaces the icon dropdown with a comprehensive, style-matching Lucide icon picker. (Status: Done)
-3.  **User:** Reports several new requirements/bugs: categories shouldn't go live without tiles, wants to map astrologers to packages, needs to link tiles to packages, and tiers should be optional. (Status: Addressed)
-2.  **Agent:** Implements all three backend and frontend changes. (Status: Done)
-1.  **User:** Reports that package content options aren't extensive and provides detailed content for a new package. (This is the same as message #10, and it was addressed).
+1.  **User (241):** Approves the B+D hybrid plan. Asks the agent to break it into 5 independent phases and to ensure the plan includes previously suggested webpage improvements, the CTA sitemap, and all pending backlog items. **This is the current active request.**
+2.  **Agent (240):** Provided a highly detailed breakdown of the B+D Hybrid plan, explaining changes vs. what stays the same for mobile and desktop views.
+3.  **User (239):** Asked for a detailed elaboration of the recommended B+D hybrid plan.
+4.  **Agent (238):** Proposed four options to improve the desktop view without a full redesign and recommended the B+D hybrid.
+5.  **User (237):** Refined the redesign goal: optimize for mobile but improve desktop by removing the phone frame. Asked for options.
+6.  **Agent (236):** Presented the initial comprehensive plan for the redesign based on the user's first request.
+7.  **User (226):** Uploaded a new HTML webpage () and requested a plan for a major app redesign.
+8.  **Agent (225):** Answered the user's query about pending tasks, listing completed, deferred, and backlog items.
+9.  **User (224):** Asked what tasks are still pending from all previous phases.
+10. **Agent (223):** Finished Phase 11 (UI Cleanup & Bulk CRUD) and provided a summary.
 
 **Project Health Check:**
--   **Working:** User login (OAuth), Kundli generation, Remedy purchasing, and a highly advanced Admin CMS for all application content. The user-facing homepage is now fully dynamic.
--   **In Progress:** Nothing is actively in progress.
--   **Broken:** The user's production deployment is out of date and its database is not seeded. This will be resolved once the user deploys the latest code and uses the provided admin tools. The Google OAuth double login may still be an issue.
+-   **Broken:** None.
+-   **Mocked:** None.
 
 **3rd Party Integrations**
--   **Razorpay:** Payments.
--   **Vedic API:** Astrology calculations.
--   **Resend:** Transactional emails.
--   **Google OAuth 2.0:** User authentication.
--   **lucide-react:** Frontend icons (v0.507.0).
+-   Razorpay (Payments)
+-   Vedic API (Astrology calculations)
+-   Resend (Emails)
+-   Google OAuth 2.0 (Login)
+-   lucide-react (Icons)
+-   Emergent LLM key (Powers Mira AI Chat)
 
 **Testing status**
--   **Testing agent used after significant changes:** YES (Used twice to verify Admin CRUD and the public homepage API).
--   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Testing agent used after significant changes:** YES. The testing agent was used successfully to validate Phases 9, 10, and 11.
 -   **Test files created:** None.
--   **Known regressions:** None identified in this session.
+-   **Known regressions:** None.
 
 **Credentials to test flow:**
--   **Admin URL**: (The new agent will be provided with a new URL)
--   **Username**: 
--   **Password**: 
+-   **Admin Username**: 
+-   **Admin Password**: 
 
 **What agent forgot to execute**
--   The agent did not address the **Google OAuth double login** issue mentioned in the initial handoff summary. This was because the user's subsequent requests and feedback prioritized the development of the admin dashboard features. This issue remains pending.</analysis>
+The agent was in the middle of executing the user's direct request: formulating the 5-phase redesign plan. Nothing was forgotten; the task is in progress.</analysis>
