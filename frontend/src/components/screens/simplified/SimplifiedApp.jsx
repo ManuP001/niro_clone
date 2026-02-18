@@ -131,27 +131,73 @@ export default function SimplifiedApp({
       const state = await loadUserState();
       trackEvent('app_init', { 
         onboarding_complete: isOnboardingComplete,
-        flow_version: 'v6' 
+        flow_version: 'v10',
+        has_intent: !!initialIntent,
       }, token);
       setLoadingState(false);
       
       // For returning users (has profile or paid), skip user details
-      // Returning user for birth details = has email/phone in DB (user prop passed from parent)
       const isReturningUser = user?.profile_complete || user?.dob;
       
       if ((state && !state.is_new_user) || isReturningUser) {
         if (!isUserDetailsComplete) {
           localStorage.setItem(USER_DETAILS_KEY, 'true');
-          // Also mark onboarding as complete for returning users
           if (!isOnboardingComplete && isReturningUser) {
             localStorage.setItem(ONBOARDING_KEY, 'true');
             setOnboardingStep(ONBOARDING_STEPS.HOME);
           }
         }
+        
+        // Handle intent for returning users (they skip birth details)
+        if (initialIntent && isReturningUser) {
+          if (initialIntent.type === 'free_call') {
+            setScreen('schedule');
+            clearUserIntent();
+            setPendingIntent(null);
+          } else if (initialIntent.type === 'consultation' && initialIntent.topicId) {
+            // Check if user has pack for this topic
+            const hasPack = state?.active_plans?.some(plan => 
+              plan.topic_id === initialIntent.topicId || plan.topics?.includes(initialIntent.topicId)
+            );
+            if (hasPack) {
+              setScreen('mypack');
+              setActiveTab('mypack');
+            } else {
+              setScreen('home');
+              setActiveTab('home');
+              setTimeout(() => {
+                const topicsSection = document.getElementById('topics-section');
+                if (topicsSection) {
+                  topicsSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }, 500);
+            }
+            clearUserIntent();
+            setPendingIntent(null);
+          }
+        }
+      }
+      
+      // Handle initial screen override (for logged-in users navigating from landing)
+      if (initialScreen && !initialIntent) {
+        if (initialScreen === 'mypack') {
+          setScreen('mypack');
+          setActiveTab('mypack');
+        } else if (initialScreen === 'astro') {
+          setScreen('kundli');
+          setActiveTab('astro');
+        } else if (initialScreen === 'profile') {
+          setScreen('profile');
+        } else if (initialScreen === 'experts') {
+          setScreen('experts');
+          setActiveTab('consult');
+        } else if (initialScreen === 'schedule') {
+          setScreen('schedule');
+        }
       }
     };
     init();
-  }, [loadUserState, token, isOnboardingComplete, isUserDetailsComplete, user]);
+  }, [loadUserState, token, isOnboardingComplete, isUserDetailsComplete, user, initialIntent, initialScreen]);
 
   // Handle user details complete - route based on pending intent
   const handleUserDetailsComplete = () => {
