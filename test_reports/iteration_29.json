@@ -1,0 +1,112 @@
+{
+  "summary": "All 6 features tested and PASSING: Public topic landing pages (/topic/career_clarity, /topic/marriage_planning) fetch packages from API, prices displayed from database (Focussed ₹2,999/₹3,999, Supported ₹6,999/₹8,999, Comprehensive ₹14,999/₹17,999), tier selector shows correct durations (4/8/12 weeks) from API, consultation info shows calls_included × call_duration_mins from API, switching between tiers updates price/features from API, 'Start my journey' button works and navigates to login page.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/test_reports/iteration_29.json",
+    "/.screenshots/topic_landing_career_clarity.png",
+    "/.screenshots/topic_landing_comprehensive.png",
+    "/.screenshots/topic_landing_marriage_planning.png"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "✓ PublicTopicLandingPage.jsx correctly fetches from /api/admin/public/package/:packageId",
+    "✓ Package prices come from database (not hardcoded V6 data)",
+    "✓ Tier selector shows correct durations (4/8/12 weeks) from API duration_weeks field",
+    "✓ Consultation info correctly displays calls_included × call_duration_mins from API",
+    "✓ Switching between tiers dynamically updates price and features from API",
+    "✓ 'Start my journey' button navigates to login when unauthenticated"
+  ],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {},
+  "seed_data_creation": "12 packages seeded into admin_tiers collection by seed_packages.py",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Package API integration complete: /api/admin/public/package/:packageId endpoint returns package data from MongoDB admin_tiers collection. PublicTopicLandingPage.jsx fetches all 3 tiers (focussed, supported, comprehensive) for a topic and displays dynamic data. All package prices and features now come from database, not hardcoded.",
+  "tests_performed": {
+    "career_clarity_topic_page": {
+      "api_endpoint": "/api/admin/public/package/career_clarity_{tier}",
+      "focussed_tier": {
+        "price": "₹2,999 - PASS",
+        "duration": "4 weeks - PASS",
+        "consultation": "1 × 30 mins - PASS"
+      },
+      "supported_tier": {
+        "price": "₹6,999 - PASS",
+        "duration": "8 weeks - PASS",
+        "consultation": "1 × 45 mins - PASS"
+      },
+      "comprehensive_tier": {
+        "price": "₹14,999 - PASS",
+        "duration": "12 weeks - PASS",
+        "consultation": "2 × 60 mins - PASS"
+      },
+      "tier_switching": "PASS - Updates price/features correctly",
+      "sticky_cta_bar": "PASS - Shows correct price for selected tier",
+      "start_journey_btn": "PASS - Button visible and clickable"
+    },
+    "marriage_planning_topic_page": {
+      "api_endpoint": "/api/admin/public/package/marriage_planning_{tier}",
+      "focussed_tier": {
+        "price": "₹3,999 - PASS",
+        "duration": "4 weeks - PASS"
+      },
+      "supported_tier": {
+        "price": "₹8,999 - PASS",
+        "duration": "8 weeks - PASS",
+        "consultation": "1 × 45 mins - PASS"
+      },
+      "tier_tabs_durations": "PASS - Shows 4/8/12 weeks from API",
+      "start_journey_btn": "PASS - Navigates to /login correctly"
+    }
+  },
+  "api_verification": {
+    "/api/admin/public/package/career_clarity_focussed": {
+      "status": "200 OK",
+      "price": 2999,
+      "duration_weeks": 4,
+      "calls_included": 1,
+      "call_duration_mins": 30
+    },
+    "/api/admin/public/package/career_clarity_supported": {
+      "status": "200 OK",
+      "price": 6999,
+      "duration_weeks": 8,
+      "calls_included": 1,
+      "call_duration_mins": 45
+    },
+    "/api/admin/public/package/career_clarity_comprehensive": {
+      "status": "200 OK",
+      "price": 14999,
+      "duration_weeks": 12,
+      "calls_included": 2,
+      "call_duration_mins": 60
+    },
+    "/api/admin/public/package/marriage_planning_supported": {
+      "status": "200 OK",
+      "price": 8999,
+      "duration_weeks": 8
+    },
+    "/api/admin/public/package/marriage_planning_focussed": {
+      "status": "200 OK",
+      "price": 3999,
+      "duration_weeks": 4
+    }
+  },
+  "data_source_verification": {
+    "packages_from_api": true,
+    "hardcoded_v6_data_removed": true,
+    "mongodb_collection": "admin_tiers"
+  }
+}
