@@ -1793,50 +1793,115 @@ export default function PublicLandingPage({
           </div>
 
           <div className="practitioner-grid">
-            {[
-              { name: 'Prakash Jha', role: 'Vedic Astrologer, Tarot Reader', rating: 4.8, languages: 'Hindi, English', specialties: ['Career timing', 'Job changes', 'Relationship'] },
-              { name: 'Sanjai Maharaj', role: 'Vedic Astrologer', rating: 4.9, languages: 'Hindi, English, Marathi', specialties: ['Marriage timing', 'Compatibility', 'Family'] },
-              { name: 'Pooja Kapoor', role: 'Vedic Astrologer, Healer', rating: 4.7, languages: 'Hindi, English', specialties: ['Gemstones', 'Pooja', 'Chakra healing'] },
-              { name: 'Vikram Rao', role: 'Vedic Astrologer', rating: 4.8, languages: 'Hindi, English, Telugu', specialties: ['Business', 'Finance', 'Career'] },
-            ].map((expert, i) => (
-              <div key={i} className="practitioner-card">
-                <div className="practitioner-header">
-                  <div className="practitioner-avatar">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6">
-                      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                      <circle cx="12" cy="7" r="4"/>
+            {loadingExperts ? (
+              // Loading skeleton
+              [1, 2, 3, 4].map((i) => (
+                <div key={i} className="practitioner-card" style={{ opacity: 0.5 }}>
+                  <div className="practitioner-header">
+                    <div className="practitioner-avatar" style={{ backgroundColor: 'rgba(74, 155, 142, 0.3)' }}></div>
+                    <div>
+                      <div className="practitioner-name" style={{ width: '100px', height: '16px', backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px' }}></div>
+                      <div className="practitioner-role" style={{ width: '150px', height: '12px', backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px', marginTop: '4px' }}></div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : experts.length > 0 ? (
+              // Real experts from API
+              experts.map((expert, i) => (
+                <div key={expert.expert_id || i} className="practitioner-card">
+                  <div className="practitioner-header">
+                    <div className="practitioner-avatar">
+                      {expert.photo_url ? (
+                        <img 
+                          src={expert.photo_url} 
+                          alt={expert.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                          onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
+                        />
+                      ) : null}
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6" style={{ display: expert.photo_url ? 'none' : 'block' }}>
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="practitioner-name">{expert.name}</div>
+                      <div className="practitioner-role">{expert.modality_label || expert.modality || 'Vedic Astrologer'}</div>
+                    </div>
+                  </div>
+                  <div className="practitioner-stats">
+                    <span className="star-icon">★</span>
+                    <span className="rating-number">{expert.rating || '4.8'}</span>
+                  </div>
+                  <div className="practitioner-languages">{(expert.languages || []).join(', ') || 'Hindi, English'}</div>
+                  <div className="practitioner-specialties">
+                    {(expert.life_situation_tags || expert.best_for_tags || []).slice(0, 3).map((tag, j) => (
+                      <span key={j} className="specialty-tag">{tag}</span>
+                    ))}
+                  </div>
+                  <div className="niro-certified">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
+                    <span className="certified-text">Niro Certified</span>
                   </div>
-                  <div>
-                    <div className="practitioner-name">{expert.name}</div>
-                    <div className="practitioner-role">{expert.role}</div>
+                  <button 
+                    className="view-profile-btn"
+                    onClick={(e) => handleViewExpertProfile(e, expert.expert_id)}
+                    data-testid={`view-profile-btn-${i}`}
+                  >
+                    View Profile
+                  </button>
+                </div>
+              ))
+            ) : (
+              // Fallback if no experts loaded - use hardcoded data
+              [
+                { name: 'Prakash Jha', role: 'Vedic Astrologer, Tarot Reader', rating: 4.8, languages: 'Hindi, English', specialties: ['Career timing', 'Job changes', 'Relationship'] },
+                { name: 'Sanjai Maharaj', role: 'Vedic Astrologer', rating: 4.9, languages: 'Hindi, English, Marathi', specialties: ['Marriage timing', 'Compatibility', 'Family'] },
+                { name: 'Pooja Kapoor', role: 'Vedic Astrologer, Healer', rating: 4.7, languages: 'Hindi, English', specialties: ['Gemstones', 'Pooja', 'Chakra healing'] },
+                { name: 'Vikram Rao', role: 'Vedic Astrologer', rating: 4.8, languages: 'Hindi, English, Telugu', specialties: ['Business', 'Finance', 'Career'] },
+              ].map((expert, i) => (
+                <div key={i} className="practitioner-card">
+                  <div className="practitioner-header">
+                    <div className="practitioner-avatar">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="practitioner-name">{expert.name}</div>
+                      <div className="practitioner-role">{expert.role}</div>
+                    </div>
                   </div>
+                  <div className="practitioner-stats">
+                    <span className="star-icon">★</span>
+                    <span className="rating-number">{expert.rating}</span>
+                  </div>
+                  <div className="practitioner-languages">{expert.languages}</div>
+                  <div className="practitioner-specialties">
+                    {expert.specialties.map((s, j) => (
+                      <span key={j} className="specialty-tag">{s}</span>
+                    ))}
+                  </div>
+                  <div className="niro-certified">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                      <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span className="certified-text">Niro Certified</span>
+                  </div>
+                  <button 
+                    className="view-profile-btn"
+                    onClick={handleViewExperts}
+                    data-testid={`view-profile-btn-${i}`}
+                  >
+                    View Profile
+                  </button>
                 </div>
-                <div className="practitioner-stats">
-                  <span className="star-icon">★</span>
-                  <span className="rating-number">{expert.rating}</span>
-                </div>
-                <div className="practitioner-languages">{expert.languages}</div>
-                <div className="practitioner-specialties">
-                  {expert.specialties.map((s, j) => (
-                    <span key={j} className="specialty-tag">{s}</span>
-                  ))}
-                </div>
-                <div className="niro-certified">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  <span className="certified-text">Niro Certified</span>
-                </div>
-                <button 
-                  className="view-profile-btn"
-                  onClick={handleViewExperts}
-                  data-testid={`view-profile-btn-${i}`}
-                >
-                  View Profile
-                </button>
-              </div>
-            ))}
+              ))
+            )}
             
             <div 
               className="view-all-card"
