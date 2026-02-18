@@ -339,15 +339,18 @@ export default function PublicTopicsPage({ isAuthenticated }) {
   const [lifeSituations, setLifeSituations] = useState(DEFAULT_LIFE_SITUATIONS);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredSituations, setFilteredSituations] = useState(DEFAULT_LIFE_SITUATIONS);
+  const [topicsWithPackages, setTopicsWithPackages] = useState([]);
 
-  // Fetch homepage data from API
+  // Fetch homepage data and topics with packages from API
   useEffect(() => {
-    const fetchHomepageData = async () => {
+    const fetchData = async () => {
       try {
         const backendUrl = getBackendUrl();
-        const response = await fetch(`${backendUrl}/api/admin/public/homepage-data`);
-        if (response.ok) {
-          const result = await response.json();
+        
+        // Fetch homepage data
+        const homepageResponse = await fetch(`${backendUrl}/api/admin/public/homepage-data`);
+        if (homepageResponse.ok) {
+          const result = await homepageResponse.json();
           if (result.ok && result.data && result.data.length > 0) {
             // Merge API data with default fertility category
             const apiData = result.data;
@@ -359,12 +362,21 @@ export default function PublicTopicsPage({ isAuthenticated }) {
             setFilteredSituations(apiData);
           }
         }
+        
+        // Fetch topics that have packages
+        const tiersResponse = await fetch(`${backendUrl}/api/admin/public/topics-with-packages`);
+        if (tiersResponse.ok) {
+          const tiersResult = await tiersResponse.json();
+          if (tiersResult.ok && tiersResult.topic_ids) {
+            setTopicsWithPackages(tiersResult.topic_ids);
+          }
+        }
       } catch (error) {
         console.log('Using default homepage data:', error.message);
       }
     };
     
-    fetchHomepageData();
+    fetchData();
   }, []);
 
   // Filter topics based on search query
