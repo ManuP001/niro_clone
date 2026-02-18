@@ -223,11 +223,45 @@ export default function PublicRemediesPage({ isAuthenticated }) {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedRemedy, setSelectedRemedy] = useState(null);
+  const [remedies, setRemedies] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch remedies from API
+  useEffect(() => {
+    const fetchRemedies = async () => {
+      try {
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+        const response = await fetch(`${backendUrl}/api/remedies/catalog`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.ok && data.remedies) {
+            // Merge API data with extended details
+            const enrichedRemedies = data.remedies.map(r => {
+              const details = REMEDY_DETAILS[r.remedy_id] || DEFAULT_REMEDY_DETAILS;
+              return {
+                id: r.remedy_id,
+                title: r.name,
+                price: r.price,
+                category: r.category,
+                ...details,
+              };
+            });
+            setRemedies(enrichedRemedies);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load remedies:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRemedies();
+  }, []);
 
   // Filter remedies by category
   const filteredRemedies = selectedCategory === 'all' 
-    ? REMEDIES 
-    : REMEDIES.filter(r => r.category === selectedCategory);
+    ? remedies 
+    : remedies.filter(r => r.category === selectedCategory);
 
   // Handle remedy selection
   const handleRemedySelect = (remedy) => {
