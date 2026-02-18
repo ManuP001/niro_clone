@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { apiSimplified, trackEvent } from './utils';
+import { colors, shadows } from './theme';
+import ResponsiveHeader from './ResponsiveHeader';
 
 /**
- * ExpertProfileScreen - Full expert profile page
- * V2: Shows full expert details with gated actions
+ * ExpertProfileScreen V3 - Full expert profile with new design
+ * Updated for responsive layout and teal/cream theme
  */
-export default function ExpertProfileScreen({ token, expertId, userState, onNavigate, onBack, hasBottomNav }) {
+export default function ExpertProfileScreen({ token, expertId, userState, onNavigate, onBack, hasBottomNav, onTabChange }) {
   const [expert, setExpert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTopicSelector, setShowTopicSelector] = useState(false);
