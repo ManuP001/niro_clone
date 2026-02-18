@@ -10,6 +10,14 @@ import PublicNavHeader from './PublicNavHeader';
  * Clicking a tile navigates to the public topic landing page (no login required)
  */
 
+// Topics that have packages available (all others are "Coming Soon")
+const TOPICS_WITH_PACKAGES = [
+  'career_clarity',
+  'marriage_planning', 
+  'stress_management',
+  'relationship_healing'
+];
+
 // Default fallback data with new Fertility category
 const DEFAULT_LIFE_SITUATIONS = [
   {
