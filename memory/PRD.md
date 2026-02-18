@@ -250,9 +250,27 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
    - Added requestAnimationFrame for smooth scroll handling
    - Passive scroll listener for performance
 4. **Homepage Navigation Updates**
-   - Nav links now point to /topics, /experts, /app/remedies
+   - Nav links now point to /topics, /experts, /remedies (all public)
    - Mobile menu updated with same links
    - CTA button text updated: "📞 Get a free 10 mins consultation"
+
+### Phase 20: Complete Login Wall Removal (Feb 2026)
+1. **Public Remedies Page** - /remedies route accessible without login
+   - PublicRemediesPage.jsx with full remedy catalog
+   - Category filters: All Remedies, Healing Programs, Poojas, Gemstones, Wellness Kits, Rituals
+   - 10 remedy cards with pricing, ratings, benefits
+   - Modal detail view for each remedy
+   - Purchase button redirects to login (only login-required action)
+   - NOTE: Remedies data is HARDCODED (not from admin API)
+2. **Homepage Topic Card Navigation Fix**
+   - Topic cards now navigate to /topic/:topicId (e.g., /topic/career_clarity)
+   - Updated handleBeginConsultation to use window.location.href instead of onLoginClick
+   - Fixed topic IDs to use correct V6 slugs (career_clarity, stress_management, marriage_planning, relationship_healing)
+3. **All Navigation Links Updated**
+   - PublicNavHeader: /remedies (not /app/remedies)
+   - Homepage desktop nav: /topics, /experts, /remedies
+   - Homepage mobile menu: same public routes
+   - Removed all requiresAuth checks from public navigation
 
 ---
 
