@@ -161,11 +161,16 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 
 ## Prioritized Backlog
 
-### Redesign Phases 2-5 (P0 - Current Priority)
-- [ ] Phase 2: Desktop nav, mobile hamburger, sticky header with blur
-- [ ] Phase 3: Multi-column grids, centered containers for other screens
+### Redesign Phase 4-5 (P0 - Current Priority)
 - [ ] Phase 4: Component refactoring, CTA sitemap implementation
 - [ ] Phase 5: Footer, social icons, tile sizing fix, backlog items
+
+### User-Requested UI Changes (P1)
+- [ ] Change free call CTA text to "Get a Free 10 mins consultation 📞"
+- [ ] Update top-right nav button with same text/functionality
+- [ ] Increase "Niro" logo size in header and footer
+- [ ] Link navigation items (Life topics, Experts, Remedies, Astro) to corresponding screens
+- [ ] Add back buttons and clear navigation to all screens
 
 ### P2 - Tile Sizing (deferred by user)
 - [ ] Fix tile sizing — make production tiles compact like admin preview
