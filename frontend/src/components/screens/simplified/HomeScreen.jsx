@@ -226,11 +226,11 @@ function MinimalistTile({ tile, onClick }) {
   );
 }
 
-// Category Module Component - Updated for new design
-function CategoryModule({ situation, onTileClick }) {
+// Category Module Component - Updated for responsive layout
+function CategoryModule({ situation, onTileClick, isDesktop = false }) {
   return (
     <div 
-      className="rounded-2xl p-4 mb-4 transition-all duration-300"
+      className={`rounded-2xl p-4 ${isDesktop ? '' : 'mb-4'} transition-all duration-300 h-full`}
       style={{ 
         backgroundColor: '#FFFFFF',
         border: '1px solid rgba(74, 155, 142, 0.08)',
@@ -240,14 +240,14 @@ function CategoryModule({ situation, onTileClick }) {
       {/* Section Title */}
       <div className="mb-3">
         <h3 
-          className="text-base font-semibold"
+          className="text-base md:text-lg font-semibold"
           style={{ color: colors.text.dark }}
         >
           {situation.title}
         </h3>
         {situation.helperCopy && (
           <p 
-            className="text-xs mt-0.5"
+            className="text-xs md:text-sm mt-0.5"
             style={{ color: colors.text.muted }}
           >
             {situation.helperCopy}
@@ -255,8 +255,8 @@ function CategoryModule({ situation, onTileClick }) {
         )}
       </div>
       
-      {/* Grid of Tiles - Responsive: 3 cols mobile, 6 cols desktop */}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+      {/* Grid of Tiles - Responsive: 3 cols mobile, different layout on desktop */}
+      <div className={`grid gap-2 ${isDesktop ? 'grid-cols-3' : 'grid-cols-3 md:grid-cols-6'}`}>
         {situation.tiles.map((tile) => (
           <MinimalistTile 
             key={tile.id}
