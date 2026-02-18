@@ -409,7 +409,7 @@ export default function PublicTopicsPage({ isAuthenticated }) {
 
   const handleTileClick = (tileId, tileData) => {
     // Only navigate to topics that have packages
-    if (TOPICS_WITH_PACKAGES.includes(tileId)) {
+    if (topicsWithPackages.includes(tileId)) {
       navigate(`/topic/${tileId}`);
     }
     // For topics without packages, the tile will show "Coming Soon" and be disabled
