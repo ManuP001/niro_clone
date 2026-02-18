@@ -167,6 +167,26 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
    - Logo size: text-3xl md:text-4xl (up from text-2xl md:text-3xl)
    - Lexend font family maintained
 
+### Phase 16: React Router Migration & Polish (Dec 2025)
+1. **React Router v7 Migration** - Replaced state-machine navigation with URL-based routing
+   - `/app/frontend/src/App.js` - BrowserRouter wrapper with AppRoutes
+   - `/app/frontend/src/router/AppRoutes.jsx` - Public routes (/, /login, /auth/callback) and protected routes (/app/*)
+   - `/app/frontend/src/router/AppLayout.jsx` - Authenticated layout with nested routes
+   - Routes: /app, /app/topic/:topicId, /app/package/:packageId, /app/checkout, /app/plan/:planId, /app/mypack, /app/experts, /app/expert/:expertId, /app/mira, /app/profile, /app/astro, /app/remedies, /app/schedule, /app/categories
+   - Protected route redirect: /app/* → /login for unauthenticated users
+   - Browser back/forward navigation working
+   - Deep-linking enabled
+2. **Topics Search/Filter** - Search functionality for life topics on HomeScreen
+   - Search input with icon and clear button
+   - Real-time filtering of categories and tiles
+   - Results count display
+   - data-testid attributes for testing
+3. **Scroll Reveal Animations** - IntersectionObserver-based animations
+   - `/app/frontend/src/hooks/useScrollReveal.js` - Custom hook and ScrollReveal component
+   - CSS animations: fadeInUp, fadeInLeft, fadeInRight, scaleIn
+   - Staggered delays for category cards
+   - Smooth transition effects
+
 ---
 
 ## Technical Architecture
