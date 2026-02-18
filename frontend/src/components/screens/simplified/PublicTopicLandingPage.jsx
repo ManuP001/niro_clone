@@ -197,7 +197,7 @@ export default function PublicTopicLandingPage({ isAuthenticated }) {
     );
   }
 
-  // No packages found - show error
+  // No packages found - show friendly message and redirect options
   if (Object.keys(packages).length === 0) {
     return (
       <div 
@@ -206,9 +206,25 @@ export default function PublicTopicLandingPage({ isAuthenticated }) {
       >
         <PublicNavHeader isAuthenticated={isAuthenticated} showBackButton={true} onBackClick={() => navigate('/topics')} />
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
-          <p style={{ color: colors.ui.error }} className="mb-4">No packages available for this topic yet</p>
-          <button onClick={() => navigate('/topics')} style={{ color: colors.teal.primary }} className="font-medium">
-            Browse all topics
+          <div 
+            className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: `${colors.peach.soft}` }}
+          >
+            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke={colors.peach.primary} strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold mb-2" style={{ color: colors.text.dark }}>Coming Soon</h2>
+          <p className="mb-6" style={{ color: colors.text.secondary }}>
+            We're working on making this topic available. Check out our other topics in the meantime!
+          </p>
+          <button 
+            onClick={() => navigate('/topics')} 
+            className="px-6 py-3 rounded-full font-semibold transition-all hover:shadow-md"
+            style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
+          >
+            Browse Available Topics
           </button>
         </div>
       </div>
