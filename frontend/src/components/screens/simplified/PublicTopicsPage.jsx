@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { colors, shadows } from './theme';
 import { getBackendUrl } from '../../../config';
+import PublicNavHeader from './PublicNavHeader';
 
 /**
  * PublicTopicsPage - Publicly accessible life topics page (no login required)
  * Shows all life topic categories and tiles
+ * Clicking a tile navigates to the public topic landing page (no login required)
  */
 
 // Default fallback data with new Fertility category
