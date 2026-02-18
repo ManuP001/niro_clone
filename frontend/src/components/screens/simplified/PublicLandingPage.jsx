@@ -1269,7 +1269,7 @@ export default function PublicLandingPage({
           <ul>
             <li><a href="/topics">Life Topics</a></li>
             <li><a href="/experts">Experts</a></li>
-            <li><a href={isAuthenticated ? '/app/remedies' : '/login'}>Remedies</a></li>
+            <li><a href="/remedies">Remedies</a></li>
             <li><a href="#how">How It Works</a></li>
             {isAuthenticated && (
               <>
