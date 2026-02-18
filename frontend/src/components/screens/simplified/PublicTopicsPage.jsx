@@ -270,7 +270,7 @@ function MinimalistTile({ tile, onClick, comingSoon }) {
 }
 
 // Category Module Component
-function CategoryModule({ situation, onTileClick }) {
+function CategoryModule({ situation, onTileClick, topicsWithPackages = [] }) {
   const isComingSoon = situation.comingSoon;
   
   return (
@@ -316,8 +316,8 @@ function CategoryModule({ situation, onTileClick }) {
       {/* Grid of Tiles */}
       <div className="grid gap-2 grid-cols-3 md:grid-cols-4">
         {situation.tiles.map((tile) => {
-          // Check if this tile has packages available
-          const tileHasPackages = TOPICS_WITH_PACKAGES.includes(tile.id);
+          // Check if this tile has packages available (from API)
+          const tileHasPackages = topicsWithPackages.includes(tile.id);
           const tileComingSoon = isComingSoon || tile.comingSoon || !tileHasPackages;
           
           return (
