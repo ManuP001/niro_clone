@@ -575,9 +575,12 @@ export default function SimplifiedApp({ token, userId, user }) {
       className="simplified-app min-h-screen relative" 
       style={{ backgroundColor: colors.background.primary }}
     >
-      {renderScreen()}
+      {/* Main Content Container - Full width, responsive */}
+      <div className="w-full max-w-7xl mx-auto">
+        {renderScreen()}
+      </div>
       
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation - Mobile only */}
       {showBottomNav && (
         <BottomNav 
           activeTab={activeTab}
