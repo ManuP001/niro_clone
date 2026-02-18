@@ -20,7 +20,7 @@ export default function PublicExpertsPage({ isAuthenticated, onLoginClick }) {
     const loadExperts = async () => {
       try {
         const backendUrl = getBackendUrl();
-        const response = await fetch(`${backendUrl}/api/experts/all`);
+        const response = await fetch(`${backendUrl}/api/simplified/experts/all`);
         if (response.ok) {
           const data = await response.json();
           setExperts(data.experts || []);
