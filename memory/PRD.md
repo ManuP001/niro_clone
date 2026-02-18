@@ -200,45 +200,34 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 
 ## Prioritized Backlog
 
-### Phase 6: Backlog & Polish (P0 - CURRENT PRIORITY)
+### Phase 1: Navigation & Back Buttons ✅ COMPLETE (Dec 2025)
+- [x] Fix nav links (Life Topics → Home, Experts → ExpertsScreen, Remedies → RemediesScreen, Astro → KundliScreen)
+- [x] Add ResponsiveHeader to ProfileScreen + KundliScreen
+- [x] Ensure back buttons work on all sub-screens
+- [x] Ensure top/bottom nav on all screens
+- [x] "See More life topics" CTA on Life Topics section
+- [x] Logo size increased (header: 36px, footer: 32px) - CSS specificity fixed
 
-**Partially Done / Not Done Tasks:**
+### Phase 2: CTAs & Conversion (P1 - NEXT)
+- [ ] Topic-specific CTAs ("Talk about Career" instead of "Begin consultation")
+- [ ] Sticky CTA on scroll (persistent after hero)
+- [ ] Expert cards "View Profile" visible button text
+- [ ] Testimonial section CTA
+- [ ] "View All Experts" button
+- [ ] Footer on authenticated screens
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Footer with contact info, social links | ❌ PENDING | PublicLandingPage has footer but authenticated screens don't |
-| Topic-specific CTAs ("Talk about Career") | ❌ PENDING | Still generic "Begin consultation" |
-| Sticky CTA on scroll | ❌ PENDING | No persistent CTA after scrolling past hero |
-| Expert cards "View Profile" button | ❌ PENDING | Card clickable but no visible button text |
-| Search/filter for topics | ❌ PENDING | ExpertsScreen has search, topics don't |
-| Testimonial section CTA | ❌ PENDING | No CTA after testimonials |
-| "View All Experts" button | ❌ PENDING | Not implemented in Experts section |
-| React Router (Phase D) | ❌ PENDING | Still using state-machine navigation |
-| URL routes (/app/topic/:id, etc.) | ❌ PENDING | No proper URL routing |
-| Deep-linking & browser back/forward | ❌ PENDING | Not implemented |
-| ProfileScreen + KundliScreen update | ⚠️ PARTIAL | Need ResponsiveHeader |
-| Scroll reveal animations | ❌ PENDING | Hover effects done, scroll reveals not done |
+### Phase 3: Polish & Advanced (P2)
+- [ ] Search/filter for topics
+- [ ] React Router - proper URL routing (/app/topic/:id)
+- [ ] Deep-linking & browser back/forward
+- [ ] Scroll reveal animations
 
-**Navigation Fixes Required:**
-| Item | Status | Action |
-|------|--------|--------|
-| Life Topics nav → app homepage | ✅ DONE | handleNavToApp added |
-| Experts nav → ExpertsScreen | ❌ NEEDS FIX | Link to authenticated experts page |
-| Remedies nav → RemediesScreen | ❌ NEEDS FIX | Link to authenticated remedies page |
-| Astro nav → KundliScreen | ❌ NEEDS FIX | Link to authenticated kundli page |
-| Back buttons on all screens | ⚠️ PARTIAL | Some screens have, some don't |
-| Top/bottom nav on all screens | ⚠️ PARTIAL | ResponsiveHeader added to some screens |
-
-**Recently Implemented:**
-- ✅ "See More life topics" CTA on Life Topics section
-- ✅ Logo size increased (header: 36px, footer: 32px)
-
-### Phase 7: Future UI Changes (P1)
+### Future Phase: UI Changes (P3)
 - [ ] Change free call CTA text to: "Get a Free 10 mins consultation 📞"
 - [ ] Update top-right nav button to same text and follow same path as hero CTA
 - [ ] Increase Niro logo size further if needed
 
-### P2 - Tile Sizing (deferred by user)
+### P4 - Tile Sizing (deferred by user)
 - [ ] Fix tile sizing — make production tiles compact like admin preview
 
 ### P3 - Deferred UX
