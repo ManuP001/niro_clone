@@ -1303,7 +1303,7 @@ export default function PublicLandingPage({
           <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
             <a href="/topics" onClick={() => setMobileMenuOpen(false)}>Life Topics</a>
             <a href="/experts" onClick={() => setMobileMenuOpen(false)}>Experts</a>
-            <a href={isAuthenticated ? '/app/remedies' : '/login'} onClick={() => setMobileMenuOpen(false)}>Remedies</a>
+            <a href="/remedies" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
             <a href="#how" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
             {isAuthenticated && (
               <>
