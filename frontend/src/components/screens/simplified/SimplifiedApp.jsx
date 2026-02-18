@@ -459,6 +459,27 @@ export default function SimplifiedApp({
 
   // Render current screen
   const renderScreen = () => {
+    // Schedule Call screen (for free 10-min call flow)
+    if (screen === 'schedule') {
+      return (
+        <ScheduleCallScreen
+          onBack={() => {
+            if (onBackToLanding) {
+              onBackToLanding();
+            } else {
+              setScreen('home');
+              setActiveTab('home');
+            }
+          }}
+          onComplete={() => {
+            setScreen('home');
+            setActiveTab('home');
+          }}
+          userName={getUserName()}
+        />
+      );
+    }
+    
     // Sub-screens that override tabs
     if (screen === 'topic') {
       return (
