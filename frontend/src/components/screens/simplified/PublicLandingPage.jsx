@@ -201,6 +201,14 @@ export default function PublicLandingPage({
     window.location.href = '/experts';
   };
 
+  // Handle view individual expert profile
+  const handleViewExpertProfile = (e, expertId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Navigate to individual expert profile page
+    window.location.href = `/experts/${expertId}`;
+  };
+
   return (
     <>
       {/* Inline styles matching the exact HTML */}
