@@ -1301,9 +1301,9 @@ export default function PublicLandingPage({
             </svg>
           </button>
           <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
-            <a href="#about" onClick={() => setMobileMenuOpen(false)}>About</a>
-            <a href="#topics" onClick={() => setMobileMenuOpen(false)}>Life Topics</a>
-            <a href="#experts" onClick={() => setMobileMenuOpen(false)}>Our Experts</a>
+            <a href="/topics" onClick={() => setMobileMenuOpen(false)}>Life Topics</a>
+            <a href="/experts" onClick={() => setMobileMenuOpen(false)}>Experts</a>
+            <a href={isAuthenticated ? '/app/remedies' : '/login'} onClick={() => setMobileMenuOpen(false)}>Remedies</a>
             <a href="#how" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
             {isAuthenticated && (
               <>
@@ -1316,7 +1316,7 @@ export default function PublicLandingPage({
               className="nav-btn"
               onClick={(e) => { handleNavBegin(e); setMobileMenuOpen(false); }}
             >
-              Get a free 10 mins consultation
+              📞 Get a free 10 mins consultation
             </a>
           </div>
         </nav>
