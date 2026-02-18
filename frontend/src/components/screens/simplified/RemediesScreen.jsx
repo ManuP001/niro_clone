@@ -3,9 +3,10 @@ import { colors, shadows } from './theme';
 import { RemediesIcon, StarIcon, CheckIcon, ChevronRightIcon, ShieldIcon, GiftIcon } from './icons';
 import { BACKEND_URL } from '../../../config';
 import { getAuthToken } from '../../../utils/auth';
+import ResponsiveHeader from './ResponsiveHeader';
 
 /**
- * RemediesScreen - Full remedies catalog with categories
+ * RemediesScreen V2 - Full remedies catalog with responsive layout
  * Shows actual remedy products and poojas with Razorpay payment integration
  */
 
