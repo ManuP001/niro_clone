@@ -387,13 +387,9 @@ export default function PublicTopicsPage({ isAuthenticated }) {
   }, [searchQuery, lifeSituations]);
 
   const handleTileClick = (tileId, tileData) => {
-    if (isAuthenticated) {
-      // If logged in, go to app topic page
-      navigate(`/app/topic/${tileId}`);
-    } else {
-      // If not logged in, go to login
-      navigate('/login');
-    }
+    // Navigate to public topic landing page (no login required)
+    // Login is only required before checkout
+    navigate(`/topic/${tileId}`);
   };
 
   const handleBackToHome = () => {
