@@ -3,15 +3,16 @@ import { colors, shadows, borderRadius } from './theme';
 import { SparklesIcon, PhoneIcon, ConsultIcon, ShieldIcon } from './icons';
 import { trackEvent } from './utils';
 import { getBackendUrl } from '../../../config';
+import ResponsiveHeader from './ResponsiveHeader';
 
 /**
- * HomeScreen V10 - Redesigned for niro-final-marquee
+ * HomeScreen V11 - Phase 3 Responsive Layout
  * 
- * Changes from V6:
- * - New Lexend font and teal/peach/cream color scheme
- * - Responsive layout (mobile-first, desktop-enhanced)
- * - Removed phone-frame constraint
- * - Updated CTAs and styling to match new design
+ * Changes from V10:
+ * - Added ResponsiveHeader with desktop navigation
+ * - Multi-column grid layouts for desktop
+ * - Centered content with max-width containers
+ * - Enhanced hero section for larger screens
  */
 
 // Default fallback data
