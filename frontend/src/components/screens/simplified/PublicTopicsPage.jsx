@@ -392,10 +392,6 @@ export default function PublicTopicsPage({ isAuthenticated }) {
     navigate(`/topic/${tileId}`);
   };
 
-  const handleBackToHome = () => {
-    navigate('/');
-  };
-
   return (
     <div 
       className="min-h-screen"
