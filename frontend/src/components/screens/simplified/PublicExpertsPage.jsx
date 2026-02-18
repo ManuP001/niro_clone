@@ -82,10 +82,6 @@ export default function PublicExpertsPage({ isAuthenticated, onLoginClick }) {
     navigate(`/experts/${expert.expert_id}`);
   };
 
-  const handleBackToHome = () => {
-    navigate('/');
-  };
-
   if (loading) {
     return (
       <div 
