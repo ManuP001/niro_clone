@@ -125,6 +125,16 @@ export default function AppRoutes({
           />
         } 
       />
+
+      {/* Public Remedies Page - No login required, only purchase requires login */}
+      <Route 
+        path="/remedies" 
+        element={
+          <PublicRemediesPage
+            isAuthenticated={authState.isAuthenticated}
+          />
+        } 
+      />
       
       <Route 
         path="/login" 
