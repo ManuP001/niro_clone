@@ -73,15 +73,26 @@ export default function PublicLandingPage({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showStickyCTA, setShowStickyCTA] = useState(false);
 
-  // Track scroll to show/hide sticky CTA
+  // Track scroll to show/hide sticky CTA - optimized for fast scrolling
   useEffect(() => {
-    const handleScroll = () => {
+    let ticking = false;
+    const heroHeight = 600; // Approximate hero section height
+    
+    const updateStickyCTA = () => {
       const scrollY = window.scrollY;
-      const heroHeight = 600; // Approximate hero section height
       setShowStickyCTA(scrollY > heroHeight);
+      ticking = false;
+    };
+    
+    const handleScroll = () => {
+      if (!ticking) {
+        // Use requestAnimationFrame for smooth updates
+        window.requestAnimationFrame(updateStickyCTA);
+        ticking = true;
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
