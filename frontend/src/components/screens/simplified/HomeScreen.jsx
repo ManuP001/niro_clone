@@ -5,6 +5,7 @@ import { trackEvent } from './utils';
 import { getBackendUrl } from '../../../config';
 import ResponsiveHeader from './ResponsiveHeader';
 import AppFooter from './AppFooter';
+import { ScrollReveal } from '../../../hooks/useScrollReveal';
 
 /**
  * HomeScreen V11 - Phase 3 Responsive Layout
@@ -14,6 +15,8 @@ import AppFooter from './AppFooter';
  * - Multi-column grid layouts for desktop
  * - Centered content with max-width containers
  * - Enhanced hero section for larger screens
+ * - Search/filter for topics
+ * - Scroll reveal animations
  */
 
 // Default fallback data
