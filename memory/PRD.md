@@ -261,7 +261,7 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
    - 10 remedy cards with pricing, ratings, benefits
    - Modal detail view for each remedy
    - Purchase button redirects to login (only login-required action)
-   - NOTE: Remedies data is HARDCODED (not from admin API)
+   - ✅ NOW CONNECTED TO API: Fetches from /api/remedies/catalog (15 remedies)
 2. **Homepage Topic Card Navigation Fix**
    - Topic cards now navigate to /topic/:topicId (e.g., /topic/career_clarity)
    - Updated handleBeginConsultation to use window.location.href instead of onLoginClick
@@ -271,6 +271,24 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
    - Homepage desktop nav: /topics, /experts, /remedies
    - Homepage mobile menu: same public routes
    - Removed all requiresAuth checks from public navigation
+
+### Phase 21: Admin API Integration (Feb 2026)
+1. **Homepage Experts Section** - Connected to API
+   - Fetches from /api/simplified/experts/all (31 experts in DB)
+   - Shows top 4 experts with photos, names, ratings, specialties
+   - Loading skeleton while fetching
+   - Fallback to hardcoded data if API fails
+2. **View Profile Navigation Fix**
+   - handleViewExpertProfile(e, expertId) navigates to /experts/:expertId
+   - Individual expert profile page loads correct data
+3. **Remedies Connected to API**
+   - Fetches from /api/remedies/catalog (15 remedies)
+   - Merges API data with REMEDY_DETAILS for descriptions/benefits
+   - Shows real prices from backend (e.g., Chakra Balance ₹3,500)
+   - Loading skeleton while fetching
+4. **Topics Connected to API**
+   - Fetches from /api/admin/public/homepage-data (4 categories)
+   - 22 topic tiles across Love, Career, Health, Fertility categories
 
 ---
 
