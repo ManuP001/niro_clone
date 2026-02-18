@@ -276,151 +276,154 @@ export default function MyPackScreen({ token, userState, onNavigate, hasBottomNa
           </div>
         </div>
 
-      {/* Continue Your Journey */}
-      {planDetails?.threads?.length > 0 && (
-        <div className="px-5 mb-6">
-          <h3 className="text-base font-semibold mb-3" style={{ color: colors.text.dark }}>
-            Continue Your Journey
-          </h3>
-          <div className="space-y-3">
-            {planDetails.threads.slice(0, 2).map((thread) => (
-              <button
-                key={thread.thread_id}
-                onClick={() => onNavigate('thread', { threadId: thread.thread_id, planId: activePlan.plan_id })}
-                className="w-full p-4 rounded-xl flex items-center gap-4 transition-all active:scale-[0.99]"
-                style={{ backgroundColor: 'rgba(255,255,255,0.9)', border: '1px solid rgba(0,0,0,0.06)' }}
-              >
-                <div 
-                  className="w-12 h-12 rounded-full flex items-center justify-center"
-                  style={{ backgroundColor: `${colors.teal.primary}15` }}
+        {/* Continue Your Journey */}
+        {planDetails?.threads?.length > 0 && (
+          <div className="px-5 md:px-8 mb-6">
+            <h3 className="text-base md:text-lg font-semibold mb-3" style={{ color: colors.text.dark }}>
+              Continue Your Journey
+            </h3>
+            <div className="space-y-3 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
+              {planDetails.threads.slice(0, 2).map((thread) => (
+                <button
+                  key={thread.thread_id}
+                  onClick={() => onNavigate('thread', { threadId: thread.thread_id, planId: activePlan.plan_id })}
+                  className="w-full p-4 rounded-xl flex items-center gap-4 transition-all active:scale-[0.99] hover:shadow-md"
+                  style={{ backgroundColor: '#ffffff', border: `1px solid ${colors.ui.borderDark}` }}
                 >
-                  <span className="text-xl">👤</span>
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-medium" style={{ color: colors.text.dark }}>
-                    {thread.expert?.name || 'Expert'}
-                  </p>
-                  <p className="text-sm" style={{ color: colors.text.secondary }}>
-                    {thread.message_count || 0} messages
-                  </p>
-                </div>
-                <ChevronRightIcon className="w-5 h-5" style={{ color: colors.text.mutedDark }} />
-              </button>
+                  <div 
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: `${colors.teal.primary}15` }}
+                  >
+                    <span className="text-xl">👤</span>
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="font-medium text-sm md:text-base" style={{ color: colors.text.dark }}>
+                      {thread.expert?.name || 'Expert'}
+                    </p>
+                    <p className="text-xs md:text-sm" style={{ color: colors.text.secondary }}>
+                      {thread.message_count || 0} messages
+                    </p>
+                  </div>
+                  <ChevronRightIcon className="w-5 h-5" style={{ color: colors.text.mutedDark }} />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Suggested Remedies */}
+        <div className="px-5 md:px-8 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base md:text-lg font-semibold" style={{ color: colors.text.dark }}>
+              Suggested For You
+            </h3>
+            <button 
+              onClick={() => onTabChange ? onTabChange('remedies') : onNavigate('remedies')}
+              className="text-sm font-medium"
+              style={{ color: colors.teal.primary }}
+            >
+              View all
+            </button>
+          </div>
+          
+          <div className="flex gap-3 md:gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {SUGGESTED_REMEDIES.map((remedy) => (
+              <div
+                key={remedy.id}
+                onClick={() => onNavigate('remedyDetail', { remedyId: remedy.id })}
+                className="flex-shrink-0 w-40 md:w-48 rounded-xl p-4 cursor-pointer transition-all active:scale-[0.98] hover:shadow-md"
+                style={{ backgroundColor: '#ffffff', border: `1px solid ${colors.ui.borderDark}` }}
+              >
+                {remedy.tag && (
+                  <span 
+                    className="text-[10px] md:text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.primary }}
+                  >
+                    {remedy.tag}
+                  </span>
+                )}
+                <div className="text-3xl md:text-4xl my-3">{remedy.image}</div>
+                <h4 className="font-medium text-sm md:text-base mb-1" style={{ color: colors.text.dark }}>
+                  {remedy.title}
+                </h4>
+                <p className="text-xs md:text-sm mb-2" style={{ color: colors.text.secondary }}>
+                  {remedy.description}
+                </p>
+                <p className="font-semibold text-sm md:text-base" style={{ color: colors.teal.primary }}>
+                  {formatPrice(remedy.price)}
+                </p>
+              </div>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Suggested Remedies */}
-      <div className="px-5 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-semibold" style={{ color: colors.text.dark }}>
-            Suggested For You
+        {/* Quick Actions */}
+        <div className="px-5 md:px-8 mb-6">
+          <h3 className="text-base md:text-lg font-semibold mb-3" style={{ color: colors.text.dark }}>
+            Quick Actions
           </h3>
-          <button 
-            onClick={() => onNavigate('remedies')}
-            className="text-sm font-medium"
-            style={{ color: colors.teal.primary }}
-          >
-            View all
-          </button>
-        </div>
-        
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-          {SUGGESTED_REMEDIES.map((remedy) => (
-            <div
-              key={remedy.id}
-              onClick={() => onNavigate('remedyDetail', { remedyId: remedy.id })}
-              className="flex-shrink-0 w-40 rounded-xl p-4 cursor-pointer transition-all active:scale-[0.98]"
-              style={{ backgroundColor: 'rgba(255,255,255,0.9)', border: '1px solid rgba(0,0,0,0.06)' }}
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
+            <button
+              onClick={() => onTabChange ? onTabChange('mira') : onNavigate('mira')}
+              className="p-4 md:p-6 rounded-xl flex flex-col items-center text-center transition-all active:scale-[0.98] hover:shadow-md"
+              style={{ backgroundColor: '#ffffff', border: `1px solid ${colors.ui.borderDark}` }}
+              data-testid="ask-mira-btn"
             >
-              {remedy.tag && (
-                <span 
-                  className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                  style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.primary }}
-                >
-                  {remedy.tag}
-                </span>
-              )}
-              <div className="text-3xl my-3">{remedy.image}</div>
-              <h4 className="font-medium text-sm mb-1" style={{ color: colors.text.dark }}>
-                {remedy.title}
-              </h4>
-              <p className="text-xs mb-2" style={{ color: colors.text.secondary }}>
-                {remedy.description}
-              </p>
-              <p className="font-semibold text-sm" style={{ color: colors.teal.primary }}>
-                {formatPrice(remedy.price)}
-              </p>
-            </div>
-          ))}
+              <div 
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full mb-2 flex items-center justify-center"
+                style={{ backgroundColor: `${colors.teal.primary}15` }}
+              >
+                <ChatIcon className="w-5 h-5 md:w-6 md:h-6" style={{ color: colors.teal.primary }} />
+              </div>
+              <span className="text-sm md:text-base font-medium" style={{ color: colors.text.dark }}>Ask Mira</span>
+              <span className="text-xs md:text-sm" style={{ color: colors.text.secondary }}>Free AI Chat</span>
+            </button>
+            
+            <button
+              onClick={() => onTabChange ? onTabChange('astro') : onNavigate('kundli')}
+              className="p-4 md:p-6 rounded-xl flex flex-col items-center text-center transition-all active:scale-[0.98] hover:shadow-md"
+              style={{ backgroundColor: '#ffffff', border: `1px solid ${colors.ui.borderDark}` }}
+              data-testid="your-kundli-btn"
+            >
+              <div 
+                className="w-10 h-10 md:w-12 md:h-12 rounded-full mb-2 flex items-center justify-center"
+                style={{ backgroundColor: `${colors.teal.primary}15` }}
+              >
+                <span className="text-lg md:text-xl">🌟</span>
+              </div>
+              <span className="text-sm md:text-base font-medium" style={{ color: colors.text.dark }}>Your Kundli</span>
+              <span className="text-xs md:text-sm" style={{ color: colors.text.secondary }}>Birth Chart</span>
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="px-5 mb-6">
-        <h3 className="text-base font-semibold mb-3" style={{ color: colors.text.dark }}>
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => onNavigate('mira')}
-            className="p-4 rounded-xl flex flex-col items-center text-center transition-all active:scale-[0.98]"
-            style={{ backgroundColor: 'rgba(255,255,255,0.9)', border: '1px solid rgba(0,0,0,0.06)' }}
-          >
-            <div 
-              className="w-10 h-10 rounded-full mb-2 flex items-center justify-center"
-              style={{ backgroundColor: `${colors.teal.primary}15` }}
-            >
-              <ChatIcon className="w-5 h-5" style={{ color: colors.teal.primary }} />
-            </div>
-            <span className="text-sm font-medium" style={{ color: colors.text.dark }}>Ask Mira</span>
-            <span className="text-xs" style={{ color: colors.text.secondary }}>Free AI Chat</span>
-          </button>
-          
-          <button
-            onClick={() => onNavigate('kundli')}
-            className="p-4 rounded-xl flex flex-col items-center text-center transition-all active:scale-[0.98]"
-            style={{ backgroundColor: 'rgba(255,255,255,0.9)', border: '1px solid rgba(0,0,0,0.06)' }}
-          >
-            <div 
-              className="w-10 h-10 rounded-full mb-2 flex items-center justify-center"
-              style={{ backgroundColor: `${colors.teal.primary}15` }}
-            >
-              <span className="text-lg">🌟</span>
-            </div>
-            <span className="text-sm font-medium" style={{ color: colors.text.dark }}>Your Kundli</span>
-            <span className="text-xs" style={{ color: colors.text.secondary }}>Birth Chart</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Support */}
-      <div className="px-5 mb-6">
-        <div 
-          className="rounded-xl p-4 flex items-center gap-4"
-          style={{ backgroundColor: `${colors.teal.primary}08`, border: `1px solid ${colors.teal.primary}20` }}
-        >
+        {/* Support */}
+        <div className="px-5 md:px-8 mb-6">
           <div 
-            className="w-10 h-10 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: `${colors.teal.primary}15` }}
+            className="rounded-xl p-4 md:p-6 flex items-center gap-4"
+            style={{ backgroundColor: `${colors.teal.primary}08`, border: `1px solid ${colors.teal.primary}20` }}
           >
-            <span className="text-lg">💬</span>
+            <div 
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: `${colors.teal.primary}15` }}
+            >
+              <span className="text-lg md:text-xl">💬</span>
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-sm md:text-base" style={{ color: colors.text.dark }}>
+                Need help with your pack?
+              </p>
+              <p className="text-xs md:text-sm" style={{ color: colors.text.secondary }}>
+                Our support team is here 24/7
+              </p>
+            </div>
+            <button
+              className="px-4 md:px-6 py-2 md:py-3 rounded-lg text-sm md:text-base font-medium"
+              style={{ backgroundColor: colors.teal.primary, color: '#fff' }}
+            >
+              Contact
+            </button>
           </div>
-          <div className="flex-1">
-            <p className="font-medium text-sm" style={{ color: colors.text.dark }}>
-              Need help with your pack?
-            </p>
-            <p className="text-xs" style={{ color: colors.text.secondary }}>
-              Our support team is here 24/7
-            </p>
-          </div>
-          <button
-            className="px-4 py-2 rounded-lg text-sm font-medium"
-            style={{ backgroundColor: colors.teal.primary, color: '#fff' }}
-          >
-            Contact
-          </button>
         </div>
       </div>
     </div>
