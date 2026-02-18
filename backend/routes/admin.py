@@ -2504,14 +2504,34 @@ async def get_public_package(request: Request, package_id: str):
     Get package details for frontend landing page display.
     No authentication required - this is public data for landing pages.
     Returns package info including rich content.
+    
+    Tries both underscore and hyphen formats to handle naming convention differences.
     """
     db = await get_db(request)
     
-    # Fetch the package/tier
+    # Try to fetch the package/tier with the provided ID
     package = await db.admin_tiers.find_one(
         {"tier_id": package_id, "active": {"$ne": False}}, 
         {"_id": 0}
     )
+    
+    # If not found, try with hyphen format (convert underscores to hyphens in the topic part)
+    if not package:
+        # Convert underscore format to hyphen format (e.g., dating_compatibility_focussed -> dating-compatibility_focussed)
+        # Only convert underscores before the tier suffix
+        hyphen_id = package_id
+        for suffix in ["_focussed", "_supported", "_comprehensive", "_starter", "_plus", "_pro"]:
+            if package_id.endswith(suffix):
+                topic_part = package_id.replace(suffix, "")
+                hyphen_topic = topic_part.replace("_", "-")
+                hyphen_id = hyphen_topic + suffix
+                break
+        
+        if hyphen_id != package_id:
+            package = await db.admin_tiers.find_one(
+                {"tier_id": hyphen_id, "active": {"$ne": False}}, 
+                {"_id": 0}
+            )
     
     if not package:
         return {"ok": False, "message": "Package not found"}
