@@ -210,7 +210,7 @@ const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate, onTab
 
   if (!kundliData) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${hasBottomNav ? 'pb-20' : ''}`} style={{ background: TEAL_GRADIENT }}>
+      <div className={`min-h-screen flex items-center justify-center ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`} style={{ background: TEAL_GRADIENT }}>
         <p style={{ color: 'rgba(255,255,255,0.85)' }}>No Kundli data available</p>
       </div>
     );
@@ -221,32 +221,41 @@ const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate, onTab
   const currentStyle = source?.style || chartStyle;
 
   return (
-    <div className={`min-h-screen ${hasBottomNav ? 'pb-20' : ''}`} style={{ background: TEAL_GRADIENT }}>
-      {/* Header */}
+    <div className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`} style={{ backgroundColor: colors.background.primary }}>
+      {/* Responsive Header */}
+      <ResponsiveHeader
+        title="Your Kundli"
+        showBackButton={false}
+        onNavigate={onNavigate}
+        onTabChange={onTabChange}
+      />
+
+      {/* Hero Section */}
       <div 
-        className="px-6 pt-12 pb-6 sticky top-0 z-10"
-        style={{ background: 'linear-gradient(135deg, #d7b870 0%, #c9a85a 100%)' }}
+        className="px-6 md:px-8 pt-4 pb-6"
+        style={{ background: `linear-gradient(135deg, ${colors.teal.primary} 0%, ${colors.teal.dark} 100%)` }}
       >
-        <div className="flex items-center justify-between">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: '#f0e9d1' }}>Your Kundli</h1>
-            <p className="text-sm mt-1" style={{ color: 'rgba(240,233,209,0.8)' }}>
+            <h1 className="text-xl md:text-2xl font-bold text-white">Your Kundli</h1>
+            <p className="text-sm md:text-base mt-1 text-white/80">
               {profile?.name} • {profile?.dob}
             </p>
           </div>
           <button
             onClick={() => fetchKundli()}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
-            style={{ backgroundColor: 'rgba(240,233,209,0.2)' }}
+            className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all hover:bg-white/30"
+            style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
             title="Refresh chart"
+            data-testid="refresh-kundli-btn"
           >
-            <span className="text-lg">🔄</span>
+            <span className="text-lg md:text-xl">🔄</span>
           </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4 max-w-4xl mx-auto">
+      <div className="p-4 md:p-8 max-w-4xl mx-auto">
         
         {/* Chart Style Toggle */}
         <div className="mb-6">
