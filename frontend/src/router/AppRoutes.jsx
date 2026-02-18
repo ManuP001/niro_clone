@@ -32,8 +32,11 @@ import AdminDashboard from '../components/admin/AdminDashboard';
 /**
  * AppRoutes - Central routing configuration using React Router v7
  * 
- * Public Routes:
+ * Public Routes (no login required):
  * - / : Landing page (PublicLandingPage)
+ * - /experts : Public experts listing
+ * - /experts/:expertId : Public expert profile
+ * - /topics : Public life topics page
  * - /login : Login screen
  * - /auth/callback : OAuth callback handler
  * 
@@ -75,6 +78,38 @@ export default function AppRoutes({
             user={authState.user}
             onLoginClick={onLoginClick}
             onNavigateToApp={onNavigateToApp}
+          />
+        } 
+      />
+
+      {/* Public Experts Page - No login required */}
+      <Route 
+        path="/experts" 
+        element={
+          <PublicExpertsPage
+            isAuthenticated={authState.isAuthenticated}
+            onLoginClick={onLoginClick}
+          />
+        } 
+      />
+
+      {/* Public Expert Profile - No login required */}
+      <Route 
+        path="/experts/:expertId" 
+        element={
+          <PublicExpertProfilePage
+            isAuthenticated={authState.isAuthenticated}
+            onLoginClick={onLoginClick}
+          />
+        } 
+      />
+
+      {/* Public Topics Page - No login required */}
+      <Route 
+        path="/topics" 
+        element={
+          <PublicTopicsPage
+            isAuthenticated={authState.isAuthenticated}
           />
         } 
       />
