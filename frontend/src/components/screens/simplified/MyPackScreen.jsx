@@ -91,42 +91,51 @@ export default function MyPackScreen({ token, userState, onNavigate, hasBottomNa
   if (!activePlan) {
     return (
       <div 
-        className={`min-h-screen ${hasBottomNav ? 'pb-24' : 'pb-6'}`}
-        style={{ background: 'linear-gradient(180deg, #E8F5F3 0%, #F5FBF9 50%, #FFFEF5 100%)' }}
+        className={`min-h-screen ${hasBottomNav ? 'pb-24 md:pb-0' : 'pb-6'}`}
+        style={{ backgroundColor: colors.background.primary }}
       >
-        <div className="px-5 pt-8 pb-6">
+        {/* Responsive Header */}
+        <ResponsiveHeader
+          title="My Pack"
+          showBackButton={false}
+          onNavigate={onNavigate}
+          onTabChange={onTabChange}
+        />
+
+        <div className="px-5 md:px-8 pt-6 pb-6 max-w-4xl mx-auto">
           <h1 
-            className="text-2xl font-bold mb-2"
+            className="text-2xl md:text-3xl font-bold mb-2"
             style={{ color: colors.text.dark }}
           >
             My Pack
           </h1>
-          <p className="text-sm" style={{ color: colors.text.secondary }}>
+          <p className="text-sm md:text-base" style={{ color: colors.text.secondary }}>
             Your purchased consultations will appear here
           </p>
         </div>
 
-        <div className="px-5">
+        <div className="px-5 md:px-8 max-w-4xl mx-auto">
           <div 
-            className="rounded-2xl p-8 text-center"
-            style={{ backgroundColor: 'rgba(255,255,255,0.9)', border: '1px solid rgba(0,0,0,0.06)' }}
+            className="rounded-2xl p-8 md:p-12 text-center"
+            style={{ backgroundColor: '#ffffff', border: `1px solid ${colors.ui.borderDark}` }}
           >
             <div 
-              className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center"
+              className="w-16 h-16 md:w-20 md:h-20 rounded-full mx-auto mb-4 flex items-center justify-center"
               style={{ backgroundColor: `${colors.teal.primary}10` }}
             >
-              <GiftIcon className="w-8 h-8" style={{ color: colors.teal.primary }} />
+              <GiftIcon className="w-8 h-8 md:w-10 md:h-10" style={{ color: colors.teal.primary }} />
             </div>
-            <h2 className="text-lg font-semibold mb-2" style={{ color: colors.text.dark }}>
+            <h2 className="text-lg md:text-xl font-semibold mb-2" style={{ color: colors.text.dark }}>
               No active pack yet
             </h2>
-            <p className="text-sm mb-6" style={{ color: colors.text.secondary }}>
+            <p className="text-sm md:text-base mb-6" style={{ color: colors.text.secondary }}>
               Explore our consultation packages to get started with personalized guidance
             </p>
             <button
-              onClick={() => onNavigate('home')}
-              className="px-6 py-3 rounded-xl font-semibold"
+              onClick={() => onTabChange ? onTabChange('home') : onNavigate('home')}
+              className="px-6 md:px-8 py-3 md:py-4 rounded-xl font-semibold text-base md:text-lg"
               style={{ backgroundColor: colors.teal.primary, color: '#fff' }}
+              data-testid="browse-consultations-btn"
             >
               Browse Consultations
             </button>
@@ -138,122 +147,134 @@ export default function MyPackScreen({ token, userState, onNavigate, hasBottomNa
 
   return (
     <div 
-      className={`min-h-screen ${hasBottomNav ? 'pb-24' : 'pb-6'}`}
-      style={{ background: 'linear-gradient(180deg, #E8F5F3 0%, #F5FBF9 50%, #FFFEF5 100%)' }}
+      className={`min-h-screen ${hasBottomNav ? 'pb-24 md:pb-0' : 'pb-6'}`}
+      style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Header */}
-      <div className="px-5 pt-8 pb-4">
-        <h1 
-          className="text-2xl font-bold mb-1"
-          style={{ color: colors.text.dark }}
-        >
-          My Pack
-        </h1>
-        <p className="text-sm" style={{ color: colors.text.secondary }}>
-          Manage your active consultation
-        </p>
-      </div>
+      {/* Responsive Header */}
+      <ResponsiveHeader
+        title="My Pack"
+        showBackButton={false}
+        onNavigate={onNavigate}
+        onTabChange={onTabChange}
+      />
 
-      {/* Active Pack Card */}
-      <div className="px-5 mb-6">
-        <div 
-          className="rounded-2xl overflow-hidden"
-          style={{ 
-            background: `linear-gradient(135deg, ${colors.teal.primary} 0%, ${colors.teal.dark} 100%)`,
-            boxShadow: '0 4px 20px rgba(62, 130, 122, 0.3)',
-          }}
-        >
-          {/* Pack Header */}
-          <div className="p-5 pb-4">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-wide text-white/70 mb-1">Active Pack</p>
-                <h2 className="text-xl font-bold text-white">
-                  {activePlan.tier_name || 'Consultation Pack'}
-                </h2>
-                <p className="text-sm text-white/80 mt-1">
-                  {activePlan.topic_label || 'Your Journey'}
-                </p>
-              </div>
-              <div 
-                className="px-3 py-1.5 rounded-full"
-                style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-              >
-                <span className="text-sm font-semibold text-white">
-                  {daysRemaining} days left
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Deliverables Grid */}
-          <div 
-            className="grid grid-cols-2 gap-px"
-            style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+      {/* Content Container */}
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="px-5 md:px-8 pt-6 pb-4">
+          <h1 
+            className="text-2xl md:text-3xl font-bold mb-1"
+            style={{ color: colors.text.dark }}
           >
-            <div className="bg-white/10 p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                <PhoneIcon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-xs text-white/70">Calls</p>
-                <p className="text-sm font-semibold text-white">
-                  {planDetails?.calls_remaining || activePlan.calls_remaining || 0} remaining
-                </p>
-              </div>
-            </div>
-            <div className="bg-white/10 p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                <ChatIcon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-xs text-white/70">Chat</p>
-                <p className="text-sm font-semibold text-white">Unlimited</p>
-              </div>
-            </div>
-            <div className="bg-white/10 p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                <CalendarIcon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-xs text-white/70">Duration</p>
-                <p className="text-sm font-semibold text-white">
-                  {activePlan.validity_weeks || 8} weeks
-                </p>
-              </div>
-            </div>
-            <div className="bg-white/10 p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                <ClockIcon className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-xs text-white/70">Experts</p>
-                <p className="text-sm font-semibold text-white">
-                  {planDetails?.threads?.length || 0} active
-                </p>
-              </div>
-            </div>
-          </div>
+            My Pack
+          </h1>
+          <p className="text-sm md:text-base" style={{ color: colors.text.secondary }}>
+            Manage your active consultation
+          </p>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="p-4 flex gap-3">
-            <button
-              onClick={() => onNavigate('planDashboard', { planId: activePlan.plan_id })}
-              className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-[0.98]"
-              style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' }}
+        {/* Active Pack Card */}
+        <div className="px-5 md:px-8 mb-6">
+          <div 
+            className="rounded-2xl overflow-hidden"
+            style={{ 
+              background: `linear-gradient(135deg, ${colors.teal.primary} 0%, ${colors.teal.dark} 100%)`,
+              boxShadow: '0 4px 20px rgba(62, 130, 122, 0.3)',
+            }}
+          >
+            {/* Pack Header */}
+            <div className="p-5 md:p-6 pb-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs md:text-sm uppercase tracking-wide text-white/70 mb-1">Active Pack</p>
+                  <h2 className="text-xl md:text-2xl font-bold text-white">
+                    {activePlan.tier_name || 'Consultation Pack'}
+                  </h2>
+                  <p className="text-sm md:text-base text-white/80 mt-1">
+                    {activePlan.topic_label || 'Your Journey'}
+                  </p>
+                </div>
+                <div 
+                  className="px-3 md:px-4 py-1.5 md:py-2 rounded-full"
+                  style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+                >
+                  <span className="text-sm md:text-base font-semibold text-white">
+                    {daysRemaining} days left
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Deliverables Grid */}
+            <div 
+              className="grid grid-cols-2 gap-px"
+              style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
             >
-              View Details
-            </button>
-            <button
-              onClick={() => onNavigate('scheduleCall', { planId: activePlan.plan_id })}
-              className="flex-1 py-3 rounded-xl font-semibold text-sm transition-all active:scale-[0.98]"
-              style={{ backgroundColor: colors.gold.primary, color: colors.text.dark }}
-            >
-              Schedule Call
-            </button>
+              <div className="bg-white/10 p-4 flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white/20 flex items-center justify-center">
+                  <PhoneIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs md:text-sm text-white/70">Calls</p>
+                  <p className="text-sm md:text-base font-semibold text-white">
+                    {planDetails?.calls_remaining || activePlan.calls_remaining || 0} remaining
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white/10 p-4 flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white/20 flex items-center justify-center">
+                  <ChatIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs md:text-sm text-white/70">Chat</p>
+                  <p className="text-sm md:text-base font-semibold text-white">Unlimited</p>
+                </div>
+              </div>
+              <div className="bg-white/10 p-4 flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white/20 flex items-center justify-center">
+                  <CalendarIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs md:text-sm text-white/70">Duration</p>
+                  <p className="text-sm md:text-base font-semibold text-white">
+                    {activePlan.validity_weeks || 8} weeks
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white/10 p-4 flex items-center gap-3">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white/20 flex items-center justify-center">
+                  <ClockIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs md:text-sm text-white/70">Experts</p>
+                  <p className="text-sm md:text-base font-semibold text-white">
+                    {planDetails?.threads?.length || 0} active
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="p-4 md:p-5 flex gap-3">
+              <button
+                onClick={() => onNavigate('planDashboard', { planId: activePlan.plan_id })}
+                className="flex-1 py-3 md:py-4 rounded-xl font-semibold text-sm md:text-base transition-all active:scale-[0.98]"
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)', color: '#fff' }}
+                data-testid="view-details-btn"
+              >
+                View Details
+              </button>
+              <button
+                onClick={() => onNavigate('scheduleCall', { planId: activePlan.plan_id })}
+                className="flex-1 py-3 md:py-4 rounded-xl font-semibold text-sm md:text-base transition-all active:scale-[0.98]"
+                style={{ backgroundColor: colors.peach.primary, color: colors.text.dark }}
+                data-testid="schedule-call-btn"
+              >
+                Schedule Call
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Continue Your Journey */}
       {planDetails?.threads?.length > 0 && (
