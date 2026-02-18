@@ -647,6 +647,8 @@ export default function SimplifiedApp({
         return (
           <RemediesScreen
             hasBottomNav={showBottomNav}
+            onTabChange={handleTabChange}
+            onNavigate={navigate}
           />
         );
       
@@ -663,6 +665,7 @@ export default function SimplifiedApp({
                 navigate(dest, params);
               }
             }}
+            onTabChange={handleTabChange}
           />
         );
       
@@ -674,6 +677,7 @@ export default function SimplifiedApp({
             userState={userState}
             onNavigate={navigate}
             hasBottomNav={showBottomNav}
+            onTabChange={handleTabChange}
           />
         );
       
