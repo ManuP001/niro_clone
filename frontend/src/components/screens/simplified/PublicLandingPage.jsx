@@ -72,6 +72,51 @@ export default function PublicLandingPage({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showStickyCTA, setShowStickyCTA] = useState(false);
+  const [experts, setExperts] = useState([]);
+  const [homepageData, setHomepageData] = useState({ categories: [] });
+  const [loadingExperts, setLoadingExperts] = useState(true);
+  const [loadingTopics, setLoadingTopics] = useState(true);
+
+  // Fetch experts from API
+  useEffect(() => {
+    const fetchExperts = async () => {
+      try {
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+        const response = await fetch(`${backendUrl}/api/simplified/experts/all`);
+        if (response.ok) {
+          const data = await response.json();
+          // Get top 4 experts for homepage display
+          setExperts((data.experts || []).slice(0, 4));
+        }
+      } catch (err) {
+        console.error('Failed to load experts:', err);
+      } finally {
+        setLoadingExperts(false);
+      }
+    };
+    fetchExperts();
+  }, []);
+
+  // Fetch homepage data (categories/topics) from API
+  useEffect(() => {
+    const fetchHomepageData = async () => {
+      try {
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+        const response = await fetch(`${backendUrl}/api/admin/public/homepage-data`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.ok && data.data) {
+            setHomepageData({ categories: data.data });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load homepage data:', err);
+      } finally {
+        setLoadingTopics(false);
+      }
+    };
+    fetchHomepageData();
+  }, []);
 
   // Track scroll to show/hide sticky CTA - optimized for fast scrolling
   useEffect(() => {
