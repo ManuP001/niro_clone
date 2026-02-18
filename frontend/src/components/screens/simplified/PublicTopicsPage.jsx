@@ -10,13 +10,8 @@ import PublicNavHeader from './PublicNavHeader';
  * Clicking a tile navigates to the public topic landing page (no login required)
  */
 
-// Topics that have packages available (all others are "Coming Soon")
-const TOPICS_WITH_PACKAGES = [
-  'career_clarity',
-  'marriage_planning', 
-  'stress_management',
-  'relationship_healing'
-];
+// Topics with packages will be fetched dynamically from API
+// This list is populated at runtime from /api/admin/public/topics-with-packages
 
 // Default fallback data with new Fertility category
 const DEFAULT_LIFE_SITUATIONS = [
