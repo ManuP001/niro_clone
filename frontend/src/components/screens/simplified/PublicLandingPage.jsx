@@ -703,6 +703,43 @@ export default function PublicLandingPage({
           transform: translateY(-2px);
         }
 
+        .see-more-topics {
+          margin-top: 48px;
+          text-align: center;
+          position: relative;
+          z-index: 1;
+        }
+
+        .see-more-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          background: transparent;
+          border: 2px solid var(--teal);
+          color: var(--teal-dark);
+          padding: 16px 40px;
+          border-radius: 100px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+        }
+
+        .see-more-btn:hover {
+          background: var(--teal);
+          color: white;
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(74,155,142,0.25);
+        }
+
+        .see-more-btn svg {
+          transition: transform 0.3s;
+        }
+
+        .see-more-btn:hover svg {
+          transform: translateX(4px);
+        }
+
         /* HOW IT WORKS */
         .journey {
           background: var(--cream-warm);
