@@ -10,7 +10,7 @@ import { colors } from './theme';
 const NAV_LINKS = [
   { id: 'topics', label: 'Life Topics', href: '/topics' },
   { id: 'experts', label: 'Experts', href: '/experts' },
-  { id: 'remedies', label: 'Remedies', href: '/app/remedies', requiresAuth: true },
+  { id: 'remedies', label: 'Remedies', href: '/remedies' },
 ];
 
 export default function PublicNavHeader({ isAuthenticated, showBackButton = false, onBackClick }) {
