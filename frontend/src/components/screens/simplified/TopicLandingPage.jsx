@@ -214,9 +214,9 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
         </section>
 
       {/* ===== TIER SUMMARY CARD (2x2 Grid Design) ===== */}
-      <section className="px-5 py-2">
+      <section className="px-5 md:px-8 py-2">
         <div 
-          className="rounded-2xl p-5"
+          className="rounded-2xl p-5 md:p-6"
           style={{ 
             backgroundColor: CARD_BG,
             border: `1px solid ${CARD_BORDER}`,
@@ -227,57 +227,57 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
           {/* Tier Header - NO price shown here */}
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h3 className="text-lg font-bold" style={{ color: colors.text.dark }}>
+              <h3 className="text-lg md:text-xl font-bold" style={{ color: colors.text.dark }}>
                 {selectedTier}
               </h3>
-              <p className="text-sm" style={{ color: colors.text.secondary }}>
+              <p className="text-sm md:text-base" style={{ color: colors.text.secondary }}>
                 {tierData?.durationWeeks} weeks package
               </p>
             </div>
           </div>
 
           {/* 2x2 Package Summary Grid */}
-          <div className="grid grid-cols-2 gap-3 pt-4 border-t" style={{ borderColor: DIVIDER_COLOR }}>
+          <div className="grid grid-cols-2 gap-3 md:gap-4 pt-4 border-t" style={{ borderColor: DIVIDER_COLOR }}>
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
-                <CalendarIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
+                <CalendarIcon className="w-4 h-4 md:w-5 md:h-5" style={{ color: colors.teal.primary }} />
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Duration</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                <p className="text-[11px] md:text-xs uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Duration</p>
+                <p className="text-sm md:text-base font-medium" style={{ color: colors.text.dark }}>
                   {tierData?.durationWeeks} weeks
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
-                <PhoneIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
+                <PhoneIcon className="w-4 h-4 md:w-5 md:h-5" style={{ color: colors.teal.primary }} />
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Consultation</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                <p className="text-[11px] md:text-xs uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Consultation</p>
+                <p className="text-sm md:text-base font-medium" style={{ color: colors.text.dark }}>
                   {selectedTier === 'Comprehensive' ? '2 sessions' : '1 session'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
-                <ClockIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
+                <ClockIcon className="w-4 h-4 md:w-5 md:h-5" style={{ color: colors.teal.primary }} />
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Follow-ups</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                <p className="text-[11px] md:text-xs uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Follow-ups</p>
+                <p className="text-sm md:text-base font-medium" style={{ color: colors.text.dark }}>
                   {selectedTier === 'Focussed' ? '1 call' : selectedTier === 'Supported' ? '2 calls' : '3 calls'}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
-                <ChatIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${colors.teal.primary}10` }}>
+                <ChatIcon className="w-4 h-4 md:w-5 md:h-5" style={{ color: colors.teal.primary }} />
               </div>
               <div>
-                <p className="text-[11px] uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Chat</p>
-                <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                <p className="text-[11px] md:text-xs uppercase tracking-wide" style={{ color: colors.text.mutedDark }}>Chat</p>
+                <p className="text-sm md:text-base font-medium" style={{ color: colors.text.dark }}>
                   Unlimited
                 </p>
               </div>
@@ -287,29 +287,29 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       </section>
 
       {/* ===== SATISFACTION GUARANTEE ===== */}
-      <section className="px-5 py-3">
+      <section className="px-5 md:px-8 py-3">
         <div 
-          className="flex items-center justify-center gap-2 py-2.5 rounded-lg"
+          className="flex items-center justify-center gap-2 py-2.5 md:py-3 rounded-lg"
           style={{ backgroundColor: `${colors.teal.primary}08` }}
         >
-          <CheckIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
-          <span className="text-sm" style={{ color: colors.teal.primary }}>
+          <CheckIcon className="w-4 h-4 md:w-5 md:h-5" style={{ color: colors.teal.primary }} />
+          <span className="text-sm md:text-base" style={{ color: colors.teal.primary }}>
             100% satisfaction guaranteed
           </span>
         </div>
       </section>
 
       {/* ===== DIVIDER ===== */}
-      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+      <div className="mx-5 md:mx-8 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
       {/* ===== OUTCOMES SECTION ===== */}
-      <section className="px-5 py-4">
-        <h3 className="text-base font-semibold mb-4" style={{ color: colors.text.dark }}>
+      <section className="px-5 md:px-8 py-4">
+        <h3 className="text-base md:text-lg font-semibold mb-4" style={{ color: colors.text.dark }}>
           What will this journey help you with?
         </h3>
         
         {/* Grouped outcomes: Clarity, Timeline, Support */}
-        <div className="space-y-4">
+        <div className="space-y-4 md:grid md:grid-cols-3 md:gap-6 md:space-y-0">
           {/* Clarity Block */}
           <div>
             <p className="text-xs font-medium uppercase tracking-wide mb-2" style={{ color: colors.teal.primary }}>
@@ -319,7 +319,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               {tierData?.outcomes?.clarity?.map((outcome, idx) => (
                 <div key={idx} className="flex items-start gap-2.5">
                   <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
-                  <p className="text-sm" style={{ color: colors.text.dark }}>{outcome}</p>
+                  <p className="text-sm md:text-base" style={{ color: colors.text.dark }}>{outcome}</p>
                 </div>
               ))}
             </div>
@@ -334,7 +334,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               {tierData?.outcomes?.timeline?.map((outcome, idx) => (
                 <div key={idx} className="flex items-start gap-2.5">
                   <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
-                  <p className="text-sm" style={{ color: colors.text.dark }}>{outcome}</p>
+                  <p className="text-sm md:text-base" style={{ color: colors.text.dark }}>{outcome}</p>
                 </div>
               ))}
             </div>
@@ -349,7 +349,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               {tierData?.outcomes?.support?.map((outcome, idx) => (
                 <div key={idx} className="flex items-start gap-2.5">
                   <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
-                  <p className="text-sm" style={{ color: colors.text.dark }}>{outcome}</p>
+                  <p className="text-sm md:text-base" style={{ color: colors.text.dark }}>{outcome}</p>
                 </div>
               ))}
             </div>
@@ -358,7 +358,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       </section>
 
       {/* ===== DIVIDER ===== */}
-      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+      <div className="mx-5 md:mx-8 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
       {/* ===== HOW WILL YOUR JOURNEY UNFOLD ===== */}
       <section className="px-5 py-4">
