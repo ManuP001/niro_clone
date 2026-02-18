@@ -18,7 +18,7 @@ export default function PublicExpertProfilePage({ isAuthenticated, onLoginClick 
     const loadExpert = async () => {
       try {
         const backendUrl = getBackendUrl();
-        const response = await fetch(`${backendUrl}/api/experts/all`);
+        const response = await fetch(`${backendUrl}/api/simplified/experts/all`);
         if (response.ok) {
           const data = await response.json();
           const foundExpert = data.experts?.find(e => e.expert_id === expertId);
