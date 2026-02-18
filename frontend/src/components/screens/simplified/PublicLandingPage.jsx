@@ -169,8 +169,8 @@ export default function PublicLandingPage({
 
         .landing-logo {
           font-family: 'Lexend', sans-serif;
-          font-size: 24px;
-          font-weight: 600;
+          font-size: 36px;
+          font-weight: 700;
           letter-spacing: 0.02em;
           color: var(--teal-dark);
           text-decoration: none;
