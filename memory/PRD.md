@@ -136,6 +136,37 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
    - Centered max-w-2xl container
    - Responsive typography and spacing
 
+### Phase 15: Component Refactoring (Dec 2025)
+1. **TileCard V2** - Refined tile component
+   - Responsive sizing (w-28 md:w-32, h-24 md:h-28)
+   - Hover effects (hover:shadow-lg hover:-translate-y-0.5)
+   - Active scale animation (active:scale-[0.97])
+   - Teal icon wrapper with cream background
+   - 2-line title with ellipsis support
+2. **ExpertProfileScreen V3** - Redesigned with new theme
+   - ResponsiveHeader integration with back button
+   - Teal gradient hero section
+   - Centered photo with border overlay
+   - Stats card with teal accent
+   - Sticky CTA respects hasBottomNav
+   - max-w-2xl centered container
+3. **RemediesScreen V2** - Responsive layout update
+   - ResponsiveHeader integration
+   - 3-column grid on desktop (lg:grid-cols-3)
+   - Teal theme for category pills and accents
+   - Trust section with 3-column layout on desktop
+   - max-w-6xl centered container
+4. **MyPackScreen V2** - Responsive layout update
+   - ResponsiveHeader integration
+   - Active pack card with teal gradient
+   - 2x2 deliverables grid
+   - Responsive Quick Actions grid
+   - Suggested Remedies carousel
+   - max-w-4xl centered container
+5. **ResponsiveHeader Logo Update** - Larger logo
+   - Logo size: text-3xl md:text-4xl (up from text-2xl md:text-3xl)
+   - Lexend font family maintained
+
 ---
 
 ## Technical Architecture
