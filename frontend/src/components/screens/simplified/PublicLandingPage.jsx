@@ -1000,6 +1000,26 @@ export default function PublicLandingPage({
           font-weight: 700;
         }
 
+        .view-profile-btn {
+          margin-top: 16px;
+          background: var(--teal);
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 100px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+          width: 100%;
+        }
+
+        .view-profile-btn:hover {
+          background: var(--teal-dark);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(74,155,142,0.3);
+        }
+
         .view-all-card {
           background: white;
           border-radius: 28px;
