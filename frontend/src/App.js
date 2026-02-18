@@ -1,35 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
 import './App.css';
-import LoginScreen from './components/screens/LoginScreen';
-import AuthCallback from './components/screens/AuthCallback';
-import { ChatProvider } from './context/ChatContext';
 import { getAuthToken, getCurrentUser, clearAuthToken } from './utils/auth';
 import { getBackendUrl } from './config';
-
-// Admin Dashboard
-import AdminDashboard from './components/admin/AdminDashboard';
-
-// NIRO V10 Imports - New Landing Page Flow
-import { 
-  SimplifiedApp, 
-  PublicLandingPage, 
-  getUserIntent, 
-  clearUserIntent 
-} from './components/screens/simplified';
+import { clearUserIntent, getUserIntent } from './components/screens/simplified/PublicLandingPage';
+import { AppRoutes } from './router';
 
 /**
- * App.js - V10 Routing with Public Landing Page
+ * App.js - V11 with React Router
  * 
  * Entry Flow:
  * 1. All users land on PublicLandingPage (public, no auth required)
  * 2. CTAs trigger login with intent stored in localStorage
- * 3. After login, route based on intent + user type:
- *    - free_call: Birth Details → Schedule Call
- *    - consultation:topic_id: Birth Details → Topics → Packages
- * 4. Logged-in users see landing page with access to app via nav
+ * 3. After login, route based on intent + user type via React Router
+ * 4. Proper URL-based navigation with browser history support
  */
 
-function App() {
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [authState, setAuthState] = useState({
     isLoading: true,
     isAuthenticated: false,
@@ -38,24 +28,10 @@ function App() {
     token: null,
     userId: null,
   });
-  
-  // View state: 'landing' | 'login' | 'app'
-  const [currentView, setCurrentView] = useState('landing');
-  
-  // App navigation params (for passing intent to SimplifiedApp)
-  const [appParams, setAppParams] = useState(null);
 
-  // Check for admin route
-  const isAdminRoute = window.location.pathname.startsWith('/admin');
-  
   // Check for auth callback (code in URL query params from Google OAuth)
-  const isAuthCallback = window.location.pathname === '/auth/callback' || 
-                         window.location.search.includes('code=');
-
-  // Render admin dashboard if on /admin route
-  if (isAdminRoute) {
-    return <AdminDashboard />;
-  }
+  const isAuthCallback = location.pathname === '/auth/callback' || 
+                         location.search.includes('code=');
 
   // Check auth status on mount
   useEffect(() => {
@@ -120,7 +96,7 @@ function App() {
     };
 
     checkAuth();
-  }, []);
+  }, [isAuthCallback]);
 
   // Handle login success
   const handleLoginSuccess = (user, token) => {
@@ -146,26 +122,33 @@ function App() {
     });
     
     // Clear URL path after OAuth callback
-    if (window.location.pathname === '/auth/callback') {
-      window.history.replaceState(null, '', '/');
-    }
-    
-    // Check for stored intent and navigate accordingly
-    const intent = getUserIntent();
-    if (intent) {
-      // Pass intent to app for routing
-      setAppParams({ intent, isNewUser: !profileComplete });
-      setCurrentView('app');
+    if (location.pathname === '/auth/callback') {
+      // Check for stored intent and navigate accordingly
+      const intent = getUserIntent();
+      if (intent) {
+        if (intent.type === 'free_call') {
+          navigate('/app/schedule', { replace: true });
+        } else if (intent.type === 'consultation') {
+          navigate('/app', { replace: true });
+        } else {
+          navigate('/app', { replace: true });
+        }
+      } else {
+        navigate('/', { replace: true });
+      }
     } else {
-      // No intent - go to landing page (logged in state)
-      setCurrentView('landing');
+      // Check for stored intent
+      const intent = getUserIntent();
+      if (intent) {
+        navigate('/app', { replace: true });
+      }
     }
   };
 
   // Handle auth error
   const handleAuthError = (error) => {
     console.error('Auth error:', error);
-    clearUserIntent(); // Clear any stored intent
+    clearUserIntent();
     setAuthState({
       isLoading: false,
       isAuthenticated: false,
@@ -174,8 +157,7 @@ function App() {
       token: null,
       userId: null,
     });
-    window.history.replaceState(null, '', '/');
-    setCurrentView('landing');
+    navigate('/', { replace: true });
   };
 
   // Handle logout
@@ -190,24 +172,39 @@ function App() {
       token: null,
       userId: null,
     });
-    setCurrentView('landing');
+    navigate('/', { replace: true });
   };
 
   // Handle login click from landing page
   const handleLoginClick = () => {
-    setCurrentView('login');
+    navigate('/login');
   };
 
   // Handle navigation to app from landing page (for logged-in users)
   const handleNavigateToApp = (screen, params = {}) => {
-    setAppParams({ screen, ...params });
-    setCurrentView('app');
-  };
-
-  // Handle back to landing from app
-  const handleBackToLanding = () => {
-    setAppParams(null);
-    setCurrentView('landing');
+    switch (screen) {
+      case 'mypack':
+        navigate('/app/mypack');
+        break;
+      case 'astro':
+        navigate('/app/astro');
+        break;
+      case 'profile':
+        navigate('/app/profile');
+        break;
+      case 'experts':
+        navigate('/app/experts');
+        break;
+      case 'schedule':
+        navigate('/app/schedule');
+        break;
+      case 'home':
+      case 'topics':
+        navigate('/app');
+        break;
+      default:
+        navigate('/app');
+    }
   };
 
   // Show loading state
@@ -224,49 +221,25 @@ function App() {
     );
   }
 
-  // Handle OAuth callback
-  if (isAuthCallback) {
-    return (
-      <AuthCallback 
-        onAuthSuccess={handleLoginSuccess}
-        onAuthError={handleAuthError}
-      />
-    );
-  }
-
-  // Show login screen
-  if (currentView === 'login') {
-    return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
-  }
-
-  // Show app (for authenticated users with intent or direct navigation)
-  if (currentView === 'app' && authState.isAuthenticated) {
-    return (
-      <ChatProvider>
-        <div className="App min-h-screen" style={{ backgroundColor: '#FBF8F3' }}>
-          <SimplifiedApp 
-            token={authState.token} 
-            userId={authState.userId}
-            user={authState.user}
-            initialIntent={appParams?.intent}
-            initialScreen={appParams?.screen}
-            initialParams={appParams}
-            onBackToLanding={handleBackToLanding}
-            onLogout={handleLogout}
-          />
-        </div>
-      </ChatProvider>
-    );
-  }
-
-  // Default: Show public landing page (for all users - logged in or not)
   return (
-    <PublicLandingPage
-      isAuthenticated={authState.isAuthenticated}
-      user={authState.user}
-      onLoginClick={handleLoginClick}
-      onNavigateToApp={handleNavigateToApp}
-    />
+    <div className="App min-h-screen" style={{ backgroundColor: '#FBF8F3' }}>
+      <AppRoutes
+        authState={authState}
+        onLoginSuccess={handleLoginSuccess}
+        onAuthError={handleAuthError}
+        onLogout={handleLogout}
+        onLoginClick={handleLoginClick}
+        onNavigateToApp={handleNavigateToApp}
+      />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 
