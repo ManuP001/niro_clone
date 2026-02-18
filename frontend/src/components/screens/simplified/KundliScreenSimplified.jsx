@@ -137,15 +137,24 @@ const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate, onTab
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${hasBottomNav ? 'pb-20' : ''}`} style={{ background: TEAL_GRADIENT }}>
-        <div className="text-center">
-          <div 
-            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ backgroundColor: 'rgba(255,255,255,0.9)' }}
-          >
-            <span className="text-2xl animate-pulse">🌟</span>
+      <div className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`} style={{ backgroundColor: colors.background.primary }}>
+        {/* Responsive Header */}
+        <ResponsiveHeader
+          title="Your Kundli"
+          showBackButton={false}
+          onNavigate={onNavigate}
+          onTabChange={onTabChange}
+        />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div 
+              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ backgroundColor: `${colors.teal.primary}15` }}
+            >
+              <span className="text-2xl animate-pulse">🌟</span>
+            </div>
+            <p style={{ color: colors.text.secondary }}>Loading your Kundli...</p>
           </div>
-          <p style={{ color: 'white' }}>Loading your Kundli...</p>
         </div>
       </div>
     );
@@ -154,50 +163,81 @@ const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate, onTab
   // Profile incomplete - show birth details collection modal
   if (error === 'PROFILE_INCOMPLETE') {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center px-6 ${hasBottomNav ? 'pb-20' : ''}`} style={{ background: TEAL_GRADIENT }}>
-        <div 
-          className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
-          style={{ backgroundColor: 'rgba(255,255,255,0.9)' }}
-        >
-          <span className="text-4xl">🌟</span>
-        </div>
-        <h2 className="text-2xl font-bold mb-2 text-center" style={{ color: 'white' }}>Your Kundli Awaits</h2>
-        <p className="text-center mb-6 max-w-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>
-          Complete your birth details to unlock your personalized Kundli chart and astrological insights.
-        </p>
-        <button
-          onClick={() => setShowBirthModal(true)}
-          className="px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl"
-          style={{ backgroundColor: 'white', color: '#3E827A' }}
-        >
-          Add Birth Details
-        </button>
-        
-        {/* Birth Details Modal */}
-        <BirthDetailsModal
-          token={token}
-          isOpen={showBirthModal}
-          onClose={() => setShowBirthModal(false)}
-          onComplete={handleBirthDetailsComplete}
+      <div className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`} style={{ backgroundColor: colors.background.primary }}>
+        {/* Responsive Header */}
+        <ResponsiveHeader
+          title="Your Kundli"
+          showBackButton={false}
+          onNavigate={onNavigate}
+          onTabChange={onTabChange}
         />
+
+        <div className="flex flex-col items-center justify-center px-6 py-12 max-w-lg mx-auto text-center">
+          <div 
+            className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
+            style={{ backgroundColor: `${colors.teal.primary}15` }}
+          >
+            <span className="text-4xl">🌟</span>
+          </div>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: colors.text.dark }}>Your Kundli Awaits</h2>
+          <p className="mb-6 max-w-xs" style={{ color: colors.text.secondary }}>
+            Complete your birth details to unlock your personalized Kundli chart and astrological insights.
+          </p>
+          <button
+            onClick={() => setShowBirthModal(true)}
+            className="px-8 py-4 rounded-xl font-semibold text-lg transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+            style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
+            data-testid="add-birth-details-btn"
+          >
+            Add Birth Details
+          </button>
+          
+          {/* Birth Details Modal */}
+          <BirthDetailsModal
+            token={token}
+            isOpen={showBirthModal}
+            onClose={() => setShowBirthModal(false)}
+            onComplete={handleBirthDetailsComplete}
+          />
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className={`min-h-screen flex flex-col items-center justify-center px-6 ${hasBottomNav ? 'pb-20' : ''}`} style={{ background: TEAL_GRADIENT }}>
-        <div 
-          className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-          style={{ backgroundColor: 'rgba(255,255,255,0.9)' }}
-        >
-          <span className="text-4xl">⚠️</span>
+      <div className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`} style={{ backgroundColor: colors.background.primary }}>
+        {/* Responsive Header */}
+        <ResponsiveHeader
+          title="Your Kundli"
+          showBackButton={false}
+          onNavigate={onNavigate}
+          onTabChange={onTabChange}
+        />
+
+        <div className="flex flex-col items-center justify-center px-6 py-12 max-w-lg mx-auto text-center">
+          <div 
+            className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+            style={{ backgroundColor: 'rgba(239,68,68,0.1)' }}
+          >
+            <span className="text-4xl">⚠️</span>
+          </div>
+          <h2 className="text-xl font-bold mb-2" style={{ color: colors.text.dark }}>Unable to Load Kundli</h2>
+          <p className="mb-6 max-w-xs" style={{ color: colors.text.secondary }}>
+            The astrology service is temporarily unavailable. Please try again in a few minutes.
+          </p>
+          <button
+            onClick={() => fetchKundli()}
+            className="px-6 py-3 rounded-xl font-medium transition-all hover:shadow-md"
+            style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
+            data-testid="retry-kundli-btn"
+          >
+            Retry
+          </button>
         </div>
-        <h2 className="text-xl font-bold mb-2" style={{ color: 'white' }}>Unable to Load Kundli</h2>
-        <p className="text-center mb-6 max-w-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>
-          The astrology service is temporarily unavailable. Please try again in a few minutes.
-        </p>
-        <button
+      </div>
+    );
+  }
           onClick={() => fetchKundli()}
           className="px-6 py-3 rounded-xl font-medium transition-all"
           style={{ backgroundColor: 'white', color: '#3E827A' }}
