@@ -303,7 +303,7 @@ export default function HomeScreen({
   }, []);
 
   useEffect(() => {
-    trackEvent('home_viewed', { flow_version: 'v6_premium', data_source: dataSource }, token);
+    trackEvent('home_viewed', { flow_version: 'v10_redesign', data_source: dataSource }, token);
   }, [token, dataSource]);
 
   const handleTileClick = (tileId, tileData) => {
@@ -318,21 +318,24 @@ export default function HomeScreen({
 
   return (
     <div 
-      className={`min-h-screen ${hasBottomNav ? 'pb-16' : ''}`}
-      style={{ background: GRADIENT_BG }}
+      className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`}
+      style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Fixed Header with Animated Logo */}
+      {/* Hero Section - New Design */}
       <header 
-        className="sticky top-0 z-40 pt-6 pb-4 px-5"
+        className="relative pt-6 pb-8 px-4 md:px-8 lg:px-12"
         style={{ 
-          background: 'linear-gradient(180deg, #3E827A 0%, #4A8F87 100%)',
+          background: `linear-gradient(180deg, ${colors.teal.primary} 0%, ${colors.teal.soft} 100%)`,
         }}
       >
-        {/* Profile Button - Top Right */}
-        <div className="absolute top-4 right-4 z-50">
+        {/* Top Bar - Logo & Profile */}
+        <div className="flex items-center justify-between mb-6">
+          <NiroLogo size="md" />
+          
+          {/* Profile Button */}
           <button
             onClick={onOpenProfile}
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95"
             style={{ 
               backgroundColor: 'rgba(255,255,255,0.2)',
               border: '1px solid rgba(255,255,255,0.3)',
@@ -345,65 +348,109 @@ export default function HomeScreen({
             </svg>
           </button>
         </div>
-
-        {/* Animated Logo */}
-        <AnimatedLogo />
         
-        {/* Premium CTA Area */}
-        <div className="mt-4">
-          {/* CTAs - Talk to Expert is Primary */}
-          <div className="flex gap-2">
-            <button
-              onClick={onTalkToHuman}
-              className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-medium text-sm transition-all active:scale-[0.98]"
-              style={{ 
-                backgroundColor: '#EFE1A9',
-                color: colors.text.dark,
-              }}
-              data-testid="talk-to-expert-btn"
-            >
-              <PhoneIcon className="w-4 h-4" />
-              Talk to Expert
-            </button>
-
-            <button
-              onClick={onChatWithMira}
-              className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl font-medium text-sm transition-all active:scale-[0.98]"
-              style={{ 
-                backgroundColor: 'rgba(255,255,255,0.95)',
-                color: colors.text.dark,
-              }}
-              data-testid="chat-with-mira-btn"
-            >
-              <SparklesIcon className="w-4 h-4" />
-              Chat with Mira (AI)
-            </button>
-          </div>
-          
-        </div>
-
-        {/* Section Title - Now inside header for consistent background */}
-        <div className="mt-4">
+        {/* Hero Content */}
+        <div className="text-center max-w-2xl mx-auto">
+          <h1 
+            className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight"
+            style={{ color: '#FFFFFF' }}
+          >
+            Expert astrology guidance,{' '}
+            <span style={{ fontStyle: 'italic', fontWeight: 400 }}>
+              for as long as you need it.
+            </span>
+          </h1>
           <p 
-            className="text-sm font-medium text-center"
+            className="text-sm md:text-base mb-6 max-w-lg mx-auto"
             style={{ color: 'rgba(255,255,255,0.9)' }}
           >
-            Choose a life topic that feels the most uncertain right now
+            Experienced Vedic astrologers for your most important life decisions — with full support from first understanding to complete clarity.
           </p>
+          
+          {/* Primary CTA */}
+          <button
+            onClick={onTalkToHuman}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98]"
+            style={{ 
+              backgroundColor: colors.peach.primary,
+              color: colors.text.dark,
+              boxShadow: shadows.peach,
+            }}
+            data-testid="hero-cta-btn"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+            Get Your Free 10-Min Call
+          </button>
+          
+          {/* Trust Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-6 text-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              Only 4.5+ rated astrologers
+            </span>
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              Unlimited chat with experts
+            </span>
+            <span className="flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              Remedies execution support
+            </span>
+          </div>
         </div>
       </header>
 
-      {/* Scrollable Tiles Section - Reduced Bottom Padding */}
-      <div className="px-4 pt-3" style={{ paddingBottom: '12px' }}>
+      {/* Secondary Actions - Chat with Mira */}
+      <div className="px-4 md:px-8 lg:px-12 -mt-4 mb-6">
+        <div className="max-w-2xl mx-auto">
+          <button
+            onClick={onChatWithMira}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm transition-all hover:shadow-md active:scale-[0.98]"
+            style={{ 
+              backgroundColor: '#FFFFFF',
+              color: colors.text.dark,
+              boxShadow: shadows.card,
+              border: `1px solid ${colors.ui.borderDark}`,
+            }}
+            data-testid="chat-with-mira-btn"
+          >
+            <SparklesIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
+            Or chat with Mira (AI Astrology Assistant)
+          </button>
+        </div>
+      </div>
 
-        {/* Life Situations - Premium Module Cards - Now Dynamic */}
-        {lifeSituations.map((situation) => (
-          <CategoryModule 
-            key={situation.id}
-            situation={situation}
-            onTileClick={handleTileClick}
-          />
-        ))}
+      {/* Life Topics Section Header */}
+      <div className="px-4 md:px-8 lg:px-12 mb-4" id="topics-section">
+        <div className="max-w-4xl mx-auto">
+          <h2 
+            className="text-lg md:text-xl font-semibold text-center"
+            style={{ color: colors.text.dark }}
+          >
+            Choose the area of life you need clarity <span style={{ fontStyle: 'italic' }}>on today.</span>
+          </h2>
+        </div>
+      </div>
+
+      {/* Life Situations - Category Cards */}
+      <div className="px-4 md:px-8 lg:px-12 pb-8">
+        <div className="max-w-4xl mx-auto">
+          {lifeSituations.map((situation) => (
+            <CategoryModule 
+              key={situation.id}
+              situation={situation}
+              onTileClick={handleTileClick}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
