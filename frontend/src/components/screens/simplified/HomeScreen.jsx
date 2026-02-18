@@ -483,6 +483,9 @@ export default function HomeScreen({
           </div>
         </div>
       </div>
+
+      {/* Desktop Footer */}
+      <AppFooter onNavigate={onTabChange} />
     </div>
   );
 }
