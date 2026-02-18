@@ -248,26 +248,28 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 
 ## Prioritized Backlog
 
-### Phase 1: Navigation & Back Buttons ✅ COMPLETE (Dec 2025)
-- [x] Fix nav links (Life Topics → Home, Experts → ExpertsScreen, Remedies → RemediesScreen, Astro → KundliScreen)
-- [x] Add ResponsiveHeader to ProfileScreen + KundliScreen
-- [x] Ensure back buttons work on all sub-screens
-- [x] Ensure top/bottom nav on all screens
-- [x] "See More life topics" CTA on Life Topics section
-- [x] Logo size increased (header: 36px, footer: 32px) - CSS specificity fixed
+### Phase 1: Public Access & Navigation ✅ COMPLETE (Feb 2026)
+- [x] Public /experts route - browse experts without login
+- [x] Public /experts/:expertId route - view expert profile without login
+- [x] Public /topics route - browse life topics without login
+- [x] "Fertility & Family Planning" category with Coming Soon badge
+- [x] Landing page navigation to public pages (no login required)
+- [x] "Home" nav link in ResponsiveHeader for logged-in users
 
-### Phase 2: CTAs & Conversion ✅ COMPLETE (Dec 2025)
-- [x] Topic-specific CTAs ("Talk about Career", "Talk about Health", "Explore Marriage", "Plan Family")
-- [x] Sticky CTA on scroll ("Ready to find clarity?" + "Get Free 10-Min Call")
-- [x] Expert cards "View Profile" button (4 buttons)
-- [x] Testimonial section CTA ("Start Your Journey Today")
-- [x] AppFooter component on authenticated HomeScreen (desktop only)
+### Phase 2: Life Topics Page Redesign (P1 - NEXT)
+- [ ] Redesign TopicLandingPage.jsx to match homepage aesthetic
+- [ ] Add new "Fertility & Family Planning" topics to authenticated flow
 
-### Phase 3: Polish & Advanced ✅ COMPLETE (Dec 2025)
-- [x] React Router - proper URL routing (/app/topic/:id, /app/experts, etc.)
-- [x] Deep-linking & browser back/forward working
-- [x] Search/filter for topics (HomeScreen)
-- [x] Scroll reveal animations (IntersectionObserver based)
+### Phase 3: UI/UX Polish (P1)
+- [ ] Redesign Birth details screen
+- [ ] Redesign packages' landing pages
+- [ ] Audit all authenticated screens for profile icon visibility
+- [ ] Site-wide check for consistent back buttons
+
+### Phase 4: CTA and Content Standardization (P2)
+- [ ] Standardize CTA text: "📞 Get a free 10 mins consultation"
+- [ ] Update CTA in user-reviews section on homepage
+- [ ] Add YouTube, Facebook, X links to footer
 
 ### Future Phase: UI Changes (P2)
 - [ ] Change free call CTA text to: "Get a Free 10 mins consultation 📞"
