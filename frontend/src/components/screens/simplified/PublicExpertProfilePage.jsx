@@ -54,10 +54,15 @@ export default function PublicExpertProfilePage({ isAuthenticated, onLoginClick 
 
   const handleConsultClick = () => {
     if (isAuthenticated) {
-      // If logged in, go to app with expert context
-      navigate('/app/experts');
+      // If logged in, go directly to schedule a call
+      navigate('/app/schedule');
     } else {
-      // If not logged in, go to login
+      // Store intent to schedule and redirect to login
+      localStorage.setItem('niro_user_intent', JSON.stringify({ 
+        type: 'free_call',
+        expertId: expertId,
+        returnTo: '/app/schedule'
+      }));
       navigate('/login');
     }
   };
