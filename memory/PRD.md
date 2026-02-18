@@ -234,6 +234,26 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
    - Trust & Privacy note section
    - Sticky CTA bar with peach "Start my journey" button
 
+### Phase 19: Public Access & Navigation Improvements (Feb 2026)
+1. **PublicNavHeader Component** - Shared navigation for all public pages
+   - Life Topics, Experts, Remedies navigation links
+   - Active link indicator with teal underline
+   - CTA button: "📞 Get a free 10 mins consultation"
+   - Mobile-responsive navigation bar
+2. **Public Topic Landing Page** - Browse topics without login
+   - /topic/:topicId route accessible without authentication
+   - Full topic content: tier selector, pricing, outcomes, FAQs
+   - "Start my journey" redirects to /login only when clicked (not on page load)
+   - Login -> Birth details -> Checkout flow preserved
+3. **Sticky CTA Bar Fix** - Fixed disappearing on fast scroll
+   - Changed from CSS transform to opacity/visibility
+   - Added requestAnimationFrame for smooth scroll handling
+   - Passive scroll listener for performance
+4. **Homepage Navigation Updates**
+   - Nav links now point to /topics, /experts, /app/remedies
+   - Mobile menu updated with same links
+   - CTA button text updated: "📞 Get a free 10 mins consultation"
+
 ---
 
 ## Technical Architecture
