@@ -361,36 +361,36 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       <div className="mx-5 md:mx-8 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
       {/* ===== HOW WILL YOUR JOURNEY UNFOLD ===== */}
-      <section className="px-5 py-4">
-        <h3 className="text-base font-semibold mb-4" style={{ color: colors.text.dark }}>
+      <section className="px-5 md:px-8 py-4">
+        <h3 className="text-base md:text-lg font-semibold mb-4" style={{ color: colors.text.dark }}>
           How will your journey unfold
         </h3>
-        <div className="space-y-2">
+        <div className="space-y-2 md:space-y-3">
           {tierData?.howUnfolds?.map((step, idx) => (
             <div key={idx} className="flex items-start gap-2.5">
               <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
-              <p className="text-sm" style={{ color: colors.text.dark }}>{step}</p>
+              <p className="text-sm md:text-base" style={{ color: colors.text.dark }}>{step}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ===== DIVIDER ===== */}
-      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+      <div className="mx-5 md:mx-8 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
       {/* ===== EXPERTS WIDGET ===== */}
       <section className="py-4" data-testid="experts-widget">
-        <h3 className="text-base font-semibold mb-1 px-5" style={{ color: colors.text.dark }}>
+        <h3 className="text-base md:text-lg font-semibold mb-1 px-5 md:px-8" style={{ color: colors.text.dark }}>
           {content.expertsWidgetTitle || 'Choose from Niro experts'}
         </h3>
-        <p className="text-xs mb-4 px-5" style={{ color: colors.text.secondary }}>
+        <p className="text-xs md:text-sm mb-4 px-5 md:px-8" style={{ color: colors.text.secondary }}>
           {content.expertsWidgetSubtitle || 'Verified specialists for this journey. Choose one to start — you can switch later.'}
         </p>
-        <div className="flex gap-3 overflow-x-auto px-5 pb-2 scrollbar-hide">
+        <div className="flex gap-3 md:gap-4 overflow-x-auto px-5 md:px-8 pb-2 scrollbar-hide">
           {experts.map((expert, idx) => (
             <div 
               key={idx}
-              className="flex-shrink-0 w-44 rounded-xl p-4"
+              className="flex-shrink-0 w-44 md:w-52 rounded-xl p-4"
               style={{ 
                 backgroundColor: CARD_BG,
                 border: `1px solid ${CARD_BORDER}`,
@@ -399,24 +399,24 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
             >
               {/* Photo placeholder */}
               <div 
-                className="w-12 h-12 rounded-full mb-3 flex items-center justify-center"
+                className="w-12 h-12 md:w-14 md:h-14 rounded-full mb-3 flex items-center justify-center"
                 style={{ backgroundColor: `${colors.teal.primary}15` }}
               >
-                <span className="text-lg" style={{ color: colors.teal.primary }}>
+                <span className="text-lg md:text-xl" style={{ color: colors.teal.primary }}>
                   {expert.role.charAt(0)}
                 </span>
               </div>
-              <h4 className="font-medium text-sm mb-1" style={{ color: colors.text.dark }}>
+              <h4 className="font-medium text-sm md:text-base mb-1" style={{ color: colors.text.dark }}>
                 {expert.role}
               </h4>
-              <p className="text-[10px] mb-2" style={{ color: colors.teal.primary }}>
+              <p className="text-[10px] md:text-xs mb-2" style={{ color: colors.teal.primary }}>
                 {expert.badge}
               </p>
-              <p className="text-xs mb-3" style={{ color: colors.text.secondary }}>
+              <p className="text-xs md:text-sm mb-3" style={{ color: colors.text.secondary }}>
                 {expert.focus}
               </p>
               <button 
-                className="text-xs font-medium px-3 py-1.5 rounded-lg"
+                className="text-xs md:text-sm font-medium px-3 py-1.5 rounded-lg"
                 style={{ 
                   backgroundColor: `${colors.teal.primary}10`,
                   color: colors.teal.primary,
@@ -430,31 +430,31 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       </section>
 
       {/* ===== DIVIDER ===== */}
-      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+      <div className="mx-5 md:mx-8 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
       {/* ===== OPTIONAL ADD-ONS (Coming Soon) ===== */}
       <section className="py-4" data-testid="remedies-section">
-        <h3 className="text-base font-semibold mb-3 px-5" style={{ color: colors.text.dark }}>
+        <h3 className="text-base md:text-lg font-semibold mb-3 px-5 md:px-8" style={{ color: colors.text.dark }}>
           {content.remediesTitle || 'Optional add-ons (Coming soon)'}
         </h3>
-        <div className="px-5">
+        <div className="px-5 md:px-8">
           <div 
-            className="rounded-xl p-4 flex items-center justify-center"
+            className="rounded-xl p-4 md:p-6 flex items-center justify-center"
             style={{ 
               backgroundColor: CARD_BG,
               border: `1px solid ${CARD_BORDER}`,
             }}
           >
             <div className="text-center">
-              <div className="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center" style={{ backgroundColor: `${colors.text.mutedDark}10` }}>
-                <GiftIcon className="w-5 h-5" style={{ color: colors.text.mutedDark }} />
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full mx-auto mb-2 flex items-center justify-center" style={{ backgroundColor: `${colors.text.mutedDark}10` }}>
+                <GiftIcon className="w-5 h-5 md:w-6 md:h-6" style={{ color: colors.text.mutedDark }} />
               </div>
-              <p className="text-sm mb-2" style={{ color: colors.text.secondary }}>
+              <p className="text-sm md:text-base mb-2" style={{ color: colors.text.secondary }}>
                 Topic-specific remedies and add-ons
               </p>
               {/* Remedy CTA = "Coming soon" - strict */}
               <span 
-                className="inline-block text-xs px-3 py-1.5 rounded-full font-medium"
+                className="inline-block text-xs md:text-sm px-3 py-1.5 rounded-full font-medium"
                 style={{ 
                   backgroundColor: `${colors.text.mutedDark}15`,
                   color: colors.text.mutedDark,
@@ -469,11 +469,11 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
       </section>
 
       {/* ===== DIVIDER ===== */}
-      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+      <div className="mx-5 md:mx-8 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
       {/* ===== WHY NIRO (Trust Section) ===== */}
-      <section className="px-5 py-4">
-        <h3 className="text-base font-semibold mb-4" style={{ color: colors.text.dark }}>
+      <section className="px-5 md:px-8 py-4">
+        <h3 className="text-base md:text-lg font-semibold mb-4" style={{ color: colors.text.dark }}>
           Why Niro?
         </h3>
         <div className="space-y-3">
@@ -486,21 +486,21 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
           ]).map((bullet, idx) => (
             <div key={idx} className="flex items-start gap-3">
               <CheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: colors.teal.primary }} />
-              <p className="text-sm" style={{ color: colors.text.dark }}>{bullet}</p>
+              <p className="text-sm md:text-base" style={{ color: colors.text.dark }}>{bullet}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ===== DIVIDER ===== */}
-      <div className="mx-5 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
+      <div className="mx-5 md:mx-8 my-3" style={{ borderBottom: `1px solid ${DIVIDER_COLOR}` }} />
 
       {/* ===== FAQs ===== */}
-      <section className="px-5 py-4 mb-6">
-        <h3 className="text-base font-semibold mb-4" style={{ color: colors.text.dark }}>
+      <section className="px-5 md:px-8 py-4 mb-6">
+        <h3 className="text-base md:text-lg font-semibold mb-4" style={{ color: colors.text.dark }}>
           Frequently Asked Questions
         </h3>
-        <div className="space-y-2">
+        <div className="space-y-2 md:grid md:grid-cols-2 md:gap-4 md:space-y-0">
           {(content.faqs || []).slice(0, 6).map((faq, idx) => (
             <div 
               key={idx}
@@ -515,7 +515,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
                 className="w-full p-4 flex items-center justify-between text-left"
                 data-testid={`faq-item-${idx}`}
               >
-                <span className="font-medium text-sm pr-4" style={{ color: colors.text.dark }}>
+                <span className="font-medium text-sm md:text-base pr-4" style={{ color: colors.text.dark }}>
                   {faq.q}
                 </span>
                 <ChevronRightIcon 
@@ -525,17 +525,18 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
               </button>
               {expandedFaq === idx && (
                 <div className="px-4 pb-4">
-                  <p className="text-sm leading-relaxed" style={{ color: colors.text.secondary }}>{faq.a}</p>
+                  <p className="text-sm md:text-base leading-relaxed" style={{ color: colors.text.secondary }}>{faq.a}</p>
                 </div>
               )}
             </div>
           ))}
         </div>
       </section>
+      </div>
 
       {/* ===== STICKY CTA BAR (Price + Start my journey) ===== */}
       <div 
-        className={`fixed ${hasBottomNav ? 'bottom-16' : 'bottom-0'} left-0 right-0 z-50`}
+        className={`fixed ${hasBottomNav ? 'bottom-16 md:bottom-0' : 'bottom-0'} left-0 right-0 z-50`}
         style={{ 
           backgroundColor: CARD_BG,
           borderTop: `1px solid ${CARD_BORDER}`,
@@ -544,13 +545,13 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
         }}
         data-testid="sticky-cta-bar"
       >
-        <div className="px-5 py-4 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-5 md:px-8 py-4 flex items-center justify-between">
           {/* Left: Total package price */}
           <div>
-            <span className="text-xl font-bold" style={{ color: colors.text.dark }}>
+            <span className="text-xl md:text-2xl font-bold" style={{ color: colors.text.dark }}>
               {formatPrice(tierData?.price || 0)}
             </span>
-            <p className="text-xs" style={{ color: colors.text.secondary }}>
+            <p className="text-xs md:text-sm" style={{ color: colors.text.secondary }}>
               {tierData?.durationWeeks} weeks package
             </p>
           </div>
@@ -558,7 +559,7 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
           {/* Right: Start my journey CTA only */}
           <button
             onClick={handleCheckout}
-            className="px-8 py-3 rounded-xl font-semibold text-base transition-all active:scale-[0.98]"
+            className="px-6 md:px-10 py-3 md:py-4 rounded-xl font-semibold text-base md:text-lg transition-all active:scale-[0.98] hover:shadow-md"
             style={{ 
               backgroundColor: colors.teal.primary,
               color: '#ffffff',
