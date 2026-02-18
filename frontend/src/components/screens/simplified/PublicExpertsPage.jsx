@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { colors, shadows } from './theme';
 import { StarIcon, ChevronRightIcon } from './icons';
 import { getBackendUrl } from '../../../config';
+import PublicNavHeader from './PublicNavHeader';
 
 /**
  * PublicExpertsPage - Publicly accessible experts listing (no login required)
