@@ -1075,6 +1075,104 @@ export default function PublicLandingPage({
           line-height: 1.7;
         }
 
+        /* TESTIMONIAL CTA */
+        .testimonial-cta {
+          margin-top: 48px;
+          text-align: center;
+        }
+
+        .btn-testimonial-cta {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          background: var(--teal);
+          color: white;
+          border: none;
+          padding: 16px 40px;
+          border-radius: 100px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+          box-shadow: 0 4px 20px rgba(74,155,142,0.25);
+        }
+
+        .btn-testimonial-cta:hover {
+          background: var(--teal-dark);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 30px rgba(74,155,142,0.35);
+        }
+
+        /* STICKY CTA */
+        .sticky-cta {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: white;
+          border-top: 1px solid var(--sand);
+          box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+          z-index: 1000;
+          transform: translateY(100%);
+          transition: transform 0.3s ease;
+        }
+
+        .sticky-cta.visible {
+          transform: translateY(0);
+        }
+
+        .sticky-cta-content {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 16px 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 24px;
+        }
+
+        .sticky-cta-text {
+          font-size: 16px;
+          font-weight: 500;
+          color: var(--text-dark);
+        }
+
+        .sticky-cta-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          background: var(--peach);
+          color: var(--text-dark);
+          border: none;
+          padding: 14px 28px;
+          border-radius: 100px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+          box-shadow: 0 4px 16px rgba(232,168,124,0.3);
+        }
+
+        .sticky-cta-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 24px rgba(232,168,124,0.4);
+        }
+
+        @media (max-width: 640px) {
+          .sticky-cta-content {
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px 20px;
+          }
+          .sticky-cta-text {
+            font-size: 14px;
+          }
+          .sticky-cta-btn {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+
         /* MOBILE MENU */
         .mobile-menu-btn {
           display: none;
