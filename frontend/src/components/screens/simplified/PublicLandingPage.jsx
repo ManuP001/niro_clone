@@ -1106,7 +1106,7 @@ export default function PublicLandingPage({
           box-shadow: 0 8px 30px rgba(74,155,142,0.35);
         }
 
-        /* STICKY CTA */
+        /* STICKY CTA - Always visible after scroll threshold, no transition delay */
         .sticky-cta {
           position: fixed;
           bottom: 0;
@@ -1116,12 +1116,15 @@ export default function PublicLandingPage({
           border-top: 1px solid var(--sand);
           box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
           z-index: 1000;
-          transform: translateY(100%);
-          transition: transform 0.3s ease;
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
         }
 
         .sticky-cta.visible {
-          transform: translateY(0);
+          opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
         }
 
         .sticky-cta-content {
