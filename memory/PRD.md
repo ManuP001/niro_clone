@@ -302,3 +302,4 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 - `/app/test_reports/iteration_21.json` - Phase 1 Navigation & Back Buttons (100% pass after CSS fix)
 - `/app/test_reports/iteration_22.json` - Phase 2 CTAs & Conversion (100% pass, 17/17 tests)
 - `/app/test_reports/iteration_23.json` - Phase 3 Polish & Advanced (100% pass, 7/7 tests)
+- `/app/test_reports/iteration_24.json` - Phase 17 Public Access & Navigation (100% pass, 9/9 tests)
