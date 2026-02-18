@@ -282,6 +282,8 @@ export default function HomeScreen({
   // State for dynamic homepage data
   const [lifeSituations, setLifeSituations] = useState(DEFAULT_LIFE_SITUATIONS);
   const [dataSource, setDataSource] = useState('defaults');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredSituations, setFilteredSituations] = useState(DEFAULT_LIFE_SITUATIONS);
 
   // Fetch homepage data from API
   useEffect(() => {
@@ -293,6 +295,7 @@ export default function HomeScreen({
           const result = await response.json();
           if (result.ok && result.data && result.data.length > 0) {
             setLifeSituations(result.data);
+            setFilteredSituations(result.data);
             setDataSource(result.source || 'database');
           }
         }
@@ -304,6 +307,37 @@ export default function HomeScreen({
     
     fetchHomepageData();
   }, []);
+
+  // Filter topics based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredSituations(lifeSituations);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    const filtered = lifeSituations.map(situation => {
+      // Check if category title matches
+      const categoryMatches = situation.title.toLowerCase().includes(query) ||
+                             (situation.helperCopy && situation.helperCopy.toLowerCase().includes(query));
+      
+      // Filter tiles within the category
+      const matchingTiles = situation.tiles.filter(tile => 
+        tile.shortTitle?.toLowerCase().includes(query) ||
+        tile.id?.toLowerCase().includes(query)
+      );
+
+      // Include category if it matches or has matching tiles
+      if (categoryMatches) {
+        return situation; // Return full category if title matches
+      } else if (matchingTiles.length > 0) {
+        return { ...situation, tiles: matchingTiles };
+      }
+      return null;
+    }).filter(Boolean);
+
+    setFilteredSituations(filtered);
+  }, [searchQuery, lifeSituations]);
 
   useEffect(() => {
     trackEvent('home_viewed', { flow_version: 'v10_redesign', data_source: dataSource }, token);
