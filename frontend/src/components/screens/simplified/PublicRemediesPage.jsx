@@ -335,9 +335,39 @@ export default function PublicRemediesPage({ isAuthenticated }) {
         </div>
 
         {/* Remedies Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {filteredRemedies.map((remedy) => (
-            <RemedyCard
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="rounded-xl p-5 animate-pulse"
+                style={{ backgroundColor: '#ffffff', border: `1px solid ${colors.ui.borderDark}` }}
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-xl" style={{ backgroundColor: `${colors.teal.primary}10` }}></div>
+                  <div className="flex-1">
+                    <div className="h-4 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.1)', width: '70%' }}></div>
+                    <div className="h-3 rounded mt-2" style={{ backgroundColor: 'rgba(0,0,0,0.05)', width: '50%' }}></div>
+                  </div>
+                </div>
+                <div className="space-y-2 mb-4">
+                  <div className="h-3 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.05)' }}></div>
+                  <div className="h-3 rounded" style={{ backgroundColor: 'rgba(0,0,0,0.05)', width: '80%' }}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            {filteredRemedies.map((remedy) => (
+              <RemedyCard
+                key={remedy.id}
+                remedy={remedy}
+                onSelect={handleRemedySelect}
+              />
+            ))}
+          </div>
+        )}
               key={remedy.id}
               remedy={remedy}
               onSelect={handleRemedySelect}
