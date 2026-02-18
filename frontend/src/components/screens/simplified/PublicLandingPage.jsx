@@ -98,6 +98,28 @@ export default function PublicLandingPage({
   const handleNavBegin = (e) => {
     e.preventDefault();
     const topicsSection = document.getElementById('topics');
+
+  // Handle See More Life Topics
+  const handleSeeMoreTopics = (e) => {
+    e.preventDefault();
+    setUserIntent({ type: 'browse_topics' });
+    if (isAuthenticated) {
+      onNavigateToApp('home');
+    } else {
+      onLoginClick();
+    }
+  };
+
+  // Handle nav link to go to app section
+  const handleNavToApp = (e, section) => {
+    e.preventDefault();
+    if (isAuthenticated) {
+      onNavigateToApp(section);
+    } else {
+      setUserIntent({ type: `browse_${section}` });
+      onLoginClick();
+    }
+  };
     if (topicsSection) {
       topicsSection.scrollIntoView({ behavior: 'smooth' });
     }
