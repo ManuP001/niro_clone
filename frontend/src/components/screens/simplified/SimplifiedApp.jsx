@@ -545,6 +545,7 @@ export default function SimplifiedApp({
           onNavigate={navigate}
           onBack={goBack}
           hasBottomNav={showBottomNav}
+          onTabChange={handleTabChange}
         />
       );
     }
