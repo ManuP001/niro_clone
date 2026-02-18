@@ -10,7 +10,7 @@
     "design_issues": [],
     "platform_issues": [
       {
-        "issue": "Preview URL (https://ui-refresh-phase.preview.emergentagent.com) showing 'Preview Unavailable' due to Emergent platform inactivity timeout",
+        "issue": "Preview URL (https://expert-browse-demo.preview.emergentagent.com) showing 'Preview Unavailable' due to Emergent platform inactivity timeout",
         "impact": "Cannot perform UI testing via browser automation",
         "resolution": "Platform needs to be woken up via app.emergent.sh"
       }

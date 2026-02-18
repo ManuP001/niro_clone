@@ -7,7 +7,7 @@ import requests
 import json
 
 # Backend URL from environment
-BACKEND_URL = "https://ui-refresh-phase.preview.emergentagent.com/api"
+BACKEND_URL = "https://expert-browse-demo.preview.emergentagent.com/api"
 
 def test_welcome_simple():
     """Test Welcome Message Endpoint with detailed error logging"""

@@ -12,7 +12,7 @@ import re
 from datetime import datetime
 
 # Backend URL from environment
-BACKEND_URL = "https://ui-refresh-phase.preview.emergentagent.com/api"
+BACKEND_URL = "https://expert-browse-demo.preview.emergentagent.com/api"
 
 class NiroV2Tester:
     def __init__(self):
