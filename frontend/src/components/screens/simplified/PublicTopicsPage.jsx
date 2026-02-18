@@ -401,65 +401,8 @@ export default function PublicTopicsPage({ isAuthenticated }) {
       className="min-h-screen"
       style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Header */}
-      <header
-        className="sticky top-0 z-50"
-        style={{
-          backgroundColor: 'rgba(251,248,243,0.95)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
-        }}
-      >
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Left: Back + Logo */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleBackToHome}
-                className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors"
-                data-testid="back-to-home-btn"
-              >
-                <svg
-                  className="w-5 h-5"
-                  style={{ color: colors.text.dark }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <a href="/" className="flex items-center" data-testid="header-logo">
-                <span
-                  className="text-3xl md:text-4xl font-bold tracking-tight"
-                  style={{
-                    fontFamily: "'Lexend', sans-serif",
-                    color: colors.teal.dark,
-                  }}
-                >
-                  niro
-                </span>
-              </a>
-            </div>
-
-            {/* Right: CTA */}
-            <a
-              href={isAuthenticated ? '/app/schedule' : '/login'}
-              className="hidden md:flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all hover:shadow-md hover:-translate-y-0.5"
-              style={{
-                backgroundColor: colors.teal.primary,
-                color: '#ffffff',
-              }}
-              data-testid="header-cta-btn"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-              </svg>
-              Get a free 10 mins consultation
-            </a>
-          </div>
-        </div>
-      </header>
+      {/* Header with Navigation */}
+      <PublicNavHeader isAuthenticated={isAuthenticated} />
 
       {/* Content */}
       <div className="max-w-5xl mx-auto px-4 md:px-8 py-8">
