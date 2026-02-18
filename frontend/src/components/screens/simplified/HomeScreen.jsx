@@ -553,7 +553,7 @@ export default function HomeScreen({
         <div className="max-w-5xl mx-auto">
           {/* Desktop: Show all categories in a grid layout */}
           <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-            {lifeSituations.map((situation) => (
+            {filteredSituations.map((situation) => (
               <CategoryModule 
                 key={situation.id}
                 situation={situation}
@@ -565,7 +565,7 @@ export default function HomeScreen({
           
           {/* Mobile: Stack categories vertically */}
           <div className="md:hidden space-y-4">
-            {lifeSituations.map((situation) => (
+            {filteredSituations.map((situation) => (
               <CategoryModule 
                 key={situation.id}
                 situation={situation}
