@@ -491,6 +491,7 @@ export default function SimplifiedApp({
           onNavigate={navigate}
           hasBottomNav={showBottomNav}
           userName={getUserName()}
+          onTabChange={handleTabChange}
         />
       );
     }
