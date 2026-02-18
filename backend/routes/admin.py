@@ -2452,25 +2452,43 @@ async def get_topics_with_packages(request: Request):
     """
     Get list of topic IDs that have packages/tiers available.
     No authentication required - used to enable/disable topic tiles on frontend.
+    
+    Returns both:
+    - topic_id values from tiers (e.g., 'career_clarity', 'stress_management')
+    - tier_id root names that match frontend tiles (e.g., 'dating_compatibility', 'job_transition')
     """
     db = await get_db(request)
     
-    # Get all unique topic_ids that have active tiers
-    pipeline = [
-        {"$match": {"active": {"$ne": False}}},
-        {"$group": {"_id": "$topic_id"}},
-        {"$sort": {"_id": 1}}
-    ]
+    available_ids = set()
     
-    topic_ids = []
-    async for doc in db.admin_tiers.aggregate(pipeline):
-        if doc.get("_id"):
-            topic_ids.append(doc["_id"])
+    # Get all active tiers
+    tiers = await db.admin_tiers.find(
+        {"active": {"$ne": False}}, 
+        {"_id": 0, "topic_id": 1, "tier_id": 1}
+    ).to_list(500)
+    
+    for tier in tiers:
+        # Add topic_id
+        if tier.get("topic_id"):
+            available_ids.add(tier["topic_id"])
+        
+        # Also extract root name from tier_id (before _focussed, _supported, _comprehensive, _starter, _plus, _pro)
+        tier_id = tier.get("tier_id", "")
+        for suffix in ["_focussed", "_supported", "_comprehensive", "_starter", "_plus", "_pro"]:
+            if tier_id.endswith(suffix):
+                root_name = tier_id.replace(suffix, "")
+                available_ids.add(root_name)
+                break
+        else:
+            # No suffix found - the tier_id itself might be a tile ID (like 'dating_compatibility')
+            # Only add if it looks like a tile ID (contains underscore)
+            if "_" in tier_id:
+                available_ids.add(tier_id)
     
     return {
         "ok": True,
-        "topic_ids": topic_ids,
-        "count": len(topic_ids)
+        "topic_ids": sorted(list(available_ids)),
+        "count": len(available_ids)
     }
 
 
