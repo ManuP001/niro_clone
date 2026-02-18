@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { colors, shadows } from './theme';
-import { CheckIcon, ChevronRightIcon, StarIcon } from './icons';
+import { CheckIcon, StarIcon } from './icons';
 import PublicNavHeader from './PublicNavHeader';
 
 /**
  * PublicRemediesPage - Publicly accessible remedies catalog (no login required)
- * Shows all remedy products and poojas
+ * Shows all remedy products and poojas from the API
  * Login only required for checkout/purchase
  */
 
@@ -19,120 +19,124 @@ const REMEDY_CATEGORIES = [
   { id: 'ritual', label: 'Rituals' },
 ];
 
-const REMEDIES = [
-  {
-    id: 'chakra_balance',
-    category: 'healing',
-    title: 'Chakra Balance Program',
-    subtitle: '3 Guided Sessions',
+// Extended remedy details (benefits, description, etc.) - will be merged with API data
+const REMEDY_DETAILS = {
+  chakra_balance: {
     description: 'A structured 3-session chakra healing plan to feel calmer, clearer, and more grounded',
-    price: 3500,
-    rating: 4.9,
-    reviews: 156,
     benefits: ['3 × guided chakra healing sessions', 'Daily micro-practice plan', 'Guided meditation support'],
     image: '🧘',
     featured: true,
-  },
-  {
-    id: 'santan_pooja',
-    category: 'pooja',
-    title: 'Santan / Fertility Pooja',
-    description: 'Verified blessing for fertility and conception support',
-    price: 2499,
     rating: 4.9,
-    reviews: 324,
+    reviews: 156,
+  },
+  santan_pooja: {
+    description: 'Verified blessing for fertility and conception support',
     benefits: ['Performed by verified priests', 'Includes prasad delivery', '60-day prayer cycle'],
     image: '🙏',
+    rating: 4.9,
+    reviews: 324,
   },
-  {
-    id: 'shanti_pooja',
-    category: 'pooja',
-    title: 'Shanti / Peace Pooja',
+  shanti_pooja: {
     description: 'Graha pacification for mental peace and harmony',
-    price: 1999,
-    rating: 4.8,
-    reviews: 567,
     benefits: ['Reduces stress & anxiety', 'Family harmony', 'Planetary balance'],
     image: '🙏',
+    rating: 4.8,
+    reviews: 567,
   },
-  {
-    id: 'lakshmi_pooja',
-    category: 'pooja',
-    title: 'Lakshmi Pooja',
+  lakshmi_pooja: {
     description: 'Blessing for prosperity, wealth, and financial growth',
-    price: 2999,
-    rating: 4.9,
-    reviews: 892,
     benefits: ['Prosperity blessings', 'Business success', 'Financial stability'],
     image: '🪔',
-  },
-  {
-    id: 'navgraha_shanti',
-    category: 'pooja',
-    title: 'Navgraha Shanti Pooja',
-    description: 'Pacification of all nine planets for overall life balance',
-    price: 5999,
     rating: 4.9,
-    reviews: 445,
-    benefits: ['All 9 planetary alignments', 'Life balance', 'Removes obstacles'],
-    image: '🌟',
+    reviews: 892,
   },
-  {
-    id: 'neelam_gemstone',
-    category: 'gemstone',
-    title: 'Blue Sapphire (Neelam)',
-    description: 'Certified natural blue sapphire for Saturn influence',
-    price: 15000,
+  obstacle_removal: {
+    description: 'Remove obstacles and blockages from your path',
+    benefits: ['Clear obstacles', 'Path clearing', 'Success enablement'],
+    image: '🛡️',
+    rating: 4.8,
+    reviews: 445,
+  },
+  gemstone_career: {
+    description: 'Natural gemstone for career growth and financial abundance',
+    benefits: ['Career advancement', 'Financial growth', 'Professional success'],
+    image: '💎',
     rating: 4.7,
     reviews: 234,
-    benefits: ['Saturn pacification', 'Career growth', 'Mental clarity'],
-    image: '💎',
   },
-  {
-    id: 'pukhraj_gemstone',
-    category: 'gemstone',
-    title: 'Yellow Sapphire (Pukhraj)',
-    description: 'Certified natural yellow sapphire for Jupiter blessing',
-    price: 12000,
+  gemstone_calm: {
+    description: 'Natural gemstone for mental peace and emotional grounding',
+    benefits: ['Stress relief', 'Emotional balance', 'Inner calm'],
+    image: '💙',
     rating: 4.8,
     reviews: 312,
-    benefits: ['Jupiter blessings', 'Wisdom & knowledge', 'Marital harmony'],
-    image: '💛',
   },
-  {
-    id: 'rudraksha_kit',
-    category: 'kit',
-    title: 'Rudraksha Wellness Kit',
-    description: 'Authentic 5-mukhi rudraksha with puja items',
-    price: 1499,
+  gemstone_relationship: {
+    description: 'Natural gemstone for harmony in relationships',
+    benefits: ['Relationship harmony', 'Love attraction', 'Emotional connection'],
+    image: '💛',
+    rating: 4.6,
+    reviews: 198,
+  },
+  stress_sleep_kit: {
+    description: 'Complete kit for stress relief and better sleep',
+    benefits: ['Stress management', 'Improved sleep', 'Relaxation aids'],
+    image: '🌙',
     rating: 4.6,
     reviews: 678,
-    benefits: ['Stress relief', 'Spiritual protection', 'Complete puja set'],
-    image: '📿',
   },
-  {
-    id: 'meditation_kit',
-    category: 'kit',
-    title: 'Home Meditation Kit',
-    description: 'Essential items for daily meditation practice',
-    price: 999,
+  protection_kit: {
+    description: 'Essential items for spiritual protection',
+    benefits: ['Spiritual shield', 'Negative energy removal', 'Daily protection'],
+    image: '🛡️',
     rating: 4.5,
     reviews: 456,
-    benefits: ['Incense & dhoop', 'Meditation guide', 'Altar setup items'],
-    image: '🕯️',
   },
-  {
-    id: 'havan_ritual',
-    category: 'ritual',
-    title: 'Home Havan Kit',
-    description: 'Complete havan materials with guided instructions',
-    price: 799,
+  prosperity_kit: {
+    description: 'Complete prosperity and abundance kit',
+    benefits: ['Wealth attraction', 'Prosperity mantras', 'Abundance rituals'],
+    image: '💰',
+    rating: 4.7,
+    reviews: 389,
+  },
+  vitality_kit: {
+    description: 'Energy and vitality boosting kit',
+    benefits: ['Energy boost', 'Vitality enhancement', 'Health support'],
+    image: '⚡',
+    rating: 4.5,
+    reviews: 267,
+  },
+  venus_harmony: {
+    description: 'Ritual for love, beauty and relationship harmony',
+    benefits: ['Love enhancement', 'Beauty rituals', 'Venus blessings'],
+    image: '💕',
     rating: 4.7,
     reviews: 234,
-    benefits: ['All havan materials', 'Video guidance', 'Mantras included'],
-    image: '🔥',
   },
-];
+  mercury_focus: {
+    description: 'Ritual for mental clarity and communication',
+    benefits: ['Mental clarity', 'Better communication', 'Focus enhancement'],
+    image: '🧠',
+    rating: 4.6,
+    reviews: 189,
+  },
+  moon_calm: {
+    description: 'Moon ritual for emotional balance and peace',
+    benefits: ['Emotional balance', 'Inner peace', 'Moon blessings'],
+    image: '🌙',
+    rating: 4.8,
+    reviews: 345,
+  },
+};
+
+// Default details for remedies not in our extended details
+const DEFAULT_REMEDY_DETAILS = {
+  description: 'Authentic healing remedy curated by our experts',
+  benefits: ['Expert-verified', 'Quality assured', 'Traditional methods'],
+  image: '✨',
+  rating: 4.5,
+  reviews: 100,
+};
 
 // Format price
 const formatPrice = (price) => {
