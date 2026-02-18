@@ -655,6 +655,3 @@ function CategoryListingWrapper({ onBack, onNavigate }) {
     />
   );
 }
-
-// Import useParams for wrapper components
-import { useParams } from 'react-router-dom';
