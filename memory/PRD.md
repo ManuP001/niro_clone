@@ -172,11 +172,15 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 ## Technical Architecture
 
 ### Key Files (Updated for Redesign)
-- `/app/frontend/src/index.css` - CSS variables and Lexend font
+- `/app/frontend/src/index.css` - CSS variables, Lexend font, scroll reveal animations
+- `/app/frontend/src/App.js` - Main app with BrowserRouter and React Router v7
+- `/app/frontend/src/router/AppRoutes.jsx` - Route definitions (public + protected)
+- `/app/frontend/src/router/AppLayout.jsx` - Authenticated app layout with nested routes
+- `/app/frontend/src/hooks/useScrollReveal.js` - IntersectionObserver scroll animation hook
 - `/app/frontend/src/components/screens/simplified/theme.js` - V10 design tokens
 - `/app/frontend/src/components/screens/simplified/ResponsiveHeader.jsx` - V11 reusable desktop header (text-3xl md:text-4xl logo)
 - `/app/frontend/src/components/screens/simplified/TileCard.jsx` - V2 responsive tiles with hover effects
-- `/app/frontend/src/components/screens/simplified/HomeScreen.jsx` - V11 hero + responsive 3-col grid
+- `/app/frontend/src/components/screens/simplified/HomeScreen.jsx` - V11 hero + responsive 3-col grid + search/filter
 - `/app/frontend/src/components/screens/simplified/ExpertsScreen.jsx` - V2 responsive 3-col grid
 - `/app/frontend/src/components/screens/simplified/ExpertProfileScreen.jsx` - V3 with ResponsiveHeader
 - `/app/frontend/src/components/screens/simplified/RemediesScreen.jsx` - V2 with ResponsiveHeader and 3-col grid
