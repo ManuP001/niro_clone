@@ -46,7 +46,7 @@ const SUGGESTED_REMEDIES = [
   },
 ];
 
-export default function MyPackScreen({ token, userState, onNavigate, hasBottomNav }) {
+export default function MyPackScreen({ token, userState, onNavigate, hasBottomNav, onTabChange }) {
   const [loading, setLoading] = useState(false);
   const [planDetails, setPlanDetails] = useState(null);
   const [error, setError] = useState(null);
