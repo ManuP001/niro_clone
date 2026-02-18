@@ -1267,9 +1267,9 @@ export default function PublicLandingPage({
         <nav className="landing-nav">
           <a href="/" className="landing-logo">niro</a>
           <ul>
-            <li><a href="#about">About</a></li>
-            <li><a href="#topics">Life Topics</a></li>
-            <li><a href="#experts">Our Experts</a></li>
+            <li><a href="/topics">Life Topics</a></li>
+            <li><a href="/experts">Experts</a></li>
+            <li><a href={isAuthenticated ? '/app/remedies' : '/login'}>Remedies</a></li>
             <li><a href="#how">How It Works</a></li>
             {isAuthenticated && (
               <>
@@ -1284,7 +1284,7 @@ export default function PublicLandingPage({
                 onClick={handleNavBegin}
                 data-testid="nav-begin-btn"
               >
-                Get a free 10 mins consultation
+                📞 Get a free 10 mins consultation
               </a>
             </li>
           </ul>
