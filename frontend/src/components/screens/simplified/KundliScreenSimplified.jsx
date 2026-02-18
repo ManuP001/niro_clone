@@ -238,15 +238,6 @@ const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate, onTab
       </div>
     );
   }
-          onClick={() => fetchKundli()}
-          className="px-6 py-3 rounded-xl font-medium transition-all"
-          style={{ backgroundColor: 'white', color: '#3E827A' }}
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
 
   if (!kundliData) {
     return (
