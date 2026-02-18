@@ -139,88 +139,79 @@ export default function TopicLandingPage({ token, topicId, onCheckout, onBack, o
 
   return (
     <div 
-      className={`min-h-screen ${hasBottomNav ? 'pb-28' : 'pb-24'}`}
+      className={`min-h-screen ${hasBottomNav ? 'pb-28 md:pb-24' : 'pb-24'}`}
       style={{ background: GRADIENT_BG }}
     >
-      {/* ===== HEADER ===== */}
-      <header 
-        className="sticky top-0 z-50 px-4 py-3 flex items-center gap-3"
-        style={{ 
-          background: 'linear-gradient(180deg, #F8FAF9 0%, rgba(248,250,249,0.98) 100%)',
-          borderBottom: `1px solid ${DIVIDER_COLOR}`,
-        }}
-      >
-        <button 
-          onClick={onBack}
-          className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors"
-          data-testid="landing-back-btn"
-        >
-          <ArrowLeftIcon className="w-5 h-5" style={{ color: colors.text.dark }} />
-        </button>
-        <h1 className="text-lg font-semibold flex-1 truncate" style={{ color: colors.text.dark }}>
-          {content.headerTitle || content.topicKey}
-        </h1>
-      </header>
+      {/* Responsive Header with Back Button */}
+      <ResponsiveHeader
+        title={content.headerTitle || content.topicKey}
+        showBackButton={true}
+        onBack={onBack}
+        onNavigate={onNavigate}
+        onTabChange={onTabChange}
+      />
 
-      {/* ===== HERO - One Line Promise ===== */}
-      <section className="px-5 pt-4 pb-2">
-        <p 
-          className="text-sm text-center leading-relaxed"
-          style={{ color: colors.text.dark }}
-        >
-          {content.heroOneLinePromise}
-        </p>
-      </section>
+      {/* Main Content Container - Centered with max-width */}
+      <div className="max-w-4xl mx-auto">
+        {/* ===== HERO - One Line Promise ===== */}
+        <section className="px-5 md:px-8 pt-4 pb-2">
+          <p 
+            className="text-sm md:text-base text-center leading-relaxed"
+            style={{ color: colors.text.dark }}
+          >
+            {content.heroOneLinePromise}
+          </p>
+        </section>
 
-      {/* ===== PERSONALIZED GREETING ===== */}
-      <section className="px-5 pt-2 pb-4">
-        <h2 className="text-lg font-semibold text-center leading-relaxed" style={{ color: colors.text.dark }}>
-          Hi {displayName}, here are the paths you can choose for your journey
-        </h2>
-      </section>
+        {/* ===== PERSONALIZED GREETING ===== */}
+        <section className="px-5 md:px-8 pt-2 pb-4">
+          <h2 className="text-lg md:text-xl font-semibold text-center leading-relaxed" style={{ color: colors.text.dark }}>
+            Hi {displayName}, here are the paths you can choose for your journey
+          </h2>
+        </section>
 
-      {/* ===== TIER SELECTOR TABS ===== */}
-      <section className="px-5 py-3">
-        <div className="flex gap-2" data-testid="tier-selector-tabs">
-          {TIER_LEVELS.map((tier) => {
-            const isSelected = selectedTier === tier;
-            const isRecommended = tier === 'Supported';
-            const config = V6_TIER_CONFIG[tier];
-            return (
-              <button
-                key={tier}
-                onClick={() => setSelectedTier(tier)}
-                className={`flex-1 py-3 px-2 rounded-xl transition-all relative flex flex-col items-center ${
-                  isSelected ? 'shadow-sm' : ''
-                }`}
-                style={{
-                  backgroundColor: isSelected ? colors.teal.primary : CARD_BG,
-                  color: isSelected ? '#ffffff' : colors.text.secondary,
-                  border: isSelected ? 'none' : `1px solid ${CARD_BORDER}`,
-                }}
-                data-testid={`tier-tab-${tier.toLowerCase()}`}
-              >
-                {/* Recommended badge ONLY on tier selector tabs */}
-                {isRecommended && (
-                  <span 
-                    className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] px-2 py-0.5 rounded-full font-semibold whitespace-nowrap"
-                    style={{ 
-                      backgroundColor: colors.gold.primary,
-                      color: colors.text.dark,
-                    }}
-                  >
-                    Recommended
+        {/* ===== TIER SELECTOR TABS ===== */}
+        <section className="px-5 md:px-8 py-3">
+          <div className="flex gap-2 md:gap-4" data-testid="tier-selector-tabs">
+            {TIER_LEVELS.map((tier) => {
+              const isSelected = selectedTier === tier;
+              const isRecommended = tier === 'Supported';
+              const config = V6_TIER_CONFIG[tier];
+              return (
+                <button
+                  key={tier}
+                  onClick={() => setSelectedTier(tier)}
+                  className={`flex-1 py-3 md:py-4 px-2 md:px-4 rounded-xl transition-all relative flex flex-col items-center ${
+                    isSelected ? 'shadow-sm' : ''
+                  }`}
+                  style={{
+                    backgroundColor: isSelected ? colors.teal.primary : CARD_BG,
+                    color: isSelected ? '#ffffff' : colors.text.secondary,
+                    border: isSelected ? 'none' : `1px solid ${CARD_BORDER}`,
+                  }}
+                  data-testid={`tier-tab-${tier.toLowerCase()}`}
+                >
+                  {/* Recommended badge ONLY on tier selector tabs */}
+                  {isRecommended && (
+                    <span 
+                      className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[9px] md:text-[10px] px-2 py-0.5 rounded-full font-semibold whitespace-nowrap"
+                      style={{ 
+                        backgroundColor: colors.gold.primary,
+                        color: colors.text.dark,
+                      }}
+                    >
+                      Recommended
+                    </span>
+                  )}
+                  <span className="text-sm md:text-base font-semibold">{tier}</span>
+                  <span className={`text-[10px] md:text-xs mt-0.5 ${isSelected ? 'opacity-80' : 'opacity-60'}`}>
+                    {config.label}
                   </span>
-                )}
-                <span className="text-sm font-semibold">{tier}</span>
-                <span className={`text-[10px] mt-0.5 ${isSelected ? 'opacity-80' : 'opacity-60'}`}>
-                  {config.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
       {/* ===== TIER SUMMARY CARD (2x2 Grid Design) ===== */}
       <section className="px-5 py-2">
