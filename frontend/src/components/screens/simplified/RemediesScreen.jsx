@@ -327,33 +327,35 @@ export default function RemediesScreen({ hasBottomNav, onTabChange, onNavigate }
 
   return (
     <div 
-      className={`min-h-screen flex flex-col ${hasBottomNav ? 'pb-20' : ''}`}
+      className={`min-h-screen flex flex-col ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`}
       style={{ 
-        background: colors.background.gradient,
+        backgroundColor: colors.background.primary,
         paddingTop: 'env(safe-area-inset-top)',
       }}
     >
-      {/* Header */}
-      <div className="px-5 pt-6 pb-4">
+      {/* Responsive Header */}
+      <ResponsiveHeader
+        title="Remedies"
+        showBackButton={false}
+        onNavigate={onNavigate}
+        onTabChange={onTabChange}
+      />
+
+      {/* Header Section */}
+      <div className="px-5 md:px-8 pt-6 pb-4 max-w-6xl mx-auto w-full">
         <h1 
-          className="text-2xl font-bold mb-1"
-          style={{ 
-            fontFamily: "'Kumbh Sans', sans-serif",
-            background: colors.logo.gradient,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
+          className="text-2xl md:text-3xl font-bold mb-1"
+          style={{ color: colors.text.dark }}
         >
           Remedies
         </h1>
-        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.8)' }}>
+        <p className="text-sm md:text-base" style={{ color: colors.text.secondary }}>
           Curated solutions for your life situations
         </p>
       </div>
 
       {/* Category Pills */}
-      <div className="px-5 pb-4">
+      <div className="px-5 md:px-8 pb-4 max-w-6xl mx-auto w-full">
         <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
           {REMEDY_CATEGORIES.map((cat) => (
             <button
@@ -361,9 +363,10 @@ export default function RemediesScreen({ hasBottomNav, onTabChange, onNavigate }
               onClick={() => setSelectedCategory(cat.id)}
               className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all"
               style={selectedCategory === cat.id
-                ? { backgroundColor: colors.gold.primary, color: colors.text.dark }
-                : { backgroundColor: 'rgba(255,255,255,0.15)', color: colors.text.primary, border: `1px solid ${colors.ui.border}` }
+                ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
+                : { backgroundColor: '#ffffff', color: colors.text.muted, border: `1px solid ${colors.ui.borderDark}` }
               }
+              data-testid={`remedy-filter-${cat.id}`}
             >
               {cat.label}
             </button>
@@ -371,22 +374,20 @@ export default function RemediesScreen({ hasBottomNav, onTabChange, onNavigate }
         </div>
       </div>
 
-      {/* Remedies List */}
-      <div 
-        className="flex-1 px-5 pb-6 rounded-t-3xl -mt-2"
-        style={{ backgroundColor: colors.background.card }}
-      >
-        <div className="pt-6 space-y-4">
+      {/* Remedies List - Responsive Grid */}
+      <div className="flex-1 px-5 md:px-8 pb-6 max-w-6xl mx-auto w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredRemedies.map((remedy) => (
             <div
               key={remedy.id}
               onClick={() => setSelectedRemedy(remedy)}
-              className="rounded-xl p-4 transition-all active:scale-[0.99] cursor-pointer"
+              className="rounded-xl p-4 transition-all active:scale-[0.99] cursor-pointer hover:shadow-md"
               style={{ 
                 backgroundColor: '#ffffff',
                 border: `1px solid ${colors.ui.borderDark}`,
                 boxShadow: shadows.sm,
               }}
+              data-testid={`remedy-card-${remedy.id}`}
             >
               <div className="flex gap-4">
                 {/* Icon */}
@@ -400,21 +401,21 @@ export default function RemediesScreen({ hasBottomNav, onTabChange, onNavigate }
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-sm line-clamp-1" style={{ color: colors.text.dark }}>
+                    <h3 className="font-semibold text-sm md:text-base line-clamp-1" style={{ color: colors.text.dark }}>
                       {remedy.title}
                     </h3>
                     <ChevronRightIcon className="w-5 h-5 flex-shrink-0" style={{ color: colors.text.mutedDark }} />
                   </div>
-                  <p className="text-xs mt-1 line-clamp-2" style={{ color: colors.text.secondary }}>
+                  <p className="text-xs md:text-sm mt-1 line-clamp-2" style={{ color: colors.text.secondary }}>
                     {remedy.description}
                   </p>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-1">
-                      <StarIcon className="w-3.5 h-3.5" style={{ color: '#F59E0B' }} filled />
+                      <StarIcon className="w-3.5 h-3.5" style={{ color: colors.peach.primary }} filled />
                       <span className="text-xs font-medium" style={{ color: colors.text.dark }}>{remedy.rating}</span>
                       <span className="text-xs" style={{ color: colors.text.mutedDark }}>({remedy.reviews})</span>
                     </div>
-                    <span className="font-bold text-sm" style={{ color: colors.teal.primary }}>
+                    <span className="font-bold text-sm md:text-base" style={{ color: colors.teal.primary }}>
                       {formatPrice(remedy.price)}
                     </span>
                   </div>
@@ -425,23 +426,23 @@ export default function RemediesScreen({ hasBottomNav, onTabChange, onNavigate }
         </div>
 
         {/* Trust Section */}
-        <div className="mt-6 p-4 rounded-xl" style={{ backgroundColor: `${colors.teal.primary}08` }}>
+        <div className="mt-6 p-4 md:p-6 rounded-xl" style={{ backgroundColor: `${colors.teal.primary}08` }}>
           <div className="flex items-center gap-3 mb-3">
-            <ShieldIcon className="w-5 h-5" style={{ color: colors.teal.primary }} />
-            <span className="font-semibold text-sm" style={{ color: colors.text.dark }}>Why Niro Remedies?</span>
+            <ShieldIcon className="w-5 h-5 md:w-6 md:h-6" style={{ color: colors.teal.primary }} />
+            <span className="font-semibold text-sm md:text-base" style={{ color: colors.text.dark }}>Why Niro Remedies?</span>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 md:grid md:grid-cols-3 md:gap-4 md:space-y-0">
             <div className="flex items-center gap-2">
               <CheckIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
-              <span className="text-xs" style={{ color: colors.text.secondary }}>All poojas performed by verified priests</span>
+              <span className="text-xs md:text-sm" style={{ color: colors.text.secondary }}>All poojas performed by verified priests</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
-              <span className="text-xs" style={{ color: colors.text.secondary }}>Gemstones certified and energized</span>
+              <span className="text-xs md:text-sm" style={{ color: colors.text.secondary }}>Gemstones certified and energized</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckIcon className="w-4 h-4" style={{ color: colors.teal.primary }} />
-              <span className="text-xs" style={{ color: colors.text.secondary }}>100% satisfaction guaranteed on all products</span>
+              <span className="text-xs md:text-sm" style={{ color: colors.text.secondary }}>100% satisfaction guaranteed on all products</span>
             </div>
           </div>
         </div>
