@@ -2,26 +2,32 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import LoginScreen from './components/screens/LoginScreen';
 import AuthCallback from './components/screens/AuthCallback';
-import OnboardingScreen from './components/screens/OnboardingScreen';
-import HomeScreen from './components/screens/HomeScreen';
-import ChatScreen from './components/screens/ChatScreen';
-import KundliScreen from './components/screens/KundliScreen';
-import HoroscopeScreen from './components/screens/HoroscopeScreen';
-import PanchangScreen from './components/screens/PanchangScreen';
-import CandidateSignalsScreen from './components/screens/CandidateSignalsScreen';
-import BottomNav from './components/BottomNav';
 import { ChatProvider } from './context/ChatContext';
-import { getAuthToken, getCurrentUser, getUserProfile, clearAuthToken } from './utils/auth';
+import { getAuthToken, getCurrentUser, clearAuthToken } from './utils/auth';
 import { getBackendUrl } from './config';
 
 // Admin Dashboard
 import AdminDashboard from './components/admin/AdminDashboard';
 
-// NIRO V2 Imports
-import { NiroV2App } from './components/screens/v2';
+// NIRO V10 Imports - New Landing Page Flow
+import { 
+  SimplifiedApp, 
+  PublicLandingPage, 
+  getUserIntent, 
+  clearUserIntent 
+} from './components/screens/simplified';
 
-// NIRO Simplified V1 Imports
-import { SimplifiedApp, SimplifiedAppV5 } from './components/screens/simplified';
+/**
+ * App.js - V10 Routing with Public Landing Page
+ * 
+ * Entry Flow:
+ * 1. All users land on PublicLandingPage (public, no auth required)
+ * 2. CTAs trigger login with intent stored in localStorage
+ * 3. After login, route based on intent + user type:
+ *    - free_call: Birth Details → Schedule Call
+ *    - consultation:topic_id: Birth Details → Topics → Packages
+ * 4. Logged-in users see landing page with access to app via nav
+ */
 
 function App() {
   const [authState, setAuthState] = useState({
@@ -32,13 +38,12 @@ function App() {
     token: null,
     userId: null,
   });
-  const [activeScreen, setActiveScreen] = useState('home');
-  // NIRO V2: Toggle between legacy and V2 UI
-  const [useV2UI, setUseV2UI] = useState(false); // Default to Simplified
-  // NIRO Simplified V1: New simplified flow
-  const [useSimplified, setUseSimplified] = useState(true); // Default to Simplified V1
-  // V5: Toggle between V4 and V5 onboarding
-  const [useV5Flow, setUseV5Flow] = useState(false); // Default to V4
+  
+  // View state: 'landing' | 'login' | 'app'
+  const [currentView, setCurrentView] = useState('landing');
+  
+  // App navigation params (for passing intent to SimplifiedApp)
+  const [appParams, setAppParams] = useState(null);
 
   // Check for admin route
   const isAdminRoute = window.location.pathname.startsWith('/admin');
@@ -62,7 +67,7 @@ function App() {
 
     const checkAuth = async () => {
       const token = getAuthToken();
-      const backendUrl = getBackendUrl(); // Get fresh URL each time
+      const backendUrl = getBackendUrl();
       
       if (!token) {
         setAuthState({
@@ -96,7 +101,7 @@ function App() {
           isLoading: false,
           isAuthenticated: true,
           user,
-          profileComplete: user.profile_complete,
+          profileComplete: user.profile_complete || !!user.dob,
           token,
           userId: user.id,
         });
@@ -117,16 +122,16 @@ function App() {
     checkAuth();
   }, []);
 
+  // Handle login success
   const handleLoginSuccess = (user, token) => {
-    // Store auth token properly
     if (token && user?.user_id) {
       localStorage.setItem('auth_token', token);
       localStorage.setItem('user_id', user.user_id);
     }
     
-    // Check if user already has profile complete (returning user with birth details)
-    // If profile is complete, mark user details as completed to skip that screen
-    if (user?.profile_complete || user?.dob) {
+    const profileComplete = user?.profile_complete || !!user?.dob;
+    
+    if (profileComplete) {
       localStorage.setItem('niro_user_details_completed', 'true');
       localStorage.setItem('niro_onboarding_completed', 'true');
     }
@@ -135,19 +140,32 @@ function App() {
       isLoading: false,
       isAuthenticated: true,
       user,
-      profileComplete: user?.profile_complete || false,
+      profileComplete,
       token,
       userId: user?.user_id,
     });
     
-    // Navigate to main app (clear auth callback path)
+    // Clear URL path after OAuth callback
     if (window.location.pathname === '/auth/callback') {
       window.history.replaceState(null, '', '/');
     }
+    
+    // Check for stored intent and navigate accordingly
+    const intent = getUserIntent();
+    if (intent) {
+      // Pass intent to app for routing
+      setAppParams({ intent, isNewUser: !profileComplete });
+      setCurrentView('app');
+    } else {
+      // No intent - go to landing page (logged in state)
+      setCurrentView('landing');
+    }
   };
 
+  // Handle auth error
   const handleAuthError = (error) => {
     console.error('Auth error:', error);
+    clearUserIntent(); // Clear any stored intent
     setAuthState({
       isLoading: false,
       isAuthenticated: false,
@@ -156,20 +174,14 @@ function App() {
       token: null,
       userId: null,
     });
-    // Navigate back to login
     window.history.replaceState(null, '', '/');
+    setCurrentView('landing');
   };
 
-  const handleOnboardingComplete = () => {
-    setAuthState((prev) => ({
-      ...prev,
-      profileComplete: true,
-    }));
-    setActiveScreen('chat');
-  };
-
+  // Handle logout
   const handleLogout = () => {
     clearAuthToken();
+    clearUserIntent();
     setAuthState({
       isLoading: false,
       isAuthenticated: false,
@@ -178,24 +190,41 @@ function App() {
       token: null,
       userId: null,
     });
-    setActiveScreen('home');
+    setCurrentView('landing');
+  };
+
+  // Handle login click from landing page
+  const handleLoginClick = () => {
+    setCurrentView('login');
+  };
+
+  // Handle navigation to app from landing page (for logged-in users)
+  const handleNavigateToApp = (screen, params = {}) => {
+    setAppParams({ screen, ...params });
+    setCurrentView('app');
+  };
+
+  // Handle back to landing from app
+  const handleBackToLanding = () => {
+    setAppParams(null);
+    setCurrentView('landing');
   };
 
   // Show loading state
   if (authState.isLoading) {
     return (
-      <div className="h-screen w-full bg-white flex items-center justify-center">
+      <div className="h-screen w-full flex items-center justify-center" style={{ backgroundColor: '#FBF8F3' }}>
         <div className="text-center">
-          <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-lg font-bold">N</span>
+          <div className="w-12 h-12 bg-gradient-to-br from-teal-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-white text-lg font-bold" style={{ fontFamily: "'Lexend', sans-serif" }}>n</span>
           </div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600" style={{ fontFamily: "'Lexend', sans-serif" }}>Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Handle OAuth callback - process session_id BEFORE checking auth
+  // Handle OAuth callback
   if (isAuthCallback) {
     return (
       <AuthCallback 
@@ -205,86 +234,39 @@ function App() {
     );
   }
 
-  // Show login screen if not authenticated
-  if (!authState.isAuthenticated) {
+  // Show login screen
+  if (currentView === 'login') {
     return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // NIRO Simplified V1.5: Skip birth details onboarding, go directly to app
-  // Only require login (phone/email), then proceed to simplified experience
-  if (useSimplified) {
+  // Show app (for authenticated users with intent or direct navigation)
+  if (currentView === 'app' && authState.isAuthenticated) {
     return (
       <ChatProvider>
-        <div className="App min-h-screen bg-gray-50">
-          {/* Full-width responsive container - no phone frame */}
+        <div className="App min-h-screen" style={{ backgroundColor: '#FBF8F3' }}>
           <SimplifiedApp 
             token={authState.token} 
             userId={authState.userId}
             user={authState.user}
+            initialIntent={appParams?.intent}
+            initialScreen={appParams?.screen}
+            initialParams={appParams}
+            onBackToLanding={handleBackToLanding}
+            onLogout={handleLogout}
           />
         </div>
       </ChatProvider>
     );
   }
 
-  // Show onboarding if profile incomplete (for V2 and legacy modes only)
-  if (!authState.profileComplete) {
-    return (
-      <OnboardingScreen token={authState.token} onComplete={handleOnboardingComplete} />
-    );
-  }
-
-  // Authenticated and profile complete - show main app
-  const renderScreen = () => {
-    // NIRO V2: Use new UI if enabled
-    if (useV2UI) {
-      return (
-        <NiroV2App 
-          token={authState.token} 
-          userId={authState.userId}
-          existingChat={() => setActiveScreen('chat')}
-        />
-      );
-    }
-    
-    // Legacy UI
-    switch (activeScreen) {
-      case 'home':
-        return <HomeScreen onNavigate={setActiveScreen} />;
-      case 'chat':
-        return <ChatScreen token={authState.token} userId={authState.userId} />;
-      case 'kundli':
-        return <KundliScreen token={authState.token} userId={authState.userId} />;
-      case 'horoscope':
-        return <HoroscopeScreen />;
-      case 'panchang':
-        return <PanchangScreen />;
-      case 'signals':
-        return <CandidateSignalsScreen 
-          userId={authState.userId}
-        />;
-      default:
-        return <HomeScreen onNavigate={setActiveScreen} />;
-    }
-  };
-
+  // Default: Show public landing page (for all users - logged in or not)
   return (
-    <ChatProvider>
-      <div className="App min-h-screen bg-gray-50 flex flex-col lg:items-center lg:justify-center lg:p-4">
-        {/* Desktop: centered container with max width */}
-        <div className="w-full h-screen lg:h-auto lg:max-w-[840px] lg:rounded-lg lg:shadow-xl lg:bg-white flex flex-col lg:min-h-screen">
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Add padding-bottom for fixed bottom nav on mobile */}
-            <div className="flex-1 overflow-y-auto pb-20 lg:pb-0">
-              {renderScreen()}
-            </div>
-            {!useV2UI && !useSimplified && (
-              <BottomNav activeScreen={activeScreen} onNavigate={setActiveScreen} onLogout={handleLogout} />
-            )}
-          </div>
-        </div>
-      </div>
-    </ChatProvider>
+    <PublicLandingPage
+      isAuthenticated={authState.isAuthenticated}
+      user={authState.user}
+      onLoginClick={handleLoginClick}
+      onNavigateToApp={handleNavigateToApp}
+    />
   );
 }
 
