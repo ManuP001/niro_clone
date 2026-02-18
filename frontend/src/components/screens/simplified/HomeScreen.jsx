@@ -4,6 +4,7 @@ import { SparklesIcon, PhoneIcon, ConsultIcon, ShieldIcon } from './icons';
 import { trackEvent } from './utils';
 import { getBackendUrl } from '../../../config';
 import ResponsiveHeader from './ResponsiveHeader';
+import AppFooter from './AppFooter';
 
 /**
  * HomeScreen V11 - Phase 3 Responsive Layout
