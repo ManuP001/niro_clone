@@ -2,9 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { BACKEND_URL } from '../../../config';
 import DOMPurify from 'dompurify';
 import BirthDetailsModal from './BirthDetailsModal';
+import { colors, shadows } from './theme';
+import ResponsiveHeader from './ResponsiveHeader';
 
 // Teal gradient background (same as login screen)
-const TEAL_GRADIENT = 'linear-gradient(180deg, #3E827A 0%, rgba(255, 255, 195, 0.58) 100%)';
+const TEAL_GRADIENT = `linear-gradient(180deg, ${colors.teal.primary} 0%, ${colors.teal.soft} 100%)`;
 
 // Chart style options
 const CHART_STYLES = {
@@ -21,11 +23,11 @@ const CHART_STYLES = {
 };
 
 /**
- * KundliScreenSimplified - Kundli view with NIRO V2 styling
+ * KundliScreenSimplified V2 - Kundli view with ResponsiveHeader
  * Shows for both new and returning users
  * If birth details missing, shows collection modal
  */
-const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate }) => {
+const KundliScreenSimplified = ({ token, userId, hasBottomNav, onNavigate, onTabChange }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [kundliData, setKundliData] = useState(null);
