@@ -21,6 +21,9 @@ export { default as NiroGuideChat } from './NiroGuideChat';
 export { default as PublicLandingPage, setUserIntent, getUserIntent, clearUserIntent } from './PublicLandingPage';
 export { default as ScheduleCallScreen } from './ScheduleCallScreen';
 
+// V11 Responsive Components
+export { default as ResponsiveHeader } from './ResponsiveHeader';
+
 // V5 Screens
 export * from './v5Screens';
 
