@@ -189,16 +189,17 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 
 ### Phase 17: Public Access & Navigation (Feb 2026)
 1. **Public Experts Page** - /experts route accessible without login
-   - PublicExpertsPage.jsx - Lists all experts with search and filters
+   - PublicExpertsPage.jsx - Lists all 31 experts with search and filters
+   - Fixed API endpoint to /api/simplified/experts/all
    - Back button navigates to home (/)
    - CTA button links to /login for unauthenticated users
-   - Responsive grid layout with expert cards
+   - Responsive grid layout with expert cards, photos, ratings
 2. **Public Expert Profile Page** - /experts/:expertId route
    - PublicExpertProfilePage.jsx - Shows individual expert details
    - CTA to book consultation (redirects to login)
    - Responsive layout with stats and info sections
 3. **Public Life Topics Page** - /topics route accessible without login
-   - PublicTopicsPage.jsx - Shows all life topic categories
+   - PublicTopicsPage.jsx - Shows all 22 life topic tiles across 4 categories
    - Includes new "Fertility & Family Planning" category with "Coming Soon" badge
    - Topics: Fertility Support, Baby Naming & Muhurat, Delivery Muhurat, Teenagers Mental Health
    - Search functionality for filtering topics
@@ -210,6 +211,28 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 5. **ResponsiveHeader Home Link** - Added "Home" nav item for logged-in users
    - NAV_ITEMS includes { id: 'home', label: 'Home', href: '/' }
    - Provides seamless navigation back to public landing page
+
+### Phase 18: Landing Pages Redesign (Feb 2026)
+1. **TopicLandingPage V7 Redesign** - Complete UI overhaul
+   - ResponsiveHeader integration with back button and "📞 Get a free 10 mins consultation" CTA
+   - Cream background (#FBF8F3) with white card sections (#FFFFFF)
+   - Pill-shaped tier selector tabs (Focussed, Supported, Comprehensive) with "Recommended" badge
+   - Tier summary card with 2x2 grid: Duration, Consultation, Follow-ups, Chat (with teal icons)
+   - Outcomes section in 3-column grid: Clarity, Timeline, Support
+   - "How will your journey unfold" section with numbered steps
+   - Expert widget carousel with profile cards
+   - "Why Niro?" trust section with checkmark bullets
+   - Expandable FAQ section in 2-column grid
+   - Sticky CTA bar with peach "Start my journey" button and price
+2. **PackageLandingPage V2 Redesign** - Complete UI overhaul
+   - ResponsiveHeader integration
+   - Centered max-width container (max-w-3xl)
+   - Trust badges with pill-shaped design
+   - Package overview card with price and "What's included" grid
+   - Expandable help sections and analysis sections
+   - Deliverables section with peach-colored checkmarks
+   - Trust & Privacy note section
+   - Sticky CTA bar with peach "Start my journey" button
 
 ---
 
