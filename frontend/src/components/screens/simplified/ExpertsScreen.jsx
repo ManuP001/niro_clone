@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { colors, shadows } from './theme';
 import { apiSimplified, trackEvent } from './utils';
 import { StarIcon, ChevronRightIcon } from './icons';
+import ResponsiveHeader from './ResponsiveHeader';
 
 /**
- * ExpertsScreen - Browse all experts grouped by modality
- * V5: Updated with teal color scheme to match other tabs
+ * ExpertsScreen V2 - Responsive Layout with Desktop Header
+ * - Multi-column grid on desktop
+ * - Centered max-width container
+ * - Desktop navigation header
  */
-export default function ExpertsScreen({ token, userState, onNavigate }) {
+export default function ExpertsScreen({ token, userState, onNavigate, onTabChange, hasBottomNav = true }) {
   const [experts, setExperts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedModality, setSelectedModality] = useState('all');
