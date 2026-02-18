@@ -23,6 +23,7 @@ export { default as ScheduleCallScreen } from './ScheduleCallScreen';
 
 // V11 Responsive Components
 export { default as ResponsiveHeader } from './ResponsiveHeader';
+export { default as AppFooter } from './AppFooter';
 
 // V5 Screens
 export * from './v5Screens';
