@@ -290,6 +290,25 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
    - Fetches from /api/admin/public/homepage-data (4 categories)
    - 22 topic tiles across Love, Career, Health, Fertility categories
 
+### Phase 22: Navigation & Routing Fixes (Feb 18, 2026)
+1. **Homepage Topic Card Fix**
+   - "Talk about Career", "Talk about Health" etc. now navigate to /topics (category browsing)
+   - Previously incorrectly navigated to individual topic landing pages
+   - Updated handleBeginConsultation in PublicLandingPage.jsx
+2. **Expert Consultation Button Fix**
+   - "Get a free 10 mins consultation" now stores intent with returnTo: /app/schedule
+   - User redirected to scheduling page (not /app/experts) after login
+   - Updated handleConsultClick in PublicExpertProfilePage.jsx
+3. **Topics Without Packages - Coming Soon**
+   - Added TOPICS_WITH_PACKAGES constant: ['career_clarity', 'marriage_planning', 'stress_management', 'relationship_healing']
+   - Tiles without packages show "Coming Soon" badge and are disabled
+   - Prevents navigation to empty topic landing pages
+   - Updated CategoryModule in PublicTopicsPage.jsx
+4. **Topic Landing Page - No Packages Message**
+   - Shows friendly "Coming Soon" message instead of error
+   - "Browse Available Topics" button to navigate back
+   - Updated PublicTopicLandingPage.jsx
+
 ---
 
 ## Technical Architecture
