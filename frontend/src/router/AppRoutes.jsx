@@ -7,6 +7,7 @@ import PublicExpertsPage from '../components/screens/simplified/PublicExpertsPag
 import PublicExpertProfilePage from '../components/screens/simplified/PublicExpertProfilePage';
 import PublicTopicsPage from '../components/screens/simplified/PublicTopicsPage';
 import PublicTopicLandingPage from '../components/screens/simplified/PublicTopicLandingPage';
+import PublicRemediesPage from '../components/screens/simplified/PublicRemediesPage';
 import LoginScreen from '../components/screens/LoginScreen';
 import AuthCallback from '../components/screens/AuthCallback';
 
