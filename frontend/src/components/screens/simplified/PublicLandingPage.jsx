@@ -1622,6 +1622,13 @@ export default function PublicLandingPage({
                   </svg>
                   <span className="certified-text">Niro Certified</span>
                 </div>
+                <button 
+                  className="view-profile-btn"
+                  onClick={() => isAuthenticated ? onNavigateToApp('experts') : onLoginClick()}
+                  data-testid={`view-profile-btn-${i}`}
+                >
+                  View Profile
+                </button>
               </div>
             ))}
             
