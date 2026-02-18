@@ -174,12 +174,16 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 ### Key Files (Updated for Redesign)
 - `/app/frontend/src/index.css` - CSS variables and Lexend font
 - `/app/frontend/src/components/screens/simplified/theme.js` - V10 design tokens
-- `/app/frontend/src/components/screens/simplified/ResponsiveHeader.jsx` - V11 reusable desktop header
+- `/app/frontend/src/components/screens/simplified/ResponsiveHeader.jsx` - V11 reusable desktop header (text-3xl md:text-4xl logo)
+- `/app/frontend/src/components/screens/simplified/TileCard.jsx` - V2 responsive tiles with hover effects
 - `/app/frontend/src/components/screens/simplified/HomeScreen.jsx` - V11 hero + responsive 3-col grid
 - `/app/frontend/src/components/screens/simplified/ExpertsScreen.jsx` - V2 responsive 3-col grid
+- `/app/frontend/src/components/screens/simplified/ExpertProfileScreen.jsx` - V3 with ResponsiveHeader
+- `/app/frontend/src/components/screens/simplified/RemediesScreen.jsx` - V2 with ResponsiveHeader and 3-col grid
+- `/app/frontend/src/components/screens/simplified/MyPackScreen.jsx` - V2 with ResponsiveHeader
 - `/app/frontend/src/components/screens/simplified/TopicLandingPage.jsx` - Responsive centered layout
 - `/app/frontend/src/components/screens/simplified/CheckoutScreen.jsx` - V2 responsive centered layout
-- `/app/frontend/src/components/screens/simplified/SimplifiedApp.jsx` - Phone frame removed
+- `/app/frontend/src/components/screens/simplified/SimplifiedApp.jsx` - Phone frame removed, onTabChange prop passing
 - `/app/frontend/src/components/screens/simplified/BottomNav.jsx` - Mobile-only (md:hidden)
 - `/app/frontend/src/components/screens/LoginScreen.jsx` - New login design
 - `/app/frontend/src/App.js` - Removed phone frame wrapper
