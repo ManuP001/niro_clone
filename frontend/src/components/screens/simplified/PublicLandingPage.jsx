@@ -130,12 +130,20 @@ export default function PublicLandingPage({
     window.location.href = '/topics';
   };
 
-  // Handle nav link to go to app section
+  // Handle nav link to go to app section - mostly for authenticated users
   const handleNavToApp = (e, section) => {
     e.preventDefault();
-    if (isAuthenticated) {
+    // For public sections, navigate directly
+    if (section === 'topics') {
+      window.location.href = '/topics';
+    } else if (section === 'experts') {
+      window.location.href = '/experts';
+    } else if (section === 'remedies') {
+      window.location.href = '/remedies';
+    } else if (isAuthenticated) {
       onNavigateToApp(section);
     } else {
+      // For authenticated-only sections, redirect to login
       setUserIntent({ type: `browse_${section}` });
       onLoginClick();
     }
