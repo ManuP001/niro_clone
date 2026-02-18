@@ -278,14 +278,17 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 - [x] "Fertility & Family Planning" category with Coming Soon badge
 - [x] Landing page navigation to public pages (no login required)
 - [x] "Home" nav link in ResponsiveHeader for logged-in users
+- [x] Fixed API endpoint for experts (/api/simplified/experts/all)
 
-### Phase 2: Life Topics Page Redesign (P1 - NEXT)
-- [ ] Redesign TopicLandingPage.jsx to match homepage aesthetic
-- [ ] Add new "Fertility & Family Planning" topics to authenticated flow
+### Phase 2: Life Topics & Package Landing Pages Redesign ✅ COMPLETE (Feb 2026)
+- [x] TopicLandingPage V7 redesign with cream/white card design
+- [x] PackageLandingPage V2 redesign with ResponsiveHeader
+- [x] Pill-shaped tier selector tabs
+- [x] Sticky CTA bar with peach "Start my journey" button
+- [x] Outcomes section in 3-column grid
 
-### Phase 3: UI/UX Polish (P1)
+### Phase 3: UI/UX Polish (P1 - NEXT)
 - [ ] Redesign Birth details screen
-- [ ] Redesign packages' landing pages
 - [ ] Audit all authenticated screens for profile icon visibility
 - [ ] Site-wide check for consistent back buttons
 
