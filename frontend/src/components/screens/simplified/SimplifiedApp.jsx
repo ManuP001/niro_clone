@@ -455,7 +455,7 @@ export default function SimplifiedApp({
   }
 
   // Determine if bottom nav should be shown
-  const showBottomNav = !['checkout', 'profile', 'categoryListing'].includes(screen);
+  const showBottomNav = !['checkout', 'profile', 'categoryListing', 'schedule'].includes(screen);
 
   // Render current screen
   const renderScreen = () => {
