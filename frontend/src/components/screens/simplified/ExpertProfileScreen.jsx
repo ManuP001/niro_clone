@@ -77,13 +77,16 @@ export default function ExpertProfileScreen({ token, expertId, userState, onNavi
 
   if (loading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${hasBottomNav ? 'pb-20' : ''}`} style={{ backgroundColor: '#f5f0e3' }}>
+      <div 
+        className={`min-h-screen flex items-center justify-center ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`} 
+        style={{ backgroundColor: colors.background.primary }}
+      >
         <div className="text-center">
           <div 
             className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4"
-            style={{ borderColor: 'rgba(215,184,112,0.3)', borderTopColor: '#d7b870' }}
+            style={{ borderColor: `${colors.teal.primary}30`, borderTopColor: colors.teal.primary }}
           />
-          <p style={{ color: '#9a8a6a' }}>Loading expert...</p>
+          <p style={{ color: colors.text.muted }}>Loading expert...</p>
         </div>
       </div>
     );
@@ -91,35 +94,42 @@ export default function ExpertProfileScreen({ token, expertId, userState, onNavi
 
   if (!expert) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${hasBottomNav ? 'pb-20' : ''}`} style={{ backgroundColor: '#f5f0e3' }}>
+      <div 
+        className={`min-h-screen flex items-center justify-center ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`} 
+        style={{ backgroundColor: colors.background.primary }}
+      >
         <div className="text-center">
-          <p style={{ color: '#5c5c5c' }}>Expert not found</p>
-          <button onClick={onBack} className="mt-4 font-medium" style={{ color: '#d7b870' }}>Go back</button>
+          <p style={{ color: colors.text.dark }}>Expert not found</p>
+          <button onClick={onBack} className="mt-4 font-medium" style={{ color: colors.teal.primary }}>Go back</button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen ${hasBottomNav ? 'pb-24' : 'pb-6'}`} style={{ backgroundColor: '#f5f0e3' }}>
-      {/* Header with Photo */}
+    <div 
+      className={`min-h-screen ${hasBottomNav ? 'pb-28 md:pb-24' : 'pb-24'}`} 
+      style={{ backgroundColor: colors.background.primary }}
+    >
+      {/* Responsive Header */}
+      <ResponsiveHeader
+        title={expert.name}
+        showBackButton={true}
+        onBack={onBack}
+        onNavigate={onNavigate}
+        onTabChange={onTabChange}
+      />
+
+      {/* Hero Section with Expert Photo */}
       <div 
-        className="relative px-6 pt-12 pb-20"
-        style={{ background: 'linear-gradient(135deg, #d7b870 0%, #c9a85a 100%)' }}
+        className="relative px-6 pt-8 pb-20 md:pb-24"
+        style={{ background: `linear-gradient(135deg, ${colors.teal.primary} 0%, ${colors.teal.dark} 100%)` }}
       >
-        <button 
-          onClick={onBack} 
-          className="mb-4 flex items-center transition-colors"
-          style={{ color: 'rgba(240,233,209,0.8)' }}
-        >
-          <span className="mr-2">←</span> Back
-        </button>
-        
         {/* Expert Photo - Centered, overlapping bottom */}
         <div className="absolute left-1/2 -translate-x-1/2 -bottom-16">
           <div 
-            className="w-32 h-32 rounded-full overflow-hidden border-4 shadow-lg"
-            style={{ borderColor: '#f5f0e3' }}
+            className="w-32 h-32 md:w-36 md:h-36 rounded-full overflow-hidden border-4 shadow-lg"
+            style={{ borderColor: colors.background.primary }}
           >
             {expert.photo_url ? (
               <img 
@@ -130,41 +140,43 @@ export default function ExpertProfileScreen({ token, expertId, userState, onNavi
             ) : (
               <div 
                 className="w-full h-full flex items-center justify-center text-5xl"
-                style={{ background: 'linear-gradient(135deg, rgba(215,184,112,0.5) 0%, rgba(229,209,136,0.5) 100%)' }}
+                style={{ backgroundColor: `${colors.teal.soft}` }}
               >
-                👤
+                <span style={{ color: colors.teal.primary }}>
+                  {expert.name?.charAt(0) || '👤'}
+                </span>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="px-6 pt-20">
+      {/* Content Container - Centered */}
+      <div className="max-w-2xl mx-auto px-6 pt-20">
         {/* Name & Modality */}
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold" style={{ color: '#5c5c5c' }}>{expert.name}</h1>
-          <p className="font-medium mt-1" style={{ color: '#d7b870' }}>{expert.modality_label}</p>
+          <h1 className="text-2xl md:text-3xl font-bold" style={{ color: colors.text.dark }}>{expert.name}</h1>
+          <p className="font-medium mt-1 text-base md:text-lg" style={{ color: colors.teal.primary }}>{expert.modality_label}</p>
           
           {/* Rating */}
-          <div className="flex items-center justify-center mt-2">
-            <span style={{ color: '#d7b870' }}>★</span>
-            <span className="ml-1 font-medium" style={{ color: '#5c5c5c' }}>{expert.rating}</span>
-            <span className="mx-2" style={{ color: '#e5d188' }}>|</span>
-            <span style={{ color: '#9a8a6a' }}>{expert.total_consultations || '500+'}+ consultations</span>
+          <div className="flex items-center justify-center mt-2 text-sm md:text-base">
+            <span style={{ color: colors.peach.primary }}>★</span>
+            <span className="ml-1 font-medium" style={{ color: colors.text.dark }}>{expert.rating}</span>
+            <span className="mx-2" style={{ color: colors.ui.borderDark }}>|</span>
+            <span style={{ color: colors.text.muted }}>{expert.total_consultations || '500+'}+ consultations</span>
           </div>
         </div>
 
         {/* Best For Tags */}
         {expert.best_for_tags?.length > 0 && (
           <div className="mb-6">
-            <h3 className="font-semibold mb-2" style={{ color: '#5c5c5c' }}>Best for</h3>
+            <h3 className="font-semibold mb-2 text-sm md:text-base" style={{ color: colors.text.dark }}>Best for</h3>
             <div className="flex flex-wrap gap-2">
               {expert.best_for_tags.map((tag, idx) => (
                 <span 
                   key={idx} 
-                  className="px-3 py-1 rounded-full text-sm"
-                  style={{ backgroundColor: 'rgba(215,184,112,0.2)', color: '#7a6a4a' }}
+                  className="px-3 py-1.5 rounded-full text-sm"
+                  style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.dark }}
                 >
                   {tag}
                 </span>
@@ -176,13 +188,13 @@ export default function ExpertProfileScreen({ token, expertId, userState, onNavi
         {/* Topics */}
         {expert.topics?.length > 0 && (
           <div className="mb-6">
-            <h3 className="font-semibold mb-2" style={{ color: '#5c5c5c' }}>Topics</h3>
+            <h3 className="font-semibold mb-2 text-sm md:text-base" style={{ color: colors.text.dark }}>Topics</h3>
             <div className="flex flex-wrap gap-2">
               {expert.topics.map((topicId) => (
                 <span 
                   key={topicId} 
-                  className="px-3 py-1 rounded-full text-sm"
-                  style={{ backgroundColor: 'rgba(215,184,112,0.3)', color: '#5c5c5c' }}
+                  className="px-3 py-1.5 rounded-full text-sm"
+                  style={{ backgroundColor: `${colors.peach.soft}`, color: colors.text.dark }}
                 >
                   {topicLabels[topicId] || topicId}
                 </span>
@@ -194,41 +206,41 @@ export default function ExpertProfileScreen({ token, expertId, userState, onNavi
         {/* Languages */}
         {expert.languages?.length > 0 && (
           <div className="mb-6">
-            <h3 className="font-semibold mb-2" style={{ color: '#5c5c5c' }}>Languages</h3>
-            <p style={{ color: '#7a6a4a' }}>🗣️ {expert.languages.join(', ')}</p>
+            <h3 className="font-semibold mb-2 text-sm md:text-base" style={{ color: colors.text.dark }}>Languages</h3>
+            <p className="text-sm md:text-base" style={{ color: colors.text.secondary }}>🗣️ {expert.languages.join(', ')}</p>
           </div>
         )}
 
         {/* Bio */}
         <div className="mb-6">
-          <h3 className="font-semibold mb-2" style={{ color: '#5c5c5c' }}>About</h3>
-          <p style={{ color: '#7a6a4a' }}>
+          <h3 className="font-semibold mb-2 text-sm md:text-base" style={{ color: colors.text.dark }}>About</h3>
+          <p className="text-sm md:text-base" style={{ color: colors.text.secondary }}>
             {expert.short_bio}
           </p>
-          <p className="mt-2" style={{ color: '#9a8a6a' }}>
+          <p className="mt-2 text-sm md:text-base" style={{ color: colors.text.muted }}>
             💼 {expert.experience_years || 10}+ years of experience
           </p>
         </div>
 
-        {/* Social Proof Placeholders */}
+        {/* Stats Card */}
         <div 
           className="rounded-xl p-4 mb-6"
-          style={{ backgroundColor: 'rgba(215,184,112,0.1)', border: '1px solid #e5d188' }}
+          style={{ backgroundColor: `${colors.teal.primary}08`, border: `1px solid ${colors.teal.primary}20` }}
         >
           <div className="flex items-center justify-around text-center">
             <div>
-              <p className="font-bold text-lg" style={{ color: '#5c5c5c' }}>{expert.rating}★</p>
-              <p className="text-xs" style={{ color: '#9a8a6a' }}>Rating</p>
+              <p className="font-bold text-lg md:text-xl" style={{ color: colors.text.dark }}>{expert.rating}★</p>
+              <p className="text-xs md:text-sm" style={{ color: colors.text.muted }}>Rating</p>
             </div>
-            <div className="w-px h-8" style={{ backgroundColor: '#e5d188' }} />
+            <div className="w-px h-8" style={{ backgroundColor: colors.ui.borderDark }} />
             <div>
-              <p className="font-bold text-lg" style={{ color: '#5c5c5c' }}>{expert.total_consultations || '500'}+</p>
-              <p className="text-xs" style={{ color: '#9a8a6a' }}>Sessions</p>
+              <p className="font-bold text-lg md:text-xl" style={{ color: colors.text.dark }}>{expert.total_consultations || '500'}+</p>
+              <p className="text-xs md:text-sm" style={{ color: colors.text.muted }}>Sessions</p>
             </div>
-            <div className="w-px h-8" style={{ backgroundColor: '#e5d188' }} />
+            <div className="w-px h-8" style={{ backgroundColor: colors.ui.borderDark }} />
             <div>
-              <p className="font-bold text-lg" style={{ color: '#5c5c5c' }}>{expert.experience_years || 10}+</p>
-              <p className="text-xs" style={{ color: '#9a8a6a' }}>Years</p>
+              <p className="font-bold text-lg md:text-xl" style={{ color: colors.text.dark }}>{expert.experience_years || 10}+</p>
+              <p className="text-xs md:text-sm" style={{ color: colors.text.muted }}>Years</p>
             </div>
           </div>
         </div>
@@ -236,35 +248,45 @@ export default function ExpertProfileScreen({ token, expertId, userState, onNavi
 
       {/* Sticky CTA */}
       <div 
-        className="fixed bottom-16 left-0 right-0 p-4 z-40"
-        style={{ backgroundColor: '#f5f0e3', borderTop: '1px solid #e5d188' }}
+        className={`fixed ${hasBottomNav ? 'bottom-16 md:bottom-0' : 'bottom-0'} left-0 right-0 p-4 z-40`}
+        style={{ 
+          backgroundColor: colors.background.primary, 
+          borderTop: `1px solid ${colors.ui.borderDark}`,
+          backdropFilter: 'blur(12px)',
+        }}
       >
-        <button
-          onClick={handleAction}
-          className="w-full font-semibold py-4 rounded-xl transition-all"
-          style={hasAccess 
-            ? { background: 'linear-gradient(135deg, #d7b870 0%, #c9a85a 100%)', color: '#f0e9d1' }
-            : { backgroundColor: 'rgba(215,184,112,0.2)', color: '#5c5c5c', border: '1px solid #e5d188' }
-          }
-        >
-          {hasAccess ? '💬 Start Chat' : '🔓 Unlock to talk'}
-        </button>
+        <div className="max-w-2xl mx-auto">
+          <button
+            onClick={handleAction}
+            className="w-full font-semibold py-4 rounded-xl transition-all active:scale-[0.99] hover:shadow-md"
+            style={hasAccess 
+              ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
+              : { backgroundColor: colors.peach.primary, color: colors.text.dark }
+            }
+            data-testid="expert-action-btn"
+          >
+            {hasAccess ? '💬 Start Chat' : '🔓 Unlock to talk'}
+          </button>
+        </div>
       </div>
 
       {/* Topic Selector Modal */}
       {showTopicSelector && (
         <div className="fixed inset-0 bg-black/50 flex items-end z-50">
-          <div className="bg-white w-full rounded-t-3xl p-6">
+          <div 
+            className="w-full rounded-t-3xl p-6 max-w-lg mx-auto"
+            style={{ backgroundColor: '#ffffff' }}
+          >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold" style={{ color: '#5c5c5c' }}>Which topic is this about?</h2>
+              <h2 className="text-xl font-bold" style={{ color: colors.text.dark }}>Which topic is this about?</h2>
               <button 
                 onClick={() => setShowTopicSelector(false)}
-                className="text-2xl" style={{ color: '#9a8a6a' }}
+                className="text-2xl" style={{ color: colors.text.muted }}
               >
                 ×
               </button>
             </div>
-            <p className="text-sm mb-4" style={{ color: '#9a8a6a' }}>
+            <p className="text-sm mb-4" style={{ color: colors.text.secondary }}>
               {expert.name} can help with multiple topics. Choose one to continue:
             </p>
             <div className="space-y-2">
@@ -275,10 +297,10 @@ export default function ExpertProfileScreen({ token, expertId, userState, onNavi
                     setShowTopicSelector(false);
                     onNavigate('topic', { topicId });
                   }}
-                  className="w-full rounded-xl p-4 text-left transition-all"
-                  style={{ backgroundColor: '#f5f0e3', border: '1px solid #e5d188' }}
+                  className="w-full rounded-xl p-4 text-left transition-all hover:shadow-md"
+                  style={{ backgroundColor: colors.background.secondary, border: `1px solid ${colors.ui.borderDark}` }}
                 >
-                  <span className="font-medium" style={{ color: '#5c5c5c' }}>
+                  <span className="font-medium" style={{ color: colors.text.dark }}>
                     {topicLabels[topicId] || topicId}
                   </span>
                 </button>
