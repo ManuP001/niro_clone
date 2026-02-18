@@ -508,6 +508,7 @@ export default function PublicTopicsPage({ isAuthenticated }) {
               key={situation.id}
               situation={situation}
               onTileClick={handleTileClick}
+              topicsWithPackages={topicsWithPackages}
             />
           ))}
         </div>
