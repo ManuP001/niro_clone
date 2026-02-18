@@ -107,15 +107,11 @@ export default function PublicLandingPage({
     }
   };
 
-  // Handle Begin Consultation CTA
+  // Handle Begin Consultation CTA - Navigate to public topic page
   const handleBeginConsultation = (e, topicId) => {
     e.preventDefault();
-    setUserIntent({ type: 'consultation', topicId });
-    if (isAuthenticated) {
-      onNavigateToApp('topics', { topicId });
-    } else {
-      onLoginClick();
-    }
+    // Navigate to public topic landing page (no login required)
+    window.location.href = `/topic/${topicId}`;
   };
 
   // Handle nav Begin button
