@@ -2,38 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { getBackendUrl } from '../../config';
 
 /**
- * LoginScreen - Direct Google OAuth (no Emergent Auth intermediary)
+ * LoginScreen - Direct Google OAuth (V10 Design)
+ * Updated to use Lexend font and new teal/peach/cream color scheme
  */
 
-// Design system colors - matching simplified/theme.js
+// Design system colors - V10 matching niro-final-marquee
 const colors = {
   teal: {
-    primary: '#3E827A',
-    dark: '#2D5F59',
-    light: '#5A9E96',
+    primary: '#4A9B8E',
+    soft: '#6AB3A6',
+    dark: '#2D5C4A',
   },
-  gold: {
-    primary: '#EFE1A9',
-    light: '#FFFFC3',
-    cream: 'rgba(255, 255, 195, 0.58)',
+  peach: {
+    primary: '#E8A87C',
+    soft: '#F5C9A8',
+  },
+  cream: {
+    primary: '#FBF8F3',
+    warm: '#F5EFE7',
   },
   text: {
-    primary: '#FFFFFF',
-    dark: '#2D2D2D',
-    secondary: '#5C5C5C',
-    muted: 'rgba(255, 255, 255, 0.7)',
-    mutedDark: '#8A8A8A',
+    dark: '#2D3748',
+    secondary: '#5A6C7D',
+    light: '#8F9BAA',
+    onDark: '#FFFFFF',
+    muted: 'rgba(255, 255, 255, 0.85)',
   },
   ui: {
-    border: 'rgba(255, 255, 255, 0.2)',
-    borderDark: 'rgba(0, 0, 0, 0.1)',
     error: '#F44336',
   },
-  logo: {
-    gradient: 'linear-gradient(135deg, #EFE1A9 0%, #FFFFFF 50%, #EFE1A9 100%)',
-  },
   background: {
-    gradient: 'linear-gradient(180deg, #3E827A 0%, rgba(255, 255, 195, 0.58) 100%)',
+    gradient: 'linear-gradient(180deg, #4A9B8E 0%, #FBF8F3 100%)',
   },
 };
 
@@ -65,13 +64,8 @@ const LoginScreen = ({ onLoginSuccess }) => {
     setLoading(true);
     setError('');
     
-    // Build the callback URL for our app (uses current origin)
     const callbackUrl = window.location.origin + '/auth/callback';
-    
-    // Get fresh backend URL
     const backendUrl = getBackendUrl();
-    
-    // Redirect to backend which will redirect to Google
     const googleLoginUrl = `${backendUrl}/api/auth/google/login?redirect_uri=${encodeURIComponent(callbackUrl)}`;
     
     console.log('Redirecting to Google OAuth:', googleLoginUrl);
@@ -84,7 +78,7 @@ const LoginScreen = ({ onLoginSuccess }) => {
       className="min-h-screen flex flex-col"
       style={{
         background: colors.background.gradient,
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontFamily: "'Lexend', -apple-system, system-ui, sans-serif",
       }}
     >
       {/* Safe area top */}
@@ -97,11 +91,8 @@ const LoginScreen = ({ onLoginSuccess }) => {
           <h1
             className="text-5xl font-bold tracking-tight"
             style={{
-              background: colors.logo.gradient,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              fontFamily: "'Kumbh Sans', 'Inter', sans-serif",
+              color: colors.text.onDark,
+              fontFamily: "'Lexend', sans-serif",
               textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
             }}
           >
@@ -122,7 +113,7 @@ const LoginScreen = ({ onLoginSuccess }) => {
           data-testid="google-login-btn"
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full max-w-sm py-4 px-6 rounded-xl font-semibold text-base transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50"
+          className="w-full max-w-sm py-4 px-6 rounded-full font-semibold text-base transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50 hover:shadow-lg"
           style={{
             backgroundColor: '#FFFFFF',
             color: colors.text.dark,
@@ -149,13 +140,13 @@ const LoginScreen = ({ onLoginSuccess }) => {
         {/* Trust indicators */}
         <div className="mt-12 flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.gold.primary }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.peach.primary }}>
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
             <span className="text-xs" style={{ color: colors.text.muted }}>Secure login</span>
           </div>
           <div className="flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.gold.primary }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: colors.peach.primary }}>
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
             </svg>
