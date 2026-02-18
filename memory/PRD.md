@@ -307,14 +307,18 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 - [x] Sticky CTA bar with peach "Start my journey" button
 - [x] Outcomes section in 3-column grid
 
-### Phase 3: UI/UX Polish (P1 - NEXT)
+### Phase 3 & 4: Public Navigation & Bug Fixes ✅ COMPLETE (Feb 2026)
+- [x] Fixed sticky CTA bar disappearing on fast scroll
+- [x] PublicNavHeader component with Life Topics, Experts, Remedies links
+- [x] Public topic landing page (/topic/:topicId) - browse without login
+- [x] Login only required before checkout (not on topic browse)
+- [x] Homepage nav updated with proper links to /topics, /experts
+- [x] Mobile menu updated with same links
+
+### Phase 5: UI/UX Polish (P1 - NEXT)
 - [ ] Redesign Birth details screen
 - [ ] Audit all authenticated screens for profile icon visibility
 - [ ] Site-wide check for consistent back buttons
-
-### Phase 4: CTA and Content Standardization (P2)
-- [ ] Standardize CTA text: "📞 Get a free 10 mins consultation"
-- [ ] Update CTA in user-reviews section on homepage
 - [ ] Add YouTube, Facebook, X links to footer
 
 ### Future Phase: UI Changes (P2)
