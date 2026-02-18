@@ -82,6 +82,27 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 8. **BottomNav Update** - Added md:hidden for mobile-only display
 9. **Responsive Tiles Grid** - 3 cols mobile, 6 cols desktop (grid-cols-3 md:grid-cols-6)
 
+### Phase 13: Public Landing Page & Intent-Based Routing (Feb 18, 2026)
+1. **PublicLandingPage.jsx** - New public entry point based on niro-final-marquee_1.html
+   - Hero section with teal gradient, trust badges, peach CTA
+   - Testimonials marquee with 6 customer reviews
+   - "What We Offer" section with 5 feature cards
+   - "Life Topics" section with 4 topic cards (Career, Health, Love, Fertility)
+   - "How It Works" 4-step section
+   - "Our Experts" horizontal scroll with 4 expert cards
+   - Footer with logo, disclaimer, social icons (Instagram, X, LinkedIn, YouTube), and links
+   - Sticky navigation with backdrop blur
+   - Mobile hamburger menu
+2. **ScheduleCallScreen.jsx** - Google Calendar booking integration (https://calendar.app.google/cm7fCPK7iHWPXvTY6)
+3. **App.js Rewrite** - New routing flow:
+   - Entry: PublicLandingPage (public, no auth required)
+   - CTAs store intent in localStorage before login redirect
+   - After login: Route based on intent + user type
+4. **SimplifiedApp.jsx Updates** - Intent-based post-login routing:
+   - free_call intent: New user → Birth Details → Schedule | Returning → Schedule
+   - consultation:topicId: New user → Birth Details → Home | Returning → Home or MyPack
+5. **Intent Storage System** - setUserIntent(), getUserIntent(), clearUserIntent() helpers
+
 ---
 
 ## Technical Architecture
