@@ -200,16 +200,43 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 
 ## Prioritized Backlog
 
-### Redesign Phase 5 (P0 - Current Priority)
-- [ ] Phase 5: Backlog & Polish - Footer on desktop, tile sizing fix, final polish
+### Phase 6: Backlog & Polish (P0 - CURRENT PRIORITY)
 
-### User-Requested UI Changes (P1)
-- [x] Increase "Niro" logo size in header (text-3xl md:text-4xl)
-- [ ] Change free call CTA text to "Get a Free 10 mins consultation 📞"
-- [ ] Update top-right nav button with same text/functionality
-- [ ] Increase logo size in footer
-- [ ] Link navigation items (Life topics, Experts, Remedies, Astro) to corresponding screens
-- [ ] Add back buttons and clear navigation to all screens
+**Partially Done / Not Done Tasks:**
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Footer with contact info, social links | ❌ PENDING | PublicLandingPage has footer but authenticated screens don't |
+| Topic-specific CTAs ("Talk about Career") | ❌ PENDING | Still generic "Begin consultation" |
+| Sticky CTA on scroll | ❌ PENDING | No persistent CTA after scrolling past hero |
+| Expert cards "View Profile" button | ❌ PENDING | Card clickable but no visible button text |
+| Search/filter for topics | ❌ PENDING | ExpertsScreen has search, topics don't |
+| Testimonial section CTA | ❌ PENDING | No CTA after testimonials |
+| "View All Experts" button | ❌ PENDING | Not implemented in Experts section |
+| React Router (Phase D) | ❌ PENDING | Still using state-machine navigation |
+| URL routes (/app/topic/:id, etc.) | ❌ PENDING | No proper URL routing |
+| Deep-linking & browser back/forward | ❌ PENDING | Not implemented |
+| ProfileScreen + KundliScreen update | ⚠️ PARTIAL | Need ResponsiveHeader |
+| Scroll reveal animations | ❌ PENDING | Hover effects done, scroll reveals not done |
+
+**Navigation Fixes Required:**
+| Item | Status | Action |
+|------|--------|--------|
+| Life Topics nav → app homepage | ✅ DONE | handleNavToApp added |
+| Experts nav → ExpertsScreen | ❌ NEEDS FIX | Link to authenticated experts page |
+| Remedies nav → RemediesScreen | ❌ NEEDS FIX | Link to authenticated remedies page |
+| Astro nav → KundliScreen | ❌ NEEDS FIX | Link to authenticated kundli page |
+| Back buttons on all screens | ⚠️ PARTIAL | Some screens have, some don't |
+| Top/bottom nav on all screens | ⚠️ PARTIAL | ResponsiveHeader added to some screens |
+
+**Recently Implemented:**
+- ✅ "See More life topics" CTA on Life Topics section
+- ✅ Logo size increased (header: 36px, footer: 32px)
+
+### Phase 7: Future UI Changes (P1)
+- [ ] Change free call CTA text to: "Get a Free 10 mins consultation 📞"
+- [ ] Update top-right nav button to same text and follow same path as hero CTA
+- [ ] Increase Niro logo size further if needed
 
 ### P2 - Tile Sizing (deferred by user)
 - [ ] Fix tile sizing — make production tiles compact like admin preview
