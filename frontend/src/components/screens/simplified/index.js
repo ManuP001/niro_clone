@@ -17,6 +17,10 @@ export { default as BirthDetailsModal } from './BirthDetailsModal';
 export { default as BottomNav } from './BottomNav';
 export { default as NiroGuideChat } from './NiroGuideChat';
 
+// V10 New Components
+export { default as PublicLandingPage, setUserIntent, getUserIntent, clearUserIntent } from './PublicLandingPage';
+export { default as ScheduleCallScreen } from './ScheduleCallScreen';
+
 // V5 Screens
 export * from './v5Screens';
 
