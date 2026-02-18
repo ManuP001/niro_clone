@@ -1759,7 +1759,7 @@ export default function PublicLandingPage({
                 </div>
                 <button 
                   className="view-profile-btn"
-                  onClick={() => isAuthenticated ? onNavigateToApp('experts') : onLoginClick()}
+                  onClick={handleViewExperts}
                   data-testid={`view-profile-btn-${i}`}
                 >
                   View Profile
@@ -1769,7 +1769,7 @@ export default function PublicLandingPage({
             
             <div 
               className="view-all-card"
-              onClick={() => isAuthenticated ? onNavigateToApp('experts') : onLoginClick()}
+              onClick={handleViewExperts}
             >
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#4A9B8E" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/>
