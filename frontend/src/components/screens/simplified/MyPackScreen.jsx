@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { colors } from './theme';
+import { colors, shadows } from './theme';
 import { apiSimplified, formatPrice, trackEvent } from './utils';
 import { 
   CalendarIcon, 
@@ -10,9 +10,10 @@ import {
   CheckIcon,
   GiftIcon
 } from './icons';
+import ResponsiveHeader from './ResponsiveHeader';
 
 /**
- * MyPackScreen - Dashboard for paying customers
+ * MyPackScreen V2 - Dashboard for paying customers with responsive layout
  * Shows: Package details, days left, deliverables, schedule calls, suggested remedies
  */
 
