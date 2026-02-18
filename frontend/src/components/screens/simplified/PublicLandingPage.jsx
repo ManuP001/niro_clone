@@ -116,15 +116,11 @@ export default function PublicLandingPage({
     }
   };
 
-  // Handle See More Life Topics
+  // Handle See More Life Topics - Navigate to public topics page
   const handleSeeMoreTopics = (e) => {
     e.preventDefault();
-    setUserIntent({ type: 'browse_topics' });
-    if (isAuthenticated) {
-      onNavigateToApp('home');
-    } else {
-      onLoginClick();
-    }
+    // Navigate to public topics page (no login required)
+    window.location.href = '/topics';
   };
 
   // Handle nav link to go to app section
@@ -136,6 +132,13 @@ export default function PublicLandingPage({
       setUserIntent({ type: `browse_${section}` });
       onLoginClick();
     }
+  };
+
+  // Handle view experts - Navigate to public experts page
+  const handleViewExperts = (e) => {
+    e.preventDefault();
+    // Navigate to public experts page (no login required)
+    window.location.href = '/experts';
   };
 
   return (
