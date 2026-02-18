@@ -196,14 +196,14 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 
 ## Prioritized Backlog
 
-### Redesign Phase 4-5 (P0 - Current Priority)
-- [ ] Phase 4: Component refactoring, CTA sitemap implementation
-- [ ] Phase 5: Footer, social icons, tile sizing fix, backlog items
+### Redesign Phase 5 (P0 - Current Priority)
+- [ ] Phase 5: Backlog & Polish - Footer on desktop, tile sizing fix, final polish
 
 ### User-Requested UI Changes (P1)
+- [x] Increase "Niro" logo size in header (text-3xl md:text-4xl)
 - [ ] Change free call CTA text to "Get a Free 10 mins consultation 📞"
 - [ ] Update top-right nav button with same text/functionality
-- [ ] Increase "Niro" logo size in header and footer
+- [ ] Increase logo size in footer
 - [ ] Link navigation items (Life topics, Experts, Remedies, Astro) to corresponding screens
 - [ ] Add back buttons and clear navigation to all screens
 
