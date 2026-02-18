@@ -368,14 +368,8 @@ export default function PublicRemediesPage({ isAuthenticated }) {
             ))}
           </div>
         )}
-              key={remedy.id}
-              remedy={remedy}
-              onSelect={handleRemedySelect}
-            />
-          ))}
-        </div>
 
-        {filteredRemedies.length === 0 && (
+        {!loading && filteredRemedies.length === 0 && (
           <div className="text-center py-12">
             <p className="text-lg" style={{ color: colors.text.muted }}>No remedies found in this category</p>
           </div>
