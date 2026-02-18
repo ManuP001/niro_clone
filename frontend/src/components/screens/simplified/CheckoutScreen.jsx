@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { apiSimplified, formatPrice, trackEvent } from './utils';
 import { colors, shadows } from './theme';
+import ResponsiveHeader from './ResponsiveHeader';
 
 /**
- * CheckoutScreen - Razorpay payment flow
+ * CheckoutScreen V2 - Razorpay payment flow with responsive layout
  */
-export default function CheckoutScreen({ token, tierId, scenarioIds = [], onSuccess, onBack }) {
+export default function CheckoutScreen({ token, tierId, scenarioIds = [], onSuccess, onBack, onTabChange }) {
   const [loading, setLoading] = useState(true);
   const [tier, setTier] = useState(null);
   const [processing, setProcessing] = useState(false);
