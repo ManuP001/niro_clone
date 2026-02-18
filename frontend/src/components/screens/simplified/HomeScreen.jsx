@@ -477,15 +477,74 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* Life Topics Section Header */}
+      {/* Life Topics Section Header with Search */}
       <div className="px-4 md:px-8 lg:px-12 mb-4 md:mb-6" id="topics-section">
         <div className="max-w-5xl mx-auto">
           <h2 
-            className="text-lg sm:text-xl md:text-2xl font-semibold text-center"
+            className="text-lg sm:text-xl md:text-2xl font-semibold text-center mb-4 md:mb-6"
             style={{ color: colors.text.dark }}
           >
             Choose the area of life you need clarity <span style={{ fontStyle: 'italic' }}>on today.</span>
           </h2>
+          
+          {/* Search/Filter Input */}
+          <div className="relative max-w-md mx-auto mb-6">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <svg 
+                className="w-5 h-5" 
+                style={{ color: colors.text.muted }}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Search topics... (e.g., career, love, health)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-10 py-3 rounded-xl border text-sm md:text-base transition-all focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: '#FFFFFF',
+                borderColor: colors.ui.borderDark,
+                color: colors.text.dark,
+              }}
+              data-testid="topics-search-input"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                data-testid="clear-search-btn"
+              >
+                <svg 
+                  className="w-5 h-5 hover:opacity-70 transition-opacity" 
+                  style={{ color: colors.text.muted }}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+          
+          {/* Search Results Count */}
+          {searchQuery && (
+            <p 
+              className="text-center text-sm mb-4"
+              style={{ color: colors.text.muted }}
+              data-testid="search-results-count"
+            >
+              {filteredSituations.length === 0 
+                ? 'No topics found. Try a different search term.'
+                : `Found ${filteredSituations.reduce((acc, s) => acc + s.tiles.length, 0)} topics in ${filteredSituations.length} categories`
+              }
+            </p>
+          )}
         </div>
       </div>
 
