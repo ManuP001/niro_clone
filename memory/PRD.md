@@ -103,6 +103,39 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
    - consultation:topicId: New user → Birth Details → Home | Returning → Home or MyPack
 5. **Intent Storage System** - setUserIntent(), getUserIntent(), clearUserIntent() helpers
 
+### Phase 14: Layout & Grid Transformation (Dec 2025)
+1. **ResponsiveHeader.jsx** - New reusable header component for authenticated screens
+   - Desktop navigation with Life topics, Experts, Remedies, Astro links
+   - Mobile hamburger menu with same navigation items
+   - CTA button "Get a Free 10 mins consultation" with phone icon
+   - Profile button (desktop only)
+   - Back button support for sub-pages
+   - Sticky header with backdrop blur (md:sticky)
+   - Max-width container (max-w-7xl)
+   - All data-testid attributes for testing
+2. **HomeScreen.jsx Updates** - V11 responsive layout
+   - ResponsiveHeader integration
+   - 3-column category grid on desktop (lg:grid-cols-3)
+   - Stacked categories on mobile
+   - Enhanced hero section with responsive typography
+   - Floating decorative shapes on desktop
+   - Mobile profile button in hero (md:hidden)
+3. **ExpertsScreen.jsx Updates** - Responsive grid layout
+   - ResponsiveHeader integration
+   - 2-3 column expert cards grid (md:grid-cols-2 lg:grid-cols-3)
+   - Centered max-w-6xl container
+   - Responsive search and filters
+4. **TopicLandingPage.jsx Updates** - Responsive layout
+   - ResponsiveHeader with back button
+   - Centered max-w-4xl container
+   - 3-column outcomes grid on desktop
+   - 2-column FAQs grid on desktop
+   - Responsive typography throughout
+5. **CheckoutScreen.jsx Updates** - Responsive layout
+   - ResponsiveHeader with back button
+   - Centered max-w-2xl container
+   - Responsive typography and spacing
+
 ---
 
 ## Technical Architecture
