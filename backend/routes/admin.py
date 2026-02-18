@@ -2447,6 +2447,33 @@ async def get_public_homepage_data(request: Request):
     }
 
 
+@router.get("/public/topics-with-packages")
+async def get_topics_with_packages(request: Request):
+    """
+    Get list of topic IDs that have packages/tiers available.
+    No authentication required - used to enable/disable topic tiles on frontend.
+    """
+    db = await get_db(request)
+    
+    # Get all unique topic_ids that have active tiers
+    pipeline = [
+        {"$match": {"active": {"$ne": False}}},
+        {"$group": {"_id": "$topic_id"}},
+        {"$sort": {"_id": 1}}
+    ]
+    
+    topic_ids = []
+    async for doc in db.admin_tiers.aggregate(pipeline):
+        if doc.get("_id"):
+            topic_ids.append(doc["_id"])
+    
+    return {
+        "ok": True,
+        "topic_ids": topic_ids,
+        "count": len(topic_ids)
+    }
+
+
 @router.get("/public/package/{package_id}")
 async def get_public_package(request: Request, package_id: str):
     """
