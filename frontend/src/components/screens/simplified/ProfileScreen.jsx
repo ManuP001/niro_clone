@@ -43,89 +43,103 @@ export default function ProfileScreen({ token, userId, onResetDemo, hasBottomNav
 
   return (
     <div 
-      className={`min-h-screen ${hasBottomNav ? 'pb-20' : ''}`}
-      style={{ backgroundColor: '#f5f0e3' }}
+      className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`}
+      style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Header */}
+      {/* Responsive Header with Back Button */}
+      <ResponsiveHeader
+        title="Profile"
+        showBackButton={true}
+        onBack={onBack}
+        onNavigate={onNavigate}
+        onTabChange={onTabChange}
+      />
+
+      {/* Hero Section */}
       <div 
-        className="px-6 pt-12 pb-8"
-        style={{ background: 'linear-gradient(135deg, #d7b870 0%, #c9a85a 100%)' }}
+        className="px-6 md:px-8 pt-6 pb-8"
+        style={{ background: `linear-gradient(135deg, ${colors.teal.primary} 0%, ${colors.teal.dark} 100%)` }}
       >
-        <h1 className="text-2xl font-bold" style={{ color: '#f0e9d1' }}>Profile</h1>
-        <p style={{ color: 'rgba(240,233,209,0.8)' }}>Manage your account</p>
+        <div className="max-w-2xl mx-auto text-center">
+          <h1 className="text-2xl md:text-3xl font-bold text-white">Profile</h1>
+          <p className="text-white/80 text-sm md:text-base">Manage your account</p>
+        </div>
       </div>
 
-      <div className="px-6 py-6">
+      <div className="px-6 md:px-8 py-6 max-w-2xl mx-auto">
         {loading ? (
           <div className="text-center py-8">
             <div 
               className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4"
-              style={{ borderColor: 'rgba(215,184,112,0.3)', borderTopColor: '#d7b870' }}
+              style={{ borderColor: `${colors.teal.primary}30`, borderTopColor: colors.teal.primary }}
             />
-            <p style={{ color: '#9a8a6a' }}>Loading profile...</p>
+            <p style={{ color: colors.text.muted }}>Loading profile...</p>
           </div>
         ) : (
           <div className="space-y-4">
             {/* Profile Avatar */}
-            <div className="flex items-center justify-center mb-6">
+            <div className="flex items-center justify-center mb-6 -mt-12">
               <div 
-                className="w-24 h-24 rounded-full flex items-center justify-center"
-                style={{ background: 'linear-gradient(135deg, #d7b870 0%, #c9a85a 100%)' }}
+                className="w-24 h-24 md:w-28 md:h-28 rounded-full flex items-center justify-center border-4"
+                style={{ 
+                  background: `linear-gradient(135deg, ${colors.teal.primary} 0%, ${colors.teal.dark} 100%)`,
+                  borderColor: colors.background.primary,
+                }}
               >
-                <span className="text-4xl">👤</span>
+                <span className="text-4xl md:text-5xl">👤</span>
               </div>
             </div>
 
             {/* Profile Info Card */}
             <div 
-              className="rounded-xl p-4"
-              style={{ backgroundColor: 'white', border: '1px solid #e5d188' }}
+              className="rounded-xl p-4 md:p-6"
+              style={{ backgroundColor: '#ffffff', border: `1px solid ${colors.ui.borderDark}`, boxShadow: shadows.sm }}
             >
-              <h2 className="font-semibold mb-4" style={{ color: '#5c5c5c' }}>Account Information</h2>
+              <h2 className="font-semibold mb-4 text-base md:text-lg" style={{ color: colors.text.dark }}>Account Information</h2>
               
               <div className="space-y-3">
-                <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: '#e5d188' }}>
-                  <span style={{ color: '#9a8a6a' }}>Name</span>
-                  <span style={{ color: '#5c5c5c' }}>{profile?.name || 'Not set'}</span>
+                <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: colors.ui.borderDark }}>
+                  <span className="text-sm md:text-base" style={{ color: colors.text.muted }}>Name</span>
+                  <span className="text-sm md:text-base" style={{ color: colors.text.dark }}>{profile?.name || 'Not set'}</span>
                 </div>
                 
-                <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: '#e5d188' }}>
-                  <span style={{ color: '#9a8a6a' }}>Email/Phone</span>
-                  <span style={{ color: '#5c5c5c' }}>{profile?.email || profile?.phone || userId || 'Not set'}</span>
+                <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: colors.ui.borderDark }}>
+                  <span className="text-sm md:text-base" style={{ color: colors.text.muted }}>Email/Phone</span>
+                  <span className="text-sm md:text-base" style={{ color: colors.text.dark }}>{profile?.email || profile?.phone || userId || 'Not set'}</span>
                 </div>
                 
                 {profile?.gender && (
-                  <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: '#e5d188' }}>
-                    <span style={{ color: '#9a8a6a' }}>Gender</span>
-                    <span style={{ color: '#5c5c5c' }} className="capitalize">{profile.gender}</span>
+                  <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: colors.ui.borderDark }}>
+                    <span className="text-sm md:text-base" style={{ color: colors.text.muted }}>Gender</span>
+                    <span className="text-sm md:text-base capitalize" style={{ color: colors.text.dark }}>{profile.gender}</span>
                   </div>
                 )}
                 
                 {profile?.marital_status && (
-                  <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: '#e5d188' }}>
-                    <span style={{ color: '#9a8a6a' }}>Marital Status</span>
-                    <span style={{ color: '#5c5c5c' }} className="capitalize">{profile.marital_status}</span>
+                  <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: colors.ui.borderDark }}>
+                    <span className="text-sm md:text-base" style={{ color: colors.text.muted }}>Marital Status</span>
+                    <span className="text-sm md:text-base capitalize" style={{ color: colors.text.dark }}>{profile.marital_status}</span>
                   </div>
                 )}
                 
                 {profile?.dob && (
-                  <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: '#e5d188' }}>
-                    <span style={{ color: '#9a8a6a' }}>Date of Birth</span>
-                    <span style={{ color: '#5c5c5c' }}>{profile.dob}</span>
+                  <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: colors.ui.borderDark }}>
+                    <span className="text-sm md:text-base" style={{ color: colors.text.muted }}>Date of Birth</span>
+                    <span className="text-sm md:text-base" style={{ color: colors.text.dark }}>{profile.dob}</span>
                   </div>
                 )}
                 
                 {profile?.tob && (
-                  <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: '#e5d188' }}>
-                    <span style={{ color: '#9a8a6a' }}>Time of Birth</span>
-                    <span style={{ color: '#5c5c5c' }}>{profile.tob}</span>
+                  <div className="flex items-center justify-between py-2 border-b" style={{ borderColor: colors.ui.borderDark }}>
+                    <span className="text-sm md:text-base" style={{ color: colors.text.muted }}>Time of Birth</span>
+                    <span className="text-sm md:text-base" style={{ color: colors.text.dark }}>{profile.tob}</span>
                   </div>
                 )}
                 
                 {profile?.location && (
                   <div className="flex items-center justify-between py-2">
-                    <span style={{ color: '#9a8a6a' }}>Place of Birth</span>
-                    <span style={{ color: '#5c5c5c' }} className="text-right max-w-[60%] truncate">{profile.location}</span>
+                    <span className="text-sm md:text-base" style={{ color: colors.text.muted }}>Place of Birth</span>
+                    <span className="text-sm md:text-base text-right max-w-[60%] truncate" style={{ color: colors.text.dark }}>{profile.location}</span>
                   </div>
                 )}
               </div>
@@ -133,9 +147,10 @@ export default function ProfileScreen({ token, userId, onResetDemo, hasBottomNav
 
             {/* Edit Profile Button */}
             <button 
-              className="w-full py-3 rounded-xl font-medium transition-all hover:shadow-md"
-              style={{ backgroundColor: '#d7b870', color: '#f0e9d1' }}
+              className="w-full py-3 md:py-4 rounded-xl font-semibold text-sm md:text-base transition-all hover:shadow-md active:scale-[0.99]"
+              style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
               onClick={() => setShowEditModal(true)}
+              data-testid="edit-profile-btn"
             >
               Edit Profile
             </button>
@@ -145,12 +160,13 @@ export default function ProfileScreen({ token, userId, onResetDemo, hasBottomNav
               className="rounded-xl p-4 mt-6"
               style={{ backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)' }}
             >
-              <h3 className="font-semibold mb-2 text-red-600">DEV Options</h3>
-              <p className="text-sm text-red-500 mb-3">For testing purposes only</p>
+              <h3 className="font-semibold mb-2 text-red-600 text-sm md:text-base">DEV Options</h3>
+              <p className="text-xs md:text-sm text-red-500 mb-3">For testing purposes only</p>
               
               <button 
                 onClick={onResetDemo}
-                className="w-full py-2 rounded-lg font-medium bg-red-500 text-white hover:bg-red-600 transition-all"
+                className="w-full py-2 md:py-3 rounded-lg font-medium bg-red-500 text-white hover:bg-red-600 transition-all text-sm md:text-base"
+                data-testid="reset-demo-btn"
               >
                 Reset Demo State
               </button>
@@ -161,8 +177,8 @@ export default function ProfileScreen({ token, userId, onResetDemo, hasBottomNav
 
             {/* App Info */}
             <div className="text-center pt-6">
-              <p className="text-sm" style={{ color: '#9a8a6a' }}>NIRO Astrology v2.0</p>
-              <p className="text-xs mt-1" style={{ color: '#baa87a' }}>Unlimited access to experts</p>
+              <p className="text-sm" style={{ color: colors.text.muted }}>NIRO Astrology v2.0</p>
+              <p className="text-xs mt-1" style={{ color: colors.text.mutedDark }}>Unlimited access to experts</p>
             </div>
           </div>
         )}
