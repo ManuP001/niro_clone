@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BACKEND_URL } from '../../../config';
 import { trackEvent } from './utils';
+import { colors, shadows } from './theme';
+import ResponsiveHeader from './ResponsiveHeader';
 
 /**
- * ProfileScreen - User profile with Edit functionality
- * V2: Full edit profile modal with birth details
+ * ProfileScreen V3 - User profile with ResponsiveHeader and new theme
  */
-export default function ProfileScreen({ token, userId, onResetDemo, hasBottomNav }) {
+export default function ProfileScreen({ token, userId, onResetDemo, hasBottomNav, onBack, onNavigate, onTabChange }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
