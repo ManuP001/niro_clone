@@ -84,13 +84,13 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
   if (loading) {
     return (
       <div 
-        className="min-h-screen pb-20 flex items-center justify-center" 
-        style={{ background: colors.background.gradient }}
+        className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''} flex items-center justify-center`}
+        style={{ backgroundColor: colors.background.primary }}
       >
         <div className="text-center">
           <div 
             className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4"
-            style={{ borderColor: 'rgba(239,225,169,0.3)', borderTopColor: colors.gold.primary }}
+            style={{ borderColor: 'rgba(74,155,142,0.3)', borderTopColor: colors.teal.primary }}
           />
           <p style={{ color: colors.text.muted }}>Loading experts...</p>
         </div>
@@ -100,114 +100,121 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
 
   return (
     <div 
-      className="min-h-screen pb-20" 
-      style={{ background: colors.background.gradient }}
+      className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`}
+      style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Header */}
-      <div className="px-5 pt-6 pb-4">
-        <h1 
-          className="text-2xl font-bold mb-1"
-          style={{ 
-            fontFamily: "'Kumbh Sans', sans-serif",
-            background: colors.logo.gradient,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}
-        >
-          Experts
-        </h1>
-        <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.8)' }}>
-          Browse by expertise, unlock to start chatting
-        </p>
-        
-        {/* Search */}
-        <div className="mb-4">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search experts..."
-            className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none"
-            style={{ 
-              backgroundColor: 'white', 
-              border: `1px solid ${colors.ui.borderDark}`,
-              color: colors.text.dark
-            }}
-          />
-        </div>
-        
-        {/* Modality Filter Pills */}
-        <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
-          <button
-            onClick={() => setSelectedModality('all')}
-            className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all"
-            style={selectedModality === 'all'
-              ? { backgroundColor: colors.gold.primary, color: colors.text.dark }
-              : { backgroundColor: 'rgba(255,255,255,0.15)', color: colors.text.primary, border: `1px solid ${colors.ui.border}` }
-            }
-          >
-            All Experts
-          </button>
-          {modalities.map((modality) => (
-            <button
-              key={modality}
-              onClick={() => setSelectedModality(modality)}
-              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-              style={selectedModality === modality
-                ? { backgroundColor: colors.gold.primary, color: colors.text.dark }
-                : { backgroundColor: 'rgba(255,255,255,0.15)', color: colors.text.primary, border: `1px solid ${colors.ui.border}` }
-              }
-            >
-              {modalityLabels[modality] || modality}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Responsive Header */}
+      <ResponsiveHeader
+        title="Experts"
+        showBackButton={false}
+        onNavigate={onNavigate}
+        onTabChange={onTabChange}
+      />
 
-      {/* Expert Cards */}
-      <div 
-        className="px-5 py-6 rounded-t-3xl -mt-2"
-        style={{ backgroundColor: colors.background.card }}
-      >
-        {selectedModality === 'all' ? (
-          // Show grouped view
-          Object.entries(groupedExperts).map(([modality, modalityExperts]) => (
-            <div key={modality} className="mb-6">
-              <h2 className="text-lg font-semibold mb-3" style={{ color: colors.text.dark }}>
+      {/* Content Container */}
+      <div className="max-w-6xl mx-auto">
+        {/* Header Section */}
+        <div className="px-4 md:px-8 pt-6 pb-4">
+          <h1 
+            className="text-2xl md:text-3xl font-bold mb-1"
+            style={{ color: colors.text.dark }}
+          >
+            Our Experts
+          </h1>
+          <p className="text-sm md:text-base mb-4" style={{ color: colors.text.muted }}>
+            Browse by expertise, unlock to start chatting
+          </p>
+          
+          {/* Search */}
+          <div className="mb-4 max-w-md">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search experts..."
+              className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2"
+              style={{ 
+                backgroundColor: 'white', 
+                border: `1px solid ${colors.ui.borderDark}`,
+                color: colors.text.dark,
+                '--tw-ring-color': colors.teal.primary,
+              }}
+              data-testid="experts-search-input"
+            />
+          </div>
+          
+          {/* Modality Filter Pills */}
+          <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
+            <button
+              onClick={() => setSelectedModality('all')}
+              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all"
+              style={selectedModality === 'all'
+                ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
+                : { backgroundColor: '#ffffff', color: colors.text.muted, border: `1px solid ${colors.ui.borderDark}` }
+              }
+              data-testid="filter-all"
+            >
+              All Experts
+            </button>
+            {modalities.map((modality) => (
+              <button
+                key={modality}
+                onClick={() => setSelectedModality(modality)}
+                className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+                style={selectedModality === modality
+                  ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
+                  : { backgroundColor: '#ffffff', color: colors.text.muted, border: `1px solid ${colors.ui.borderDark}` }
+                }
+                data-testid={`filter-${modality}`}
+              >
                 {modalityLabels[modality] || modality}
-              </h2>
-              <div className="space-y-3">
-                {modalityExperts.map((expert) => (
-                  <ExpertCard
-                    key={expert.expert_id}
-                    expert={expert}
-                    hasAccess={expert.topics?.some(t => activePlanTopics.includes(t))}
-                    onClick={() => handleExpertClick(expert)}
-                  />
-                ))}
-              </div>
-            </div>
-          ))
-        ) : (
-          // Show flat list for filtered view
-          <div className="space-y-3">
-            {filteredExperts.map((expert) => (
-              <ExpertCard
-                key={expert.expert_id}
-                expert={expert}
-                hasAccess={expert.topics?.some(t => activePlanTopics.includes(t))}
-                onClick={() => handleExpertClick(expert)}
-              />
+              </button>
             ))}
           </div>
-        )}
-        
-        {filteredExperts.length === 0 && (
-          <div className="text-center py-8">
-            <p style={{ color: colors.text.mutedDark }}>No experts found</p>
-          </div>
-        )}
+        </div>
+
+        {/* Expert Cards - Responsive Grid */}
+        <div className="px-4 md:px-8 py-6">
+          {selectedModality === 'all' ? (
+            // Show grouped view with multi-column grid
+            Object.entries(groupedExperts).map(([modality, modalityExperts]) => (
+              <div key={modality} className="mb-8">
+                <h2 className="text-lg md:text-xl font-semibold mb-4" style={{ color: colors.text.dark }}>
+                  {modalityLabels[modality] || modality}
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {modalityExperts.map((expert) => (
+                    <ExpertCard
+                      key={expert.expert_id}
+                      expert={expert}
+                      hasAccess={expert.topics?.some(t => activePlanTopics.includes(t))}
+                      onClick={() => handleExpertClick(expert)}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            // Show flat list for filtered view with grid
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredExperts.map((expert) => (
+                <ExpertCard
+                  key={expert.expert_id}
+                  expert={expert}
+                  hasAccess={expert.topics?.some(t => activePlanTopics.includes(t))}
+                  onClick={() => handleExpertClick(expert)}
+                />
+              ))}
+            </div>
+          )}
+          
+          {filteredExperts.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-lg" style={{ color: colors.text.muted }}>No experts found</p>
+              <p className="text-sm mt-2" style={{ color: colors.text.muted }}>Try adjusting your search or filters</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
