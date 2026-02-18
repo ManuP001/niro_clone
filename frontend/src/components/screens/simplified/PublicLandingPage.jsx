@@ -98,6 +98,10 @@ export default function PublicLandingPage({
   const handleNavBegin = (e) => {
     e.preventDefault();
     const topicsSection = document.getElementById('topics');
+    if (topicsSection) {
+      topicsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   // Handle See More Life Topics
   const handleSeeMoreTopics = (e) => {
@@ -118,10 +122,6 @@ export default function PublicLandingPage({
     } else {
       setUserIntent({ type: `browse_${section}` });
       onLoginClick();
-    }
-  };
-    if (topicsSection) {
-      topicsSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
