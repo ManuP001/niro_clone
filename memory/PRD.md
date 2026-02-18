@@ -208,26 +208,25 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 - [x] "See More life topics" CTA on Life Topics section
 - [x] Logo size increased (header: 36px, footer: 32px) - CSS specificity fixed
 
-### Phase 2: CTAs & Conversion (P1 - NEXT)
-- [ ] Topic-specific CTAs ("Talk about Career" instead of "Begin consultation")
-- [ ] Sticky CTA on scroll (persistent after hero)
-- [ ] Expert cards "View Profile" visible button text
-- [ ] Testimonial section CTA
-- [ ] "View All Experts" button
-- [ ] Footer on authenticated screens
+### Phase 2: CTAs & Conversion ✅ COMPLETE (Dec 2025)
+- [x] Topic-specific CTAs ("Talk about Career", "Talk about Health", "Explore Marriage", "Plan Family")
+- [x] Sticky CTA on scroll ("Ready to find clarity?" + "Get Free 10-Min Call")
+- [x] Expert cards "View Profile" button (4 buttons)
+- [x] Testimonial section CTA ("Start Your Journey Today")
+- [x] AppFooter component on authenticated HomeScreen (desktop only)
 
-### Phase 3: Polish & Advanced (P2)
+### Phase 3: Polish & Advanced (P1 - NEXT)
 - [ ] Search/filter for topics
 - [ ] React Router - proper URL routing (/app/topic/:id)
 - [ ] Deep-linking & browser back/forward
 - [ ] Scroll reveal animations
 
-### Future Phase: UI Changes (P3)
+### Future Phase: UI Changes (P2)
 - [ ] Change free call CTA text to: "Get a Free 10 mins consultation 📞"
 - [ ] Update top-right nav button to same text and follow same path as hero CTA
 - [ ] Increase Niro logo size further if needed
 
-### P4 - Tile Sizing (deferred by user)
+### P3 - Tile Sizing (deferred by user)
 - [ ] Fix tile sizing — make production tiles compact like admin preview
 
 ### P3 - Deferred UX
