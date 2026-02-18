@@ -1027,8 +1027,8 @@ export default function PublicLandingPage({
 
         .footer-logo {
           font-family: 'Lexend', sans-serif;
-          font-size: 22px;
-          font-weight: 600;
+          font-size: 32px;
+          font-weight: 700;
           letter-spacing: 0.02em;
           color: var(--teal-dark);
           text-decoration: none;
