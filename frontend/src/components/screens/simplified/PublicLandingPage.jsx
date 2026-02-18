@@ -152,11 +152,12 @@ export default function PublicLandingPage({
     }
   };
 
-  // Handle Begin Consultation CTA - Navigate to public topic page
-  const handleBeginConsultation = (e, topicId) => {
+  // Handle Begin Consultation CTA - Navigate to topics page (category listing)
+  const handleBeginConsultation = (e, categoryId) => {
     e.preventDefault();
-    // Navigate to public topic landing page (no login required)
-    window.location.href = `/topic/${topicId}`;
+    // Navigate to public topics page (life topics listing)
+    // The homepage shows categories, clicking should show all topics in that category
+    window.location.href = '/topics';
   };
 
   // Handle nav Begin button
