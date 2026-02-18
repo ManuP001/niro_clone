@@ -153,12 +153,42 @@ export default function SimplifiedApp({
     init();
   }, [loadUserState, token, isOnboardingComplete, isUserDetailsComplete, user]);
 
-  // Handle user details complete
+  // Handle user details complete - route based on pending intent
   const handleUserDetailsComplete = () => {
     localStorage.setItem(USER_DETAILS_KEY, 'true');
     trackEvent('user_details_complete', {}, token);
+    
+    // If we have a pending intent, route accordingly
+    if (pendingIntent) {
+      if (pendingIntent.type === 'free_call') {
+        // Go directly to schedule call screen
+        setScreen('schedule');
+        setOnboardingStep(ONBOARDING_STEPS.HOME);
+        localStorage.setItem(ONBOARDING_KEY, 'true');
+        clearUserIntent();
+        setPendingIntent(null);
+        return;
+      } else if (pendingIntent.type === 'consultation' && pendingIntent.topicId) {
+        // Go to home with topics visible (they can scroll to their topic)
+        setScreen('home');
+        setActiveTab('home');
+        setOnboardingStep(ONBOARDING_STEPS.HOME);
+        localStorage.setItem(ONBOARDING_KEY, 'true');
+        clearUserIntent();
+        setPendingIntent(null);
+        // Scroll to topics section after a short delay
+        setTimeout(() => {
+          const topicsSection = document.getElementById('topics-section');
+          if (topicsSection) {
+            topicsSection.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 500);
+        return;
+      }
+    }
+    
+    // Default: Continue with normal onboarding
     setOnboardingStep(ONBOARDING_STEPS.HOW_IT_WORKS);
-    // Reload user state to get updated Kundli
     loadUserState();
   };
 
