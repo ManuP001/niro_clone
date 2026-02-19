@@ -538,12 +538,12 @@ export default function TopicLandingPage({ token, topicId: propTopicId, onChecko
         )}
       </div>
 
-      {/* Sticky CTA Bar */}
+      {/* Sticky CTA Bar - Must be above BottomNav (z-60) */}
       {currentPackage && (
         <div 
-          className={`fixed ${hasBottomNav ? 'bottom-16 md:bottom-0' : 'bottom-0'} left-0 right-0 z-50`}
+          className={`fixed ${hasBottomNav ? 'bottom-20 md:bottom-0' : 'bottom-0'} left-0 right-0 z-[60]`}
           style={{ 
-            backgroundColor: 'rgba(251, 248, 243, 0.95)',
+            backgroundColor: 'rgba(251, 248, 243, 0.98)',
             backdropFilter: 'blur(12px)',
             borderTop: `1px solid ${colors.ui.borderDark}`,
             boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.08)',
