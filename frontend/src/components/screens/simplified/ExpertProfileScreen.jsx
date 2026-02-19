@@ -115,7 +115,7 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
       >
         <div className="text-center">
           <p style={{ color: colors.text.dark }}>Expert not found</p>
-          <button onClick={onBack} className="mt-4 font-medium" style={{ color: colors.teal.primary }}>Go back</button>
+          <button onClick={handleBack} className="mt-4 font-medium" style={{ color: colors.teal.primary }}>Go back</button>
         </div>
       </div>
     );
@@ -130,7 +130,7 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
       <ResponsiveHeader
         title={expert.name}
         showBackButton={true}
-        onBack={onBack}
+        onBack={handleBack}
         onNavigate={onNavigate}
         onTabChange={onTabChange}
       />
