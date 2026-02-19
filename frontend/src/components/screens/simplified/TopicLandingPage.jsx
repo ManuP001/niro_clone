@@ -141,15 +141,20 @@ export default function TopicLandingPage({ token, topicId: propTopicId, onChecko
   const currentPackage = packages[selectedTier];
   
   // Get topic content (from package or fallback)
-  const topicContent = DEFAULT_TOPIC_CONTENT[topicId] || {
+  const topicContent = topicId ? (DEFAULT_TOPIC_CONTENT[topicId] || {
     title: topicId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
     subtitle: 'Get personalized guidance for your journey.',
     faqs: [],
     whyNiro: DEFAULT_TOPIC_CONTENT.career_clarity.whyNiro
+  }) : {
+    title: 'Loading...',
+    subtitle: 'Get personalized guidance for your journey.',
+    faqs: [],
+    whyNiro: []
   };
 
-  // Handle checkout
-  const handleCheckout = () => {
+  // Handle checkout - redirect to login if not authenticated
+  const initiateCheckout = () => {
     const tierId = `${topicId}_${selectedTier.toLowerCase()}`;
     trackEvent('checkout_initiated', { 
       tile_id: topicId,
@@ -157,7 +162,18 @@ export default function TopicLandingPage({ token, topicId: propTopicId, onChecko
       tier_name: selectedTier,
       price: currentPackage?.price,
     }, token);
-    onCheckout(tierId, []);
+    
+    if (!isAuthenticated) {
+      // Store intended destination
+      localStorage.setItem('niro_redirect_after_login', `/app/checkout?tier=${tierId}`);
+      onLoginClick?.();
+      return;
+    }
+    if (onCheckout) {
+      onCheckout(tierId, []);
+    } else {
+      navigate('/app/checkout', { state: { tierId } });
+    }
   };
 
   // Format price
