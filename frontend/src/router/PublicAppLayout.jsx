@@ -405,7 +405,8 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
               path="experts" 
               element={
                 <ExpertsScreen 
-                  onExpertSelect={handleExpertSelect}
+                  onNavigate={handleNavigate}
+                  onTabChange={handleTabChange}
                   isAuthenticated={isAuthenticated}
                   onLoginClick={onLoginClick}
                 />
@@ -415,6 +416,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
               path="expert/:expertId" 
               element={
                 <ExpertProfileScreen 
+                  onNavigate={handleNavigate}
                   isAuthenticated={isAuthenticated}
                   user={user}
                   onLoginClick={onLoginClick}
