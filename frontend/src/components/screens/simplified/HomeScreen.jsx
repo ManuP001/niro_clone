@@ -369,95 +369,18 @@ export default function HomeScreen({
         onCtaClick={onTalkToHuman}
       />
 
-      {/* Hero Section - Enhanced for Desktop */}
-      <header 
-        className="relative pt-8 pb-10 md:pt-12 md:pb-16 lg:pt-16 lg:pb-20 px-4 md:px-8 lg:px-12"
-        style={{ 
-          background: `linear-gradient(180deg, ${colors.teal.primary} 0%, ${colors.teal.soft} 100%)`,
+      {/* Banner Carousel - Replaces full-width hero */}
+      <BannerCarousel 
+        onBannerClick={(action) => {
+          if (action === 'schedule') {
+            onNavigate('schedule');
+          } else if (action === 'experts') {
+            onNavigate('experts');
+          } else if (action === 'remedies') {
+            onNavigate('remedies');
+          }
         }}
-      >
-        {/* Floating shapes for desktop - decorative */}
-        <div className="hidden lg:block absolute top-20 left-[10%] w-24 h-24 rounded-full opacity-20 animate-float" 
-          style={{ background: `linear-gradient(135deg, ${colors.peach.soft}, ${colors.teal.soft})` }} 
-        />
-        <div className="hidden lg:block absolute top-32 right-[12%] w-16 h-16 rounded-full opacity-20 animate-float-delayed" 
-          style={{ background: `linear-gradient(135deg, ${colors.teal.soft}, ${colors.peach.soft})` }} 
-        />
-        
-        {/* Hero Content - Centered, max-width */}
-        <div className="text-center max-w-3xl mx-auto relative z-10">
-          <h1 
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 leading-tight"
-            style={{ color: '#FFFFFF' }}
-          >
-            Expert astrology guidance,{' '}
-            <span style={{ fontStyle: 'italic', fontWeight: 400 }}>
-              for as long as you need it.
-            </span>
-          </h1>
-          <p 
-            className="text-sm sm:text-base md:text-lg mb-6 md:mb-8 max-w-2xl mx-auto"
-            style={{ color: 'rgba(255,255,255,0.9)' }}
-          >
-            Experienced Vedic astrologers for your most important life decisions — with full support from first understanding to complete clarity.
-          </p>
-          
-          {/* Primary CTA - Larger on desktop */}
-          <button
-            onClick={onTalkToHuman}
-            className="inline-flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 rounded-full font-semibold text-sm md:text-base transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98]"
-            style={{ 
-              backgroundColor: colors.peach.primary,
-              color: colors.text.dark,
-              boxShadow: shadows.peach,
-            }}
-            data-testid="hero-cta-btn"
-          >
-            <svg className="w-4 h-4 md:w-5 md:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-            </svg>
-            Get Your Free 10-Min Call
-          </button>
-          
-          {/* Trust Badges - Responsive layout */}
-          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-6 md:mt-8 text-xs md:text-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
-            <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-              Only 4.5+ rated astrologers
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              Unlimited chat with experts
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              Remedies execution support
-            </span>
-          </div>
-        </div>
-
-        {/* Mobile Profile Button - Only on small screens */}
-        <button
-          onClick={onOpenProfile}
-          className="md:hidden absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95"
-          style={{ 
-            backgroundColor: 'rgba(255,255,255,0.2)',
-            border: '1px solid rgba(255,255,255,0.3)',
-          }}
-          data-testid="mobile-profile-button"
-        >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-        </button>
-      </header>
+      />
 
       {/* Secondary Actions - Chat with Mira */}
       <div className="px-4 md:px-8 lg:px-12 -mt-4 md:-mt-6 mb-6 md:mb-8">
