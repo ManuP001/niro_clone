@@ -432,6 +432,31 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 - [ ] Data migration script
 - [ ] Cache catalog data for performance
 
+### Phase 25: UI Consistency & Checkout Fixes (Feb 19, 2026)
+1. **Header CTA Button Fix (Issue #1)**
+   - Added `handleCtaClick` handler to HomeScreen component
+   - CTA button now properly navigates to /app/schedule (with login prompt if unauthenticated)
+   - Passed `onTalkToHuman` prop from PublicAppLayout to HomeScreen
+2. **Nav Bar Consistency (Issue #2)**
+   - Updated ResponsiveHeader nav links to use 15px font (matching landing page)
+   - Updated CTA button styling to match landing page (📞 emoji, larger padding, shadow)
+   - Nav items now use hrefs: Home → /, Life Topics → /app, Experts → /app/experts, Remedies → /app/remedies
+3. **Checkout Flow Fix (Issue #3)**
+   - CheckoutScreen now uses `useSearchParams` to get tierId from URL query params
+   - Works with both prop-based navigation and URL-based navigation
+   - Shows proper error message "No package selected" if tierId is missing
+4. **Booking API Token Handling (Issue #4)**
+   - Improved JWT token validation in /api/bookings endpoints
+   - Better handling of Google OAuth tokens (decode without verification)
+   - Proper base64 padding for token decoding
+5. **Experts API Admin Sync (Issue #5)**
+   - Modified /api/simplified/experts/all to check for admin_experts collection
+   - If admin has ANY experts in DB, use ONLY admin-managed experts (not catalog)
+   - Returns `source: "admin"` or `source: "catalog"` to indicate data source
+   - Respects `active: false` flag for deactivated experts
+
+**Note:** Issue #5 requires admin to run "Sync Live Catalog" from admin dashboard to populate admin_experts collection. Without this sync, the catalog defaults are used.
+
 ---
 
 ## Test Reports
