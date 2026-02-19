@@ -332,6 +332,17 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     }
   };
 
+  // Handle CTA click - schedule a free call (requires login)
+  const handleCtaClick = () => {
+    if (!isAuthenticated) {
+      // Store intent to go to schedule after login
+      localStorage.setItem('niro_user_intent', JSON.stringify({ type: 'free_call', returnTo: '/app/schedule' }));
+      onLoginClick?.();
+      return;
+    }
+    navigate('/app/schedule');
+  };
+
   // Handle onboarding step progression
   const handleOnboardingNext = () => {
     if (onboardingStep === ONBOARDING_STEPS.HOW_IT_WORKS) {
