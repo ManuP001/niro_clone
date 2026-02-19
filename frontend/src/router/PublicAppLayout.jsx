@@ -543,7 +543,12 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
               path="schedule" 
               element={
                 isAuthenticated ? (
-                  <ScheduleCallScreen token={token} user={user} />
+                  <ScheduleCallScreen 
+                    token={token} 
+                    user={user} 
+                    onBack={() => navigate(-1)}
+                    onComplete={() => navigate('/app/mypack')}
+                  />
                 ) : (
                   <Navigate to="/login" replace />
                 )
