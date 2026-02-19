@@ -1,32 +1,21 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
-// Public pages
+// Landing page
 import PublicLandingPage from '../components/screens/simplified/PublicLandingPage';
-import PublicExpertsPage from '../components/screens/simplified/PublicExpertsPage';
-import PublicExpertProfilePage from '../components/screens/simplified/PublicExpertProfilePage';
-import PublicTopicsPage from '../components/screens/simplified/PublicTopicsPage';
-import PublicTopicLandingPage from '../components/screens/simplified/PublicTopicLandingPage';
-import PublicRemediesPage from '../components/screens/simplified/PublicRemediesPage';
 import LoginScreen from '../components/screens/LoginScreen';
 import AuthCallback from '../components/screens/AuthCallback';
 
-// Protected app pages
+// App layouts
 import AppLayout from './AppLayout';
-import HomeScreen from '../components/screens/simplified/HomeScreen';
-import TopicLandingPage from '../components/screens/simplified/TopicLandingPage';
-import PackageLandingPage from '../components/screens/simplified/PackageLandingPage';
-import CheckoutScreen from '../components/screens/simplified/CheckoutScreen';
-import PlanDashboard from '../components/screens/simplified/PlanDashboard';
-import MyPackScreen from '../components/screens/simplified/MyPackScreen';
-import ExpertsScreen from '../components/screens/simplified/ExpertsScreen';
-import ExpertProfileScreen from '../components/screens/simplified/ExpertProfileScreen';
-import AskMiraScreen from '../components/screens/simplified/AskMiraScreen';
-import ProfileScreen from '../components/screens/simplified/ProfileScreen';
-import KundliScreenSimplified from '../components/screens/simplified/KundliScreenSimplified';
-import RemediesScreen from '../components/screens/simplified/RemediesScreen';
-import ScheduleCallScreen from '../components/screens/simplified/ScheduleCallScreen';
-import CategoryListingPage from '../components/screens/simplified/CategoryListingPage';
+import PublicAppLayout from './PublicAppLayout';
+
+// Legacy public pages (kept for future use, not routed)
+// import PublicExpertsPage from '../components/screens/simplified/PublicExpertsPage';
+// import PublicExpertProfilePage from '../components/screens/simplified/PublicExpertProfilePage';
+// import PublicTopicsPage from '../components/screens/simplified/PublicTopicsPage';
+// import PublicTopicLandingPage from '../components/screens/simplified/PublicTopicLandingPage';
+// import PublicRemediesPage from '../components/screens/simplified/PublicRemediesPage';
 
 // Admin
 import AdminDashboard from '../components/admin/AdminDashboard';
