@@ -184,7 +184,7 @@ export default function TopicLandingPage({ token, topicId: propTopicId, onChecko
         <ResponsiveHeader
           title="Loading..."
           showBackButton={true}
-          onBack={onBack}
+          onBack={handleBack}
           onNavigate={onNavigate}
           onTabChange={onTabChange}
           ctaText="📞 Get a free 10 mins consultation"
@@ -210,7 +210,7 @@ export default function TopicLandingPage({ token, topicId: propTopicId, onChecko
         <ResponsiveHeader
           title={topicContent.title}
           showBackButton={true}
-          onBack={onBack}
+          onBack={handleBack}
           onNavigate={onNavigate}
           onTabChange={onTabChange}
         />
