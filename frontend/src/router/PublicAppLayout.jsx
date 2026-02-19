@@ -21,7 +21,7 @@ import MyPackScreen from '../components/screens/simplified/MyPackScreen';
 import AskMiraScreen from '../components/screens/simplified/AskMiraScreen';
 import ProfileScreen from '../components/screens/simplified/ProfileScreen';
 import KundliScreenSimplified from '../components/screens/simplified/KundliScreenSimplified';
-import ScheduleCallScreen from '../components/screens/simplified/ScheduleCallScreen';
+import ScheduleCallScreen from '../components/screens/simplified/ScheduleCallScreenV2';
 
 // Components
 import BottomNav from '../components/screens/simplified/BottomNav';
