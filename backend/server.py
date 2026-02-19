@@ -94,6 +94,7 @@ from backend.niro_simplified.storage import init_simplified_storage, get_simplif
 # Import Admin and Remedies routes
 from backend.routes.admin import router as admin_router
 from backend.routes.remedies import router as remedies_router
+from backend.routes.bookings import router as bookings_router
 
 # Ensure workspace-local logs directory exists for runtime logs
 (ROOT_DIR / "logs").mkdir(parents=True, exist_ok=True)
