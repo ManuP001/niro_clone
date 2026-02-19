@@ -10,7 +10,7 @@ import uuid
 import time
 
 # Backend URL from environment
-BACKEND_URL = "https://public-api-rollout.preview.emergentagent.com/api"
+BACKEND_URL = "https://embedded-booking.preview.emergentagent.com/api"
 
 class RoleEnforcementTester:
     def __init__(self):

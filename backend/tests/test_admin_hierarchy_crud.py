@@ -8,7 +8,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://public-api-rollout.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://embedded-booking.preview.emergentagent.com').rstrip('/')
 
 # Admin credentials
 ADMIN_USERNAME = "NiroAdmin"
