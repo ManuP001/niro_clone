@@ -155,9 +155,9 @@ export default function PublicLandingPage({
   // Handle Begin Consultation CTA - Navigate to topics page (category listing)
   const handleBeginConsultation = (e, categoryId) => {
     e.preventDefault();
-    // Navigate to public topics page (life topics listing)
+    // Navigate to app topics page (life topics listing)
     // The homepage shows categories, clicking should show all topics in that category
-    window.location.href = '/topics';
+    window.location.href = '/app';
   };
 
   // Handle nav Begin button
