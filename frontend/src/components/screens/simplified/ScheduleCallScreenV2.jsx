@@ -248,7 +248,13 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete }) 
             
             {/* Actions */}
             <button
-              onClick={() => onComplete?.() || window.location.href = '/app/mypack'}
+              onClick={() => {
+                if (onComplete) {
+                  onComplete();
+                } else {
+                  window.location.href = '/app/mypack';
+                }
+              }}
               className="w-full py-4 rounded-full font-semibold text-base transition-all hover:shadow-lg"
               style={{
                 backgroundColor: colors.teal.primary,
