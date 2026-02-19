@@ -338,28 +338,53 @@ async def get_experts(request: Request, topic_id: str = Query(default=None)):
 
 @router.get("/experts/all")
 async def get_all_experts_grouped(request: Request):
-    """Get all experts grouped by modality - merges catalog + DB"""
+    """Get all experts grouped by modality - merges catalog + DB, respects active status"""
     catalog = get_simplified_catalog()
     catalog_experts = list(catalog.experts.values())
-    experts_list = [e.model_dump() for e in catalog_experts]
-    catalog_ids = {e.expert_id for e in catalog_experts}
     
-    # Merge experts from admin_experts DB collection
+    # Get database connection
     db = getattr(request.app.state, 'db', None)
     if db is None:
         storage = get_simplified_storage()
         db = storage.db if storage else None
     
+    # Check if there are any experts in the admin_experts collection
+    db_experts_count = 0
+    db_experts_map = {}
+    deactivated_ids = set()
+    
     if db is not None:
         try:
-            db_experts = await db.admin_experts.find(
-                {"active": {"$ne": False}}, {"_id": 0}
-            ).to_list(500)
-            for exp in db_experts:
-                if exp.get("expert_id") not in catalog_ids:
-                    experts_list.append(_normalize_db_expert(exp))
+            # Get count of admin experts
+            db_experts_count = await db.admin_experts.count_documents({})
+            
+            # If admin has any experts, fetch them all to check active status
+            if db_experts_count > 0:
+                all_db_experts = await db.admin_experts.find({}, {"_id": 0}).to_list(500)
+                for exp in all_db_experts:
+                    exp_id = exp.get("expert_id")
+                    db_experts_map[exp_id] = exp
+                    # Track deactivated experts
+                    if exp.get("active") == False:
+                        deactivated_ids.add(exp_id)
         except Exception as e:
             logger.warning(f"Failed to fetch experts from DB: {e}")
+    
+    experts_list = []
+    catalog_ids = set()
+    
+    # If admin has experts, use ONLY admin experts (this means admin has taken over management)
+    if db_experts_count > 0:
+        # Only use experts from admin_experts that are active
+        for exp_id, exp in db_experts_map.items():
+            if exp.get("active") != False:  # Include if active is True or not set
+                experts_list.append(_normalize_db_expert(exp))
+                catalog_ids.add(exp_id)
+    else:
+        # No admin experts - use catalog as before
+        for exp in catalog_experts:
+            experts_list.append(exp.model_dump())
+            catalog_ids.add(exp.expert_id)
     
     # Group by modality
     grouped = {}
@@ -375,7 +400,8 @@ async def get_all_experts_grouped(request: Request):
         "grouped_by_modality": grouped,
         "modalities": list(grouped.keys()),
         "total_count": len(experts_list),
-        "catalog_version": CATALOG_VERSION
+        "catalog_version": CATALOG_VERSION,
+        "source": "admin" if db_experts_count > 0 else "catalog"
     }
 
 
