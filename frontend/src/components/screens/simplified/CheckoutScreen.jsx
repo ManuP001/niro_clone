@@ -196,8 +196,8 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: colors.background.primary }}>
         <div className="text-center">
-          <p className="text-red-500 mb-4">Tier not found</p>
-          <button onClick={onBack} style={{ color: colors.teal.primary }} className="font-medium">Go back</button>
+          <p className="text-red-500 mb-4">{error || 'Package not found'}</p>
+          <button onClick={handleBack} style={{ color: colors.teal.primary }} className="font-medium">Go back</button>
         </div>
       </div>
     );
@@ -209,7 +209,7 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
       <ResponsiveHeader
         title="Checkout"
         showBackButton={true}
-        onBack={onBack}
+        onBack={handleBack}
         onTabChange={onTabChange}
       />
 
