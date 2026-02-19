@@ -245,6 +245,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         navigate(`/app/package/${params.packageId}`);
         break;
       case 'expert':
+      case 'expertProfile':
         navigate(`/app/expert/${params.expertId}`);
         break;
       case 'experts':
@@ -280,6 +281,20 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
           return;
         }
         navigate('/app/schedule');
+        break;
+      case 'plan':
+        if (!isAuthenticated) {
+          onLoginClick?.();
+          return;
+        }
+        navigate(`/app/plan/${params.planId}`);
+        break;
+      case 'checkout':
+        if (!isAuthenticated) {
+          onLoginClick?.();
+          return;
+        }
+        navigate('/app/checkout', { state: params });
         break;
       default:
         navigate('/app');
