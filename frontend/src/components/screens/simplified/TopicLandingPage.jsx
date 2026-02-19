@@ -563,7 +563,7 @@ export default function TopicLandingPage({ token, topicId: propTopicId, onChecko
             
             {/* CTA */}
             <button
-              onClick={handleCheckout}
+              onClick={initiateCheckout}
               className="px-6 md:px-10 py-3 md:py-4 rounded-full font-semibold text-base transition-all active:scale-[0.98] hover:shadow-lg hover:-translate-y-0.5"
               style={{ 
                 backgroundColor: colors.peach.primary,
