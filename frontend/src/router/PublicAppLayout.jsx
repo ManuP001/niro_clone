@@ -235,6 +235,57 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     navigate(`/app/topic/${topicId}`);
   };
 
+  // Handle navigation from HomeScreen (supports multiple destination types)
+  const handleNavigate = (destination, params = {}) => {
+    switch (destination) {
+      case 'topic':
+        navigate(`/app/topic/${params.topicId}`);
+        break;
+      case 'packageLanding':
+        navigate(`/app/package/${params.packageId}`);
+        break;
+      case 'expert':
+        navigate(`/app/expert/${params.expertId}`);
+        break;
+      case 'experts':
+        navigate('/app/experts');
+        break;
+      case 'remedies':
+        navigate('/app/remedies');
+        break;
+      case 'mira':
+        if (!isAuthenticated) {
+          onLoginClick?.();
+          return;
+        }
+        navigate('/app/mira');
+        break;
+      case 'mypack':
+        if (!isAuthenticated) {
+          onLoginClick?.();
+          return;
+        }
+        navigate('/app/mypack');
+        break;
+      case 'profile':
+        if (!isAuthenticated) {
+          onLoginClick?.();
+          return;
+        }
+        navigate('/app/profile');
+        break;
+      case 'schedule':
+        if (!isAuthenticated) {
+          onLoginClick?.();
+          return;
+        }
+        navigate('/app/schedule');
+        break;
+      default:
+        navigate('/app');
+    }
+  };
+
   // Handle expert selection
   const handleExpertSelect = (expertId) => {
     navigate(`/app/expert/${expertId}`);
