@@ -442,6 +442,8 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
               path="remedies" 
               element={
                 <RemediesScreen 
+                  onNavigate={handleNavigate}
+                  onTabChange={handleTabChange}
                   isAuthenticated={isAuthenticated}
                   token={token}
                   onLoginClick={onLoginClick}
