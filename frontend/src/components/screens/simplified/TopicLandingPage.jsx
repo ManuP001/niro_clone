@@ -79,21 +79,6 @@ export default function TopicLandingPage({ token, topicId: propTopicId, onChecko
       navigate(-1);
     }
   };
-  
-  // Handle checkout - redirect to login if not authenticated
-  const handleCheckout = (tierId) => {
-    if (!isAuthenticated) {
-      // Store intended destination
-      localStorage.setItem('niro_redirect_after_login', `/app/checkout?tier=${tierId}`);
-      onLoginClick?.();
-      return;
-    }
-    if (onCheckout) {
-      onCheckout(tierId, []);
-    } else {
-      navigate('/app/checkout', { state: { tierId } });
-    }
-  };
 
   // Fetch packages from API
   useEffect(() => {
