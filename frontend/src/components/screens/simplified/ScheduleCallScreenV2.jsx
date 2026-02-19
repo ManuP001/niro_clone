@@ -110,8 +110,15 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete }) 
         notes: 'Free 10-minute consultation call',
       };
       
-      // Save booking to backend
-      const response = await apiSimplified.post('/bookings/schedule', bookingData, token);
+      // Save booking to backend (use direct API call, not apiSimplified)
+      const response = await fetch(`${BACKEND_URL}/api/bookings/schedule`, {
+        method: 'POST',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData),
+      }).then(res => res.json());
       
       if (response.ok) {
         setBookingDetails({
