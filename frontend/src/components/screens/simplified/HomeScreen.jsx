@@ -5,18 +5,17 @@ import { trackEvent } from './utils';
 import { getBackendUrl } from '../../../config';
 import ResponsiveHeader from './ResponsiveHeader';
 import AppFooter from './AppFooter';
+import BannerCarousel from './BannerCarousel';
 import { ScrollReveal } from '../../../hooks/useScrollReveal';
 
 /**
- * HomeScreen V11 - Phase 3 Responsive Layout
+ * HomeScreen V12 - Consolidated App Experience
  * 
- * Changes from V10:
- * - Added ResponsiveHeader with desktop navigation
- * - Multi-column grid layouts for desktop
- * - Centered content with max-width containers
- * - Enhanced hero section for larger screens
- * - Search/filter for topics
- * - Scroll reveal animations
+ * Changes from V11:
+ * - Replaced full-width hero with BannerCarousel
+ * - Cleaner mobile-first layout
+ * - Banner carousel with auto-scroll
+ * - Ready for PWA usage
  */
 
 // Default fallback data
