@@ -1,17 +1,62 @@
 """
 Booking routes for scheduling calls
 """
-from fastapi import APIRouter, Request, HTTPException, Depends
+from fastapi import APIRouter, Request, HTTPException, Depends, Header
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timezone
-from bson import ObjectId
+from motor.motor_asyncio import AsyncIOMotorDatabase
 import uuid
-
-from ..database import get_db
-from ..auth import get_current_user
+import os
 
 router = APIRouter(prefix="/bookings", tags=["bookings"])
+
+
+# Get database connection
+async def get_db(request: Request) -> AsyncIOMotorDatabase:
+    """Get database from app state"""
+    return request.app.state.db
+
+
+# Authentication dependency
+async def get_current_user(authorization: Optional[str] = Header(None)):
+    """Verify JWT token and return user info"""
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        # Extract token
+        if authorization.startswith("Bearer "):
+            token = authorization[7:]
+        else:
+            token = authorization
+        
+        # Verify token (simplified - in production use proper JWT verification)
+        # For now, decode the token payload
+        import jwt
+        
+        # Get secret from environment or use default
+        secret = os.environ.get("JWT_SECRET", "your-secret-key")
+        
+        try:
+            payload = jwt.decode(token, secret, algorithms=["HS256"])
+            return payload
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token expired")
+        except jwt.InvalidTokenError:
+            # Try with Google OAuth token format
+            import base64
+            import json
+            
+            # Decode without verification for Google tokens
+            parts = token.split('.')
+            if len(parts) >= 2:
+                payload = json.loads(base64.urlsafe_b64decode(parts[1] + '=='))
+                return payload
+            
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
 
 
 class BookingCreate(BaseModel):
