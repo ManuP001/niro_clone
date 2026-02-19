@@ -74,57 +74,12 @@ export default function AppRoutes({
         } 
       />
 
-      {/* Public Experts Page - No login required */}
-      <Route 
-        path="/experts" 
-        element={
-          <PublicExpertsPage
-            isAuthenticated={authState.isAuthenticated}
-            onLoginClick={onLoginClick}
-          />
-        } 
-      />
-
-      {/* Public Expert Profile - No login required */}
-      <Route 
-        path="/experts/:expertId" 
-        element={
-          <PublicExpertProfilePage
-            isAuthenticated={authState.isAuthenticated}
-            onLoginClick={onLoginClick}
-          />
-        } 
-      />
-
-      {/* Public Topics Page - No login required */}
-      <Route 
-        path="/topics" 
-        element={
-          <PublicTopicsPage
-            isAuthenticated={authState.isAuthenticated}
-          />
-        } 
-      />
-
-      {/* Public Topic Landing Page - No login required, only checkout requires login */}
-      <Route 
-        path="/topic/:topicId" 
-        element={
-          <PublicTopicLandingPage
-            isAuthenticated={authState.isAuthenticated}
-          />
-        } 
-      />
-
-      {/* Public Remedies Page - No login required, only purchase requires login */}
-      <Route 
-        path="/remedies" 
-        element={
-          <PublicRemediesPage
-            isAuthenticated={authState.isAuthenticated}
-          />
-        } 
-      />
+      {/* Legacy public routes - redirect to /app equivalents */}
+      <Route path="/topics" element={<Navigate to="/app" replace />} />
+      <Route path="/experts" element={<Navigate to="/app/experts" replace />} />
+      <Route path="/experts/:expertId" element={<Navigate to="/app/expert/:expertId" replace />} />
+      <Route path="/topic/:topicId" element={<Navigate to="/app/topic/:topicId" replace />} />
+      <Route path="/remedies" element={<Navigate to="/app/remedies" replace />} />
       
       <Route 
         path="/login" 
@@ -150,18 +105,15 @@ export default function AppRoutes({
       {/* Admin Routes */}
       <Route path="/admin/*" element={<AdminDashboard />} />
 
-      {/* Protected App Routes */}
+      {/* Main App Routes - Split into public browse and protected features */}
       <Route 
         path="/app/*" 
         element={
-          authState.isAuthenticated ? (
-            <AppLayout 
-              authState={authState}
-              onLogout={onLogout}
-            />
-          ) : (
-            <Navigate to="/login" replace />
-          )
+          <PublicAppLayout 
+            authState={authState}
+            onLogout={onLogout}
+            onLoginClick={onLoginClick}
+          />
         } 
       />
       
