@@ -378,7 +378,7 @@ export default function HomeScreen({
         onOpenProfile={onOpenProfile}
         onTabChange={onTabChange}
         ctaText="Get a Free 10 mins consultation"
-        onCtaClick={onTalkToHuman}
+        onCtaClick={handleCtaClick}
       />
 
       {/* Banner Carousel - Replaces full-width hero */}
