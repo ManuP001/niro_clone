@@ -432,6 +432,26 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
 - [ ] Data migration script
 - [ ] Cache catalog data for performance
 
+### Phase 26: Production Bug Fixes (Feb 19, 2026)
+1. **Call Booking Auth Fix**
+   - Updated `/api/bookings` endpoints to support Niro session tokens (`niro_session_*`)
+   - Session tokens are now validated against `user_sessions` collection in MongoDB
+   - Falls back to JWT verification if not a session token
+2. **Sticky CTA Bar Mobile Fix**
+   - Increased z-index from `z-50` to `z-[60]` to appear above bottom nav
+   - Changed bottom position from `bottom-16` to `bottom-20` for better spacing
+3. **Expert Profile Navigation Fix**
+   - Added `useParams()` to ExpertProfileScreen to get expertId from URL
+   - Works with both prop-based and URL-based navigation (same fix as TopicLandingPage)
+4. **Post-Login Redirect Fix**
+   - Changed default redirect after Google login from `/` to `/app`
+   - Mobile users now land directly in the app experience after login
+
+**Note:** For admin dashboard changes to reflect:
+- The `/api/simplified/experts/all` endpoint checks `admin_experts` collection
+- If admin has seeded data, it uses ONLY admin-managed experts
+- Deactivated experts (active: false) are filtered out
+
 ### Phase 25: UI Consistency & Checkout Fixes (Feb 19, 2026)
 1. **Header CTA Button Fix (Issue #1)**
    - Added `handleCtaClick` handler to HomeScreen component
