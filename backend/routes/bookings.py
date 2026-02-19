@@ -31,30 +31,41 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
         else:
             token = authorization
         
-        # Verify token (simplified - in production use proper JWT verification)
-        # For now, decode the token payload
         import jwt
+        import base64
+        import json
         
-        # Get secret from environment or use default
-        secret = os.environ.get("JWT_SECRET", "your-secret-key")
+        # Get secret from environment
+        secret = os.environ.get("JWT_SECRET", "dev-secret-key-change-in-prod")
         
+        # First try standard JWT verification
         try:
             payload = jwt.decode(token, secret, algorithms=["HS256"])
             return payload
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail="Token expired")
         except jwt.InvalidTokenError:
-            # Try with Google OAuth token format
-            import base64
-            import json
-            
-            # Decode without verification for Google tokens
+            pass  # Try Google token format
+        
+        # Try Google OAuth token format (decode without verification)
+        try:
             parts = token.split('.')
             if len(parts) >= 2:
-                payload = json.loads(base64.urlsafe_b64decode(parts[1] + '=='))
-                return payload
-            
-            raise HTTPException(status_code=401, detail="Invalid token")
+                # Add padding if needed
+                padded = parts[1] + '=' * (4 - len(parts[1]) % 4)
+                payload = json.loads(base64.urlsafe_b64decode(padded))
+                # Extract user info from Google token
+                return {
+                    "user_id": payload.get("sub") or payload.get("user_id", ""),
+                    "email": payload.get("email", ""),
+                    "name": payload.get("name", ""),
+                }
+        except Exception:
+            pass
+        
+        raise HTTPException(status_code=401, detail="Invalid token format")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
 
