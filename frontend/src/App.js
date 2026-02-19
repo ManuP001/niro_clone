@@ -134,7 +134,8 @@ function AppContent() {
           navigate('/app', { replace: true });
         }
       } else {
-        navigate('/', { replace: true });
+        // Default: go to /app after login (better for mobile)
+        navigate('/app', { replace: true });
       }
     } else {
       // Check for stored intent
