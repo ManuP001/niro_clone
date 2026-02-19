@@ -216,7 +216,7 @@ export default function TopicLandingPage({ token, topicId: propTopicId, onChecko
         />
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
           <p style={{ color: colors.ui.error }} className="mb-4">No packages available for this topic yet</p>
-          <button onClick={onBack} style={{ color: colors.teal.primary }} className="font-medium">
+          <button onClick={handleBack} style={{ color: colors.teal.primary }} className="font-medium">
             Go back
           </button>
         </div>
