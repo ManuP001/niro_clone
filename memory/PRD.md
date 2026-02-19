@@ -300,14 +300,33 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
    - User redirected to scheduling page (not /app/experts) after login
    - Updated handleConsultClick in PublicExpertProfilePage.jsx
 3. **Topics Without Packages - Coming Soon**
-   - Added TOPICS_WITH_PACKAGES constant: ['career_clarity', 'marriage_planning', 'stress_management', 'relationship_healing']
+   - Created API endpoint /api/admin/public/topics-with-packages
    - Tiles without packages show "Coming Soon" badge and are disabled
-   - Prevents navigation to empty topic landing pages
    - Updated CategoryModule in PublicTopicsPage.jsx
 4. **Topic Landing Page - No Packages Message**
    - Shows friendly "Coming Soon" message instead of error
    - "Browse Available Topics" button to navigate back
-   - Updated PublicTopicLandingPage.jsx
+5. **Fixed Topic ID Mismatches**
+   - Updated admin_tiles in DB to match admin_tiers IDs
+   - 18 topics now enabled (was 4)
+
+### Phase 23: Consolidate to /app Routes (Feb 19, 2026)
+1. **Single App Experience**
+   - Created PublicAppLayout.jsx for unified /app routing
+   - /app/* routes now support both public browse and authenticated features
+   - Public: /app, /app/topics, /app/experts, /app/remedies, /app/topic/:id
+   - Protected: /app/checkout, /app/mypack, /app/mira, /app/profile, /app/schedule
+2. **Landing Page Navigation**
+   - All nav links now point to /app/* routes
+   - Life Topics → /app, Experts → /app/experts, Remedies → /app/remedies
+3. **Legacy Route Redirects**
+   - /topics → /app, /experts → /app/experts, /remedies → /app/remedies
+   - Old public page files kept (not deleted) for potential future use
+4. **Benefits**
+   - Single codebase for main experience
+   - Mobile-first UI everywhere
+   - Ready for PWA (native app wrapper)
+   - Reduced maintenance - admin dashboard only syncs with /app pages
 
 ---
 
