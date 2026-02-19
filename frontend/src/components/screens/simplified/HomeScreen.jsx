@@ -382,28 +382,8 @@ export default function HomeScreen({
         }}
       />
 
-      {/* Secondary Actions - Chat with Mira */}
-      <div className="px-4 md:px-8 lg:px-12 -mt-4 md:-mt-6 mb-6 md:mb-8">
-        <div className="max-w-3xl mx-auto">
-          <button
-            onClick={onChatWithMira}
-            className="w-full flex items-center justify-center gap-2 py-3 md:py-4 rounded-xl font-medium text-sm md:text-base transition-all hover:shadow-md active:scale-[0.98]"
-            style={{ 
-              backgroundColor: '#FFFFFF',
-              color: colors.text.dark,
-              boxShadow: shadows.card,
-              border: `1px solid ${colors.ui.borderDark}`,
-            }}
-            data-testid="chat-with-mira-btn"
-          >
-            <SparklesIcon className="w-4 h-4 md:w-5 md:h-5" style={{ color: colors.teal.primary }} />
-            Or chat with Mira (AI Astrology Assistant)
-          </button>
-        </div>
-      </div>
-
       {/* Life Topics Section Header with Search */}
-      <div className="px-4 md:px-8 lg:px-12 mb-4 md:mb-6" id="topics-section">
+      <div className="px-4 md:px-8 lg:px-12 pt-4 mb-4 md:mb-6" id="topics-section">
         <div className="max-w-5xl mx-auto">
           <h2 
             className="text-lg sm:text-xl md:text-2xl font-semibold text-center mb-4 md:mb-6"
