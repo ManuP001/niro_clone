@@ -60,11 +60,40 @@ const DEFAULT_TOPIC_CONTENT = {
   }
 };
 
-export default function TopicLandingPage({ token, topicId, onCheckout, onBack, onNavigate, hasBottomNav, userName, onTabChange }) {
+export default function TopicLandingPage({ token, topicId: propTopicId, onCheckout, onBack, onNavigate, hasBottomNav, userName, onTabChange, isAuthenticated, user, onLoginClick }) {
+  // Get topicId from URL params or props
+  const params = useParams();
+  const navigate = useNavigate();
+  const topicId = propTopicId || params.topicId;
+  
   const [selectedTier, setSelectedTier] = useState(DEFAULT_TIER);
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [packages, setPackages] = useState({});
   const [loading, setLoading] = useState(true);
+  
+  // Handle back navigation
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigate(-1);
+    }
+  };
+  
+  // Handle checkout - redirect to login if not authenticated
+  const handleCheckout = (tierId) => {
+    if (!isAuthenticated) {
+      // Store intended destination
+      localStorage.setItem('niro_redirect_after_login', `/app/checkout?tier=${tierId}`);
+      onLoginClick?.();
+      return;
+    }
+    if (onCheckout) {
+      onCheckout(tierId, []);
+    } else {
+      navigate('/app/checkout', { state: { tierId } });
+    }
+  };
 
   // Fetch packages from API
   useEffect(() => {
