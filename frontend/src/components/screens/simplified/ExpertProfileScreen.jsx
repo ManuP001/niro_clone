@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { apiSimplified, trackEvent } from './utils';
 import { colors, shadows } from './theme';
 import ResponsiveHeader from './ResponsiveHeader';
@@ -7,10 +8,24 @@ import ResponsiveHeader from './ResponsiveHeader';
  * ExpertProfileScreen V3 - Full expert profile with new design
  * Updated for responsive layout and teal/cream theme
  */
-export default function ExpertProfileScreen({ token, expertId, userState, onNavigate, onBack, hasBottomNav, onTabChange }) {
+export default function ExpertProfileScreen({ token, expertId: propExpertId, userState, onNavigate, onBack, hasBottomNav, onTabChange, isAuthenticated, user, onLoginClick }) {
+  // Get expertId from URL params or props
+  const params = useParams();
+  const navigate = useNavigate();
+  const expertId = propExpertId || params.expertId;
+  
   const [expert, setExpert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTopicSelector, setShowTopicSelector] = useState(false);
+
+  // Handle back navigation
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigate(-1);
+    }
+  };
 
   // Get active plan topics for entitlement checking
   const activePlanTopics = userState?.active_plans?.map(p => p.topic_id) || [];
