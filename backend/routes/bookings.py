@@ -18,9 +18,9 @@ async def get_db(request: Request) -> AsyncIOMotorDatabase:
     return request.app.state.db
 
 
-# Authentication dependency
-async def get_current_user(authorization: Optional[str] = Header(None)):
-    """Verify JWT token and return user info"""
+# Authentication dependency - needs Request for session token lookup
+async def get_current_user(request: Request, authorization: Optional[str] = Header(None)):
+    """Verify token and return user info - supports both JWT and session tokens"""
     if not authorization:
         raise HTTPException(status_code=401, detail="Not authenticated")
     
@@ -31,14 +31,35 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
         else:
             token = authorization
         
+        # Check if it's a Niro session token (niro_session_*)
+        if token.startswith("niro_session_"):
+            db = request.app.state.db
+            session = await db.user_sessions.find_one({"session_token": token})
+            if not session:
+                raise HTTPException(status_code=401, detail="Session expired or invalid")
+            
+            # Check expiry
+            if session.get("expires_at") and session["expires_at"] < datetime.now(timezone.utc):
+                raise HTTPException(status_code=401, detail="Session expired")
+            
+            # Get user data
+            user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
+            if not user:
+                raise HTTPException(status_code=401, detail="User not found")
+            
+            return {
+                "user_id": user.get("user_id"),
+                "email": user.get("email", ""),
+                "name": user.get("name", ""),
+            }
+        
+        # Try JWT verification
         import jwt
         import base64
         import json
         
-        # Get secret from environment
         secret = os.environ.get("JWT_SECRET", "dev-secret-key-change-in-prod")
         
-        # First try standard JWT verification
         try:
             payload = jwt.decode(token, secret, algorithms=["HS256"])
             return payload
@@ -51,10 +72,8 @@ async def get_current_user(authorization: Optional[str] = Header(None)):
         try:
             parts = token.split('.')
             if len(parts) >= 2:
-                # Add padding if needed
                 padded = parts[1] + '=' * (4 - len(parts[1]) % 4)
                 payload = json.loads(base64.urlsafe_b64decode(padded))
-                # Extract user info from Google token
                 return {
                     "user_id": payload.get("sub") or payload.get("user_id", ""),
                     "email": payload.get("email", ""),
