@@ -1325,14 +1325,14 @@ export default function PublicLandingPage({
         <nav className="landing-nav">
           <a href="/" className="landing-logo">niro</a>
           <ul>
-            <li><a href="/topics">Life Topics</a></li>
-            <li><a href="/experts">Experts</a></li>
-            <li><a href="/remedies">Remedies</a></li>
+            <li><a href="/app">Life Topics</a></li>
+            <li><a href="/app/experts">Experts</a></li>
+            <li><a href="/app/remedies">Remedies</a></li>
             <li><a href="#how">How It Works</a></li>
             {isAuthenticated && (
               <>
-                <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigateToApp('mypack'); }}>My Pack</a></li>
-                <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigateToApp('astro'); }}>Astro</a></li>
+                <li><a href="/app/mypack">My Pack</a></li>
+                <li><a href="/app/astro">Astro</a></li>
               </>
             )}
             <li>
@@ -1359,14 +1359,14 @@ export default function PublicLandingPage({
             </svg>
           </button>
           <div className={`mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
-            <a href="/topics" onClick={() => setMobileMenuOpen(false)}>Life Topics</a>
-            <a href="/experts" onClick={() => setMobileMenuOpen(false)}>Experts</a>
-            <a href="/remedies" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
+            <a href="/app" onClick={() => setMobileMenuOpen(false)}>Life Topics</a>
+            <a href="/app/experts" onClick={() => setMobileMenuOpen(false)}>Experts</a>
+            <a href="/app/remedies" onClick={() => setMobileMenuOpen(false)}>Remedies</a>
             <a href="#how" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
             {isAuthenticated && (
               <>
-                <a href="#" onClick={(e) => { e.preventDefault(); onNavigateToApp('mypack'); setMobileMenuOpen(false); }}>My Pack</a>
-                <a href="#" onClick={(e) => { e.preventDefault(); onNavigateToApp('astro'); setMobileMenuOpen(false); }}>Astro</a>
+                <a href="/app/mypack" onClick={() => setMobileMenuOpen(false)}>My Pack</a>
+                <a href="/app/astro" onClick={() => setMobileMenuOpen(false)}>Astro</a>
               </>
             )}
             <a 
