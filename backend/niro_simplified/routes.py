@@ -375,7 +375,7 @@ async def get_all_experts_grouped(request: Request):
                     exp_id = exp.get("expert_id")
                     db_experts_map[exp_id] = exp
                     # Track deactivated experts
-                    if exp.get("active") == False:
+                    if exp.get("active") is False:
                         deactivated_ids.add(exp_id)
         except Exception as e:
             logger.warning(f"Failed to fetch experts from DB: {e}")
@@ -387,7 +387,7 @@ async def get_all_experts_grouped(request: Request):
     if db_experts_count > 0:
         # Only use experts from admin_experts that are active
         for exp_id, exp in db_experts_map.items():
-            if exp.get("active") != False:  # Include if active is True or not set
+            if exp.get("active") is not False:  # Include if active is True or not set
                 experts_list.append(_normalize_db_expert(exp))
                 catalog_ids.add(exp_id)
     else:
