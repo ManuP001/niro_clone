@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { apiSimplified, formatPrice, trackEvent } from './utils';
 import { colors, shadows } from './theme';
 import ResponsiveHeader from './ResponsiveHeader';
@@ -6,14 +7,36 @@ import ResponsiveHeader from './ResponsiveHeader';
 /**
  * CheckoutScreen V2 - Razorpay payment flow with responsive layout
  */
-export default function CheckoutScreen({ token, tierId, scenarioIds = [], onSuccess, onBack, onTabChange }) {
+export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds = [], onSuccess, onBack, onTabChange, user }) {
+  // Get tierId from props, URL params, or location state
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const tierId = propTierId || searchParams.get('tier') || location.state?.tierId;
+  
   const [loading, setLoading] = useState(true);
   const [tier, setTier] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [errorType, setErrorType] = useState(null); // 'order', 'payment', 'verification'
+  
+  // Handle back navigation
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigate(-1);
+    }
+  };
 
   useEffect(() => {
+    if (!tierId) {
+      setError('No package selected. Please choose a package first.');
+      setErrorType('order');
+      setLoading(false);
+      return;
+    }
+    
     const loadTierData = async () => {
       try {
         const response = await apiSimplified.get(`/tiers/${tierId}`, token);
