@@ -328,6 +328,25 @@ Major UI/UX redesign based on `niro-final-marquee_1.html` to:
    - Ready for PWA (native app wrapper)
    - Reduced maintenance - admin dashboard only syncs with /app pages
 
+### Phase 24: Embedded Scheduling & Bug Fixes (Feb 19, 2026)
+1. **Booking API Endpoints** - New backend routes
+   - POST /api/bookings/schedule - Create booking with JWT auth
+   - GET /api/bookings/my-bookings - Get user's scheduled bookings
+   - GET /api/bookings/upcoming - Get upcoming scheduled calls
+   - PUT /api/bookings/{id}/cancel - Cancel a scheduled booking
+2. **TopicLandingPage useParams Fix**
+   - Component now uses useParams() to get topicId from URL
+   - Fixed "Cannot read properties of undefined (reading 'replace')" error
+   - Works correctly with both prop-based and URL-based navigation
+3. **ScheduleCallScreenV2 API Fix**
+   - Changed from apiSimplified.post (wrong base URL) to direct fetch
+   - Now correctly calls /api/bookings/schedule endpoint
+   - Properly passes JWT token for authentication
+4. **BannerCarousel on Homepage**
+   - Replaced intrusive full-page teal hero with scrollable carousel
+   - "Get Your Free 10-Min Call" banner with "Book Now" button
+   - Dots indicator for carousel navigation
+
 ---
 
 ## Technical Architecture
