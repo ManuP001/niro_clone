@@ -370,7 +370,8 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
               element={
                 <HomeScreen 
                   userState={userState}
-                  onTopicSelect={handleTopicSelect}
+                  onNavigate={handleNavigate}
+                  onTabChange={handleTabChange}
                   isAuthenticated={isAuthenticated}
                   user={user}
                   onLoginClick={onLoginClick}
@@ -382,7 +383,8 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
               element={
                 <HomeScreen 
                   userState={userState}
-                  onTopicSelect={handleTopicSelect}
+                  onNavigate={handleNavigate}
+                  onTabChange={handleTabChange}
                   isAuthenticated={isAuthenticated}
                   user={user}
                   onLoginClick={onLoginClick}
