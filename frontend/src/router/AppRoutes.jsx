@@ -21,34 +21,35 @@ import PublicAppLayout from './PublicAppLayout';
 import AdminDashboard from '../components/admin/AdminDashboard';
 
 /**
- * AppRoutes - Central routing configuration using React Router v7
+ * AppRoutes - Central routing configuration
  * 
  * Public Routes (no login required):
- * - / : Landing page (PublicLandingPage)
- * - /experts : Public experts listing
- * - /experts/:expertId : Public expert profile
- * - /topics : Public life topics page
+ * - / : Marketing landing page
  * - /login : Login screen
  * - /auth/callback : OAuth callback handler
  * 
- * Protected Routes (require auth):
- * - /app : Home screen
+ * Public App Routes (no login required, main PWA experience):
+ * - /app : Home screen (topics browsing)
+ * - /app/topics : Topics listing (alias for /app)
  * - /app/topic/:topicId : Topic landing page
- * - /app/package/:packageId : Package landing page  
- * - /app/checkout : Checkout screen
- * - /app/plan/:planId : Plan dashboard
- * - /app/mypack : My Pack screen
  * - /app/experts : Experts listing
  * - /app/expert/:expertId : Expert profile
+ * - /app/remedies : Remedies listing
+ * 
+ * Protected App Routes (require auth):
+ * - /app/checkout : Checkout screen
+ * - /app/mypack : My Pack screen
  * - /app/mira : Ask Mira chat
  * - /app/profile : User profile
  * - /app/astro : Kundli/Astro screen
- * - /app/remedies : Remedies screen
  * - /app/schedule : Schedule call screen
- * - /app/categories : Category listing
+ * - /app/plan/:planId : Plan dashboard
  * 
  * Admin Routes:
  * - /admin/* : Admin dashboard
+ * 
+ * Legacy public routes (disabled, files kept for future):
+ * - /topics, /experts, /remedies, /topic/:id, /experts/:id
  */
 export default function AppRoutes({ 
   authState, 
@@ -60,7 +61,7 @@ export default function AppRoutes({
 }) {
   return (
     <Routes>
-      {/* Public Routes */}
+      {/* Marketing Landing Page */}
       <Route 
         path="/" 
         element={
