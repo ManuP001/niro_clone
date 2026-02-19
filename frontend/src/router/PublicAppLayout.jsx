@@ -401,6 +401,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
                   isAuthenticated={isAuthenticated}
                   user={user}
                   onLoginClick={onLoginClick}
+                  onTalkToHuman={handleCtaClick}
                 />
               } 
             />
@@ -414,6 +415,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
                   isAuthenticated={isAuthenticated}
                   user={user}
                   onLoginClick={onLoginClick}
+                  onTalkToHuman={handleCtaClick}
                 />
               } 
             />
