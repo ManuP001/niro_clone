@@ -300,39 +300,49 @@ def _normalize_db_expert(exp: dict) -> dict:
 
 @router.get("/experts")
 async def get_experts(request: Request, topic_id: str = Query(default=None)):
-    """Get experts, optionally filtered by topic - merges catalog + DB"""
+    """Get experts, optionally filtered by topic - uses admin_experts if any exist, else catalog"""
     catalog = get_simplified_catalog()
     
-    if topic_id:
-        catalog_experts = catalog.get_experts_for_topic(topic_id)
-    else:
-        catalog_experts = list(catalog.experts.values())
-    
-    experts_list = [e.model_dump() for e in catalog_experts]
-    catalog_ids = {e.expert_id for e in catalog_experts}
-    
-    # Merge experts from admin_experts DB collection
+    # Get database connection
     db = getattr(request.app.state, 'db', None)
     if db is None:
         storage = get_simplified_storage()
         db = storage.db if storage else None
     
+    # Check if admin has any experts
+    db_experts_count = 0
     if db is not None:
+        try:
+            db_experts_count = await db.admin_experts.count_documents({})
+        except Exception as e:
+            logger.warning(f"Failed to count experts: {e}")
+    
+    experts_list = []
+    
+    if db_experts_count > 0:
+        # Use ONLY admin experts (admin has taken over management)
         try:
             query = {"active": {"$ne": False}}
             if topic_id:
                 query["topics"] = topic_id
             db_experts = await db.admin_experts.find(query, {"_id": 0}).to_list(500)
             for exp in db_experts:
-                if exp.get("expert_id") not in catalog_ids:
-                    experts_list.append(_normalize_db_expert(exp))
+                experts_list.append(_normalize_db_expert(exp))
         except Exception as e:
             logger.warning(f"Failed to fetch experts from DB: {e}")
+    else:
+        # No admin experts - use catalog
+        if topic_id:
+            catalog_experts = catalog.get_experts_for_topic(topic_id)
+        else:
+            catalog_experts = list(catalog.experts.values())
+        experts_list = [e.model_dump() for e in catalog_experts]
     
     return {
         "ok": True,
         "experts": experts_list,
-        "catalog_version": CATALOG_VERSION
+        "catalog_version": CATALOG_VERSION,
+        "source": "admin" if db_experts_count > 0 else "catalog"
     }
 
 
