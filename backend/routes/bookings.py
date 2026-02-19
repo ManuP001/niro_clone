@@ -20,16 +20,19 @@ async def get_db(request: Request) -> AsyncIOMotorDatabase:
 
 # Authentication dependency - needs Request for session token lookup
 async def get_current_user(request: Request, authorization: Optional[str] = Header(None)):
-    """Verify token and return user info - supports both JWT and session tokens"""
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    
+    """Verify token and return user info - tries cookie first, then Authorization header"""
     try:
-        # Extract token
-        if authorization.startswith("Bearer "):
-            token = authorization[7:]
-        else:
-            token = authorization
+        # Try session cookie first (same-origin requests always send cookies; most reliable)
+        token = request.cookies.get("session_token")
+
+        # Fall back to Authorization header
+        if not token:
+            if not authorization:
+                raise HTTPException(status_code=401, detail="Not authenticated")
+            if authorization.startswith("Bearer "):
+                token = authorization[7:]
+            else:
+                token = authorization
         
         # Check if it's a Niro session token (niro_session_*)
         if token.startswith("niro_session_"):
