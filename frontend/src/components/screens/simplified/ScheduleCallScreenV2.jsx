@@ -111,15 +111,20 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete }) 
       };
       
       // Save booking to backend (use direct API call, not apiSimplified)
-      const response = await fetch(`${BACKEND_URL}/api/bookings/schedule`, {
+      const res = await fetch(`${BACKEND_URL}/api/bookings/schedule`, {
         method: 'POST',
         headers: {
           'Authorization': token ? `Bearer ${token}` : '',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(bookingData),
-      }).then(res => res.json());
-      
+      });
+      const response = await res.json();
+
+      if (!res.ok) {
+        throw new Error(response.detail || response.message || 'Failed to schedule call');
+      }
+
       if (response.ok) {
         setBookingDetails({
           id: response.booking_id,

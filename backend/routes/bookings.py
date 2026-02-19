@@ -38,9 +38,13 @@ async def get_current_user(request: Request, authorization: Optional[str] = Head
             if not session:
                 raise HTTPException(status_code=401, detail="Session expired or invalid")
             
-            # Check expiry
-            if session.get("expires_at") and session["expires_at"] < datetime.now(timezone.utc):
-                raise HTTPException(status_code=401, detail="Session expired")
+            # Check expiry (handle timezone-naive datetimes returned by Motor)
+            expires_at = session.get("expires_at")
+            if expires_at:
+                if expires_at.tzinfo is None:
+                    expires_at = expires_at.replace(tzinfo=timezone.utc)
+                if expires_at < datetime.now(timezone.utc):
+                    raise HTTPException(status_code=401, detail="Session expired")
             
             # Get user data
             user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
