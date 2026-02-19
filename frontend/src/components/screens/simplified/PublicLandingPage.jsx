@@ -169,23 +169,23 @@ export default function PublicLandingPage({
     }
   };
 
-  // Handle See More Life Topics - Navigate to public topics page
+  // Handle See More Life Topics - Navigate to app topics page
   const handleSeeMoreTopics = (e) => {
     e.preventDefault();
-    // Navigate to public topics page (no login required)
-    window.location.href = '/topics';
+    // Navigate to app topics page (no login required)
+    window.location.href = '/app';
   };
 
-  // Handle nav link to go to app section - mostly for authenticated users
+  // Handle nav link to go to app section
   const handleNavToApp = (e, section) => {
     e.preventDefault();
-    // For public sections, navigate directly
+    // Navigate to /app/* routes
     if (section === 'topics') {
-      window.location.href = '/topics';
+      window.location.href = '/app';
     } else if (section === 'experts') {
-      window.location.href = '/experts';
+      window.location.href = '/app/experts';
     } else if (section === 'remedies') {
-      window.location.href = '/remedies';
+      window.location.href = '/app/remedies';
     } else if (isAuthenticated) {
       onNavigateToApp(section);
     } else {
@@ -195,11 +195,11 @@ export default function PublicLandingPage({
     }
   };
 
-  // Handle view experts - Navigate to public experts page
+  // Handle view experts - Navigate to app experts page
   const handleViewExperts = (e) => {
     e.preventDefault();
-    // Navigate to public experts page (no login required)
-    window.location.href = '/experts';
+    // Navigate to app experts page (no login required)
+    window.location.href = '/app/experts';
   };
 
   // Handle view individual expert profile
@@ -207,7 +207,7 @@ export default function PublicLandingPage({
     e.preventDefault();
     e.stopPropagation();
     // Navigate to individual expert profile page
-    window.location.href = `/experts/${expertId}`;
+    window.location.href = `/app/expert/${expertId}`;
   };
 
   return (
