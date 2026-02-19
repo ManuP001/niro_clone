@@ -16,9 +16,9 @@ import { colors } from './theme';
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Home', href: '/' },
-  { id: 'topics', label: 'Life topics', scrollTo: 'topics-section' },
-  { id: 'experts', label: 'Experts', screen: 'experts', tab: 'consult' },
-  { id: 'remedies', label: 'Remedies', screen: 'remedies', tab: 'remedies' },
+  { id: 'topics', label: 'Life Topics', href: '/app' },
+  { id: 'experts', label: 'Experts', href: '/app/experts' },
+  { id: 'remedies', label: 'Remedies', href: '/app/remedies' },
   { id: 'astro', label: 'Astro', screen: 'kundli', tab: 'astro' },
 ];
 
