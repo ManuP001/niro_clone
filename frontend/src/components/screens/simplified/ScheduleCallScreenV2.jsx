@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { colors, shadows } from './theme';
-import { apiSimplified, trackEvent } from './utils';
+import { trackEvent } from './utils';
+import { BACKEND_URL } from '../../../config';
 
 /**
  * ScheduleCallScreen V2 - Embedded scheduling experience
