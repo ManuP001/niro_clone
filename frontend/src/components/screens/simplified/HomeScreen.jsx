@@ -280,7 +280,19 @@ export default function HomeScreen({
   onTalkToHuman,
   onOpenProfile,
   onTabChange,
+  isAuthenticated,
+  user,
+  onLoginClick,
 }) {
+  // Handle CTA click - schedule a free call
+  const handleCtaClick = () => {
+    if (onTalkToHuman) {
+      onTalkToHuman();
+    } else if (onNavigate) {
+      onNavigate('schedule');
+    }
+  };
+  
   // State for dynamic homepage data
   const [lifeSituations, setLifeSituations] = useState(DEFAULT_LIFE_SITUATIONS);
   const [dataSource, setDataSource] = useState('defaults');
