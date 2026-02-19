@@ -9,7 +9,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 import uuid
 import os
 
-router = APIRouter(prefix="/bookings", tags=["bookings"])
+router = APIRouter(prefix="/api/bookings", tags=["bookings"])
 
 
 # Get database connection
