@@ -2083,6 +2083,8 @@ logger.info(f"Including Admin router: {admin_router}")
 app.include_router(admin_router)
 logger.info(f"Including Remedies router: {remedies_router}")
 app.include_router(remedies_router)
+logger.info(f"Including Bookings router: {bookings_router}")
+app.include_router(bookings_router)
 logger.info(f"✅ All routers included. Total routes: {len(app.routes)}")
 
 app.add_middleware(
