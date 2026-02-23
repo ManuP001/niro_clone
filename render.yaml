@@ -22,11 +22,14 @@ services:
       - key: CORS_ORIGINS
         sync: false
 
-  # ── React Frontend (Static Site) ────────────────────────────────────────────
-  - type: static
+  # ── React Frontend (Node web service serving the static build) ──────────────
+  # Render Blueprint doesn't support type:static — using a lightweight Node
+  # server instead. `serve -s` enables SPA fallback (/* → index.html).
+  - type: web
     name: niro-frontend
+    runtime: node
     buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/build
+    startCommand: npx serve -s frontend/build -l $PORT
     envVars:
       # Auto-wired to the backend service's public URL at build time
       - key: REACT_APP_BACKEND_URL
@@ -34,8 +37,3 @@ services:
           type: web
           name: niro-backend
           envVarKey: RENDER_EXTERNAL_URL
-    routes:
-      # SPA fallback — lets React Router handle all client-side routes
-      - type: rewrite
-        source: /*
-        destination: /index.html
