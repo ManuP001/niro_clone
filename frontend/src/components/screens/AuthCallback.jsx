@@ -38,8 +38,7 @@ const AuthCallback = ({ onAuthSuccess, onAuthError }) => {
         const response = await fetch(`${backendUrl}/api/auth/google/callback`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             code: code,
             redirect_uri: redirectUri
           }),
