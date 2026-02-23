@@ -416,35 +416,36 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, ex
                 />
               </div>
             ) : (
-            <div className="grid grid-cols-3 gap-2">
-              {timeSlots.map((slot) => {
-                const isSelected = selectedSlot?.time === slot.time;
-                return (
-                  <button
-                    key={slot.time}
-                    onClick={() => slot.available && setSelectedSlot(slot)}
-                    disabled={!slot.available}
-                    className={`py-3 rounded-xl text-sm font-medium transition-all ${
-                      !slot.available ? 'opacity-40 cursor-not-allowed' : 'hover:shadow-md'
-                    }`}
-                    style={{
-                      backgroundColor: isSelected ? colors.teal.primary : '#FFFFFF',
-                      color: isSelected ? '#FFFFFF' : slot.available ? colors.text.dark : colors.text.muted,
-                      boxShadow: isSelected ? shadows.teal : shadows.card,
-                    }}
-                  >
-                    {slot.displayTime}
-                  </button>
-                );
-              })}
-            </div>
-            
-            {timeSlots.length === 0 && (
-              <p className="text-center text-sm py-8" style={{ color: colors.text.muted }}>
-                No available slots for this date. Please select another date.
-              </p>
-            )}
-            </div>
+              <>
+                <div className="grid grid-cols-3 gap-2">
+                  {timeSlots.map((slot) => {
+                    const isSelected = selectedSlot?.time === slot.time;
+                    return (
+                      <button
+                        key={slot.time}
+                        onClick={() => slot.available && setSelectedSlot(slot)}
+                        disabled={!slot.available}
+                        className={`py-3 rounded-xl text-sm font-medium transition-all ${
+                          !slot.available ? 'opacity-40 cursor-not-allowed' : 'hover:shadow-md'
+                        }`}
+                        style={{
+                          backgroundColor: isSelected ? colors.teal.primary : '#FFFFFF',
+                          color: isSelected ? '#FFFFFF' : slot.available ? colors.text.dark : colors.text.muted,
+                          boxShadow: isSelected ? shadows.teal : shadows.card,
+                        }}
+                      >
+                        {slot.displayTime}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {timeSlots.length === 0 && (
+                  <p className="text-center text-sm py-8" style={{ color: colors.text.muted }}>
+                    No available slots for this date. Please select another date.
+                  </p>
+                )}
+              </>
             )}
           </div>
           
