@@ -1,0 +1,41 @@
+services:
+  # ── FastAPI Backend ──────────────────────────────────────────────────────────
+  - type: web
+    name: niro-backend
+    runtime: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      # ── Secrets: fill these in the Render dashboard after first deploy ──────
+      - key: MONGO_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      # ── CORS: add your Render frontend URL + production domain ─────────────
+      # Example: https://niro-frontend.onrender.com,https://getniro.ai
+      - key: CORS_ORIGINS
+        sync: false
+
+  # ── React Frontend (Static Site) ────────────────────────────────────────────
+  - type: static
+    name: niro-frontend
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/build
+    envVars:
+      # Auto-wired to the backend service's public URL at build time
+      - key: REACT_APP_BACKEND_URL
+        fromService:
+          type: web
+          name: niro-backend
+          envVarKey: RENDER_EXTERNAL_URL
+    routes:
+      # SPA fallback — lets React Router handle all client-side routes
+      - type: rewrite
+        source: /*
+        destination: /index.html
