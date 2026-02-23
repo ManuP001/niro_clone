@@ -3,20 +3,45 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { apiSimplified, trackEvent } from './utils';
 import { colors, shadows } from './theme';
 import ResponsiveHeader from './ResponsiveHeader';
+import { getBackendUrl } from '../../../config';
 
 /**
  * ExpertProfileScreen V3 - Full expert profile with new design
  * Updated for responsive layout and teal/cream theme
  */
-export default function ExpertProfileScreen({ token, expertId: propExpertId, userState, onNavigate, onBack, hasBottomNav, onTabChange, isAuthenticated, user, onLoginClick }) {
+export default function ExpertProfileScreen({ token, expertId: propExpertId, userState, onNavigate, onBack, hasBottomNav, onTabChange, isAuthenticated, user, onLoginClick, wizardMode = false, wizardTopicId, onBookFreeCall }) {
   // Get expertId from URL params or props
   const params = useParams();
   const navigate = useNavigate();
   const expertId = propExpertId || params.expertId;
-  
+
   const [expert, setExpert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTopicSelector, setShowTopicSelector] = useState(false);
+  const [wizardPackages, setWizardPackages] = useState([]);
+
+  // Fetch topic packages when in wizard mode
+  useEffect(() => {
+    if (!wizardMode || !wizardTopicId) return;
+    const fetchPackages = async () => {
+      const backendUrl = getBackendUrl();
+      const tiers = ['focussed', 'supported', 'comprehensive'];
+      const results = await Promise.all(
+        tiers.map(async (tier) => {
+          try {
+            const res = await fetch(`${backendUrl}/api/admin/public/package/${wizardTopicId}_${tier}`);
+            if (!res.ok) return null;
+            const data = await res.json();
+            return data.ok ? { tier, ...data.package } : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+      setWizardPackages(results.filter(Boolean));
+    };
+    fetchPackages();
+  }, [wizardMode, wizardTopicId]);
 
   // Handle back navigation
   const handleBack = () => {
@@ -68,10 +93,16 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
 
   const handleAction = () => {
     if (!expert) return;
-    
+
+    // Wizard mode: always book the free call
+    if (wizardMode && onBookFreeCall) {
+      onBookFreeCall();
+      return;
+    }
+
     // Check if user has access to any of the expert's topics
     const accessibleTopic = expert.topics?.find(t => activePlanTopics.includes(t));
-    
+
     if (accessibleTopic) {
       // User has access - navigate to plan to start thread
       const plan = userState?.active_plans?.find(p => p.topic_id === accessibleTopic);
@@ -238,7 +269,7 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
         </div>
 
         {/* Stats Card */}
-        <div 
+        <div
           className="rounded-xl p-4 mb-6"
           style={{ backgroundColor: `${colors.teal.primary}08`, border: `1px solid ${colors.teal.primary}20` }}
         >
@@ -259,6 +290,46 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
             </div>
           </div>
         </div>
+
+        {/* Available Packs (wizard mode only, hidden if none) */}
+        {wizardMode && wizardPackages.length > 0 && (() => {
+          const tierLabels = { focussed: 'Focussed', supported: 'Supported', comprehensive: 'Comprehensive' };
+          return (
+            <div className="mb-6">
+              <h3 className="font-semibold mb-3 text-sm md:text-base" style={{ color: colors.text.dark }}>
+                Available packs for {topicLabels[wizardTopicId] || wizardTopicId}
+              </h3>
+              <div className="space-y-2">
+                {wizardPackages.map((pkg) => (
+                  <div
+                    key={pkg.tier}
+                    className="rounded-xl p-4"
+                    style={{ backgroundColor: `${colors.peach.soft}`, border: `1px solid ${colors.ui.borderDark}` }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-sm" style={{ color: colors.text.dark }}>
+                          {pkg.name || tierLabels[pkg.tier]}
+                        </p>
+                        {pkg.description && (
+                          <p className="text-xs mt-0.5" style={{ color: colors.text.secondary }}>{pkg.description}</p>
+                        )}
+                      </div>
+                      {pkg.price_inr && (
+                        <p className="font-bold text-sm ml-4 flex-shrink-0" style={{ color: colors.teal.primary }}>
+                          ₹{pkg.price_inr}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs mt-2" style={{ color: colors.text.muted }}>
+                Book your free call first — pick a pack after your consultation.
+              </p>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Sticky CTA */}
@@ -274,19 +345,24 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
           <button
             onClick={handleAction}
             className="w-full font-semibold py-4 rounded-xl transition-all active:scale-[0.99] hover:shadow-md"
-            style={hasAccess 
+            style={wizardMode
               ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
-              : { backgroundColor: colors.peach.primary, color: colors.text.dark }
+              : hasAccess
+                ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
+                : { backgroundColor: colors.peach.primary, color: colors.text.dark }
             }
             data-testid="expert-action-btn"
           >
-            {hasAccess ? '💬 Start Chat' : '🔓 Unlock to talk'}
+            {wizardMode
+              ? `📅 Book free 10-min call with ${expert.name}`
+              : hasAccess ? '💬 Start Chat' : '🔓 Unlock to talk'
+            }
           </button>
         </div>
       </div>
 
-      {/* Topic Selector Modal */}
-      {showTopicSelector && (
+      {/* Topic Selector Modal (hidden in wizard mode — topic already selected) */}
+      {!wizardMode && showTopicSelector && (
         <div className="fixed inset-0 bg-black/50 flex items-end z-50">
           <div 
             className="w-full rounded-t-3xl p-6 max-w-lg mx-auto"

@@ -103,6 +103,8 @@ class BookingCreate(BaseModel):
     user_name: Optional[str] = None
     user_email: Optional[str] = None
     notes: Optional[str] = None
+    expert_id: Optional[str] = None
+    topic_id: Optional[str] = None
 
 
 class BookingResponse(BaseModel):
@@ -144,6 +146,8 @@ async def schedule_call(
             "duration_minutes": booking.duration_minutes,
             "call_type": booking.call_type,
             "notes": booking.notes,
+            "expert_id": booking.expert_id,
+            "topic_id": booking.topic_id,
             "status": "scheduled",  # scheduled, completed, cancelled, no_show
             "created_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc),

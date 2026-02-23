@@ -272,10 +272,10 @@ function CategoryModule({ situation, onTileClick, isDesktop = false }) {
   );
 }
 
-export default function HomeScreen({ 
-  token, 
-  hasBottomNav, 
-  onNavigate, 
+export default function HomeScreen({
+  token,
+  hasBottomNav,
+  onNavigate,
   onChatWithMira,
   onTalkToHuman,
   onOpenProfile,
@@ -283,6 +283,9 @@ export default function HomeScreen({
   isAuthenticated,
   user,
   onLoginClick,
+  mode = 'full',
+  onTopicSelect,
+  enabledTopicIds,
 }) {
   // Handle CTA click - schedule a free call
   const handleCtaClick = () => {
@@ -359,6 +362,10 @@ export default function HomeScreen({
 
   const handleTileClick = (tileId, tileData) => {
     trackEvent('tile_clicked', { tile_id: tileId, has_linked_package: !!tileData?.linkedPackageId }, token);
+    if (mode === 'picker') {
+      if (onTopicSelect) onTopicSelect(tileId);
+      return;
+    }
     // If tile has a linked package, navigate to package landing page
     if (tileData?.linkedPackageId) {
       onNavigate('packageLanding', { packageId: tileData.linkedPackageId, tileData });
@@ -367,42 +374,62 @@ export default function HomeScreen({
     }
   };
 
+  // In picker mode, filter tiles to only those in the enabledTopicIds allowlist
+  const displaySituations = (mode === 'picker' && enabledTopicIds)
+    ? filteredSituations
+        .map(s => ({ ...s, tiles: s.tiles.filter(t => enabledTopicIds.includes(t.id)) }))
+        .filter(s => s.tiles.length > 0)
+    : filteredSituations;
+
   return (
-    <div 
-      className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`}
+    <div
+      className={`${mode !== 'picker' ? 'min-h-screen' : ''} ${hasBottomNav && mode !== 'picker' ? 'pb-20 md:pb-0' : ''}`}
       style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Responsive Header - Desktop Navigation */}
-      <ResponsiveHeader
-        onNavigate={onNavigate}
-        onOpenProfile={onOpenProfile}
-        onTabChange={onTabChange}
-        ctaText="Get a Free 10 mins consultation"
-        onCtaClick={handleCtaClick}
-      />
+      {/* Responsive Header - Desktop Navigation (full mode only) */}
+      {mode !== 'picker' && (
+        <ResponsiveHeader
+          onNavigate={onNavigate}
+          onOpenProfile={onOpenProfile}
+          onTabChange={onTabChange}
+          ctaText="Get a Free 10 mins consultation"
+          onCtaClick={handleCtaClick}
+        />
+      )}
 
-      {/* Banner Carousel - Replaces full-width hero */}
-      <BannerCarousel 
-        onBannerClick={(action) => {
-          if (action === 'schedule') {
-            onNavigate('schedule');
-          } else if (action === 'experts') {
-            onNavigate('experts');
-          } else if (action === 'remedies') {
-            onNavigate('remedies');
-          }
-        }}
-      />
+      {/* Banner Carousel (full mode only) */}
+      {mode !== 'picker' && (
+        <BannerCarousel
+          onBannerClick={(action) => {
+            if (action === 'schedule') {
+              onNavigate('schedule');
+            } else if (action === 'experts') {
+              onNavigate('experts');
+            } else if (action === 'remedies') {
+              onNavigate('remedies');
+            }
+          }}
+        />
+      )}
 
       {/* Life Topics Section Header with Search */}
       <div className="px-4 md:px-8 lg:px-12 pt-4 mb-4 md:mb-6" id="topics-section">
         <div className="max-w-5xl mx-auto">
-          <h2 
+          {mode === 'picker' ? (
+            <h2
+              className="text-lg sm:text-xl font-semibold text-center mb-4"
+              style={{ color: colors.text.dark }}
+            >
+              What's on your mind?
+            </h2>
+          ) : (
+          <h2
             className="text-lg sm:text-xl md:text-2xl font-semibold text-center mb-4 md:mb-6"
             style={{ color: colors.text.dark }}
           >
             Choose the area of life you need clarity <span style={{ fontStyle: 'italic' }}>on today.</span>
           </h2>
+          )}
           
           {/* Search/Filter Input */}
           <div className="relative max-w-md mx-auto mb-6">
@@ -471,13 +498,13 @@ export default function HomeScreen({
         <div className="max-w-5xl mx-auto">
           {/* Desktop: Show all categories in a grid layout */}
           <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-            {filteredSituations.map((situation, index) => (
-              <ScrollReveal 
+            {displaySituations.map((situation, index) => (
+              <ScrollReveal
                 key={situation.id}
                 animation="up"
                 delay={Math.min(index * 100, 400)}
               >
-                <CategoryModule 
+                <CategoryModule
                   situation={situation}
                   onTileClick={handleTileClick}
                   isDesktop={true}
@@ -485,16 +512,16 @@ export default function HomeScreen({
               </ScrollReveal>
             ))}
           </div>
-          
+
           {/* Mobile: Stack categories vertically */}
           <div className="md:hidden space-y-4">
-            {filteredSituations.map((situation, index) => (
-              <ScrollReveal 
+            {displaySituations.map((situation, index) => (
+              <ScrollReveal
                 key={situation.id}
                 animation="up"
                 delay={Math.min(index * 100, 300)}
               >
-                <CategoryModule 
+                <CategoryModule
                   situation={situation}
                   onTileClick={handleTileClick}
                   isDesktop={false}
@@ -505,8 +532,8 @@ export default function HomeScreen({
         </div>
       </div>
 
-      {/* Desktop Footer */}
-      <AppFooter onNavigate={onTabChange} />
+      {/* Desktop Footer (full mode only) */}
+      {mode !== 'picker' && <AppFooter onNavigate={onTabChange} />}
     </div>
   );
 }

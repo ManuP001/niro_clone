@@ -22,6 +22,7 @@ import AskMiraScreen from '../components/screens/simplified/AskMiraScreen';
 import ProfileScreen from '../components/screens/simplified/ProfileScreen';
 import KundliScreenSimplified from '../components/screens/simplified/KundliScreenSimplified';
 import ScheduleCallScreen from '../components/screens/simplified/ScheduleCallScreenV2';
+import FreeCallWizard from '../components/screens/simplified/FreeCallWizard';
 
 // Components
 import BottomNav from '../components/screens/simplified/BottomNav';
@@ -103,6 +104,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
   const [loadingState, setLoadingState] = useState(true);
   const [miraInitialMessage, setMiraInitialMessage] = useState('');
   const [showHomeTour, setShowHomeTour] = useState(false);
+  const [showFreeCallWizard, setShowFreeCallWizard] = useState(false);
 
   // Onboarding state (only for authenticated users)
   const [onboardingStep, setOnboardingStep] = useState(() => {
@@ -171,7 +173,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
       if (intent.type === 'topic' && intent.topicId) {
         navigate(`/app/topic/${intent.topicId}`, { replace: true });
       } else if (intent.type === 'free_call') {
-        navigate('/app/schedule', { replace: true });
+        setShowFreeCallWizard(true);
       } else if (intent.type === 'expert' && intent.expertId) {
         navigate(`/app/expert/${intent.expertId}`, { replace: true });
       } else if (intent.returnTo) {
@@ -332,15 +334,15 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     }
   };
 
-  // Handle CTA click - schedule a free call (requires login)
+  // Handle CTA click - open the free call onboarding wizard (requires login)
   const handleCtaClick = () => {
     if (!isAuthenticated) {
-      // Store intent to go to schedule after login
-      localStorage.setItem('niro_user_intent', JSON.stringify({ type: 'free_call', returnTo: '/app/schedule' }));
+      // Store intent to open the wizard after login
+      localStorage.setItem('niro_user_intent', JSON.stringify({ type: 'free_call' }));
       onLoginClick?.();
       return;
     }
-    navigate('/app/schedule');
+    setShowFreeCallWizard(true);
   };
 
   // Handle onboarding step progression
@@ -584,11 +586,23 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
 
         {/* Home Tour Overlay (for authenticated users) */}
         {showHomeTour && isAuthenticated && (
-          <HomeTourOverlay 
+          <HomeTourOverlay
             onComplete={() => {
               localStorage.setItem(HOME_TOUR_KEY, 'true');
               setShowHomeTour(false);
             }}
+          />
+        )}
+
+        {/* Free Call Onboarding Wizard */}
+        {showFreeCallWizard && isAuthenticated && (
+          <FreeCallWizard
+            token={token}
+            user={user}
+            userState={userState}
+            onClose={() => setShowFreeCallWizard(false)}
+            onNavigate={handleNavigate}
+            onTabChange={handleTabChange}
           />
         )}
       </div>

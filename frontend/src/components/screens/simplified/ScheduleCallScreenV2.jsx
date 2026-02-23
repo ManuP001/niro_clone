@@ -72,7 +72,7 @@ const isTomorrow = (date) => {
   return date.toDateString() === tomorrow.toDateString();
 };
 
-export default function ScheduleCallScreen({ token, user, onBack, onComplete }) {
+export default function ScheduleCallScreen({ token, user, onBack, onComplete, expertId, topicId, expertName }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [timeSlots, setTimeSlots] = useState([]);
@@ -108,6 +108,8 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete }) 
         user_name: user?.name || 'User',
         user_email: user?.email || '',
         notes: 'Free 10-minute consultation call',
+        expert_id: expertId || null,
+        topic_id: topicId || null,
       };
       
       // Save booking to backend (use direct API call, not apiSimplified)
@@ -299,21 +301,28 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete }) 
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h1 className="text-lg font-semibold" style={{ color: colors.text.dark }}>
-          Schedule Your Free Call
-        </h1>
+        <div>
+          <h1 className="text-lg font-semibold" style={{ color: colors.text.dark }}>
+            Schedule Your Free Call
+          </h1>
+          {expertName && (
+            <p className="text-sm mt-0.5" style={{ color: colors.teal.primary }}>
+              with {expertName}
+            </p>
+          )}
+        </div>
       </header>
 
       {/* Content */}
       <div className="flex-1 px-4 py-4">
         <div className="max-w-lg mx-auto">
           {/* Info Card */}
-          <div 
+          <div
             className="rounded-2xl p-4 mb-6"
             style={{ backgroundColor: colors.cream.warm }}
           >
             <div className="flex items-center gap-3">
-              <div 
+              <div
                 className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: colors.teal.primary }}
               >

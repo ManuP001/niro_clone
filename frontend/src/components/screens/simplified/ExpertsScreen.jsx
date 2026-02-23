@@ -10,7 +10,7 @@ import ResponsiveHeader from './ResponsiveHeader';
  * - Centered max-width container
  * - Desktop navigation header
  */
-export default function ExpertsScreen({ token, userState, onNavigate, onTabChange, hasBottomNav = true }) {
+export default function ExpertsScreen({ token, userState, onNavigate, onTabChange, hasBottomNav = true, topicId, maxResults, onExpertSelect }) {
   const [experts, setExperts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedModality, setSelectedModality] = useState('all');
@@ -23,7 +23,15 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
     const loadExperts = async () => {
       try {
         const response = await apiSimplified.get('/experts/all', token);
-        setExperts(response.experts || []);
+        let allExperts = response.experts || [];
+
+        if (topicId) {
+          allExperts = allExperts.filter(e => e.topics?.includes(topicId));
+          allExperts.sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
+          if (maxResults) allExperts = allExperts.slice(0, maxResults);
+        }
+
+        setExperts(allExperts);
         trackEvent('experts_tab_viewed', { flow_version: 'simplified_v5' }, token);
       } catch (err) {
         console.error('Failed to load experts:', err);
@@ -32,7 +40,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
       }
     };
     loadExperts();
-  }, [token]);
+  }, [token, topicId, maxResults]);
 
   // Group experts by modality
   const modalities = [...new Set(experts.map(e => e.modality))];
@@ -78,7 +86,11 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
   }, {});
 
   const handleExpertClick = (expert) => {
-    onNavigate('expertProfile', { expertId: expert.expert_id });
+    if (onExpertSelect) {
+      onExpertSelect(expert.expert_id, expert.name);
+    } else {
+      onNavigate('expertProfile', { expertId: expert.expert_id });
+    }
   };
 
   if (loading) {
@@ -99,78 +111,95 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
   }
 
   return (
-    <div 
-      className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''}`}
+    <div
+      className={`${!topicId ? 'min-h-screen' : ''} ${hasBottomNav && !topicId ? 'pb-20 md:pb-0' : ''}`}
       style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Responsive Header */}
-      <ResponsiveHeader
-        title="Experts"
-        showBackButton={false}
-        onNavigate={onNavigate}
-        onTabChange={onTabChange}
-      />
+      {/* Responsive Header (hidden in wizard mode) */}
+      {!topicId && (
+        <ResponsiveHeader
+          title="Experts"
+          showBackButton={false}
+          onNavigate={onNavigate}
+          onTabChange={onTabChange}
+        />
+      )}
 
       {/* Content Container */}
-      <div className="max-w-6xl mx-auto">
+      <div className={topicId ? '' : 'max-w-6xl mx-auto'}>
         {/* Header Section */}
-        <div className="px-4 md:px-8 pt-6 pb-4">
-          <h1 
-            className="text-2xl md:text-3xl font-bold mb-1"
-            style={{ color: colors.text.dark }}
-          >
-            Our Experts
-          </h1>
-          <p className="text-sm md:text-base mb-4" style={{ color: colors.text.muted }}>
-            Browse by expertise, unlock to start chatting
-          </p>
-          
-          {/* Search */}
-          <div className="mb-4 max-w-md">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search experts..."
-              className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2"
-              style={{ 
-                backgroundColor: 'white', 
-                border: `1px solid ${colors.ui.borderDark}`,
-                color: colors.text.dark,
-                '--tw-ring-color': colors.teal.primary,
-              }}
-              data-testid="experts-search-input"
-            />
-          </div>
-          
-          {/* Modality Filter Pills */}
-          <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
-            <button
-              onClick={() => setSelectedModality('all')}
-              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all"
-              style={selectedModality === 'all'
-                ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
-                : { backgroundColor: '#ffffff', color: colors.text.muted, border: `1px solid ${colors.ui.borderDark}` }
-              }
-              data-testid="filter-all"
+        <div className={`px-4 ${topicId ? 'pt-4 pb-2' : 'md:px-8 pt-6 pb-4'}`}>
+          {topicId ? (
+            <h2
+              className="text-lg font-semibold mb-4"
+              style={{ color: colors.text.dark }}
             >
-              All Experts
-            </button>
-            {modalities.map((modality) => (
+              Astrologers for your topic
+            </h2>
+          ) : (
+            <>
+              <h1
+                className="text-2xl md:text-3xl font-bold mb-1"
+                style={{ color: colors.text.dark }}
+              >
+                Our Experts
+              </h1>
+              <p className="text-sm md:text-base mb-4" style={{ color: colors.text.muted }}>
+                Browse by expertise, unlock to start chatting
+              </p>
+            </>
+          )}
+
+          {/* Search (hidden in wizard mode) */}
+          {!topicId && (
+            <div className="mb-4 max-w-md">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search experts..."
+                className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2"
+                style={{
+                  backgroundColor: 'white',
+                  border: `1px solid ${colors.ui.borderDark}`,
+                  color: colors.text.dark,
+                  '--tw-ring-color': colors.teal.primary,
+                }}
+                data-testid="experts-search-input"
+              />
+            </div>
+          )}
+
+          {/* Modality Filter Pills (hidden in wizard mode) */}
+          {!topicId && (
+            <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
               <button
-                key={modality}
-                onClick={() => setSelectedModality(modality)}
-                className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-                style={selectedModality === modality
+                onClick={() => setSelectedModality('all')}
+                className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all"
+                style={selectedModality === 'all'
                   ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
                   : { backgroundColor: '#ffffff', color: colors.text.muted, border: `1px solid ${colors.ui.borderDark}` }
                 }
-                data-testid={`filter-${modality}`}
+                data-testid="filter-all"
               >
-                {modalityLabels[modality] || modality}
+                All Experts
               </button>
-            ))}
-          </div>
+              {modalities.map((modality) => (
+                <button
+                  key={modality}
+                  onClick={() => setSelectedModality(modality)}
+                  className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+                  style={selectedModality === modality
+                    ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
+                    : { backgroundColor: '#ffffff', color: colors.text.muted, border: `1px solid ${colors.ui.borderDark}` }
+                  }
+                  data-testid={`filter-${modality}`}
+                >
+                  {modalityLabels[modality] || modality}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Expert Cards - Responsive Grid */}
