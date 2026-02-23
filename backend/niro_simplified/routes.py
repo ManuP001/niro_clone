@@ -70,6 +70,18 @@ async def get_user_id_from_token_async(authorization: str = None, db = None) -> 
     except Exception:
         pass  # Not a JWT, try session token
     
+    # Dev in-memory session (no DB needed)
+    if token.startswith("niro_session_dev_"):
+        try:
+            from backend.routes.google_oauth_direct import _dev_sessions
+            session = _dev_sessions.get(token)
+            if session:
+                from datetime import timezone as _tz, datetime as _dt
+                if session["expires_at"] > _dt.now(_tz.utc):
+                    return session["user_id"]
+        except Exception as e:
+            logger.warning(f"Dev session lookup failed: {e}")
+
     # Second try: Session token lookup (for Google OAuth)
     if token.startswith("niro_session_") and db is not None:
         try:

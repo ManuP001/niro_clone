@@ -206,6 +206,68 @@ async def google_callback(
         raise HTTPException(status_code=500, detail=f"Authentication error: {str(e)}")
 
 
+class DevLoginRequest(BaseModel):
+    email: str = "dev@niro.local"
+    name: str = "Dev User"
+
+
+# In-memory session store for dev login (survives as long as the process runs)
+_dev_sessions: dict = {}  # token -> {user_id, email, name, expires_at}
+DEV_USER_ID = "user_dev_local_000"
+
+
+@router.post("/dev-login")
+async def dev_login(
+    request: Request,
+    response: Response,
+    data: DevLoginRequest,
+):
+    """
+    Dev-only login — bypasses Google OAuth AND MongoDB.
+    Works entirely in-memory so it functions even when the DB is unreachable.
+    Disabled in production (when GOOGLE_CLIENT_ID is set).
+    """
+    if GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=403, detail="Dev login disabled in production")
+
+    session_token = f"niro_session_dev_{uuid.uuid4().hex}"
+    expires_at = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRY_DAYS)
+
+    _dev_sessions[session_token] = {
+        "user_id": DEV_USER_ID,
+        "email": data.email,
+        "name": data.name,
+        "expires_at": expires_at,
+    }
+
+    return {
+        "ok": True,
+        "user": {
+            "user_id": DEV_USER_ID,
+            "email": data.email,
+            "name": data.name,
+            "picture": "",
+            "dob": None,
+            "tob": None,
+            "pob": None,
+            "profile_complete": False,
+        },
+        "token": session_token,
+    }
+
+
+@router.get("/dev-session/{token}")
+async def get_dev_session(token: str):
+    """Internal helper — lets other auth code validate a dev session token."""
+    session = _dev_sessions.get(token)
+    if not session:
+        return None
+    if session["expires_at"] < datetime.now(timezone.utc):
+        del _dev_sessions[token]
+        return None
+    return session
+
+
 @router.get("/me")
 async def get_current_user(
     request: Request,

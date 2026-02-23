@@ -51,6 +51,8 @@ const GoogleIcon = () => (
   </svg>
 );
 
+const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+
 const LoginScreen = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -63,13 +65,36 @@ const LoginScreen = ({ onLoginSuccess }) => {
   const handleGoogleLogin = () => {
     setLoading(true);
     setError('');
-    
+
     const callbackUrl = window.location.origin + '/auth/callback';
     const backendUrl = getBackendUrl();
     const googleLoginUrl = `${backendUrl}/api/auth/google/login?redirect_uri=${encodeURIComponent(callbackUrl)}`;
-    
+
     console.log('Redirecting to Google OAuth:', googleLoginUrl);
     window.location.href = googleLoginUrl;
+  };
+
+  const handleDevLogin = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const backendUrl = getBackendUrl();
+      const res = await fetch(`${backendUrl}/api/auth/dev-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: 'dev@niro.local', name: 'Dev User' }),
+      });
+      const data = await res.json();
+      if (data.ok && onLoginSuccess) {
+        onLoginSuccess(data.user, data.token);
+      } else {
+        setError(data.detail || 'Dev login failed');
+      }
+    } catch (e) {
+      setError('Dev login error: ' + e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -129,6 +154,22 @@ const LoginScreen = ({ onLoginSuccess }) => {
             </>
           )}
         </button>
+
+        {/* Dev login — localhost only */}
+        {isLocalhost && (
+          <button
+            onClick={handleDevLogin}
+            disabled={loading}
+            className="w-full max-w-sm mt-3 py-3 px-6 rounded-full font-medium text-sm transition-all disabled:opacity-50 border"
+            style={{
+              backgroundColor: 'transparent',
+              color: colors.text.muted,
+              borderColor: 'rgba(255,255,255,0.4)',
+            }}
+          >
+            🛠 Dev Login (localhost only)
+          </button>
+        )}
 
         {/* Error message */}
         {error && (

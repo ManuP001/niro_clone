@@ -34,6 +34,18 @@ async def get_current_user(request: Request, authorization: Optional[str] = Head
             else:
                 token = authorization
         
+        # Check if it's a dev in-memory session token (no DB needed)
+        if token.startswith("niro_session_dev_"):
+            from backend.routes.google_oauth_direct import _dev_sessions
+            session = _dev_sessions.get(token)
+            if not session:
+                raise HTTPException(status_code=401, detail="Dev session expired or invalid")
+            return {
+                "user_id": session["user_id"],
+                "email": session["email"],
+                "name": session["name"],
+            }
+
         # Check if it's a Niro session token (niro_session_*)
         if token.startswith("niro_session_"):
             db = request.app.state.db
