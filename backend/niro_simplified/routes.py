@@ -559,16 +559,41 @@ async def get_user_state(
     # Get topic passes
     passes = await storage.get_user_topic_passes(user_id)
     pass_topics = [p.get("topic_id") for p in passes]
-    
+
+    # Check for free consultation booking history
+    free_call_status = None
+    free_call_expert_id = None
+    free_call_expert_name = None
+    free_call_topic_id = None
+
+    if db:
+        booking = await db.bookings.find_one(
+            {"user_id": user_id, "call_type": "free_consultation"},
+            sort=[("created_at", -1)]
+        )
+        if booking and booking.get("status") in ("scheduled", "completed"):
+            free_call_status = booking["status"]
+            free_call_expert_id = booking.get("expert_id")
+            free_call_topic_id = booking.get("topic_id")
+            if free_call_expert_id:
+                exp = await db.admin_experts.find_one(
+                    {"expert_id": free_call_expert_id}, {"name": 1}
+                )
+                free_call_expert_name = exp.get("name") if exp else None
+
     user_state = UserState(
         user_id=user_id,
         is_new_user=not has_purchased,
         has_active_plan=len(plan_summaries) > 0,
         active_plans=plan_summaries,
         recent_expert_threads=thread_summaries,
-        additional_topic_passes=pass_topics
+        additional_topic_passes=pass_topics,
+        free_call_status=free_call_status,
+        free_call_expert_id=free_call_expert_id,
+        free_call_expert_name=free_call_expert_name,
+        free_call_topic_id=free_call_topic_id,
     )
-    
+
     return UserStateResponse(user_state=user_state.model_dump())
 
 

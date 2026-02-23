@@ -286,6 +286,7 @@ export default function HomeScreen({
   mode = 'full',
   onTopicSelect,
   enabledTopicIds,
+  userState,
 }) {
   // Handle CTA click - schedule a free call
   const handleCtaClick = () => {
@@ -295,6 +296,22 @@ export default function HomeScreen({
       onNavigate('schedule');
     }
   };
+
+  // Returning user CTA — adapts based on free call status
+  const freeCallStatus = userState?.free_call_status;
+  const freeCallExpertName = userState?.free_call_expert_name;
+  const freeCallTopicId = userState?.free_call_topic_id;
+
+  let ctaText = "Get a Free 10 mins consultation";
+  let ctaHandler = handleCtaClick;
+
+  if (freeCallStatus === 'scheduled') {
+    ctaText = "📅 Call scheduled";
+    ctaHandler = () => onNavigate?.('mypack');
+  } else if (freeCallStatus === 'completed' && freeCallExpertName) {
+    ctaText = `Continue with ${freeCallExpertName} →`;
+    ctaHandler = () => onNavigate?.('topic', { topicId: freeCallTopicId });
+  }
   
   // State for dynamic homepage data
   const [lifeSituations, setLifeSituations] = useState(DEFAULT_LIFE_SITUATIONS);
@@ -392,8 +409,8 @@ export default function HomeScreen({
           onNavigate={onNavigate}
           onOpenProfile={onOpenProfile}
           onTabChange={onTabChange}
-          ctaText="Get a Free 10 mins consultation"
-          onCtaClick={handleCtaClick}
+          ctaText={ctaText}
+          onCtaClick={ctaHandler}
         />
       )}
 

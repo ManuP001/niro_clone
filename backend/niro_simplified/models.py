@@ -121,6 +121,9 @@ class ExpertProfile(BaseModel):
     availability_status: str = "available"  # available, busy, offline
     is_active: bool = True
     display_order: int = 0
+    offers_free_call: bool = False
+    timezone: str = "Asia/Kolkata"
+    weekly_availability: Dict[str, List[Dict[str, str]]] = {}
 
 
 # ============================================================================
@@ -220,6 +223,10 @@ class UserState(BaseModel):
     active_plans: List[ActivePlanSummary] = []
     recent_expert_threads: List[RecentThreadSummary] = []
     additional_topic_passes: List[str] = []  # topic_ids unlocked via passes
+    free_call_status: Optional[str] = None   # "scheduled" | "completed" | None
+    free_call_expert_id: Optional[str] = None
+    free_call_expert_name: Optional[str] = None
+    free_call_topic_id: Optional[str] = None
 
 
 # ============================================================================

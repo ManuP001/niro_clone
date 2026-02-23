@@ -76,18 +76,38 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, ex
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [timeSlots, setTimeSlots] = useState([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [bookingComplete, setBookingComplete] = useState(false);
   const [bookingDetails, setBookingDetails] = useState(null);
   const [error, setError] = useState(null);
-  
+
   const dates = generateDates();
-  
+
   // Load time slots when date changes
   useEffect(() => {
-    setTimeSlots(generateTimeSlots(selectedDate));
-    setSelectedSlot(null);
-  }, [selectedDate]);
+    if (!expertId) {
+      // Fallback for direct /app/schedule access (no expertId — e.g. from MyPack)
+      setTimeSlots(generateTimeSlots(selectedDate));
+      setSelectedSlot(null);
+      return;
+    }
+    const fetchSlots = async () => {
+      setSlotsLoading(true);
+      try {
+        const dateStr = selectedDate.toISOString().split('T')[0];
+        const res = await fetch(`${BACKEND_URL}/api/bookings/available-slots/${expertId}?date=${dateStr}`);
+        const data = await res.json();
+        setTimeSlots(data.ok ? data.slots : []);
+      } catch {
+        setTimeSlots([]);
+      } finally {
+        setSlotsLoading(false);
+        setSelectedSlot(null);
+      }
+    };
+    fetchSlots();
+  }, [selectedDate, expertId]);
   
   const handleBooking = async () => {
     if (!selectedSlot) return;
@@ -388,6 +408,14 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, ex
             <h3 className="text-sm font-medium mb-3" style={{ color: colors.text.dark }}>
               Select Time
             </h3>
+            {slotsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div
+                  className="w-8 h-8 border-4 rounded-full animate-spin"
+                  style={{ borderColor: `${colors.teal.primary}30`, borderTopColor: colors.teal.primary }}
+                />
+              </div>
+            ) : (
             <div className="grid grid-cols-3 gap-2">
               {timeSlots.map((slot) => {
                 const isSelected = selectedSlot?.time === slot.time;
@@ -415,6 +443,8 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, ex
               <p className="text-center text-sm py-8" style={{ color: colors.text.muted }}>
                 No available slots for this date. Please select another date.
               </p>
+            )}
+            </div>
             )}
           </div>
           

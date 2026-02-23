@@ -1001,6 +1001,67 @@ const RemedyOrdersList = () => {
 };
 
 // ============================================================================
+// WEEKLY AVAILABILITY EDITOR
+// ============================================================================
+const DAYS_OF_WEEK = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const DAY_LABELS = { monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun' };
+
+const WeeklyAvailabilityEditor = ({ value = {}, onChange }) => {
+  const getWindow = (day) => (value[day] && value[day][0]) || null;
+
+  const handleToggle = (day, enabled) => {
+    const next = { ...value };
+    if (enabled) {
+      next[day] = [{ start: '09:00', end: '17:00' }];
+    } else {
+      next[day] = [];
+    }
+    onChange(next);
+  };
+
+  const handleTime = (day, field, val) => {
+    const window = getWindow(day) || { start: '09:00', end: '17:00' };
+    const next = { ...value, [day]: [{ ...window, [field]: val }] };
+    onChange(next);
+  };
+
+  return (
+    <div className="space-y-2 border border-gray-200 rounded-lg p-3">
+      {DAYS_OF_WEEK.map(day => {
+        const window = getWindow(day);
+        const enabled = !!(window);
+        return (
+          <div key={day} className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              checked={enabled}
+              onChange={e => handleToggle(day, e.target.checked)}
+              className="w-4 h-4"
+            />
+            <span className="w-8 text-sm font-medium text-gray-700">{DAY_LABELS[day]}</span>
+            <input
+              type="time"
+              value={window?.start || '09:00'}
+              disabled={!enabled}
+              onChange={e => handleTime(day, 'start', e.target.value)}
+              className="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-40"
+            />
+            <span className="text-gray-400 text-sm">–</span>
+            <input
+              type="time"
+              value={window?.end || '17:00'}
+              disabled={!enabled}
+              onChange={e => handleTime(day, 'end', e.target.value)}
+              className="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-40"
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ============================================================================
 // CATALOG MANAGER - Generic CRUD Component
 // ============================================================================
 const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey }) => {
@@ -1446,6 +1507,11 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
                     <PackageContentEditor
                       content={formData[field.name] || {}}
                       onChange={(content) => setFormData({ ...formData, [field.name]: content })}
+                    />
+                  ) : field.type === 'weekly-availability' ? (
+                    <WeeklyAvailabilityEditor
+                      value={formData[field.name] || {}}
+                      onChange={(val) => setFormData({ ...formData, [field.name]: val })}
                     />
                   ) : (
                     <input
@@ -2141,6 +2207,13 @@ const ExpertsManager = () => (
       { name: 'method_tags', label: 'Method Tags', type: 'tag-multi-select', tagType: 'method', maxTags: 3, hint: '1-3 tags for how the expert works' },
       { name: 'remedy_tags', label: 'Remedy/Support Tags', type: 'tag-multi-select', tagType: 'remedy_support', maxTags: 2, hint: '0-2 tags for additional services' },
       { name: 'active', label: 'Active', type: 'checkbox', default: true },
+      { name: 'offers_free_call', label: 'Offers Free Consultation Call', type: 'checkbox', default: false, hint: 'If enabled, this expert appears in the free call onboarding wizard' },
+      { name: 'timezone', label: 'Timezone', type: 'select', default: 'Asia/Kolkata', options: [
+        { value: 'Asia/Kolkata', label: 'India (IST, UTC+5:30)' },
+        { value: 'Asia/Dubai', label: 'Dubai (GST, UTC+4)' },
+        { value: 'UTC', label: 'UTC' },
+      ]},
+      { name: 'weekly_availability', label: 'Weekly Availability', type: 'weekly-availability', hint: 'Days and hours this expert accepts free consultation bookings' },
     ]}
   />
 );

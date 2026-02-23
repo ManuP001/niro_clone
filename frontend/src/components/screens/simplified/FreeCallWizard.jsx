@@ -49,6 +49,12 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
     setStep(4);
   };
 
+  // Expert doesn't offer free calls — exit wizard and open the topic package page
+  const handleBuyPackage = () => {
+    onClose();
+    if (onNavigate) onNavigate('topic', { topicId: selectedTopicId });
+  };
+
   const handleBack = () => {
     if (step === 1) {
       onClose();
@@ -127,6 +133,7 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
             wizardMode={true}
             wizardTopicId={selectedTopicId}
             onBookFreeCall={handleBookFreeCall}
+            onBuyPackage={handleBuyPackage}
             onBack={handleBack}
             onNavigate={onNavigate}
             onTabChange={onTabChange}

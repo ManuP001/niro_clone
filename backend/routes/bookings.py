@@ -4,7 +4,7 @@ Booking routes for scheduling calls
 from fastapi import APIRouter, Request, HTTPException, Depends, Header
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import uuid
 import os
@@ -238,6 +238,89 @@ async def get_upcoming_bookings(
         "bookings": bookings,
         "total": len(bookings)
     }
+
+
+@router.get("/available-slots/{expert_id}")
+async def get_available_slots(
+    request: Request,
+    expert_id: str,
+    date: str  # query param, format YYYY-MM-DD
+):
+    """
+    Returns available 10-minute booking slots for an expert on a given date.
+    Derives slots from the expert's weekly_availability; excludes already-booked slots.
+    No authentication required (public endpoint).
+    """
+    import pytz
+    from datetime import date as date_type
+
+    db = await get_db(request)
+
+    expert = await db.admin_experts.find_one({"expert_id": expert_id}, {"_id": 0})
+    if not expert or not expert.get("offers_free_call"):
+        return {"ok": False, "slots": [], "message": "Expert not available for free calls"}
+
+    tz = pytz.timezone(expert.get("timezone", "Asia/Kolkata"))
+
+    try:
+        requested_date = date_type.fromisoformat(date)
+    except ValueError:
+        return {"ok": False, "slots": [], "message": "Invalid date format, use YYYY-MM-DD"}
+
+    day_name = requested_date.strftime("%A").lower()  # "monday", "tuesday", etc.
+    windows = expert.get("weekly_availability", {}).get(day_name, [])
+
+    if not windows:
+        return {"ok": True, "slots": [], "date": date}
+
+    # Generate 10-minute slots from each time window
+    all_slots = []
+    for w in windows:
+        try:
+            sh, sm = map(int, w["start"].split(":"))
+            eh, em = map(int, w["end"].split(":"))
+        except (KeyError, ValueError):
+            continue
+        cur = sh * 60 + sm
+        end = eh * 60 + em
+        while cur + 10 <= end:
+            h, m = divmod(cur, 60)
+            all_slots.append({
+                "time": f"{h:02d}:{m:02d}",
+                "displayTime": f"{h % 12 or 12}:{m:02d} {'AM' if h < 12 else 'PM'}",
+            })
+            cur += 10
+
+    # Fetch bookings for this expert on the requested date
+    day_start = datetime(requested_date.year, requested_date.month, requested_date.day, tzinfo=timezone.utc)
+    day_end = day_start + timedelta(days=1)
+    booked_cursor = db.bookings.find(
+        {
+            "expert_id": expert_id,
+            "scheduled_date": {"$gte": day_start, "$lt": day_end},
+            "status": {"$in": ["scheduled", "completed"]},
+        },
+        {"scheduled_date": 1},
+    )
+    booked_docs = await booked_cursor.to_list(200)
+    booked_times = set()
+    for b in booked_docs:
+        sd = b.get("scheduled_date")
+        if sd:
+            if sd.tzinfo is None:
+                sd = sd.replace(tzinfo=timezone.utc)
+            booked_times.add(sd.astimezone(tz).strftime("%H:%M"))
+
+    # Mark slots as available/unavailable; skip past times for today
+    now_local = datetime.now(tz)
+    result_slots = []
+    for s in all_slots:
+        h, m = map(int, s["time"].split(":"))
+        is_booked = s["time"] in booked_times
+        is_past = (requested_date == now_local.date()) and (h * 60 + m <= now_local.hour * 60 + now_local.minute)
+        result_slots.append({**s, "available": not is_booked and not is_past})
+
+    return {"ok": True, "slots": result_slots, "date": date}
 
 
 @router.put("/{booking_id}/cancel")

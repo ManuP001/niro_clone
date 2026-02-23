@@ -218,6 +218,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
                       expert={expert}
                       hasAccess={expert.topics?.some(t => activePlanTopics.includes(t))}
                       onClick={() => handleExpertClick(expert)}
+                      topicId={topicId}
                     />
                   ))}
                 </div>
@@ -232,6 +233,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
                   expert={expert}
                   hasAccess={expert.topics?.some(t => activePlanTopics.includes(t))}
                   onClick={() => handleExpertClick(expert)}
+                  topicId={topicId}
                 />
               ))}
             </div>
@@ -252,7 +254,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
 /**
  * ExpertCard - Expert card with consistent styling
  */
-function ExpertCard({ expert, hasAccess, onClick }) {
+function ExpertCard({ expert, hasAccess, onClick, topicId }) {
   return (
     <div
       onClick={onClick}
@@ -325,10 +327,10 @@ function ExpertCard({ expert, hasAccess, onClick }) {
         return displayTags.length > 0 ? (
           <div className="flex flex-wrap gap-1.5 mt-3">
             {displayTags.map((tag, idx) => (
-              <span 
+              <span
                 key={idx}
                 className="text-[10px] px-2 py-0.5 rounded-full"
-                style={{ 
+                style={{
                   backgroundColor: idx >= (lifeTags.length > 0 ? lifeTags.slice(0, 3).length : 999) ? `${colors.gold.accent}20` : `${colors.teal.primary}10`,
                   color: idx >= (lifeTags.length > 0 ? lifeTags.slice(0, 3).length : 999) ? colors.gold.accent : colors.teal.primary
                 }}
@@ -339,6 +341,18 @@ function ExpertCard({ expert, hasAccess, onClick }) {
           </div>
         ) : null;
       })()}
+
+      {/* Free call available badge — shown only in wizard mode */}
+      {topicId && expert.offers_free_call && (
+        <div className="mt-2">
+          <span
+            className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+            style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.primary }}
+          >
+            Free call available
+          </span>
+        </div>
+      )}
     </div>
   );
 }

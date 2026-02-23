@@ -1367,6 +1367,9 @@ class ExpertCreate(BaseModel):
     method_tags: List[str] = []
     remedy_tags: List[str] = []
     active: bool = True
+    offers_free_call: bool = False
+    timezone: str = "Asia/Kolkata"
+    weekly_availability: Dict[str, List[Dict[str, str]]] = {}
 
 class ExpertUpdate(BaseModel):
     name: Optional[str] = None
@@ -1384,6 +1387,9 @@ class ExpertUpdate(BaseModel):
     method_tags: Optional[List[str]] = None
     remedy_tags: Optional[List[str]] = None
     active: Optional[bool] = None
+    offers_free_call: Optional[bool] = None
+    timezone: Optional[str] = None
+    weekly_availability: Optional[Dict[str, List[Dict[str, str]]]] = None
 
 # Master tag options by type
 EXPERT_TAG_OPTIONS = {

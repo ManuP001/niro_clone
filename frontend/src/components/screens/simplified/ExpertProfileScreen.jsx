@@ -9,7 +9,7 @@ import { getBackendUrl } from '../../../config';
  * ExpertProfileScreen V3 - Full expert profile with new design
  * Updated for responsive layout and teal/cream theme
  */
-export default function ExpertProfileScreen({ token, expertId: propExpertId, userState, onNavigate, onBack, hasBottomNav, onTabChange, isAuthenticated, user, onLoginClick, wizardMode = false, wizardTopicId, onBookFreeCall }) {
+export default function ExpertProfileScreen({ token, expertId: propExpertId, userState, onNavigate, onBack, hasBottomNav, onTabChange, isAuthenticated, user, onLoginClick, wizardMode = false, wizardTopicId, onBookFreeCall, onBuyPackage }) {
   // Get expertId from URL params or props
   const params = useParams();
   const navigate = useNavigate();
@@ -94,9 +94,13 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
   const handleAction = () => {
     if (!expert) return;
 
-    // Wizard mode: always book the free call
-    if (wizardMode && onBookFreeCall) {
-      onBookFreeCall();
+    // Wizard mode: route based on whether expert offers a free call
+    if (wizardMode) {
+      if (expert.offers_free_call && onBookFreeCall) {
+        onBookFreeCall();
+      } else if (onBuyPackage) {
+        onBuyPackage();
+      }
       return;
     }
 
@@ -354,7 +358,9 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
             data-testid="expert-action-btn"
           >
             {wizardMode
-              ? `📅 Book free 10-min call with ${expert.name}`
+              ? expert.offers_free_call
+                ? `📅 Book free 10-min call with ${expert.name}`
+                : `🔓 Buy a package to talk with ${expert.name}`
               : hasAccess ? '💬 Start Chat' : '🔓 Unlock to talk'
             }
           </button>
