@@ -105,16 +105,9 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
   const [bookingDetails, setBookingDetails] = useState(null);
   const [error, setError] = useState(null);
   const [slotTimezone, setSlotTimezone] = useState('Asia/Kolkata');
-  // subStep: 'questions' → 'slots' → 'otp' (gates booking) → confirmation
+  // subStep: 'questions' → 'slots' → confirmation
   const [subStep, setSubStep] = useState('questions');
   const [bookingQuestions, setBookingQuestions] = useState([]);
-  const [phoneVerified, setPhoneVerified] = useState(!!user?.phone);
-  // OTP sub-step state
-  const [otpPhone, setOtpPhone] = useState(user?.phone || '');
-  const [otpCode, setOtpCode] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [otpError, setOtpError] = useState(null);
 
   const dates = generateDates();
 
@@ -175,7 +168,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
         expert_id: expertId || null,
         topic_id: topicId || null,
         questions: bookingQuestions,
-        user_phone: otpPhone || user?.phone || '',
+        user_phone: user?.phone || '',
       };
       
       // Save booking to backend (use direct API call, not apiSimplified)
@@ -215,196 +208,6 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
     }
   };
   
-  // OTP helpers
-  const handleSendOtp = async () => {
-    if (!otpPhone.trim()) return;
-    setOtpLoading(true);
-    setOtpError(null);
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/whatsapp/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
-        },
-        body: JSON.stringify({ phone: otpPhone.trim() }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setOtpSent(true);
-      } else {
-        setOtpError(data.detail || 'Failed to send OTP');
-      }
-    } catch {
-      setOtpError('Network error. Please try again.');
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    if (!otpCode.trim()) return;
-    setOtpLoading(true);
-    setOtpError(null);
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/whatsapp/verify-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
-        },
-        body: JSON.stringify({ phone: otpPhone.trim(), otp: otpCode.trim() }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setPhoneVerified(true);
-        handleBooking();
-      } else {
-        setOtpError(data.detail || 'Invalid OTP. Please try again.');
-      }
-    } catch {
-      setOtpError('Network error. Please try again.');
-    } finally {
-      setOtpLoading(false);
-    }
-  };
-
-  // Show OTP sub-step
-  if (subStep === 'otp') {
-    return (
-      <div className="min-h-screen flex flex-col" style={{ backgroundColor: colors.background.primary }}>
-        {/* Header */}
-        <header className="sticky top-0 z-40 px-4 py-4 flex items-center gap-4" style={{ backgroundColor: colors.background.primary }}>
-          <button
-            onClick={() => setSubStep('slots')}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-gray-100"
-            style={{ backgroundColor: '#FFFFFF', boxShadow: shadows.card }}
-          >
-            <svg className="w-5 h-5" style={{ color: colors.text.dark }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div>
-            <h1 className="text-lg font-semibold" style={{ color: colors.text.dark }}>Verify your WhatsApp</h1>
-            {expertName && <p className="text-sm" style={{ color: colors.teal.primary }}>with {expertName}</p>}
-          </div>
-        </header>
-
-        <div className="flex-1 px-4 py-6">
-          <div className="max-w-lg mx-auto">
-            <div className="rounded-2xl p-5 mb-6" style={{ backgroundColor: colors.cream.warm }}>
-              <p className="text-sm" style={{ color: colors.text.secondary }}>
-                We'll send a one-time code to your WhatsApp so we can confirm your number for the call.
-              </p>
-            </div>
-
-            {/* Phone input */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2" style={{ color: colors.text.dark }}>
-                WhatsApp number
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="tel"
-                  value={otpPhone}
-                  onChange={(e) => setOtpPhone(e.target.value)}
-                  placeholder="+919876543210"
-                  disabled={otpSent}
-                  className="flex-1 rounded-xl px-4 py-3 text-sm outline-none transition-all"
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    border: `1.5px solid ${colors.ui.border || '#e5e7eb'}`,
-                    color: colors.text.dark,
-                    opacity: otpSent ? 0.6 : 1,
-                  }}
-                />
-                <button
-                  onClick={handleSendOtp}
-                  disabled={!otpPhone.trim() || otpSent || otpLoading}
-                  className="px-4 py-3 rounded-xl font-medium text-sm transition-all"
-                  style={{
-                    backgroundColor: colors.teal.primary,
-                    color: '#FFFFFF',
-                    opacity: !otpPhone.trim() || otpSent || otpLoading ? 0.5 : 1,
-                    cursor: !otpPhone.trim() || otpSent || otpLoading ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {otpLoading && !otpSent ? 'Sending…' : otpSent ? 'Sent ✓' : 'Send'}
-                </button>
-              </div>
-              {otpSent && (
-                <p className="text-xs mt-1" style={{ color: colors.teal.primary }}>
-                  Code sent! Check your WhatsApp.{' '}
-                  <button
-                    onClick={() => { setOtpSent(false); setOtpCode(''); setOtpError(null); }}
-                    style={{ textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', color: colors.teal.primary }}
-                  >
-                    Resend
-                  </button>
-                </p>
-              )}
-            </div>
-
-            {/* OTP input */}
-            {otpSent && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-2" style={{ color: colors.text.dark }}>
-                  Enter 6-digit code
-                </label>
-                <input
-                  type="number"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.slice(0, 6))}
-                  placeholder="_ _ _ _ _ _"
-                  maxLength={6}
-                  className="w-full rounded-xl px-4 py-3 text-center text-xl font-bold tracking-widest outline-none"
-                  style={{
-                    backgroundColor: '#FFFFFF',
-                    border: `1.5px solid ${otpCode.length === 6 ? colors.teal.primary : colors.ui.border || '#e5e7eb'}`,
-                    color: colors.text.dark,
-                    letterSpacing: '0.5rem',
-                  }}
-                />
-              </div>
-            )}
-
-            {otpError && (
-              <div className="rounded-xl p-3 mb-4" style={{ backgroundColor: '#fee2e215' }}>
-                <p className="text-sm" style={{ color: '#dc2626' }}>{otpError}</p>
-              </div>
-            )}
-
-            {otpSent && (
-              <button
-                onClick={handleVerifyOtp}
-                disabled={otpCode.length !== 6 || otpLoading}
-                className="w-full py-4 rounded-full font-semibold text-base transition-all"
-                style={{
-                  backgroundColor: colors.teal.primary,
-                  color: '#FFFFFF',
-                  opacity: otpCode.length !== 6 || otpLoading ? 0.5 : 1,
-                  cursor: otpCode.length !== 6 || otpLoading ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {otpLoading ? 'Verifying…' : 'Verify & Continue'}
-              </button>
-            )}
-
-            {!otpSent && (
-              <button
-                onClick={() => handleBooking()}
-                className="w-full py-3 mt-3 text-sm"
-                style={{ color: colors.text.muted, background: 'none', border: 'none', cursor: 'pointer' }}
-              >
-                Skip for now
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Show questions sub-step
   if (subStep === 'questions') {
     return (
@@ -751,7 +554,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
           
           {/* CTA Button */}
           <button
-            onClick={() => phoneVerified ? handleBooking() : setSubStep('otp')}
+            onClick={handleBooking}
             disabled={!selectedSlot || isBooking}
             className={`w-full py-4 rounded-full font-semibold text-base transition-all ${
               selectedSlot && !isBooking ? 'hover:shadow-lg hover:-translate-y-0.5' : 'opacity-50 cursor-not-allowed'
