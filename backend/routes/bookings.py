@@ -172,6 +172,17 @@ async def schedule_call(
         # Insert into database
         await db.bookings.insert_one(booking_doc)
 
+        # Fetch user profile for birth details
+        user_profile = {}
+        try:
+            _uid = booking_doc.get("user_id")
+            if _uid and db is not None:
+                _up = await db.users.find_one({"user_id": _uid}, {"_id": 0})
+                if _up:
+                    user_profile = _up
+        except Exception:
+            pass
+
         # Fire confirmation emails asynchronously (non-blocking)
         try:
             import asyncio as _asyncio
@@ -180,11 +191,17 @@ async def schedule_call(
                 booking_id=booking_id,
                 customer_name=booking_doc["user_name"],
                 customer_email=booking_doc["user_email"],
-                customer_phone=booking_doc.get("user_phone", ""),
+                customer_phone=booking_doc.get("user_phone", "") or user_profile.get("phone", ""),
                 expert_id=booking_doc.get("expert_id", ""),
                 scheduled_date=booking_doc["scheduled_date"],
                 topic_id=booking_doc.get("topic_id", ""),
                 questions=booking_doc.get("questions", []),
+                birth_details={
+                    "dob": user_profile.get("dob", ""),
+                    "tob": user_profile.get("tob", ""),
+                    "pob": user_profile.get("pob", "") or user_profile.get("location", {}).get("city", ""),
+                    "gender": user_profile.get("gender", ""),
+                },
             ))
         except Exception as _e:
             print(f"[email] Could not fire booking confirmation: {_e}")

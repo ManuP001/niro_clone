@@ -72,6 +72,20 @@ ADMIN_EMAILS = [
 ]
 
 
+TOPIC_LABELS = {
+    'career': 'Career & Work',
+    'money': 'Money & Wealth',
+    'health': 'Health & Wellness',
+    'marriage': 'Marriage & Relationships',
+    'love': 'Love & Romance',
+    'mental_health': 'Mental Health',
+    'spiritual': 'Spiritual Growth',
+    'business': 'Business',
+    'education': 'Education',
+    'family': 'Family',
+}
+
+
 async def send_booking_confirmation(
     booking_id: str,
     customer_name: str,
@@ -81,38 +95,62 @@ async def send_booking_confirmation(
     scheduled_date: datetime,
     topic_id: str,
     questions: list,
+    birth_details: dict = None,
 ) -> None:
     """
-    Send booking confirmation emails to 3 parties:
+    Send booking confirmation emails to:
     1. Admin team (Sharad + Manu)
     2. Customer
     """
+    bd = birth_details or {}
     time_str = scheduled_date.strftime("%B %d, %Y at %I:%M %p IST") if scheduled_date else "TBD"
+    topic_label = TOPIC_LABELS.get(topic_id, topic_id or "Not specified")
+
     questions_html = "".join(
-        f"<li style='margin:4px 0;'>{q}</li>" for q in questions if q
-    ) or "<li style='color:#999;'>No questions provided</li>"
+        f"<li style='margin:6px 0;padding:8px;background:#fff;border-radius:6px;border-left:3px solid #3E827A;'>{q}</li>"
+        for q in questions if q
+    ) or "<li style='color:#999;font-style:italic;'>No questions provided</li>"
+
+    dob = bd.get("dob") or "Not provided"
+    tob = bd.get("tob") or "Not provided"
+    pob = bd.get("pob") or "Not provided"
+    gender = bd.get("gender") or "Not provided"
 
     # --- Admin email ---
     admin_html = f"""
-    <!DOCTYPE html><html><body style="font-family:Arial,sans-serif;color:#333;max-width:600px;margin:0 auto;padding:20px;">
+    <!DOCTYPE html><html><body style="font-family:Arial,sans-serif;color:#333;max-width:640px;margin:0 auto;padding:20px;">
     <div style="background:linear-gradient(135deg,#3E827A,#5A9A92);padding:24px;border-radius:10px 10px 0 0;">
       <h1 style="color:#fff;margin:0;font-size:22px;">New Free Call Booking</h1>
-      <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;">Booking ID: {booking_id}</p>
+      <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;">Booking ID: {booking_id}</p>
     </div>
     <div style="background:#f5f5f5;padding:24px;border-radius:0 0 10px 10px;">
-      <h2 style="color:#3E827A;margin-top:0;">Customer Details</h2>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr><td style="padding:8px 0;border-bottom:1px solid #ddd;"><b>Name</b></td><td style="padding:8px 0;border-bottom:1px solid #ddd;">{customer_name}</td></tr>
-        <tr><td style="padding:8px 0;border-bottom:1px solid #ddd;"><b>Email</b></td><td style="padding:8px 0;border-bottom:1px solid #ddd;">{customer_email}</td></tr>
-        <tr><td style="padding:8px 0;border-bottom:1px solid #ddd;"><b>Phone</b></td><td style="padding:8px 0;border-bottom:1px solid #ddd;">{customer_phone or 'Not provided'}</td></tr>
-        <tr><td style="padding:8px 0;border-bottom:1px solid #ddd;"><b>Expert ID</b></td><td style="padding:8px 0;border-bottom:1px solid #ddd;">{expert_id or 'Any'}</td></tr>
-        <tr><td style="padding:8px 0;border-bottom:1px solid #ddd;"><b>Topic ID</b></td><td style="padding:8px 0;border-bottom:1px solid #ddd;">{topic_id or 'N/A'}</td></tr>
-        <tr><td style="padding:8px 0;"><b>Scheduled</b></td><td style="padding:8px 0;">{time_str}</td></tr>
+
+      <h2 style="color:#3E827A;margin-top:0;font-size:16px;">Customer Details</h2>
+      <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;">
+        <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;color:#666;width:38%;"><b>Name</b></td><td style="padding:10px 14px;">{customer_name}</td></tr>
+        <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;color:#666;"><b>Email</b></td><td style="padding:10px 14px;">{customer_email or 'Not provided'}</td></tr>
+        <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;color:#666;"><b>Phone</b></td><td style="padding:10px 14px;">{customer_phone or 'Not provided'}</td></tr>
+        <tr><td style="padding:10px 14px;color:#666;"><b>Gender</b></td><td style="padding:10px 14px;">{gender}</td></tr>
       </table>
-      <h2 style="color:#3E827A;margin-top:24px;">Customer's Questions</h2>
-      <ul style="background:#fff;padding:12px 12px 12px 28px;border-radius:8px;">{questions_html}</ul>
-      <div style="margin-top:20px;padding:12px;background:#fff3e0;border-radius:8px;border-left:4px solid #ff9800;">
-        <b style="color:#e65100;">Action:</b> Assign an astrologer and confirm the call via WhatsApp.
+
+      <h2 style="color:#3E827A;margin-top:20px;font-size:16px;">Birth Details</h2>
+      <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;">
+        <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;color:#666;width:38%;"><b>Date of Birth</b></td><td style="padding:10px 14px;">{dob}</td></tr>
+        <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;color:#666;"><b>Time of Birth</b></td><td style="padding:10px 14px;">{tob}</td></tr>
+        <tr><td style="padding:10px 14px;color:#666;"><b>Place of Birth</b></td><td style="padding:10px 14px;">{pob}</td></tr>
+      </table>
+
+      <h2 style="color:#3E827A;margin-top:20px;font-size:16px;">Booking Details</h2>
+      <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;">
+        <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;color:#666;width:38%;"><b>Life Topic</b></td><td style="padding:10px 14px;">{topic_label}</td></tr>
+        <tr><td style="padding:10px 14px;color:#666;"><b>Slot</b></td><td style="padding:10px 14px;"><b style="color:#3E827A;">{time_str}</b></td></tr>
+      </table>
+
+      <h2 style="color:#3E827A;margin-top:20px;font-size:16px;">Customer's Questions for the Astrologer</h2>
+      <ul style="padding:0 0 0 4px;list-style:none;margin:0;">{questions_html}</ul>
+
+      <div style="margin-top:24px;padding:14px 16px;background:#fff3e0;border-radius:8px;border-left:4px solid #ff9800;">
+        <b style="color:#e65100;">Action required:</b> Assign an astrologer and confirm the call via WhatsApp.
       </div>
     </div>
     </body></html>
