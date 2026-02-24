@@ -29,10 +29,14 @@ logger = logging.getLogger(__name__)
 
 CALENDAR_ID = os.environ.get("GOOGLE_CALENDAR_ID", "callassistant@getniro.ai")
 SERVICE_ACCOUNT_JSON = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
-BUSINESS_START_HOUR = int(os.environ.get("BUSINESS_START_HOUR", "9"))
-BUSINESS_END_HOUR = int(os.environ.get("BUSINESS_END_HOUR", "18"))
+# Business window: 4:00 PM – 10:30 PM IST by default.
+# Block the 6:30 PM – 8:00 PM gap with a recurring "Busy" event on the calendar.
+# BUSINESS_START and BUSINESS_END accept "HH:MM" (24-hour) format.
+_parse_hhmm = lambda s: int(s.split(':')[0]) * 60 + int(s.split(':')[1]) if ':' in s else int(s) * 60
+BUSINESS_START_MINS = _parse_hhmm(os.environ.get("BUSINESS_START", "16:00"))
+BUSINESS_END_MINS   = _parse_hhmm(os.environ.get("BUSINESS_END",   "22:30"))
 SLOT_DURATION = 10  # minutes
-BUSINESS_DAYS = {0, 1, 2, 3, 4}  # Mon–Fri
+BUSINESS_DAYS = {0, 1, 2, 3, 4, 5, 6}  # Mon–Sun (calendar controls actual availability)
 IST = pytz.timezone("Asia/Kolkata")
 
 
@@ -72,8 +76,8 @@ async def get_available_slots(requested_date: date_type) -> tuple:
 def _generate_slots(requested_date: date_type) -> list:
     """Return all 10-min slot dicts for business hours, filtering past slots."""
     slots = []
-    cur = BUSINESS_START_HOUR * 60
-    end = BUSINESS_END_HOUR * 60
+    cur = BUSINESS_START_MINS
+    end = BUSINESS_END_MINS
     while cur + SLOT_DURATION <= end:
         h, m = divmod(cur, 60)
         slots.append(

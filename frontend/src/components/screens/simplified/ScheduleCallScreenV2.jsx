@@ -132,16 +132,12 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
         if (data.timezone) setSlotTimezone(data.timezone);
 
         if (slots.length === 0) {
-          // If no slots for today (past business hours) or a weekend, skip to next weekday
+          // If no slots for today (past business hours), advance to the next day
           const today = new Date();
           const isCurrentOrPast = selectedDate <= today;
-          const dow = selectedDate.getDay();
-          const isWeekend = dow === 0 || dow === 6;
-          if (isCurrentOrPast || isWeekend) {
+          if (isCurrentOrPast) {
             const next = new Date(selectedDate);
             next.setDate(next.getDate() + 1);
-            // Skip weekends
-            while (next.getDay() === 0 || next.getDay() === 6) next.setDate(next.getDate() + 1);
             setSelectedDate(next);
             return; // useEffect will re-run with new date
           }
