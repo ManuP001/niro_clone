@@ -325,7 +325,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
   // We just need to advance the onboarding step here.
   const handleBirthDetailsSubmit = () => {
     localStorage.setItem(USER_DETAILS_KEY, 'true');
-    setOnboardingStep(ONBOARDING_STEPS.HOW_IT_WORKS);
+    setOnboardingStep(ONBOARDING_STEPS.COMPLETE);
     trackEvent('birth_details_submitted');
   };
 
