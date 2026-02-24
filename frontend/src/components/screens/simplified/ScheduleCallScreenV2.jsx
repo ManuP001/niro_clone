@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { colors, shadows } from './theme';
 import { trackEvent } from './utils';
 import { BACKEND_URL } from '../../../config';
+import PreBookingQuestionsScreen from './PreBookingQuestionsScreen';
 
 /**
  * ScheduleCallScreen V2 - Embedded scheduling experience
@@ -42,17 +43,23 @@ const generateTimeSlots = (date) => {
   return slots;
 };
 
-// Generate next 14 days
+// Format a Date as YYYY-MM-DD using local timezone (avoids UTC date shifting for IST users)
+const toLocalDateStr = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+// Generate next 14 days starting from today
 const generateDates = () => {
   const dates = [];
   const today = new Date();
-  
   for (let i = 0; i < 14; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
     dates.push(date);
   }
-  
   return dates;
 };
 
@@ -72,7 +79,23 @@ const isTomorrow = (date) => {
   return date.toDateString() === tomorrow.toDateString();
 };
 
-export default function ScheduleCallScreen({ token, user, onBack, onComplete, expertId, topicId, expertName }) {
+const TZ_LABELS = {
+  'Asia/Kolkata': 'IST',
+  'Asia/Dubai': 'GST',
+  'Asia/Singapore': 'SGT',
+  'UTC': 'UTC',
+  'America/New_York': 'ET',
+  'America/Los_Angeles': 'PT',
+  'Europe/London': 'GMT',
+};
+
+const FEATURED_REMEDIES = [
+  { id: 'chakra_balance', emoji: '🧘', title: 'Chakra Balance Program', price: '₹3,500' },
+  { id: 'navgraha_shanti', emoji: '🙏', title: 'Navgraha Shanti Pooja', price: '₹5,000' },
+  { id: 'yellow_sapphire', emoji: '💎', title: 'Yellow Sapphire (Pukhraj)', price: '₹4,200' },
+];
+
+export default function ScheduleCallScreen({ token, user, onBack, onComplete, onNavigate, expertId, topicId, expertName }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [timeSlots, setTimeSlots] = useState([]);
@@ -81,24 +104,49 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, ex
   const [bookingComplete, setBookingComplete] = useState(false);
   const [bookingDetails, setBookingDetails] = useState(null);
   const [error, setError] = useState(null);
+  const [slotTimezone, setSlotTimezone] = useState('Asia/Kolkata');
+  // subStep: 'questions' → 'slots' → 'otp' (gates booking) → confirmation
+  const [subStep, setSubStep] = useState('questions');
+  const [bookingQuestions, setBookingQuestions] = useState([]);
+  const [phoneVerified, setPhoneVerified] = useState(!!user?.phone);
+  // OTP sub-step state
+  const [otpPhone, setOtpPhone] = useState(user?.phone || '');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState(null);
 
   const dates = generateDates();
 
-  // Load time slots when date changes
+  // Load time slots when date changes; auto-advance past today if no slots remain
   useEffect(() => {
-    if (!expertId) {
-      // Fallback for direct /app/schedule access (no expertId — e.g. from MyPack)
-      setTimeSlots(generateTimeSlots(selectedDate));
-      setSelectedSlot(null);
-      return;
-    }
     const fetchSlots = async () => {
       setSlotsLoading(true);
       try {
-        const dateStr = selectedDate.toISOString().split('T')[0];
-        const res = await fetch(`${BACKEND_URL}/api/bookings/available-slots/${expertId}?date=${dateStr}`);
+        // Use local date string (not UTC) so IST users get the correct date
+        const dateStr = toLocalDateStr(selectedDate);
+        const url = `${BACKEND_URL}/api/bookings/available-slots?date=${dateStr}`;
+        const res = await fetch(url);
         const data = await res.json();
-        setTimeSlots(data.ok ? data.slots : []);
+        const slots = data.ok ? data.slots : [];
+        if (data.timezone) setSlotTimezone(data.timezone);
+
+        if (slots.length === 0) {
+          // If no slots for today (past business hours) or a weekend, skip to next weekday
+          const today = new Date();
+          const isCurrentOrPast = selectedDate <= today;
+          const dow = selectedDate.getDay();
+          const isWeekend = dow === 0 || dow === 6;
+          if (isCurrentOrPast || isWeekend) {
+            const next = new Date(selectedDate);
+            next.setDate(next.getDate() + 1);
+            // Skip weekends
+            while (next.getDay() === 0 || next.getDay() === 6) next.setDate(next.getDate() + 1);
+            setSelectedDate(next);
+            return; // useEffect will re-run with new date
+          }
+        }
+        setTimeSlots(slots);
       } catch {
         setTimeSlots([]);
       } finally {
@@ -107,7 +155,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, ex
       }
     };
     fetchSlots();
-  }, [selectedDate, expertId]);
+  }, [selectedDate]);
   
   const handleBooking = async () => {
     if (!selectedSlot) return;
@@ -130,6 +178,8 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, ex
         notes: 'Free 10-minute consultation call',
         expert_id: expertId || null,
         topic_id: topicId || null,
+        questions: bookingQuestions,
+        user_phone: otpPhone || user?.phone || '',
       };
       
       // Save booking to backend (use direct API call, not apiSimplified)
@@ -169,6 +219,210 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, ex
     }
   };
   
+  // OTP helpers
+  const handleSendOtp = async () => {
+    if (!otpPhone.trim()) return;
+    setOtpLoading(true);
+    setOtpError(null);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/whatsapp/send-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({ phone: otpPhone.trim() }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setOtpSent(true);
+      } else {
+        setOtpError(data.detail || 'Failed to send OTP');
+      }
+    } catch {
+      setOtpError('Network error. Please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode.trim()) return;
+    setOtpLoading(true);
+    setOtpError(null);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/whatsapp/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({ phone: otpPhone.trim(), otp: otpCode.trim() }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setPhoneVerified(true);
+        handleBooking();
+      } else {
+        setOtpError(data.detail || 'Invalid OTP. Please try again.');
+      }
+    } catch {
+      setOtpError('Network error. Please try again.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  // Show OTP sub-step
+  if (subStep === 'otp') {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: colors.background.primary }}>
+        {/* Header */}
+        <header className="sticky top-0 z-40 px-4 py-4 flex items-center gap-4" style={{ backgroundColor: colors.background.primary }}>
+          <button
+            onClick={() => setSubStep('slots')}
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-gray-100"
+            style={{ backgroundColor: '#FFFFFF', boxShadow: shadows.card }}
+          >
+            <svg className="w-5 h-5" style={{ color: colors.text.dark }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div>
+            <h1 className="text-lg font-semibold" style={{ color: colors.text.dark }}>Verify your WhatsApp</h1>
+            {expertName && <p className="text-sm" style={{ color: colors.teal.primary }}>with {expertName}</p>}
+          </div>
+        </header>
+
+        <div className="flex-1 px-4 py-6">
+          <div className="max-w-lg mx-auto">
+            <div className="rounded-2xl p-5 mb-6" style={{ backgroundColor: colors.cream.warm }}>
+              <p className="text-sm" style={{ color: colors.text.secondary }}>
+                We'll send a one-time code to your WhatsApp so we can confirm your number for the call.
+              </p>
+            </div>
+
+            {/* Phone input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2" style={{ color: colors.text.dark }}>
+                WhatsApp number
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="tel"
+                  value={otpPhone}
+                  onChange={(e) => setOtpPhone(e.target.value)}
+                  placeholder="+919876543210"
+                  disabled={otpSent}
+                  className="flex-1 rounded-xl px-4 py-3 text-sm outline-none transition-all"
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    border: `1.5px solid ${colors.ui.border || '#e5e7eb'}`,
+                    color: colors.text.dark,
+                    opacity: otpSent ? 0.6 : 1,
+                  }}
+                />
+                <button
+                  onClick={handleSendOtp}
+                  disabled={!otpPhone.trim() || otpSent || otpLoading}
+                  className="px-4 py-3 rounded-xl font-medium text-sm transition-all"
+                  style={{
+                    backgroundColor: colors.teal.primary,
+                    color: '#FFFFFF',
+                    opacity: !otpPhone.trim() || otpSent || otpLoading ? 0.5 : 1,
+                    cursor: !otpPhone.trim() || otpSent || otpLoading ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {otpLoading && !otpSent ? 'Sending…' : otpSent ? 'Sent ✓' : 'Send'}
+                </button>
+              </div>
+              {otpSent && (
+                <p className="text-xs mt-1" style={{ color: colors.teal.primary }}>
+                  Code sent! Check your WhatsApp.{' '}
+                  <button
+                    onClick={() => { setOtpSent(false); setOtpCode(''); setOtpError(null); }}
+                    style={{ textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', color: colors.teal.primary }}
+                  >
+                    Resend
+                  </button>
+                </p>
+              )}
+            </div>
+
+            {/* OTP input */}
+            {otpSent && (
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2" style={{ color: colors.text.dark }}>
+                  Enter 6-digit code
+                </label>
+                <input
+                  type="number"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.slice(0, 6))}
+                  placeholder="_ _ _ _ _ _"
+                  maxLength={6}
+                  className="w-full rounded-xl px-4 py-3 text-center text-xl font-bold tracking-widest outline-none"
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    border: `1.5px solid ${otpCode.length === 6 ? colors.teal.primary : colors.ui.border || '#e5e7eb'}`,
+                    color: colors.text.dark,
+                    letterSpacing: '0.5rem',
+                  }}
+                />
+              </div>
+            )}
+
+            {otpError && (
+              <div className="rounded-xl p-3 mb-4" style={{ backgroundColor: '#fee2e215' }}>
+                <p className="text-sm" style={{ color: '#dc2626' }}>{otpError}</p>
+              </div>
+            )}
+
+            {otpSent && (
+              <button
+                onClick={handleVerifyOtp}
+                disabled={otpCode.length !== 6 || otpLoading}
+                className="w-full py-4 rounded-full font-semibold text-base transition-all"
+                style={{
+                  backgroundColor: colors.teal.primary,
+                  color: '#FFFFFF',
+                  opacity: otpCode.length !== 6 || otpLoading ? 0.5 : 1,
+                  cursor: otpCode.length !== 6 || otpLoading ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {otpLoading ? 'Verifying…' : 'Verify & Continue'}
+              </button>
+            )}
+
+            {!otpSent && (
+              <button
+                onClick={() => handleBooking()}
+                className="w-full py-3 mt-3 text-sm"
+                style={{ color: colors.text.muted, background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                Skip for now
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show questions sub-step
+  if (subStep === 'questions') {
+    return (
+      <PreBookingQuestionsScreen
+        expertName={expertName}
+        onBack={onBack || (() => window.history.back())}
+        onSubmit={(qs) => {
+          setBookingQuestions(qs);
+          setSubStep('slots');
+        }}
+      />
+    );
+  }
+
   // Show booking confirmation
   if (bookingComplete && bookingDetails) {
     return (
@@ -281,6 +535,41 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, ex
               </div>
             </div>
             
+            {/* Remedies Upsell */}
+            <div
+              className="rounded-2xl p-5 mb-6 text-left"
+              style={{ backgroundColor: '#FFFFFF', boxShadow: shadows.card }}
+            >
+              <h3 className="font-semibold mb-1" style={{ color: colors.text.dark }}>
+                Enhance your journey with Niro
+              </h3>
+              <p className="text-xs mb-4" style={{ color: colors.text.muted }}>
+                Deepen your transformation with these popular remedies
+              </p>
+              <div className="space-y-3">
+                {FEATURED_REMEDIES.map((r) => (
+                  <div
+                    key={r.id}
+                    className="flex items-center gap-3 p-3 rounded-xl"
+                    style={{ backgroundColor: colors.cream.warm }}
+                  >
+                    <span className="text-2xl">{r.emoji}</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium" style={{ color: colors.text.dark }}>{r.title}</p>
+                    </div>
+                    <span className="text-sm font-semibold" style={{ color: colors.teal.primary }}>{r.price}</span>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => onNavigate ? onNavigate('remedies') : (window.location.href = '/app/remedies')}
+                className="mt-4 w-full py-3 rounded-full text-sm font-semibold border transition-all hover:shadow-md"
+                style={{ borderColor: colors.teal.primary, color: colors.teal.primary, backgroundColor: 'transparent' }}
+              >
+                Explore all remedies →
+              </button>
+            </div>
+
             {/* Actions */}
             <button
               onClick={() => {
@@ -405,9 +694,14 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, ex
           
           {/* Time Selection */}
           <div className="mb-6">
-            <h3 className="text-sm font-medium mb-3" style={{ color: colors.text.dark }}>
-              Select Time
-            </h3>
+            <div className="flex items-baseline gap-2 mb-3">
+              <h3 className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                Select Time
+              </h3>
+              <span className="text-xs" style={{ color: colors.text.muted }}>
+                All times in {TZ_LABELS[slotTimezone] || slotTimezone}
+              </span>
+            </div>
             {slotsLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div
@@ -461,7 +755,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, ex
           
           {/* CTA Button */}
           <button
-            onClick={handleBooking}
+            onClick={() => phoneVerified ? handleBooking() : setSubStep('otp')}
             disabled={!selectedSlot || isBooking}
             className={`w-full py-4 rounded-full font-semibold text-base transition-all ${
               selectedSlot && !isBooking ? 'hover:shadow-lg hover:-translate-y-0.5' : 'opacity-50 cursor-not-allowed'

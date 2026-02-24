@@ -659,7 +659,7 @@ async def get_user_state(
     free_call_expert_name = None
     free_call_topic_id = None
 
-    if db:
+    if db is not None:
         booking = await db.bookings.find_one(
             {"user_id": user_id, "call_type": "free_consultation"},
             sort=[("created_at", -1)]

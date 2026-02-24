@@ -3,7 +3,7 @@ Booking routes for scheduling calls
 """
 from fastapi import APIRouter, Request, HTTPException, Depends, Header
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, timezone, timedelta
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import uuid
@@ -117,6 +117,8 @@ class BookingCreate(BaseModel):
     notes: Optional[str] = None
     expert_id: Optional[str] = None
     topic_id: Optional[str] = None
+    questions: List[str] = []
+    user_phone: Optional[str] = None
 
 
 class BookingResponse(BaseModel):
@@ -160,6 +162,8 @@ async def schedule_call(
             "notes": booking.notes,
             "expert_id": booking.expert_id,
             "topic_id": booking.topic_id,
+            "questions": booking.questions,
+            "user_phone": booking.user_phone,
             "status": "scheduled",  # scheduled, completed, cancelled, no_show
             "created_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc),
@@ -167,7 +171,24 @@ async def schedule_call(
         
         # Insert into database
         await db.bookings.insert_one(booking_doc)
-        
+
+        # Fire confirmation emails asynchronously (non-blocking)
+        try:
+            import asyncio as _asyncio
+            from backend.services.email_service import send_booking_confirmation as _send_conf
+            _asyncio.create_task(_send_conf(
+                booking_id=booking_id,
+                customer_name=booking_doc["user_name"],
+                customer_email=booking_doc["user_email"],
+                customer_phone=booking_doc.get("user_phone", ""),
+                expert_id=booking_doc.get("expert_id", ""),
+                scheduled_date=booking_doc["scheduled_date"],
+                topic_id=booking_doc.get("topic_id", ""),
+                questions=booking_doc.get("questions", []),
+            ))
+        except Exception as _e:
+            print(f"[email] Could not fire booking confirmation: {_e}")
+
         return BookingResponse(
             ok=True,
             booking_id=booking_id,
@@ -252,6 +273,32 @@ async def get_upcoming_bookings(
     }
 
 
+@router.get("/available-slots")
+async def get_available_slots_pool(
+    request: Request,
+    date: str,  # query param, format YYYY-MM-DD
+):
+    """
+    Returns available 10-minute slots from the central Niro scheduling calendar
+    (callassistant@getniro.ai) for a given date.
+    No authentication required (public endpoint).
+    """
+    from datetime import date as date_type
+    try:
+        requested_date = date_type.fromisoformat(date)
+    except ValueError:
+        return {"ok": False, "slots": [], "message": "Invalid date format, use YYYY-MM-DD"}
+
+    import logging, os
+    _log = logging.getLogger(__name__)
+    from backend.services.google_calendar_service import get_available_slots as _gcal_slots, SERVICE_ACCOUNT_JSON
+    _log.info(f"[slots] date={date} sa_json_set={bool(SERVICE_ACCOUNT_JSON)}")
+    slots, tz_str = await _gcal_slots(requested_date)
+    available_count = sum(1 for s in slots if s.get("available"))
+    _log.info(f"[slots] returned {len(slots)} slots, {available_count} available")
+    return {"ok": True, "slots": slots, "date": date, "timezone": tz_str}
+
+
 @router.get("/available-slots/{expert_id}")
 async def get_available_slots(
     request: Request,
@@ -332,7 +379,7 @@ async def get_available_slots(
         is_past = (requested_date == now_local.date()) and (h * 60 + m <= now_local.hour * 60 + now_local.minute)
         result_slots.append({**s, "available": not is_booked and not is_past})
 
-    return {"ok": True, "slots": result_slots, "date": date}
+    return {"ok": True, "slots": result_slots, "date": date, "timezone": expert.get("timezone", "Asia/Kolkata")}
 
 
 @router.put("/{booking_id}/cancel")

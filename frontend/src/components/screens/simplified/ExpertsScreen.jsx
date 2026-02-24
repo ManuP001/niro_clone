@@ -10,7 +10,7 @@ import ResponsiveHeader from './ResponsiveHeader';
  * - Centered max-width container
  * - Desktop navigation header
  */
-export default function ExpertsScreen({ token, userState, onNavigate, onTabChange, hasBottomNav = true, topicId, maxResults, onExpertSelect }) {
+export default function ExpertsScreen({ token, userState, onNavigate, onTabChange, hasBottomNav = true, topicId, maxResults, onExpertSelect, onBookFreeCall, isAuthenticated, onLoginClick }) {
   const [experts, setExperts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedModality, setSelectedModality] = useState('all');
@@ -88,6 +88,8 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
   }, {});
 
   const handleExpertClick = (expert) => {
+    // In wizard mode with onBookFreeCall, cards are display-only
+    if (onBookFreeCall) return;
     if (onExpertSelect) {
       onExpertSelect(expert.expert_id, expert.name);
     } else {
@@ -114,7 +116,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
 
   return (
     <div
-      className={`${!topicId ? 'min-h-screen' : ''} ${hasBottomNav && !topicId ? 'pb-20 md:pb-0' : ''}`}
+      className={`${!topicId ? 'min-h-screen' : ''} ${hasBottomNav && !topicId ? 'pb-20 md:pb-0' : ''} ${onBookFreeCall ? 'pb-24' : ''}`}
       style={{ backgroundColor: colors.background.primary }}
     >
       {/* Responsive Header (hidden in wizard mode) */}
@@ -204,6 +206,38 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
           )}
         </div>
 
+        {/* Free Call CTA Banner — shown on topic-filtered listing (not in wizard/onBookFreeCall mode) */}
+        {topicId && !onExpertSelect && !onBookFreeCall && (
+          <div className="px-4 md:px-8 mb-2">
+            <div
+              className="rounded-2xl p-5 flex items-center gap-4"
+              style={{
+                background: `linear-gradient(135deg, ${colors.teal.primary} 0%, ${colors.teal.dark || '#2d6b63'} 100%)`,
+                boxShadow: '0 4px 16px rgba(62,130,122,0.25)',
+              }}
+            >
+              <div className="flex-1">
+                <p className="font-bold text-base text-white mb-0.5">
+                  Not sure which expert to pick?
+                </p>
+                <p className="text-sm text-white/80">
+                  Book a free 10-min intro call — we'll match you with the right astrologer.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  if (!isAuthenticated) { onLoginClick?.(); return; }
+                  onNavigate?.('schedule', {});
+                }}
+                className="flex-shrink-0 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all active:scale-[0.97] hover:shadow-md"
+                style={{ backgroundColor: '#FFFFFF', color: colors.teal.primary }}
+              >
+                Book free call
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Expert Cards - Responsive Grid */}
         <div className="px-4 md:px-8 py-6">
           {selectedModality === 'all' ? (
@@ -249,6 +283,24 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
           )}
         </div>
       </div>
+
+      {/* Sticky footer CTA — wizard mode only */}
+      {onBookFreeCall && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 px-4 py-4"
+          style={{ backgroundColor: colors.background.primary, borderTop: `1px solid ${colors.ui.borderDark}` }}
+        >
+          <div className="max-w-lg mx-auto">
+            <button
+              onClick={onBookFreeCall}
+              className="w-full py-4 rounded-full font-semibold text-base transition-all hover:shadow-lg active:scale-[0.99]"
+              style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
+            >
+              Book your free 10 min call →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

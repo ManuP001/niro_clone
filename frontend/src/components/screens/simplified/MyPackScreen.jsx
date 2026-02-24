@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { colors, shadows } from './theme';
 import { apiSimplified, formatPrice, trackEvent } from './utils';
+import { BACKEND_URL } from '../../../config';
 import { 
   CalendarIcon, 
   ChatIcon, 
@@ -50,6 +51,9 @@ export default function MyPackScreen({ token, userState, onNavigate, hasBottomNa
   const [loading, setLoading] = useState(false);
   const [planDetails, setPlanDetails] = useState(null);
   const [error, setError] = useState(null);
+  const [upcomingBookings, setUpcomingBookings] = useState([]);
+  const [pastBookings, setPastBookings] = useState([]);
+  const [showAllPast, setShowAllPast] = useState(false);
 
   const activePlan = userState?.active_plans?.[0];
 
@@ -59,6 +63,42 @@ export default function MyPackScreen({ token, userState, onNavigate, hasBottomNa
     }
     trackEvent('mypack_viewed', { has_active_plan: !!activePlan }, token);
   }, [activePlan, token]);
+
+  useEffect(() => {
+    if (!token) return;
+    const fetchBookings = async () => {
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+        const [upRes, allRes] = await Promise.all([
+          fetch(`${BACKEND_URL}/api/bookings/upcoming`, { headers }),
+          fetch(`${BACKEND_URL}/api/bookings/my-bookings`, { headers }),
+        ]);
+        const upData = await upRes.json();
+        const allData = await allRes.json();
+        setUpcomingBookings(upData.ok ? upData.bookings : []);
+        const now = new Date();
+        setPastBookings(
+          allData.ok
+            ? allData.bookings.filter((b) => new Date(b.scheduled_date) < now)
+            : []
+        );
+      } catch {}
+    };
+    fetchBookings();
+  }, [token]);
+
+  const cancelBooking = async (bookingId) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/bookings/${bookingId}/cancel`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setUpcomingBookings((prev) => prev.filter((b) => b.booking_id !== bookingId));
+      }
+    } catch {}
+  };
 
   const loadPlanDetails = async () => {
     if (!activePlan?.plan_id) return;
@@ -114,8 +154,40 @@ export default function MyPackScreen({ token, userState, onNavigate, hasBottomNa
           </p>
         </div>
 
+        {/* Upcoming Calls (no-plan state) */}
+        {upcomingBookings.length > 0 && (
+          <div className="px-5 md:px-8 max-w-4xl mx-auto mb-6">
+            <h3 className="text-base font-semibold mb-3" style={{ color: colors.text.dark }}>
+              Your Scheduled Call
+            </h3>
+            {upcomingBookings.map((booking) => {
+              const dt = new Date(booking.scheduled_date);
+              const dateStr = dt.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+              const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+              return (
+                <div key={booking.booking_id} className="rounded-2xl p-4 mb-3 flex items-center gap-3"
+                  style={{ backgroundColor: '#ffffff', border: `1px solid ${colors.teal.primary}30`, boxShadow: shadows.card }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `${colors.teal.primary}15` }}>
+                    <CalendarIcon className="w-5 h-5" style={{ color: colors.teal.primary }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm" style={{ color: colors.text.dark }}>{dateStr} · {timeStr} IST</p>
+                    <p className="text-xs" style={{ color: colors.text.secondary }}>Free Consultation · Confirmed</p>
+                  </div>
+                  <button onClick={() => cancelBooking(booking.booking_id)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium"
+                    style={{ border: `1px solid ${colors.ui.error || '#e53e3e'}`, color: colors.ui.error || '#e53e3e' }}>
+                    Cancel
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         <div className="px-5 md:px-8 max-w-4xl mx-auto">
-          <div 
+          <div
             className="rounded-2xl p-8 md:p-12 text-center"
             style={{ backgroundColor: '#ffffff', border: `1px solid ${colors.ui.borderDark}` }}
           >
@@ -172,6 +244,96 @@ export default function MyPackScreen({ token, userState, onNavigate, hasBottomNa
             Manage your active consultation
           </p>
         </div>
+
+        {/* Upcoming Calls */}
+        {upcomingBookings.length > 0 && (
+          <div className="px-5 md:px-8 mb-6">
+            <h3 className="text-base md:text-lg font-semibold mb-3" style={{ color: colors.text.dark }}>
+              Your Scheduled Call
+            </h3>
+            {upcomingBookings.map((booking) => {
+              const dt = new Date(booking.scheduled_date);
+              const dateStr = dt.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' });
+              const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+              return (
+                <div
+                  key={booking.booking_id}
+                  className="rounded-2xl p-4 mb-3 flex items-center gap-3"
+                  style={{ backgroundColor: '#ffffff', border: `1px solid ${colors.teal.primary}30`, boxShadow: shadows.card }}
+                >
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `${colors.teal.primary}15` }}
+                  >
+                    <CalendarIcon className="w-5 h-5" style={{ color: colors.teal.primary }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm" style={{ color: colors.text.dark }}>
+                      {dateStr} · {timeStr} IST
+                    </p>
+                    <p className="text-xs" style={{ color: colors.text.secondary }}>
+                      Free Consultation · Confirmed
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => cancelBooking(booking.booking_id)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+                    style={{ border: `1px solid ${colors.ui.error || '#e53e3e'}`, color: colors.ui.error || '#e53e3e' }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Past Consultations */}
+        {pastBookings.length > 0 && (
+          <div className="px-5 md:px-8 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base md:text-lg font-semibold" style={{ color: colors.text.dark }}>
+                Past Consultations
+              </h3>
+              {pastBookings.length > 5 && (
+                <button
+                  onClick={() => setShowAllPast((v) => !v)}
+                  className="text-sm font-medium"
+                  style={{ color: colors.teal.primary }}
+                >
+                  {showAllPast ? 'Show less' : `Show all (${pastBookings.length})`}
+                </button>
+              )}
+            </div>
+            <div className="space-y-2">
+              {(showAllPast ? pastBookings : pastBookings.slice(0, 5)).map((booking) => {
+                const dt = new Date(booking.scheduled_date);
+                const dateStr = dt.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+                const statusIcon = booking.status === 'completed' ? '✅' : booking.status === 'no_show' ? '❌' : '🔵';
+                return (
+                  <div
+                    key={booking.booking_id}
+                    className="flex items-center gap-3 p-3 rounded-xl"
+                    style={{ backgroundColor: '#ffffff', border: `1px solid ${colors.ui.border || '#e5e7eb'}` }}
+                  >
+                    <span className="text-base">{statusIcon}</span>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium" style={{ color: colors.text.dark }}>
+                        {dateStr} · Free Consultation
+                      </p>
+                    </div>
+                    <span
+                      className="text-xs capitalize px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.primary }}
+                    >
+                      {booking.status}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Active Pack Card */}
         <div className="px-5 md:px-8 mb-6">

@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import HomeScreen from './HomeScreen';
 import ExpertsScreen from './ExpertsScreen';
-import ExpertProfileScreen from './ExpertProfileScreen';
 import ScheduleCallScreen from './ScheduleCallScreenV2';
 import { colors } from './theme';
 
 /**
- * FreeCallWizard — 4-step guided wizard for booking a free consultation.
+ * FreeCallWizard — 3-step guided wizard for booking a free consultation.
  *
  * Step 1: Topic Picker  (HomeScreen in picker mode)
- * Step 2: Matched Astrologers (ExpertsScreen filtered by topic, max 3)
- * Step 3: Expert Profile  (ExpertProfileScreen in wizard mode)
- * Step 4: Schedule Call  (ScheduleCallScreenV2 with expertId + topicId)
+ * Step 2: Matched Astrologers (ExpertsScreen filtered by topic, single CTA)
+ * Step 3: Schedule Call  (ScheduleCallScreenV2 — questions → slots → OTP → confirmation)
  *
  * Renders as a full-screen fixed overlay so it doesn't break existing routing.
  */
@@ -31,28 +29,14 @@ const TOPICS_WITH_PACKAGES = [
 export default function FreeCallWizard({ token, user, userState, onClose, onNavigate, onTabChange }) {
   const [step, setStep] = useState(1);
   const [selectedTopicId, setSelectedTopicId] = useState(null);
-  const [selectedExpertId, setSelectedExpertId] = useState(null);
-  const [selectedExpertName, setSelectedExpertName] = useState(null);
 
   const handleTopicSelect = (topicId) => {
     setSelectedTopicId(topicId);
     setStep(2);
   };
 
-  const handleExpertSelect = (expertId, expertName) => {
-    setSelectedExpertId(expertId);
-    setSelectedExpertName(expertName || null);
-    setStep(3);
-  };
-
   const handleBookFreeCall = () => {
-    setStep(4);
-  };
-
-  // Expert doesn't offer free calls — exit wizard and open the topic package page
-  const handleBuyPackage = () => {
-    onClose();
-    if (onNavigate) onNavigate('topic', { topicId: selectedTopicId });
+    setStep(3);
   };
 
   const handleBack = () => {
@@ -76,7 +60,7 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
     >
       {/* Progress dots */}
       <div className="flex items-center justify-center gap-2 pt-3 pb-1">
-        {[1, 2, 3, 4].map((s) => (
+        {[1, 2, 3].map((s) => (
           <div
             key={s}
             className="rounded-full transition-all"
@@ -91,10 +75,9 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
 
       {/* Step label */}
       <p className="text-center text-xs pb-2" style={{ color: colors.text.muted }}>
-        {step === 1 && 'Step 1 of 4 — Choose your topic'}
-        {step === 2 && 'Step 2 of 4 — Pick an astrologer'}
-        {step === 3 && 'Step 3 of 4 — Review & confirm'}
-        {step === 4 && 'Step 4 of 4 — Choose a time'}
+        {step === 1 && 'Step 1 of 3 — Choose your topic'}
+        {step === 2 && 'Step 2 of 3 — Your astrologers'}
+        {step === 3 && 'Step 3 of 3 — Book your call'}
       </p>
 
       {/* Step content */}
@@ -117,37 +100,19 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
             token={token}
             userState={userState}
             topicId={selectedTopicId}
-            maxResults={3}
-            onExpertSelect={handleExpertSelect}
-            onNavigate={onNavigate}
-            onTabChange={onTabChange}
-            hasBottomNav={false}
-          />
-        )}
-
-        {step === 3 && selectedExpertId && (
-          <ExpertProfileScreen
-            token={token}
-            expertId={selectedExpertId}
-            userState={userState}
-            wizardMode={true}
-            wizardTopicId={selectedTopicId}
+            maxResults={6}
             onBookFreeCall={handleBookFreeCall}
-            onBuyPackage={handleBuyPackage}
-            onBack={handleBack}
             onNavigate={onNavigate}
             onTabChange={onTabChange}
             hasBottomNav={false}
           />
         )}
 
-        {step === 4 && (
+        {step === 3 && (
           <ScheduleCallScreen
             token={token}
             user={user}
-            expertId={selectedExpertId}
             topicId={selectedTopicId}
-            expertName={selectedExpertName}
             onBack={handleBack}
             onComplete={handleScheduleComplete}
           />

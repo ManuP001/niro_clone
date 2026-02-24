@@ -95,6 +95,7 @@ from backend.niro_simplified.storage import init_simplified_storage, get_simplif
 from backend.routes.admin import router as admin_router
 from backend.routes.remedies import router as remedies_router
 from backend.routes.bookings import router as bookings_router
+from backend.routes.whatsapp_otp import router as whatsapp_otp_router
 
 # Ensure workspace-local logs directory exists for runtime logs
 (ROOT_DIR / "logs").mkdir(parents=True, exist_ok=True)
@@ -2085,6 +2086,8 @@ logger.info(f"Including Remedies router: {remedies_router}")
 app.include_router(remedies_router)
 logger.info(f"Including Bookings router: {bookings_router}")
 app.include_router(bookings_router)
+logger.info(f"Including WhatsApp OTP router: {whatsapp_otp_router}")
+app.include_router(whatsapp_otp_router)
 logger.info(f"✅ All routers included. Total routes: {len(app.routes)}")
 
 app.add_middleware(

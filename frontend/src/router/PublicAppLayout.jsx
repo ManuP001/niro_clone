@@ -22,6 +22,7 @@ import AskMiraScreen from '../components/screens/simplified/AskMiraScreen';
 import ProfileScreen from '../components/screens/simplified/ProfileScreen';
 import KundliScreenSimplified from '../components/screens/simplified/KundliScreenSimplified';
 import ScheduleCallScreen from '../components/screens/simplified/ScheduleCallScreenV2';
+import ExpertPackagesPage from '../components/screens/simplified/ExpertPackagesPage';
 import FreeCallWizard from '../components/screens/simplified/FreeCallWizard';
 
 // Components
@@ -49,7 +50,7 @@ const ONBOARDING_STEPS = {
 };
 
 // Wrapper so ScheduleCallScreen can read expertId/expertName from router state
-function ScheduleCallRouteWrapper({ token, user }) {
+function ScheduleCallRouteWrapper({ token, user, onNavigate }) {
   const { state } = useLocation();
   const navigate = useNavigate();
   return (
@@ -58,6 +59,7 @@ function ScheduleCallRouteWrapper({ token, user }) {
       user={user}
       onBack={() => navigate(-1)}
       onComplete={() => navigate('/app/mypack')}
+      onNavigate={onNavigate}
       expertId={state?.expertId}
       expertName={state?.expertName}
     />
@@ -293,6 +295,9 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         }
         navigate('/app/profile');
         break;
+      case 'expertPackages':
+        navigate(`/app/expert/${params?.expertId}/packages`);
+        break;
       case 'schedule':
         if (!isAuthenticated) {
           onLoginClick?.();
@@ -455,16 +460,20 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
                 />
               } 
             />
-            <Route 
-              path="expert/:expertId" 
+            <Route
+              path="expert/:expertId"
               element={
-                <ExpertProfileScreen 
+                <ExpertProfileScreen
                   onNavigate={handleNavigate}
                   isAuthenticated={isAuthenticated}
                   user={user}
                   onLoginClick={onLoginClick}
                 />
-              } 
+              }
+            />
+            <Route
+              path="expert/:expertId/packages"
+              element={<ExpertPackagesPage token={token} onNavigate={handleNavigate} />}
             />
             <Route 
               path="remedies" 
@@ -522,7 +531,14 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
               path="mypack" 
               element={
                 isAuthenticated ? (
-                  <MyPackScreen token={token} user={user} />
+                  <MyPackScreen
+                    token={token}
+                    user={user}
+                    userState={userState}
+                    onNavigate={handleNavigate}
+                    onTabChange={handleTabChange}
+                    hasBottomNav={shouldShowBottomNav()}
+                  />
                 ) : (
                   <Navigate to="/login" replace />
                 )
@@ -571,7 +587,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
               path="schedule"
               element={
                 isAuthenticated ? (
-                  <ScheduleCallRouteWrapper token={token} user={user} />
+                  <ScheduleCallRouteWrapper token={token} user={user} onNavigate={handleNavigate} />
                 ) : (
                   <Navigate to="/login" replace />
                 )

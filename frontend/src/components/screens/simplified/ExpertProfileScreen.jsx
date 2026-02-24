@@ -95,9 +95,7 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
 
   const handleExplorePackages = () => {
     if (!expert) return;
-    if (packagesRef.current) {
-      packagesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    onNavigate?.('expertPackages', { expertId: expert.expert_id });
   };
 
   const hasAccess = expert?.topics?.some(t => activePlanTopics.includes(t));
@@ -322,9 +320,6 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
                 </button>
               ))}
             </div>
-            <p className="text-xs mt-2" style={{ color: colors.text.muted }}>
-              Book your free call first — pick a pack after your consultation.
-            </p>
           </div>
         )}
       </div>
@@ -338,19 +333,11 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
           backdropFilter: 'blur(12px)',
         }}
       >
-        <div className="max-w-2xl mx-auto flex flex-col gap-3">
-          <button
-            onClick={handleFreeCall}
-            className="w-full font-semibold py-4 rounded-xl transition-all active:scale-[0.99] hover:shadow-md"
-            style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
-            data-testid="expert-free-call-btn"
-          >
-            Book a free 10 min call
-          </button>
+        <div className="max-w-2xl mx-auto">
           <button
             onClick={handleExplorePackages}
-            className="w-full font-semibold py-4 rounded-xl transition-all active:scale-[0.99]"
-            style={{ backgroundColor: 'transparent', color: colors.teal.primary, border: `2px solid ${colors.teal.primary}` }}
+            className="w-full font-semibold py-4 rounded-xl transition-all active:scale-[0.99] hover:shadow-md"
+            style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
             data-testid="expert-packages-btn"
           >
             Explore packages
