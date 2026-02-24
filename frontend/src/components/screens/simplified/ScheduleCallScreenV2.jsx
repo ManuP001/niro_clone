@@ -108,6 +108,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
   // subStep: 'questions' → 'slots' → confirmation
   const [subStep, setSubStep] = useState('questions');
   const [bookingQuestions, setBookingQuestions] = useState([]);
+  const [phoneNumber, setPhoneNumber] = useState(user?.phone || '');
 
   const dates = generateDates();
 
@@ -168,7 +169,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
         expert_id: expertId || null,
         topic_id: topicId || null,
         questions: bookingQuestions,
-        user_phone: user?.phone || '',
+        user_phone: phoneNumber || user?.phone || '',
       };
       
       // Save booking to backend (use direct API call, not apiSimplified)
@@ -542,16 +543,35 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
             )}
           </div>
           
+          {/* Phone Number */}
+          <div className="mb-5">
+            <label className="block text-sm font-medium mb-2" style={{ color: colors.text.dark }}>
+              WhatsApp number <span style={{ color: colors.text.muted, fontWeight: 400 }}>(for call confirmation)</span>
+            </label>
+            <input
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="+91 98765 43210"
+              className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+              style={{
+                backgroundColor: '#FFFFFF',
+                border: `1.5px solid ${phoneNumber ? colors.teal.primary : colors.ui.borderDark}`,
+                color: colors.text.dark,
+              }}
+            />
+          </div>
+
           {/* Error Message */}
           {error && (
-            <div 
+            <div
               className="rounded-xl p-4 mb-4"
               style={{ backgroundColor: `${colors.ui.error}15` }}
             >
               <p className="text-sm" style={{ color: colors.ui.error }}>{error}</p>
             </div>
           )}
-          
+
           {/* CTA Button */}
           <button
             onClick={handleBooking}

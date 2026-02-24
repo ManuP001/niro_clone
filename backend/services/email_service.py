@@ -69,6 +69,7 @@ async def send_email(
 ADMIN_EMAILS = [
     os.environ.get('ADMIN_EMAIL_1', 'sharad@getniro.ai'),
     os.environ.get('ADMIN_EMAIL_2', 'manu@getniro.ai'),
+    os.environ.get('ADMIN_EMAIL_3', 'callassistant@getniro.ai'),
 ]
 
 
