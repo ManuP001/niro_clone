@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { apiSimplified, trackEvent } from './utils';
 import { colors, shadows } from './theme';
 import ResponsiveHeader from './ResponsiveHeader';
-import { getBackendUrl } from '../../../config';
+
 
 /**
  * ExpertProfileScreen V3 - Full expert profile with new design
@@ -18,30 +18,22 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
   const [expert, setExpert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTopicSelector, setShowTopicSelector] = useState(false);
-  const [wizardPackages, setWizardPackages] = useState([]);
+  const [expertPackages, setExpertPackages] = useState([]);
+  const packagesRef = useRef(null);
 
-  // Fetch topic packages when in wizard mode
+  // Fetch packages for this expert (topic-derived)
   useEffect(() => {
-    if (!wizardMode || !wizardTopicId) return;
+    if (!expertId) return;
     const fetchPackages = async () => {
-      const backendUrl = getBackendUrl();
-      const tiers = ['focussed', 'supported', 'comprehensive'];
-      const results = await Promise.all(
-        tiers.map(async (tier) => {
-          try {
-            const res = await fetch(`${backendUrl}/api/admin/public/package/${wizardTopicId}_${tier}`);
-            if (!res.ok) return null;
-            const data = await res.json();
-            return data.ok ? { tier, ...data.package } : null;
-          } catch {
-            return null;
-          }
-        })
-      );
-      setWizardPackages(results.filter(Boolean));
+      try {
+        const res = await apiSimplified.get(`/experts/${expertId}/packages`, token);
+        setExpertPackages(res.packages || []);
+      } catch {
+        setExpertPackages([]);
+      }
     };
     fetchPackages();
-  }, [wizardMode, wizardTopicId]);
+  }, [expertId, token]);
 
   // Handle back navigation
   const handleBack = () => {
@@ -103,14 +95,8 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
 
   const handleExplorePackages = () => {
     if (!expert) return;
-    if (wizardMode && onBuyPackage) {
-      onBuyPackage();
-      return;
-    }
-    if (expert.topics?.length === 1) {
-      onNavigate?.('topic', { topicId: expert.topics[0] });
-    } else {
-      setShowTopicSelector(true);
+    if (packagesRef.current) {
+      packagesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -286,45 +272,61 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
           </div>
         </div>
 
-        {/* Available Packs (wizard mode only, hidden if none) */}
-        {wizardMode && wizardPackages.length > 0 && (() => {
-          const tierLabels = { focussed: 'Focussed', supported: 'Supported', comprehensive: 'Comprehensive' };
-          return (
-            <div className="mb-6">
-              <h3 className="font-semibold mb-3 text-sm md:text-base" style={{ color: colors.text.dark }}>
-                Available packs for {topicLabels[wizardTopicId] || wizardTopicId}
-              </h3>
-              <div className="space-y-2">
-                {wizardPackages.map((pkg) => (
-                  <div
-                    key={pkg.tier}
-                    className="rounded-xl p-4"
-                    style={{ backgroundColor: `${colors.peach.soft}`, border: `1px solid ${colors.ui.borderDark}` }}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-semibold text-sm" style={{ color: colors.text.dark }}>
-                          {pkg.name || tierLabels[pkg.tier]}
-                        </p>
-                        {pkg.description && (
-                          <p className="text-xs mt-0.5" style={{ color: colors.text.secondary }}>{pkg.description}</p>
+        {/* Available Packages — always shown when packages exist */}
+        {expertPackages.length > 0 && (
+          <div ref={packagesRef} className="mb-6 scroll-mt-4">
+            <h3 className="font-semibold mb-3 text-sm md:text-base" style={{ color: colors.text.dark }}>
+              Available packages
+            </h3>
+            <div className="space-y-3">
+              {expertPackages.map((pkg) => (
+                <button
+                  key={pkg.tier_id}
+                  onClick={() => {
+                    if (!isAuthenticated) { onLoginClick?.(); return; }
+                    onNavigate?.('packageLanding', { packageId: pkg.tier_id });
+                  }}
+                  className="w-full text-left rounded-xl p-4 transition-all active:scale-[0.99] hover:shadow-sm"
+                  style={{ backgroundColor: colors.peach.soft, border: `1px solid ${colors.ui.borderDark}` }}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-semibold text-sm" style={{ color: colors.text.dark }}>{pkg.name}</p>
+                        {pkg.popular && (
+                          <span
+                            className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: colors.teal.primary, color: '#fff' }}
+                          >
+                            Popular
+                          </span>
                         )}
                       </div>
-                      {pkg.price_inr && (
-                        <p className="font-bold text-sm ml-4 flex-shrink-0" style={{ color: colors.teal.primary }}>
-                          ₹{pkg.price_inr}
+                      {pkg.description && (
+                        <p className="text-xs mt-0.5 line-clamp-2" style={{ color: colors.text.secondary }}>
+                          {pkg.description}
                         </p>
                       )}
+                      <p className="text-xs mt-1" style={{ color: colors.text.muted }}>
+                        {pkg.duration_days} days
+                        {pkg.calls_included > 0 && ` · ${pkg.calls_included} call${pkg.calls_included > 1 ? 's' : ''} included`}
+                      </p>
+                    </div>
+                    <div className="flex-shrink-0 text-right">
+                      <p className="font-bold text-base" style={{ color: colors.teal.primary }}>
+                        ₹{pkg.price_inr?.toLocaleString('en-IN')}
+                      </p>
+                      <p className="text-xs" style={{ color: colors.text.muted }}>View →</p>
                     </div>
                   </div>
-                ))}
-              </div>
-              <p className="text-xs mt-2" style={{ color: colors.text.muted }}>
-                Book your free call first — pick a pack after your consultation.
-              </p>
+                </button>
+              ))}
             </div>
-          );
-        })()}
+            <p className="text-xs mt-2" style={{ color: colors.text.muted }}>
+              Book your free call first — pick a pack after your consultation.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Sticky CTA - two stacked buttons */}

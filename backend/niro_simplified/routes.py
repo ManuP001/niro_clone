@@ -426,6 +426,88 @@ async def get_all_experts_grouped(request: Request):
     }
 
 
+@router.get("/experts/{expert_id}/packages")
+async def get_expert_packages(expert_id: str, request: Request):
+    """Return all packages for a given expert, derived from the topics they serve.
+
+    Strategy: look up the expert's topics list, then return all active tiers whose
+    topic_id is in that list.  Falls back to catalog tiers when no DB tiers exist.
+    """
+    db = getattr(request.app.state, 'db', None)
+    if db is None:
+        storage = get_simplified_storage()
+        db = storage.db if storage else None
+
+    # ── 1. Resolve expert ────────────────────────────────────────────────────
+    expert_doc = None
+    if db is not None:
+        try:
+            expert_doc = await db.admin_experts.find_one(
+                {"expert_id": expert_id, "active": {"$ne": False}}, {"_id": 0}
+            )
+        except Exception:
+            pass
+
+    if expert_doc is None:
+        catalog = get_simplified_catalog()
+        catalog_expert = catalog.experts.get(expert_id)
+        if catalog_expert:
+            expert_doc = catalog_expert.model_dump()
+
+    if expert_doc is None:
+        raise HTTPException(status_code=404, detail="Expert not found")
+
+    topics = expert_doc.get("topics") or []
+
+    # ── 2. Fetch packages from admin_tiers ───────────────────────────────────
+    packages = []
+    if db is not None and topics:
+        try:
+            db_tiers = await db.admin_tiers.find(
+                {"topic_id": {"$in": topics}, "active": {"$ne": False}},
+                {"_id": 0}
+            ).sort("price", 1).to_list(50)
+
+            for t in db_tiers:
+                packages.append({
+                    "tier_id": t.get("tier_id"),
+                    "name": t.get("name", ""),
+                    "topic_id": t.get("topic_id"),
+                    "price_inr": t.get("price", 0),
+                    "description": t.get("description", ""),
+                    "features": t.get("features", []),
+                    "popular": t.get("popular", False),
+                    "duration_days": t.get("duration_days") or (t.get("duration_weeks", 1) * 7),
+                    "calls_included": t.get("calls_included", 0),
+                })
+        except Exception as e:
+            logger.warning(f"Failed to fetch tiers for expert {expert_id}: {e}")
+
+    # ── 3. Catalog fallback when no DB tiers found ───────────────────────────
+    if not packages and topics:
+        catalog = get_simplified_catalog()
+        for topic_id in topics:
+            for tier in catalog.get_tiers_for_topic(topic_id):
+                packages.append({
+                    "tier_id": tier.tier_id,
+                    "name": tier.name,
+                    "topic_id": topic_id,
+                    "price_inr": tier.price_inr,
+                    "description": tier.tagline,
+                    "features": tier.features,
+                    "popular": tier.is_recommended,
+                    "duration_days": (tier.validity_weeks or 1) * 7,
+                    "calls_included": (tier.access_policy.calls_per_month if tier.access_policy else 0),
+                })
+
+    return {
+        "ok": True,
+        "expert_id": expert_id,
+        "topics": topics,
+        "packages": packages,
+    }
+
+
 @router.get("/tiers/{tier_id}")
 async def get_tier_detail(tier_id: str, request: Request):
     """Get tier details from catalog or admin_tiers database"""
