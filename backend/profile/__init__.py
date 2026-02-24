@@ -41,9 +41,14 @@ async def _extract_user_id_with_session(authorization: Optional[str], request: R
         if len(parts) == 2 and parts[0].lower() == 'bearer':
             session_token = parts[1]
     
-    if session_token and _db is not None:
+    # Use _db if set, otherwise fall back to request.app.state.db
+    effective_db = _db
+    if effective_db is None and request is not None:
+        effective_db = getattr(request.app.state, 'db', None)
+
+    if session_token and effective_db is not None:
         # Try new session-based auth
-        session_doc = await _db.user_sessions.find_one(
+        session_doc = await effective_db.user_sessions.find_one(
             {"session_token": session_token},
             {"_id": 0}
         )
