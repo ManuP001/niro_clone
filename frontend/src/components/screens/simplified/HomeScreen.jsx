@@ -380,7 +380,10 @@ export default function HomeScreen({
   const handleTileClick = (tileId, tileData) => {
     trackEvent('tile_clicked', { tile_id: tileId, has_linked_package: !!tileData?.linkedPackageId }, token);
     if (mode === 'picker') {
-      if (onTopicSelect) onTopicSelect(tileId);
+      // Pass the category ID (e.g. 'career') not the tile ID (e.g. 'career_clarity')
+      // so ExpertsScreen can match against expert.topics which stores category IDs
+      const category = lifeSituations.find(s => s.tiles.some(t => t.id === tileId));
+      if (onTopicSelect) onTopicSelect(category?.id || tileId);
       return;
     }
     // If tile has a linked package, navigate to package landing page
