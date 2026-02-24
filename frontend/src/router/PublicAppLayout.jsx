@@ -48,6 +48,22 @@ const ONBOARDING_STEPS = {
   COMPLETE: 'complete'
 };
 
+// Wrapper so ScheduleCallScreen can read expertId/expertName from router state
+function ScheduleCallRouteWrapper({ token, user }) {
+  const { state } = useLocation();
+  const navigate = useNavigate();
+  return (
+    <ScheduleCallScreen
+      token={token}
+      user={user}
+      onBack={() => navigate(-1)}
+      onComplete={() => navigate('/app/mypack')}
+      expertId={state?.expertId}
+      expertName={state?.expertName}
+    />
+  );
+}
+
 // Routes that require authentication
 const PROTECTED_ROUTES = [
   '/app/checkout',
@@ -282,7 +298,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
           onLoginClick?.();
           return;
         }
-        navigate('/app/schedule');
+        navigate('/app/schedule', { state: { expertId: params?.expertId, expertName: params?.expertName } });
         break;
       case 'plan':
         if (!isAuthenticated) {
@@ -551,20 +567,15 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
                 )
               } 
             />
-            <Route 
-              path="schedule" 
+            <Route
+              path="schedule"
               element={
                 isAuthenticated ? (
-                  <ScheduleCallScreen 
-                    token={token} 
-                    user={user} 
-                    onBack={() => navigate(-1)}
-                    onComplete={() => navigate('/app/mypack')}
-                  />
+                  <ScheduleCallRouteWrapper token={token} user={user} />
                 ) : (
                   <Navigate to="/login" replace />
                 )
-              } 
+              }
             />
 
             {/* Fallback */}

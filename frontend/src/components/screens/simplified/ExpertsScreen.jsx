@@ -26,7 +26,9 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
         let allExperts = response.experts || [];
 
         if (topicId) {
-          allExperts = allExperts.filter(e => e.topics?.includes(topicId));
+          const topicFiltered = allExperts.filter(e => e.topics?.includes(topicId));
+          // If none tagged with this topic, show all active experts so wizard is never empty
+          allExperts = topicFiltered.length > 0 ? topicFiltered : allExperts;
           allExperts.sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
           if (maxResults) allExperts = allExperts.slice(0, maxResults);
         }

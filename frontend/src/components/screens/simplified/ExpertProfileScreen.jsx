@@ -91,35 +91,26 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
     legal: 'Legal Matters',
   };
 
-  const handleAction = () => {
+  const handleFreeCall = () => {
     if (!expert) return;
-
-    // Wizard mode: route based on whether expert offers a free call
-    if (wizardMode) {
-      if (expert.offers_free_call && onBookFreeCall) {
-        onBookFreeCall();
-      } else if (onBuyPackage) {
-        onBuyPackage();
-      }
+    if (wizardMode && onBookFreeCall) {
+      onBookFreeCall();
       return;
     }
+    if (!isAuthenticated) { onLoginClick?.(); return; }
+    onNavigate?.('schedule', { expertId: expert.expert_id, expertName: expert.name });
+  };
 
-    // Check if user has access to any of the expert's topics
-    const accessibleTopic = expert.topics?.find(t => activePlanTopics.includes(t));
-
-    if (accessibleTopic) {
-      // User has access - navigate to plan to start thread
-      const plan = userState?.active_plans?.find(p => p.topic_id === accessibleTopic);
-      if (plan) {
-        onNavigate('plan', { planId: plan.plan_id, preSelectExpert: expert.expert_id });
-      }
+  const handleExplorePackages = () => {
+    if (!expert) return;
+    if (wizardMode && onBuyPackage) {
+      onBuyPackage();
+      return;
+    }
+    if (expert.topics?.length === 1) {
+      onNavigate?.('topic', { topicId: expert.topics[0] });
     } else {
-      // User doesn't have access - show topic selector or go to topic landing
-      if (expert.topics?.length === 1) {
-        onNavigate('topic', { topicId: expert.topics[0] });
-      } else {
-        setShowTopicSelector(true);
-      }
+      setShowTopicSelector(true);
     }
   };
 
@@ -336,33 +327,31 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
         })()}
       </div>
 
-      {/* Sticky CTA */}
-      <div 
+      {/* Sticky CTA - two stacked buttons */}
+      <div
         className={`fixed ${hasBottomNav ? 'bottom-16 md:bottom-0' : 'bottom-0'} left-0 right-0 p-4 z-40`}
-        style={{ 
-          backgroundColor: colors.background.primary, 
+        style={{
+          backgroundColor: colors.background.primary,
           borderTop: `1px solid ${colors.ui.borderDark}`,
           backdropFilter: 'blur(12px)',
         }}
       >
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto flex flex-col gap-3">
           <button
-            onClick={handleAction}
+            onClick={handleFreeCall}
             className="w-full font-semibold py-4 rounded-xl transition-all active:scale-[0.99] hover:shadow-md"
-            style={wizardMode
-              ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
-              : hasAccess
-                ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
-                : { backgroundColor: colors.peach.primary, color: colors.text.dark }
-            }
-            data-testid="expert-action-btn"
+            style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
+            data-testid="expert-free-call-btn"
           >
-            {wizardMode
-              ? expert.offers_free_call
-                ? `📅 Book free 10-min call with ${expert.name}`
-                : `🔓 Buy a package to talk with ${expert.name}`
-              : hasAccess ? '💬 Start Chat' : '🔓 Unlock to talk'
-            }
+            Book a free 10 min call
+          </button>
+          <button
+            onClick={handleExplorePackages}
+            className="w-full font-semibold py-4 rounded-xl transition-all active:scale-[0.99]"
+            style={{ backgroundColor: 'transparent', color: colors.teal.primary, border: `2px solid ${colors.teal.primary}` }}
+            data-testid="expert-packages-btn"
+          >
+            Explore packages
           </button>
         </div>
       </div>
