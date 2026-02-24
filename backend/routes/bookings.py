@@ -183,11 +183,13 @@ async def schedule_call(
         except Exception:
             pass
 
-        # Fire confirmation emails asynchronously (non-blocking)
+        # Send confirmation emails (awaited so errors surface in logs)
         try:
-            import asyncio as _asyncio
-            from backend.services.email_service import send_booking_confirmation as _send_conf
-            _asyncio.create_task(_send_conf(
+            from backend.services.email_service import send_booking_confirmation as _send_conf, RESEND_API_KEY, SENDER_EMAIL
+            import logging as _logging
+            _log = _logging.getLogger(__name__)
+            _log.info(f"[email] Sending booking confirmation — resend_configured={bool(RESEND_API_KEY)} sender={SENDER_EMAIL}")
+            await _send_conf(
                 booking_id=booking_id,
                 customer_name=booking_doc["user_name"],
                 customer_email=booking_doc["user_email"],
@@ -202,9 +204,11 @@ async def schedule_call(
                     "pob": user_profile.get("pob", "") or user_profile.get("location", {}).get("city", ""),
                     "gender": user_profile.get("gender", ""),
                 },
-            ))
+            )
+            _log.info(f"[email] Booking confirmation sent for {booking_id}")
         except Exception as _e:
-            print(f"[email] Could not fire booking confirmation: {_e}")
+            import logging as _logging
+            _logging.getLogger(__name__).error(f"[email] Booking confirmation FAILED for {booking_id}: {_e}", exc_info=True)
 
         return BookingResponse(
             ok=True,
