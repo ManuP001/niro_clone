@@ -116,10 +116,10 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
 
     if (onboardingComplete) return ONBOARDING_STEPS.COMPLETE;
     if (userDetailsComplete || isReturningUser) {
-      if (isReturningUser && !userDetailsComplete) {
-        localStorage.setItem(USER_DETAILS_KEY, 'true');
-      }
-      return ONBOARDING_STEPS.HOW_IT_WORKS;
+      // User details done — mark everything complete and go straight to app
+      localStorage.setItem(USER_DETAILS_KEY, 'true');
+      localStorage.setItem(ONBOARDING_KEY, 'true');
+      return ONBOARDING_STEPS.COMPLETE;
     }
     return ONBOARDING_STEPS.USER_DETAILS;
   });
@@ -325,6 +325,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
   // We just need to advance the onboarding step here.
   const handleBirthDetailsSubmit = () => {
     localStorage.setItem(USER_DETAILS_KEY, 'true');
+    localStorage.setItem(ONBOARDING_KEY, 'true');
     setOnboardingStep(ONBOARDING_STEPS.COMPLETE);
     trackEvent('birth_details_submitted');
   };
