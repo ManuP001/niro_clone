@@ -391,11 +391,9 @@ export default function HomeScreen({
     }
   };
 
-  // In picker mode, filter tiles to only those in the enabledTopicIds allowlist
+  // In picker mode, filter to only categories whose id is in the enabledTopicIds allowlist
   const displaySituations = (mode === 'picker' && enabledTopicIds)
-    ? filteredSituations
-        .map(s => ({ ...s, tiles: s.tiles.filter(t => enabledTopicIds.includes(t.id)) }))
-        .filter(s => s.tiles.length > 0)
+    ? filteredSituations.filter(s => enabledTopicIds.includes(s.id))
     : filteredSituations;
 
   return (
