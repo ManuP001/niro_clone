@@ -546,7 +546,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
           {/* Phone Number */}
           <div className="mb-5">
             <label className="block text-sm font-medium mb-2" style={{ color: colors.text.dark }}>
-              WhatsApp number <span style={{ color: colors.text.muted, fontWeight: 400 }}>(for call confirmation)</span>
+              WhatsApp number <span style={{ color: '#dc2626', fontWeight: 400 }}>*</span> <span style={{ color: colors.text.muted, fontWeight: 400 }}>(required for call confirmation)</span>
             </label>
             <input
               type="tel"
@@ -575,9 +575,9 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
           {/* CTA Button */}
           <button
             onClick={handleBooking}
-            disabled={!selectedSlot || isBooking}
+            disabled={!selectedSlot || !phoneNumber.trim() || isBooking}
             className={`w-full py-4 rounded-full font-semibold text-base transition-all ${
-              selectedSlot && !isBooking ? 'hover:shadow-lg hover:-translate-y-0.5' : 'opacity-50 cursor-not-allowed'
+              selectedSlot && phoneNumber.trim() && !isBooking ? 'hover:shadow-lg hover:-translate-y-0.5' : 'opacity-50 cursor-not-allowed'
             }`}
             style={{
               backgroundColor: colors.peach.primary,
