@@ -321,17 +321,12 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
   };
 
   // Handle birth details submission
-  const handleBirthDetailsSubmit = async (birthData) => {
-    if (!isAuthenticated || !token) return;
-    
-    try {
-      await apiSimplified.post('/user/birth-details', birthData, token);
-      localStorage.setItem(USER_DETAILS_KEY, 'true');
-      setOnboardingStep(ONBOARDING_STEPS.HOW_IT_WORKS);
-      trackEvent('birth_details_submitted');
-    } catch (err) {
-      console.error('Failed to save birth details:', err);
-    }
+  // BirthDetailsModal saves to /api/profile/ itself, then calls onComplete() with no args.
+  // We just need to advance the onboarding step here.
+  const handleBirthDetailsSubmit = () => {
+    localStorage.setItem(USER_DETAILS_KEY, 'true');
+    setOnboardingStep(ONBOARDING_STEPS.HOW_IT_WORKS);
+    trackEvent('birth_details_submitted');
   };
 
   // Handle CTA click - open the free call onboarding wizard (requires login)
@@ -361,7 +356,8 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         <BirthDetailsModal
           isOpen={true}
           onClose={() => {}}
-          onSubmit={handleBirthDetailsSubmit}
+          onComplete={handleBirthDetailsSubmit}
+          token={token}
           user={user}
         />
       );
