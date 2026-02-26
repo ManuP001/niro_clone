@@ -108,7 +108,7 @@ if not mongo_url:
     db = None
 else:
     client = AsyncIOMotorClient(mongo_url)
-    db = client[os.getenv('DB_NAME', 'default_db')]
+    db = client[os.getenv('DB_NAME', 'niro')]
 
 # Configuration for calculation source (must be set before initialization)
 ASTRO_CALC_SOURCE = os.environ.get('ASTRO_CALCULATION_SOURCE', 'vedic_api')

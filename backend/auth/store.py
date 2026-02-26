@@ -190,7 +190,7 @@ class MongoUserStore(UserStore):
         self._connection_failed = False
         self._fallback_store = InMemoryUserStore()  # Fallback for errors
         self.mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-        self.db_name = os.environ.get('DB_NAME', 'niro_ai_db')
+        self.db_name = os.environ.get('DB_NAME', 'niro')
         logger.info(f"[STORE] MongoDB user store created (lazy init): {self.db_name}")
     
     def _get_collection(self):
@@ -291,7 +291,7 @@ class MongoProfileStore(ProfileStore):
         self._connection_failed = False
         self._fallback_store = InMemoryProfileStore()  # Fallback for errors
         self.mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-        self.db_name = os.environ.get('DB_NAME', 'niro_ai_db')
+        self.db_name = os.environ.get('DB_NAME', 'niro')
         logger.info(f"[STORE] MongoDB profile store created (lazy init): {self.db_name}")
     
     def _get_collection(self):
