@@ -556,7 +556,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
               className="w-full rounded-xl px-4 py-3 text-sm outline-none"
               style={{
                 backgroundColor: '#FFFFFF',
-                border: `1.5px solid ${phoneNumber ? colors.teal.primary : colors.ui.borderDark}`,
+                border: `1.5px solid ${phoneNumber.replace(/\D/g, '').length >= 10 ? colors.teal.primary : colors.ui.borderDark}`,
                 color: colors.text.dark,
               }}
             />
@@ -575,9 +575,9 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
           {/* CTA Button */}
           <button
             onClick={handleBooking}
-            disabled={!selectedSlot || !phoneNumber.trim() || isBooking}
+            disabled={!selectedSlot || phoneNumber.replace(/\D/g, '').length < 10 || isBooking}
             className={`w-full py-4 rounded-full font-semibold text-base transition-all ${
-              selectedSlot && phoneNumber.trim() && !isBooking ? 'hover:shadow-lg hover:-translate-y-0.5' : 'opacity-50 cursor-not-allowed'
+              selectedSlot && phoneNumber.replace(/\D/g, '').length >= 10 && !isBooking ? 'hover:shadow-lg hover:-translate-y-0.5' : 'opacity-50 cursor-not-allowed'
             }`}
             style={{
               backgroundColor: colors.peach.primary,
