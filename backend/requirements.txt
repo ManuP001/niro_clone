@@ -95,3 +95,4 @@ jiter==0.12.0
 aiosqlite
 nest_asyncio
 razorpay
+resend
