@@ -1,0 +1,27 @@
+{
+  "short_name": "Niro",
+  "name": "Niro AI - Vedic Astrology",
+  "description": "AI-powered Vedic astrology for life guidance",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": ".",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#4A9B8E",
+  "background_color": "#FBF8F3",
+  "lang": "en",
+  "categories": ["lifestyle"]
+}
