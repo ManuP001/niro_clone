@@ -26,9 +26,9 @@ const TOPICS_WITH_PACKAGES = [
   'spiritual',
 ];
 
-export default function FreeCallWizard({ token, user, userState, onClose, onNavigate, onTabChange }) {
-  const [step, setStep] = useState(1);
-  const [selectedTopicId, setSelectedTopicId] = useState(null);
+export default function FreeCallWizard({ token, user, userState, onClose, onNavigate, onTabChange, initialTopicId }) {
+  const [step, setStep] = useState(initialTopicId ? 2 : 1);
+  const [selectedTopicId, setSelectedTopicId] = useState(initialTopicId || null);
 
   const handleTopicSelect = (topicId) => {
     setSelectedTopicId(topicId);

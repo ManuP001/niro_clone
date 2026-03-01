@@ -60,7 +60,7 @@ const DEFAULT_TOPIC_CONTENT = {
   }
 };
 
-export default function TopicLandingPage({ token, topicId: propTopicId, onCheckout, onBack, onNavigate, hasBottomNav, userName, onTabChange, isAuthenticated, user, onLoginClick }) {
+export default function TopicLandingPage({ token, topicId: propTopicId, onCheckout, onBack, onNavigate, hasBottomNav, userName, onTabChange, isAuthenticated, user, onLoginClick, onCtaClick }) {
   // Get topicId from URL params or props
   const params = useParams();
   const navigate = useNavigate();
@@ -187,7 +187,8 @@ export default function TopicLandingPage({ token, topicId: propTopicId, onChecko
           onBack={handleBack}
           onNavigate={onNavigate}
           onTabChange={onTabChange}
-          ctaText="📞 Get a free 10 mins consultation"
+          ctaText="Get a free 10 mins consultation"
+          onCtaClick={onCtaClick ? () => onCtaClick(topicId) : undefined}
         />
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
           <div 

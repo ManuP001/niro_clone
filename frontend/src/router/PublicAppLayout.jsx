@@ -123,6 +123,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
   const [miraInitialMessage, setMiraInitialMessage] = useState('');
   const [showHomeTour, setShowHomeTour] = useState(false);
   const [showFreeCallWizard, setShowFreeCallWizard] = useState(false);
+  const [freeCallInitialTopicId, setFreeCallInitialTopicId] = useState(null);
 
   // Onboarding state (only for authenticated users)
   const [onboardingStep, setOnboardingStep] = useState(() => {
@@ -352,13 +353,14 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
   };
 
   // Handle CTA click - open the free call onboarding wizard (requires login)
-  const handleCtaClick = () => {
+  const handleCtaClick = (topicId = null) => {
     if (!isAuthenticated) {
       // Store intent to open the wizard after login
       localStorage.setItem('niro_user_intent', JSON.stringify({ type: 'free_call' }));
       onLoginClick?.();
       return;
     }
+    setFreeCallInitialTopicId(topicId || null);
     setShowFreeCallWizard(true);
   };
 
@@ -442,10 +444,11 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
             <Route 
               path="topic/:topicId" 
               element={
-                <TopicLandingPage 
+                <TopicLandingPage
                   isAuthenticated={isAuthenticated}
                   user={user}
                   onLoginClick={onLoginClick}
+                  onCtaClick={handleCtaClick}
                 />
               } 
             />
@@ -624,7 +627,8 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
             token={token}
             user={user}
             userState={userState}
-            onClose={() => setShowFreeCallWizard(false)}
+            initialTopicId={freeCallInitialTopicId}
+            onClose={() => { setShowFreeCallWizard(false); setFreeCallInitialTopicId(null); }}
             onNavigate={handleNavigate}
             onTabChange={handleTabChange}
           />
