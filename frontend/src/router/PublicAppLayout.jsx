@@ -253,10 +253,10 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
 
   // Handle topic selection
   const handleTopicSelect = (topicId) => {
-    navigate(`/app/topic/${topicId}`);
+    navigate(`/app/experts${topicId ? `?topicId=${topicId}` : ''}`);
   };
 
-  // CTA from TopicLandingPage — navigates to filtered experts (no auth gate for browsing)
+  // Kept for direct /app/topic/:topicId URL access (not used in main flow)
   const handleTopicCtaClick = (topicId) => {
     navigate(`/app/experts${topicId ? `?topicId=${topicId}` : ''}`);
   };
@@ -265,7 +265,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
   const handleNavigate = (destination, params = {}) => {
     switch (destination) {
       case 'topic':
-        navigate(`/app/topic/${params.topicId}`);
+        navigate(`/app/experts${params.topicId ? `?topicId=${params.topicId}` : ''}`);
         break;
       case 'packageLanding':
         navigate(`/app/package/${params.packageId}`);
