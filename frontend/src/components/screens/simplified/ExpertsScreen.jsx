@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { colors, shadows } from './theme';
 import { apiSimplified, trackEvent } from './utils';
 import { StarIcon, ChevronRightIcon } from './icons';
@@ -10,7 +11,11 @@ import ResponsiveHeader from './ResponsiveHeader';
  * - Centered max-width container
  * - Desktop navigation header
  */
-export default function ExpertsScreen({ token, userState, onNavigate, onTabChange, hasBottomNav = true, topicId, maxResults, onExpertSelect, onBookFreeCall, isAuthenticated, onLoginClick }) {
+export default function ExpertsScreen({ token, userState, onNavigate, onTabChange, hasBottomNav = true, topicId: topicIdProp, maxResults, onExpertSelect, onBookFreeCall, isAuthenticated, onLoginClick }) {
+  const [searchParams] = useSearchParams();
+  // topicId can come from parent prop (wizard mode) or URL search param (direct navigation)
+  const topicId = topicIdProp || searchParams.get('topicId') || null;
+
   const [experts, setExperts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedModality, setSelectedModality] = useState('all');
@@ -93,7 +98,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
     if (onExpertSelect) {
       onExpertSelect(expert.expert_id, expert.name);
     } else {
-      onNavigate('expertProfile', { expertId: expert.expert_id });
+      onNavigate('expertProfile', { expertId: expert.expert_id, topicId });
     }
   };
 

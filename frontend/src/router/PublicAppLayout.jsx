@@ -256,6 +256,11 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     navigate(`/app/topic/${topicId}`);
   };
 
+  // CTA from TopicLandingPage — navigates to filtered experts (no auth gate for browsing)
+  const handleTopicCtaClick = (topicId) => {
+    navigate(`/app/experts${topicId ? `?topicId=${topicId}` : ''}`);
+  };
+
   // Handle navigation from HomeScreen (supports multiple destination types)
   const handleNavigate = (destination, params = {}) => {
     switch (destination) {
@@ -266,9 +271,11 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         navigate(`/app/package/${params.packageId}`);
         break;
       case 'expert':
-      case 'expertProfile':
-        navigate(`/app/expert/${params.expertId}`);
+      case 'expertProfile': {
+        const tId = params.topicId ? `?topicId=${params.topicId}` : '';
+        navigate(`/app/expert/${params.expertId}${tId}`);
         break;
+      }
       case 'experts':
         navigate('/app/experts');
         break;
@@ -448,7 +455,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
                   isAuthenticated={isAuthenticated}
                   user={user}
                   onLoginClick={onLoginClick}
-                  onCtaClick={handleCtaClick}
+                  onCtaClick={handleTopicCtaClick}
                 />
               } 
             />

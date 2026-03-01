@@ -1684,6 +1684,7 @@ class RemedyCreate(BaseModel):
     image: str = "✨"
     featured: bool = False
     active: bool = True
+    expert_ids: List[str] = []  # Experts who offer this remedy on their profile
     expert_name: Optional[str] = None
     expert_title: Optional[str] = None
     expert_bio: Optional[str] = None
@@ -1699,6 +1700,7 @@ class RemedyUpdate(BaseModel):
     image: Optional[str] = None
     featured: Optional[bool] = None
     active: Optional[bool] = None
+    expert_ids: Optional[List[str]] = None
     expert_name: Optional[str] = None
     expert_title: Optional[str] = None
     expert_bio: Optional[str] = None
@@ -1852,7 +1854,8 @@ class TierCreate(BaseModel):
     tier_id: str
     name: str  # e.g., "Focussed", "Supported", "Comprehensive"
     topic_id: Optional[str] = None  # Which topic this tier belongs to (optional now)
-    price: int
+    price: int                      # Base price paid to the expert (₹)
+    niro_margin_pct: float = 0.0   # Niro's margin % added on top; customer pays price × (1 + margin/100)
     duration_weeks: int = 4
     duration_days: int = 7  # Alternative to weeks
     calls_included: int = 2
@@ -1870,6 +1873,7 @@ class TierUpdate(BaseModel):
     name: Optional[str] = None
     topic_id: Optional[str] = None
     price: Optional[int] = None
+    niro_margin_pct: Optional[float] = None
     duration_weeks: Optional[int] = None
     duration_days: Optional[int] = None
     calls_included: Optional[int] = None
@@ -2936,4 +2940,51 @@ async def get_bulk_upload_template(
     }
 
     return {"ok": True, "template": template}
+
+
+# ============================================================================
+# PLATFORM SETTINGS
+# ============================================================================
+
+class PlatformSettings(BaseModel):
+    niro_margin_pct: float = 50.0  # Niro's margin on top of expert's session rate
+
+@router.get("/settings")
+async def get_platform_settings(
+    request: Request,
+    x_admin_token: str = Header(None)
+):
+    """Return current platform settings from admin_config collection."""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    doc = await db.admin_config.find_one({"_id": "platform_settings"})
+    if doc:
+        doc.pop("_id", None)
+        return {"ok": True, "settings": doc}
+    # Return defaults when no config saved yet
+    return {"ok": True, "settings": {"niro_margin_pct": 50.0}}
+
+
+@router.put("/settings")
+async def update_platform_settings(
+    settings: PlatformSettings,
+    request: Request,
+    x_admin_token: str = Header(None)
+):
+    """Upsert platform settings in admin_config collection."""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    data = settings.model_dump()
+    data["updated_at"] = datetime.now(timezone.utc)
+    await db.admin_config.update_one(
+        {"_id": "platform_settings"},
+        {"$set": data},
+        upsert=True
+    )
+    logger.info(f"Platform settings updated: {data}")
+    return {"ok": True, "settings": data}
 

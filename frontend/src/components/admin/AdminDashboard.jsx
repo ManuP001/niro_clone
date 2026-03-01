@@ -2219,45 +2219,53 @@ const ExpertsManager = () => (
 );
 
 // Remedies Manager
-const RemediesCatalogManager = () => (
-  <CatalogManager
-    entityType="remedies-catalog"
-    dataKey="remedies"
-    title="Remedies Catalog"
-    icon="🙏"
-    columns={[
-      { key: 'remedy_id', label: 'ID' },
-      { key: 'image', label: '' },
-      { key: 'title', label: 'Title' },
-      { key: 'category', label: 'Category' },
-      { key: 'price', label: 'Price', render: (v) => formatCurrency(v) },
-      { key: 'featured', label: 'Featured', render: (v) => v ? '⭐' : '' },
-      { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
-    ]}
-    formFields={[
-      { name: 'remedy_id', label: 'Remedy ID', isId: true, hint: 'Unique identifier (e.g., chakra_balance)' },
-      { name: 'title', label: 'Title' },
-      { name: 'subtitle', label: 'Subtitle' },
-      { name: 'category', label: 'Category', type: 'select', options: [
-        { value: 'healing', label: 'Healing Programs' },
-        { value: 'pooja', label: 'Pooja' },
-        { value: 'gemstone', label: 'Gemstone' },
-        { value: 'kit', label: 'Kit' },
-        { value: 'ritual', label: 'Ritual' },
-      ]},
-      { name: 'price', label: 'Price (INR)', type: 'number' },
-      { name: 'description', label: 'Description', type: 'textarea' },
-      { name: 'benefits', label: 'Benefits', type: 'array', hint: 'Comma-separated benefits' },
-      { name: 'helps_with', label: 'Helps With', type: 'array', hint: 'What problems it solves' },
-      { name: 'image', label: 'Icon (emoji)', default: '✨' },
-      { name: 'expert_name', label: 'Expert Name (optional)' },
-      { name: 'expert_title', label: 'Expert Title (optional)' },
-      { name: 'expert_bio', label: 'Expert Bio (optional)', type: 'textarea' },
-      { name: 'featured', label: 'Featured', type: 'checkbox', default: false },
-      { name: 'active', label: 'Active', type: 'checkbox', default: true },
-    ]}
-  />
-);
+const RemediesCatalogManager = () => {
+  const [experts, setExperts] = useState([]);
+  useEffect(() => {
+    adminFetch('/api/admin/experts')
+      .then(data => setExperts(data.experts || []))
+      .catch(err => console.error('Failed to load experts:', err));
+  }, []);
+
+  return (
+    <CatalogManager
+      entityType="remedies-catalog"
+      dataKey="remedies"
+      title="Remedies Catalog"
+      icon="🙏"
+      columns={[
+        { key: 'remedy_id', label: 'ID' },
+        { key: 'image', label: '' },
+        { key: 'title', label: 'Title' },
+        { key: 'category', label: 'Category' },
+        { key: 'price', label: 'Price', render: (v) => formatCurrency(v) },
+        { key: 'expert_ids', label: 'Experts', render: (v) => Array.isArray(v) && v.length > 0 ? `${v.length} expert${v.length > 1 ? 's' : ''}` : '-' },
+        { key: 'featured', label: 'Featured', render: (v) => v ? '⭐' : '' },
+        { key: 'active', label: 'Active', render: (v) => v === false ? '❌' : '✅' },
+      ]}
+      formFields={[
+        { name: 'remedy_id', label: 'Remedy ID', isId: true, hint: 'Unique identifier (e.g., chakra_balance)' },
+        { name: 'title', label: 'Title' },
+        { name: 'subtitle', label: 'Subtitle' },
+        { name: 'category', label: 'Category', type: 'select', options: [
+          { value: 'healing', label: 'Healing Programs' },
+          { value: 'pooja', label: 'Pooja' },
+          { value: 'gemstone', label: 'Gemstone' },
+          { value: 'kit', label: 'Kit' },
+          { value: 'ritual', label: 'Ritual' },
+        ]},
+        { name: 'price', label: 'Price (INR)', type: 'number' },
+        { name: 'description', label: 'Description', type: 'textarea' },
+        { name: 'benefits', label: 'Benefits', type: 'array', hint: 'Comma-separated benefits' },
+        { name: 'helps_with', label: 'Helps With', type: 'array', hint: 'What problems it solves' },
+        { name: 'image', label: 'Icon (emoji)', default: '✨' },
+        { name: 'expert_ids', label: 'Experts offering this remedy', type: 'expert-multi-select', experts, hint: 'Select which experts offer this remedy on their profile' },
+        { name: 'featured', label: 'Featured', type: 'checkbox', default: false },
+        { name: 'active', label: 'Active', type: 'checkbox', default: true },
+      ]}
+    />
+  );
+};
 
 // Package Content Editor - Full rich content editor for packages
 const PackageContentEditor = ({ content, onChange }) => {
@@ -2710,7 +2718,8 @@ const TiersManager = () => {
         { name: 'tier_id', label: 'Package ID', isId: true, hint: 'Unique identifier (e.g., not_official_yet)' },
         { name: 'name', label: 'Display Name', hint: 'e.g., Not Official Yet, Unlimited Guidance' },
         { name: 'topic_id', label: 'Link to Topic', type: 'select', options: topicOptions, hint: 'Optional: Link to a topic or leave as standalone package' },
-        { name: 'price', label: 'Price (INR)', type: 'number' },
+        { name: 'price', label: 'Base Price (₹ paid to expert)', type: 'number', hint: 'What the expert earns for this package' },
+        { name: 'niro_margin_pct', label: 'Niro Margin (%)', type: 'number', default: 0, hint: 'Added on top of base price. Customer pays: base × (1 + margin%). E.g. base ₹2,000 + 50% = ₹3,000 shown to customer.' },
         { name: 'duration_days', label: 'Duration (days)', type: 'number', default: 7, hint: 'e.g., 7 for a week' },
         { name: 'duration_weeks', label: 'Duration (weeks)', type: 'number', default: 0, hint: 'Alternative to days' },
         { name: 'calls_included', label: 'Calls Included', type: 'number', default: 0, hint: '0 = no calls, unlimited chat' },

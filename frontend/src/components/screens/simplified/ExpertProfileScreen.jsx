@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiSimplified, trackEvent } from './utils';
 import { colors, shadows } from './theme';
 import ResponsiveHeader from './ResponsiveHeader';
@@ -13,26 +13,41 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
   // Get expertId from URL params or props
   const params = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const expertId = propExpertId || params.expertId;
+  // topicId filters packages shown — comes from wizard prop or URL search param
+  const topicId = wizardTopicId || searchParams.get('topicId') || null;
 
   const [expert, setExpert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTopicSelector, setShowTopicSelector] = useState(false);
   const [expertPackages, setExpertPackages] = useState([]);
+  const [expertRemedies, setExpertRemedies] = useState([]);
   const packagesRef = useRef(null);
 
-  // Fetch packages for this expert (topic-derived)
+  // Fetch packages for this expert, filtered by topicId if available
   useEffect(() => {
     if (!expertId) return;
     const fetchPackages = async () => {
       try {
-        const res = await apiSimplified.get(`/experts/${expertId}/packages`, token);
+        const url = topicId
+          ? `/experts/${expertId}/packages?topic_id=${topicId}`
+          : `/experts/${expertId}/packages`;
+        const res = await apiSimplified.get(url, token);
         setExpertPackages(res.packages || []);
       } catch {
         setExpertPackages([]);
       }
     };
     fetchPackages();
+  }, [expertId, token, topicId]);
+
+  // Fetch remedies offered by this expert
+  useEffect(() => {
+    if (!expertId) return;
+    apiSimplified.get(`/experts/${expertId}/remedies`, token)
+      .then(res => setExpertRemedies(res.remedies || []))
+      .catch(() => setExpertRemedies([]));
   }, [expertId, token]);
 
   // Handle back navigation
@@ -274,7 +289,7 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
         {expertPackages.length > 0 && (
           <div ref={packagesRef} className="mb-6 scroll-mt-4">
             <h3 className="font-semibold mb-3 text-sm md:text-base" style={{ color: colors.text.dark }}>
-              Available packages
+              Services &amp; packages
             </h3>
             <div className="space-y-3">
               {expertPackages.map((pkg) => (
@@ -313,6 +328,45 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
                     <div className="flex-shrink-0 text-right">
                       <p className="font-bold text-base" style={{ color: colors.teal.primary }}>
                         ₹{pkg.price_inr?.toLocaleString('en-IN')}
+                      </p>
+                      <p className="text-xs" style={{ color: colors.text.muted }}>View →</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Remedies offered by this expert */}
+        {expertRemedies.length > 0 && (
+          <div className="mb-6">
+            <h3 className="font-semibold mb-3 text-sm md:text-base" style={{ color: colors.text.dark }}>
+              Remedies &amp; rituals
+            </h3>
+            <div className="space-y-3">
+              {expertRemedies.map((remedy) => (
+                <button
+                  key={remedy.remedy_id}
+                  onClick={() => onNavigate?.('remedies')}
+                  className="w-full text-left rounded-xl p-4 transition-all active:scale-[0.99] hover:shadow-sm"
+                  style={{ backgroundColor: '#FFF8F0', border: `1px solid ${colors.ui.borderDark}` }}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="text-2xl flex-shrink-0">{remedy.image}</span>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm" style={{ color: colors.text.dark }}>{remedy.title}</p>
+                        {remedy.subtitle && (
+                          <p className="text-xs mt-0.5 line-clamp-1" style={{ color: colors.text.secondary }}>
+                            {remedy.subtitle}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 text-right">
+                      <p className="font-bold text-base" style={{ color: colors.gold.accent || '#B45309' }}>
+                        ₹{remedy.price?.toLocaleString('en-IN')}
                       </p>
                       <p className="text-xs" style={{ color: colors.text.muted }}>View →</p>
                     </div>

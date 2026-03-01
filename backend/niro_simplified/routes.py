@@ -427,11 +427,14 @@ async def get_all_experts_grouped(request: Request):
 
 
 @router.get("/experts/{expert_id}/packages")
-async def get_expert_packages(expert_id: str, request: Request):
-    """Return all packages for a given expert, derived from the topics they serve.
+async def get_expert_packages(expert_id: str, request: Request, topic_id: Optional[str] = Query(None)):
+    """Return packages assigned to a given expert, optionally filtered by topic_id.
 
-    Strategy: look up the expert's topics list, then return all active tiers whose
-    topic_id is in that list.  Falls back to catalog tiers when no DB tiers exist.
+    Strategy:
+      1. Find tiers where expert_id is in expert_ids (direct assignment).
+      2. If none found, fall back to topic-based matching (expert's topics list).
+      3. If still none, fall back to catalog tiers.
+    Customer price = base_price × (1 + niro_margin_pct / 100) per package.
     """
     db = getattr(request.app.state, 'db', None)
     if db is None:
@@ -457,23 +460,25 @@ async def get_expert_packages(expert_id: str, request: Request):
     if expert_doc is None:
         raise HTTPException(status_code=404, detail="Expert not found")
 
-    topics = expert_doc.get("topics") or []
-
     # ── 2. Fetch packages from admin_tiers ───────────────────────────────────
+    # Primary: packages explicitly assigned to this expert via expert_ids
     packages = []
-    if db is not None and topics:
+    if db is not None:
         try:
-            db_tiers = await db.admin_tiers.find(
-                {"topic_id": {"$in": topics}, "active": {"$ne": False}},
-                {"_id": 0}
-            ).sort("price", 1).to_list(50)
+            query: dict = {"expert_ids": expert_id, "active": {"$ne": False}}
+            if topic_id:
+                query["topic_id"] = topic_id
+            db_tiers = await db.admin_tiers.find(query, {"_id": 0}).sort("price", 1).to_list(50)
 
             for t in db_tiers:
+                base_price = t.get("price", 0)
+                margin_pct = float(t.get("niro_margin_pct", 0))
+                customer_price = int(base_price * (1 + margin_pct / 100))
                 packages.append({
                     "tier_id": t.get("tier_id"),
                     "name": t.get("name", ""),
                     "topic_id": t.get("topic_id"),
-                    "price_inr": t.get("price", 0),
+                    "price_inr": customer_price,
                     "description": t.get("description", ""),
                     "features": t.get("features", []),
                     "popular": t.get("popular", False),
@@ -483,15 +488,47 @@ async def get_expert_packages(expert_id: str, request: Request):
         except Exception as e:
             logger.warning(f"Failed to fetch tiers for expert {expert_id}: {e}")
 
-    # ── 3. Catalog fallback when no DB tiers found ───────────────────────────
-    if not packages and topics:
+    # ── 3. Topic-based fallback when no directly-assigned packages found ──────
+    if not packages and db is not None:
+        try:
+            topics = expert_doc.get("topics") or []
+            if topic_id:
+                topics = [t for t in topics if t == topic_id]
+            if topics:
+                db_tiers = await db.admin_tiers.find(
+                    {"topic_id": {"$in": topics}, "active": {"$ne": False}},
+                    {"_id": 0}
+                ).sort("price", 1).to_list(50)
+                for t in db_tiers:
+                    base_price = t.get("price", 0)
+                    margin_pct = float(t.get("niro_margin_pct", 0))
+                    customer_price = int(base_price * (1 + margin_pct / 100))
+                    packages.append({
+                        "tier_id": t.get("tier_id"),
+                        "name": t.get("name", ""),
+                        "topic_id": t.get("topic_id"),
+                        "price_inr": customer_price,
+                        "description": t.get("description", ""),
+                        "features": t.get("features", []),
+                        "popular": t.get("popular", False),
+                        "duration_days": t.get("duration_days") or (t.get("duration_weeks", 1) * 7),
+                        "calls_included": t.get("calls_included", 0),
+                    })
+        except Exception as e:
+            logger.warning(f"Failed topic-based tier fetch for expert {expert_id}: {e}")
+
+    # ── 4. Catalog fallback when no DB tiers found at all ────────────────────
+    if not packages:
+        topics = expert_doc.get("topics") or []
+        if topic_id:
+            topics = [t for t in topics if t == topic_id]
         catalog = get_simplified_catalog()
-        for topic_id in topics:
-            for tier in catalog.get_tiers_for_topic(topic_id):
+        for tid in topics:
+            for tier in catalog.get_tiers_for_topic(tid):
                 packages.append({
                     "tier_id": tier.tier_id,
                     "name": tier.name,
-                    "topic_id": topic_id,
+                    "topic_id": tid,
                     "price_inr": tier.price_inr,
                     "description": tier.tagline,
                     "features": tier.features,
@@ -503,9 +540,41 @@ async def get_expert_packages(expert_id: str, request: Request):
     return {
         "ok": True,
         "expert_id": expert_id,
-        "topics": topics,
         "packages": packages,
     }
+
+
+@router.get("/experts/{expert_id}/remedies")
+async def get_expert_remedies(expert_id: str, request: Request):
+    """Return remedies offered by a given expert (expert_id in remedy's expert_ids list)."""
+    db = getattr(request.app.state, 'db', None)
+    if db is None:
+        storage = get_simplified_storage()
+        db = storage.db if storage else None
+
+    remedies = []
+    if db is not None:
+        try:
+            docs = await db.admin_remedies.find(
+                {"expert_ids": expert_id, "active": {"$ne": False}},
+                {"_id": 0}
+            ).sort("price", 1).to_list(50)
+            for r in docs:
+                remedies.append({
+                    "remedy_id": r.get("remedy_id"),
+                    "title": r.get("title", ""),
+                    "subtitle": r.get("subtitle", ""),
+                    "category": r.get("category", ""),
+                    "price": r.get("price", 0),
+                    "description": r.get("description", ""),
+                    "benefits": r.get("benefits", []),
+                    "image": r.get("image", "✨"),
+                    "featured": r.get("featured", False),
+                })
+        except Exception as e:
+            logger.warning(f"Failed to fetch remedies for expert {expert_id}: {e}")
+
+    return {"ok": True, "expert_id": expert_id, "remedies": remedies}
 
 
 @router.get("/tiers/{tier_id}")
