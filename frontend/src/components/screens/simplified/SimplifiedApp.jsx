@@ -320,9 +320,16 @@ export default function SimplifiedApp({
 
   // Navigate to specific screen
   const navigate = (newScreen, params = {}) => {
+    // 'topic' now goes to experts filtered by that topic — skip TopicLandingPage
+    if (newScreen === 'topic') {
+      setScreen('experts');
+      setScreenParams({ topicId: params.topicId });
+      return;
+    }
+
     setScreen(newScreen);
     setScreenParams(params);
-    
+
     if (newScreen === 'mira' && params.initialMessage) {
       setMiraInitialMessage(params.initialMessage);
     }
@@ -376,13 +383,18 @@ export default function SimplifiedApp({
         break;
       case 'expertProfile':
         if (screenParams.fromTopic) {
-          setScreen('topic');
+          setScreen('experts');
           setScreenParams({ topicId: screenParams.fromTopic });
         } else {
           setScreen('experts');
           setActiveTab('consult');
           setScreenParams({});
         }
+        break;
+      case 'experts':
+        setScreen('home');
+        setActiveTab('home');
+        setScreenParams({});
         break;
       case 'categoryListing':
         setScreen('home');
@@ -541,6 +553,7 @@ export default function SimplifiedApp({
         <ExpertProfileScreen
           token={token}
           expertId={screenParams.expertId}
+          wizardTopicId={screenParams.topicId || screenParams.fromTopic}
           userState={userState}
           onNavigate={navigate}
           onBack={goBack}
@@ -577,6 +590,31 @@ export default function SimplifiedApp({
           onTileClick={(tileId) => {
             trackEvent('tile_clicked_from_listing', { tile_id: tileId }, token);
             navigate('topic', { topicId: tileId });
+          }}
+        />
+      );
+    }
+
+    // Experts screen — topic-filtered, navigated to from topic cards
+    if (screen === 'experts') {
+      return (
+        <ExpertsScreen
+          token={token}
+          userState={userState}
+          hasBottomNav={showBottomNav}
+          topicId={screenParams.topicId}
+          onNavigate={(dest, params) => {
+            if (dest === 'expertProfile') {
+              navigate('expertProfile', { ...params, fromTopic: screenParams.topicId });
+            } else {
+              navigate(dest, params);
+            }
+          }}
+          onTabChange={handleTabChange}
+          onBack={() => {
+            setScreen('home');
+            setActiveTab('home');
+            setScreenParams({});
           }}
         />
       );
