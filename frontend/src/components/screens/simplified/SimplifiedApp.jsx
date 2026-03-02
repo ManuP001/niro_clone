@@ -15,6 +15,7 @@ import BottomNav from './BottomNav';
 import CategoryListingPage from './CategoryListingPage';
 import BirthDetailsModal from './BirthDetailsModal';
 import ScheduleCallScreen from './ScheduleCallScreen';
+import FreeCallWizard from './FreeCallWizard';
 import { apiSimplified, trackEvent } from './utils';
 import { colors } from './theme';
 import { clearUserIntent } from './PublicLandingPage';
@@ -105,6 +106,10 @@ export default function SimplifiedApp({
   const [miraInitialMessage, setMiraInitialMessage] = useState('');
   const [showProfileModal, setShowProfileModal] = useState(false);
   
+  // Free call wizard state
+  const [showFreeCallWizard, setShowFreeCallWizard] = useState(false);
+  const [wizardTopicId, setWizardTopicId] = useState(null);
+
   // Dev mode state
   const [userMode, setUserMode] = useState(() => localStorage.getItem(USER_MODE_KEY) || 'NEW');
 
@@ -320,10 +325,10 @@ export default function SimplifiedApp({
 
   // Navigate to specific screen
   const navigate = (newScreen, params = {}) => {
-    // 'topic' now goes to experts filtered by that topic — skip TopicLandingPage
+    // Topic card clicked — open FreeCallWizard with topic pre-selected (step 2)
     if (newScreen === 'topic') {
-      setScreen('experts');
-      setScreenParams({ topicId: params.topicId });
+      setWizardTopicId(params.topicId || null);
+      setShowFreeCallWizard(true);
       return;
     }
 
@@ -382,18 +387,8 @@ export default function SimplifiedApp({
         setScreenParams({});
         break;
       case 'expertProfile':
-        if (screenParams.fromTopic) {
-          setScreen('experts');
-          setScreenParams({ topicId: screenParams.fromTopic });
-        } else {
-          setScreen('experts');
-          setActiveTab('consult');
-          setScreenParams({});
-        }
-        break;
-      case 'experts':
         setScreen('home');
-        setActiveTab('home');
+        setActiveTab('consult');
         setScreenParams({});
         break;
       case 'categoryListing':
@@ -595,31 +590,6 @@ export default function SimplifiedApp({
       );
     }
 
-    // Experts screen — topic-filtered, navigated to from topic cards
-    if (screen === 'experts') {
-      return (
-        <ExpertsScreen
-          token={token}
-          userState={userState}
-          hasBottomNav={showBottomNav}
-          topicId={screenParams.topicId}
-          onNavigate={(dest, params) => {
-            if (dest === 'expertProfile') {
-              navigate('expertProfile', { ...params, fromTopic: screenParams.topicId });
-            } else {
-              navigate(dest, params);
-            }
-          }}
-          onTabChange={handleTabChange}
-          onBack={() => {
-            setScreen('home');
-            setActiveTab('home');
-            setScreenParams({});
-          }}
-        />
-      );
-    }
-
     // Tab-based screens
     switch (activeTab) {
       case 'home':
@@ -761,9 +731,25 @@ export default function SimplifiedApp({
 
       {/* Home Tour Overlay */}
       {showHomeTour && (
-        <HomeTourOverlay 
+        <HomeTourOverlay
           onComplete={handleHomeTourComplete}
           onSkip={handleHomeTourComplete}
+        />
+      )}
+
+      {/* Free Call Wizard — opens when any topic card is tapped */}
+      {showFreeCallWizard && (
+        <FreeCallWizard
+          token={token}
+          user={user}
+          userState={userState}
+          initialTopicId={wizardTopicId}
+          onClose={() => {
+            setShowFreeCallWizard(false);
+            setWizardTopicId(null);
+          }}
+          onNavigate={navigate}
+          onTabChange={handleTabChange}
         />
       )}
     </div>
