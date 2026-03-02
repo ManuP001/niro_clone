@@ -3,17 +3,16 @@ import { colors, shadows } from './theme';
 
 /**
  * PreBookingQuestionsScreen
- * Collects 2 questions the user wants clarity on before the call.
+ * Collects 1 question the user wants clarity on before the call.
  * Shown right before the time-slot picker in every booking path.
  */
 export default function PreBookingQuestionsScreen({ expertName, onSubmit, onBack }) {
   const [q1, setQ1] = useState('');
-  const [q2, setQ2] = useState('');
-  const canContinue = q1.trim().length > 0 && q2.trim().length > 0;
+  const canContinue = q1.trim().length > 0;
 
   const handleSubmit = () => {
     if (!canContinue) return;
-    onSubmit([q1.trim(), q2.trim()]);
+    onSubmit([q1.trim()]);
   };
 
   return (
@@ -54,14 +53,14 @@ export default function PreBookingQuestionsScreen({ expertName, onSubmit, onBack
               Help {expertName || 'your astrologer'} prepare for your call
             </h2>
             <p className="text-sm" style={{ color: colors.text.secondary }}>
-              Share the 2 things you most want clarity on. This helps your astrologer focus the session on what matters most to you.
+              Share the 1 thing you most want clarity on. This helps your astrologer focus the session on what matters most to you.
             </p>
           </div>
 
-          {/* Question 1 */}
-          <div className="mb-5">
+          {/* Question */}
+          <div className="mb-8">
             <label className="block text-sm font-medium mb-2" style={{ color: colors.text.dark }}>
-              Question 1 <span style={{ color: colors.teal.primary }}>*</span>
+              Your question <span style={{ color: colors.teal.primary }}>*</span>
             </label>
             <textarea
               value={q1}
@@ -81,29 +80,6 @@ export default function PreBookingQuestionsScreen({ expertName, onSubmit, onBack
             </p>
           </div>
 
-          {/* Question 2 */}
-          <div className="mb-8">
-            <label className="block text-sm font-medium mb-2" style={{ color: colors.text.dark }}>
-              Question 2 <span style={{ color: colors.teal.primary }}>*</span>
-            </label>
-            <textarea
-              value={q2}
-              onChange={(e) => setQ2(e.target.value.slice(0, 200))}
-              rows={3}
-              placeholder="e.g. When is the right time to start my own business?"
-              className="w-full rounded-xl px-4 py-3 text-sm resize-none outline-none transition-all"
-              style={{
-                backgroundColor: '#FFFFFF',
-                border: `1.5px solid ${q2.trim() ? colors.teal.primary : colors.ui.border || '#e5e7eb'}`,
-                color: colors.text.dark,
-                boxShadow: q2.trim() ? `0 0 0 3px ${colors.teal.primary}15` : 'none',
-              }}
-            />
-            <p className="text-xs mt-1 text-right" style={{ color: colors.text.muted }}>
-              {q2.length}/200
-            </p>
-          </div>
-
           {/* CTA */}
           <button
             onClick={handleSubmit}
@@ -120,7 +96,7 @@ export default function PreBookingQuestionsScreen({ expertName, onSubmit, onBack
           </button>
 
           <p className="text-xs text-center mt-3" style={{ color: colors.text.muted }}>
-            Your questions are shared only with your astrologer
+            Your question is shared only with your astrologer
           </p>
         </div>
       </div>

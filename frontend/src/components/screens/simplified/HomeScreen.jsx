@@ -302,7 +302,7 @@ export default function HomeScreen({
   const freeCallExpertName = userState?.free_call_expert_name;
   const freeCallTopicId = userState?.free_call_topic_id;
 
-  let ctaText = "Get a Free 10 mins consultation";
+  let ctaText = "Get a Free 5 mins consultation";
   let ctaHandler = handleCtaClick;
 
   if (freeCallStatus === 'scheduled') {

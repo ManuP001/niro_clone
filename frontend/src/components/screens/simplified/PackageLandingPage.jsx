@@ -148,7 +148,7 @@ export default function PackageLandingPage({
         onBack={onBack}
         onNavigate={onNavigate}
         onTabChange={onTabChange}
-        ctaText="Get a free 10 mins consultation"
+        ctaText="Get a free 5 mins consultation"
       />
 
       {/* Main Content Container */}

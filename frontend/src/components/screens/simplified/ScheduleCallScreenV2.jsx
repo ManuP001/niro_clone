@@ -165,7 +165,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
         call_type: 'free_consultation',
         user_name: user?.name || 'User',
         user_email: user?.email || '',
-        notes: 'Free 10-minute consultation call',
+        notes: 'Free 5-minute consultation call',
         expert_id: expertId || null,
         topic_id: topicId || null,
         questions: bookingQuestions,
@@ -301,7 +301,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
                   <div>
                     <p className="text-sm" style={{ color: colors.text.muted }}>Time</p>
                     <p className="font-medium" style={{ color: colors.text.dark }}>
-                      {bookingDetails.time} (10 minutes)
+                      {bookingDetails.time} (5 minutes)
                     </p>
                   </div>
                 </div>

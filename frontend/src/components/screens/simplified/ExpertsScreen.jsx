@@ -226,7 +226,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
                   Not sure which expert to pick?
                 </p>
                 <p className="text-sm text-white/80">
-                  Book a free 10-min intro call — we'll match you with the right astrologer.
+                  Book a free 5-min intro call — we'll match you with the right astrologer.
                 </p>
               </div>
               <button
@@ -301,7 +301,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
               className="w-full py-4 rounded-full font-semibold text-base transition-all hover:shadow-lg active:scale-[0.99]"
               style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
             >
-              Book your free 10 min call →
+              Book your free 5 min call →
             </button>
           </div>
         </div>
