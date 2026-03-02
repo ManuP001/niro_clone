@@ -251,21 +251,24 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     }
   };
 
-  // Handle topic selection
+  // Handle topic selection — opens FreeCallWizard with topic pre-selected
   const handleTopicSelect = (topicId) => {
-    navigate(`/app/experts${topicId ? `?topicId=${topicId}` : ''}`);
+    setFreeCallInitialTopicId(topicId || null);
+    setShowFreeCallWizard(true);
   };
 
-  // Kept for direct /app/topic/:topicId URL access (not used in main flow)
+  // Kept for direct /app/topic/:topicId URL access
   const handleTopicCtaClick = (topicId) => {
-    navigate(`/app/experts${topicId ? `?topicId=${topicId}` : ''}`);
+    setFreeCallInitialTopicId(topicId || null);
+    setShowFreeCallWizard(true);
   };
 
   // Handle navigation from HomeScreen (supports multiple destination types)
   const handleNavigate = (destination, params = {}) => {
     switch (destination) {
       case 'topic':
-        navigate(`/app/experts${params.topicId ? `?topicId=${params.topicId}` : ''}`);
+        setFreeCallInitialTopicId(params.topicId || null);
+        setShowFreeCallWizard(true);
         break;
       case 'packageLanding':
         navigate(`/app/package/${params.packageId}`);
@@ -629,7 +632,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         )}
 
         {/* Free Call Onboarding Wizard */}
-        {showFreeCallWizard && isAuthenticated && (
+        {showFreeCallWizard && (
           <FreeCallWizard
             token={token}
             user={user}
