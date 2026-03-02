@@ -38,8 +38,10 @@ function registerValidSW(swUrl, config) {
         installingWorker.onstatechange = () => {
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
-              console.log('[PWA] New content available — will load on next visit.');
-              if (config && config.onUpdate) config.onUpdate(registration);
+              // New SW is installed and skipWaiting will activate it immediately.
+              // Reload the page so users get the latest build right away.
+              console.log('[PWA] New content available — reloading.');
+              window.location.reload();
             } else {
               console.log('[PWA] Content cached for offline use.');
               if (config && config.onSuccess) config.onSuccess(registration);

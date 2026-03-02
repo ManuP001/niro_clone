@@ -3,12 +3,13 @@
 // This service worker is processed by workbox-webpack-plugin during `npm run build`.
 // self.__WB_MANIFEST is replaced with the precache manifest at build time.
 
-import { clientsClaim } from 'workbox-core';
+import { clientsClaim, skipWaiting } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
 
+skipWaiting();
 clientsClaim();
 
 // Precache all assets produced by the build (JS chunks, CSS, etc.)
