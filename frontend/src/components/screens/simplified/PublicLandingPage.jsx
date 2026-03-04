@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getBackendUrl } from '../../../config';
 
+const resolvePhotoUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('/')) return `${getBackendUrl()}${url}`;
+  return url;
+};
+
 /**
  * PublicLandingPage - EXACT implementation of niro-final-marquee_1.html
  * This component matches the HTML file pixel-for-pixel
@@ -1815,8 +1821,8 @@ export default function PublicLandingPage({
                   <div className="practitioner-header">
                     <div className="practitioner-avatar">
                       {expert.photo_url ? (
-                        <img 
-                          src={expert.photo_url} 
+                        <img
+                          src={resolvePhotoUrl(expert.photo_url)}
                           alt={expert.name}
                           style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
                           onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}

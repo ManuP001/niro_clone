@@ -1432,8 +1432,11 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
                   ) : field.type === 'number' ? (
                     <input
                       type="number"
+                      step={field.decimal ? '0.1' : '1'}
+                      min={field.min}
+                      max={field.max}
                       value={formData[field.name] || 0}
-                      onChange={(e) => setFormData({ ...formData, [field.name]: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => setFormData({ ...formData, [field.name]: field.decimal ? (parseFloat(e.target.value) || 0) : (parseInt(e.target.value) || 0) })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                     />
                   ) : field.type === 'array' ? (
@@ -2199,7 +2202,7 @@ const ExpertsManager = () => (
       { name: 'bio', label: 'Bio', type: 'textarea' },
       { name: 'languages', label: 'Languages', default: 'Hindi, English' },
       { name: 'years_experience', label: 'Years Experience', type: 'number', default: 5 },
-      { name: 'rating', label: 'Rating', type: 'number', default: 4.5 },
+      { name: 'rating', label: 'Rating (1–5)', type: 'number', decimal: true, min: 1, max: 5, default: 4.5 },
       { name: 'total_consults', label: 'Total Consults', type: 'number', default: 0 },
       { name: 'topics', label: 'Topics', type: 'array', hint: 'Topic IDs this expert can serve' },
       { name: 'photo_url', label: 'Photo', type: 'image-upload' },

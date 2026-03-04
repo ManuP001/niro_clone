@@ -3,6 +3,13 @@ import { useSearchParams } from 'react-router-dom';
 import { colors, shadows } from './theme';
 import { apiSimplified, trackEvent } from './utils';
 import { StarIcon, ChevronRightIcon } from './icons';
+import { getBackendUrl } from '../../../config';
+
+const resolvePhotoUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('/')) return `${getBackendUrl()}${url}`;
+  return url;
+};
 import ResponsiveHeader from './ResponsiveHeader';
 
 /**
@@ -331,8 +338,8 @@ function ExpertCard({ expert, hasAccess, onClick, topicId }) {
           style={{ backgroundColor: colors.gold.cream }}
         >
           {expert.photo_url ? (
-            <img 
-              src={expert.photo_url} 
+            <img
+              src={resolvePhotoUrl(expert.photo_url)}
               alt={expert.name}
               className="w-full h-full object-cover"
               onError={(e) => { e.target.style.display = 'none'; }}
