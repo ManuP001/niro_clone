@@ -308,7 +308,7 @@ def _normalize_db_expert(exp: dict) -> dict:
         "experience_years": exp.get("years_experience", 5),
         "rating": exp.get("rating", 4.5),
         "total_consultations": exp.get("total_consults", 0),
-        "consultations": exp.get("total_consults", 0),
+        "consultations": exp.get("consultations", []),
         "availability_status": "available",
         "is_active": exp.get("active", True),
         "offers_free_call": exp.get("offers_free_call", False),

@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiSimplified, trackEvent } from './utils';
+import { getBackendUrl } from '../../../config';
 import { colors, shadows } from './theme';
 import ResponsiveHeader from './ResponsiveHeader';
+
+const resolvePhotoUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('/')) return `${getBackendUrl()}${url}`;
+  return url;
+};
 
 
 /**
@@ -21,26 +28,8 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
   const [expert, setExpert] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTopicSelector, setShowTopicSelector] = useState(false);
-  const [expertPackages, setExpertPackages] = useState([]);
   const [expertRemedies, setExpertRemedies] = useState([]);
   const packagesRef = useRef(null);
-
-  // Fetch packages for this expert, filtered by topicId if available
-  useEffect(() => {
-    if (!expertId) return;
-    const fetchPackages = async () => {
-      try {
-        const url = topicId
-          ? `/experts/${expertId}/packages?topic_id=${topicId}`
-          : `/experts/${expertId}/packages`;
-        const res = await apiSimplified.get(url, token);
-        setExpertPackages(res.packages || []);
-      } catch {
-        setExpertPackages([]);
-      }
-    };
-    fetchPackages();
-  }, [expertId, token, topicId]);
 
   // Fetch remedies offered by this expert
   useEffect(() => {
@@ -172,10 +161,11 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
             style={{ borderColor: colors.background.primary }}
           >
             {expert.photo_url ? (
-              <img 
-                src={expert.photo_url} 
+              <img
+                src={resolvePhotoUrl(expert.photo_url)}
                 alt={expert.name}
                 className="w-full h-full object-cover"
+                onError={(e) => { e.target.style.display = 'none'; }}
               />
             ) : (
               <div 
