@@ -6,6 +6,7 @@ import ResponsiveHeader from './ResponsiveHeader';
 
 /**
  * CheckoutScreen V2 - Razorpay payment flow with responsive layout
+ * Supports both tier-based (plan) and consultation purchases.
  */
 export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds = [], onSuccess, onBack, onTabChange, user }) {
   // Get tierId from props, URL params, or location state
@@ -13,13 +14,19 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
   const location = useLocation();
   const navigate = useNavigate();
   const tierId = propTierId || searchParams.get('tier') || location.state?.tierId;
-  
-  const [loading, setLoading] = useState(true);
+
+  // Consultation purchase data from location state
+  const consultation = location.state?.consultation || null;
+  const consultationExpertId = location.state?.expertId || null;
+  const consultationExpertName = location.state?.expertName || null;
+  const isConsultationMode = !!consultation;
+
+  const [loading, setLoading] = useState(!isConsultationMode);
   const [tier, setTier] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [errorType, setErrorType] = useState(null); // 'order', 'payment', 'verification'
-  
+
   // Handle back navigation
   const handleBack = () => {
     if (onBack) {
@@ -30,19 +37,30 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
   };
 
   useEffect(() => {
+    // Consultation mode: no tier fetch needed
+    if (isConsultationMode) {
+      trackEvent('checkout_started', {
+        consultation_duration: consultation.duration_mins,
+        total_amount_inr: consultation.price_inr,
+        expert_id: consultationExpertId,
+        flow_version: 'consultation_v1'
+      }, token);
+      return;
+    }
+
     if (!tierId) {
       setError('No package selected. Please choose a package first.');
       setErrorType('order');
       setLoading(false);
       return;
     }
-    
+
     const loadTierData = async () => {
       try {
         const response = await apiSimplified.get(`/tiers/${tierId}`, token);
         setTier(response.tier);
-        trackEvent('checkout_started', { 
-          tier_id: tierId, 
+        trackEvent('checkout_started', {
+          tier_id: tierId,
           total_amount_inr: response.tier?.price_inr,
           flow_version: 'v5'
         }, token);
@@ -54,7 +72,7 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
       }
     };
     loadTierData();
-  }, [tierId, token]);
+  }, [tierId, token, isConsultationMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load Razorpay script
   const loadRazorpayScript = () => {
@@ -76,6 +94,9 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
     setError(null);
     setErrorType(null);
 
+    const displayAmount = isConsultationMode ? consultation.price_inr : tier?.price_inr;
+    const flowVersion = isConsultationMode ? 'consultation_v1' : 'v5';
+
     try {
       // Load Razorpay script first
       const scriptLoaded = await loadRazorpayScript();
@@ -83,16 +104,32 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
         throw new Error('Failed to load payment gateway. Please check your internet connection.');
       }
 
+      // Build order request — consultation vs tier
+      const orderPayload = isConsultationMode
+        ? {
+            consultation_price_inr: consultation.price_inr,
+            consultation_duration_mins: consultation.duration_mins,
+            consultation_title: consultation.title || '',
+            expert_id: consultationExpertId,
+            expert_name: consultationExpertName,
+          }
+        : {
+            tier_id: tierId,
+            scenario_ids: scenarioIds,
+            intake_notes: '',
+          };
+
       // Create order
-      const orderResponse = await apiSimplified.post('/checkout/create-order', {
-        tier_id: tierId,
-        scenario_ids: scenarioIds,
-        intake_notes: '',
-      }, token);
+      const orderResponse = await apiSimplified.post('/checkout/create-order', orderPayload, token);
 
       if (!orderResponse.ok || !orderResponse.razorpay_order_id) {
         throw new Error('Failed to create order. Please try again.');
       }
+
+      // Razorpay description
+      const description = isConsultationMode
+        ? `${consultation.duration_mins} min consultation with ${consultationExpertName || 'expert'}`
+        : `${tier?.name || 'Pack'} - ${tier?.validity_weeks} weeks`;
 
       // Configure Razorpay
       const options = {
@@ -100,7 +137,7 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
         amount: orderResponse.amount,
         currency: orderResponse.currency || 'INR',
         name: 'NIRO',
-        description: `${tier?.name || 'Pack'} - ${tier?.validity_weeks} weeks`,
+        description,
         order_id: orderResponse.razorpay_order_id,
         handler: async function (response) {
           try {
@@ -112,24 +149,45 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
               razorpay_signature: response.razorpay_signature,
             }, token);
 
-            if (verifyResponse.ok && verifyResponse.plan_id) {
-              trackEvent('purchase_completed', { 
-                tier_id: tierId, 
-                plan_id: verifyResponse.plan_id,
-                total_amount_inr: tier?.price_inr,
-                flow_version: 'v5'
-              }, token);
-
-              onSuccess(verifyResponse.plan_id);
+            if (verifyResponse.ok && (verifyResponse.plan_id || verifyResponse.booking_id)) {
+              if (verifyResponse.order_type === 'consultation') {
+                trackEvent('consultation_purchased', {
+                  booking_id: verifyResponse.booking_id,
+                  expert_id: consultationExpertId,
+                  duration_mins: consultation.duration_mins,
+                  total_amount_inr: displayAmount,
+                  flow_version: flowVersion,
+                }, token);
+                // Navigate to schedule with booking context
+                navigate('/app/schedule', {
+                  state: {
+                    expertId: consultationExpertId,
+                    expertName: consultationExpertName,
+                    consultation,
+                    bookingId: verifyResponse.booking_id,
+                  }
+                });
+              } else {
+                trackEvent('purchase_completed', {
+                  tier_id: tierId,
+                  plan_id: verifyResponse.plan_id,
+                  total_amount_inr: displayAmount,
+                  flow_version: flowVersion,
+                }, token);
+                if (onSuccess) {
+                  onSuccess(verifyResponse.plan_id);
+                } else {
+                  navigate('/app/mypack');
+                }
+              }
             } else {
               throw new Error('Payment verification failed');
             }
           } catch (err) {
-            trackEvent('purchase_failed', { 
-              tier_id: tierId, 
+            trackEvent('purchase_failed', {
               failure_reason: err.message,
               failure_stage: 'verification',
-              flow_version: 'v5'
+              flow_version: flowVersion,
             }, token);
             setError('Payment verification failed. If money was deducted, please contact support.');
             setErrorType('verification');
@@ -142,10 +200,7 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
         },
         modal: {
           ondismiss: function () {
-            trackEvent('purchase_cancelled', { 
-              tier_id: tierId,
-              flow_version: 'v5'
-            }, token);
+            trackEvent('purchase_cancelled', { flow_version: flowVersion }, token);
             setProcessing(false);
           },
           escape: true,
@@ -156,12 +211,11 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
       // Open Razorpay
       const rzp = new window.Razorpay(options);
       rzp.on('payment.failed', function (response) {
-        trackEvent('purchase_failed', { 
-          tier_id: tierId, 
+        trackEvent('purchase_failed', {
           failure_reason: response.error?.description || 'Payment failed',
           failure_code: response.error?.code,
           failure_stage: 'payment',
-          flow_version: 'v5'
+          flow_version: flowVersion,
         }, token);
         setError(response.error?.description || 'Payment failed. Please try again or use a different method.');
         setErrorType('payment');
@@ -169,11 +223,10 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
       });
       rzp.open();
     } catch (err) {
-      trackEvent('purchase_failed', { 
-        tier_id: tierId, 
+      trackEvent('purchase_failed', {
         failure_reason: err.message,
         failure_stage: 'order',
-        flow_version: 'v5'
+        flow_version: flowVersion,
       }, token);
       setError(err.message);
       setErrorType('order');
@@ -192,7 +245,7 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
     );
   }
 
-  if (!tier) {
+  if (!isConsultationMode && !tier) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: colors.background.primary }}>
         <div className="text-center">
@@ -216,32 +269,66 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
       {/* Content Container - Centered max-width */}
       <div className="max-w-2xl mx-auto p-4 md:p-8">
         {/* Order Summary */}
-        <div 
+        <div
           className="rounded-2xl p-6 md:p-8 mb-6"
-          style={{ 
-            backgroundColor: '#ffffff', 
+          style={{
+            backgroundColor: '#ffffff',
             border: `1px solid ${colors.ui.borderDark}`,
             boxShadow: shadows.sm,
           }}
         >
           <h2 className="text-lg md:text-xl font-semibold mb-4" style={{ color: colors.text.dark }}>Order Summary</h2>
-          
-          <div className="flex items-start justify-between mb-4">
+
+          {isConsultationMode ? (
+            // Consultation summary
             <div>
-              <p className="font-medium md:text-lg" style={{ color: colors.text.dark }}>{tier.name}</p>
-              <p className="text-sm md:text-base" style={{ color: colors.text.secondary }}>{tier.validity_weeks} weeks access</p>
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1 pr-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span
+                      className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: colors.teal.primary + '20', color: colors.teal.primary }}
+                    >
+                      {consultation.duration_mins} mins
+                    </span>
+                  </div>
+                  <p className="font-medium md:text-lg" style={{ color: colors.text.dark }}>
+                    {consultation.title || 'Consultation Session'}
+                  </p>
+                  <p className="text-sm md:text-base mt-0.5" style={{ color: colors.text.secondary }}>
+                    with {consultationExpertName}
+                  </p>
+                  {consultation.what_you_get && (
+                    <p className="text-sm mt-2" style={{ color: colors.text.muted }}>
+                      {consultation.what_you_get}
+                    </p>
+                  )}
+                </div>
+                <p className="text-xl md:text-2xl font-bold flex-shrink-0" style={{ color: colors.text.dark }}>
+                  {formatPrice(consultation.price_inr)}
+                </p>
+              </div>
             </div>
-            <p className="text-xl md:text-2xl font-bold" style={{ color: colors.text.dark }}>{formatPrice(tier.price_inr)}</p>
-          </div>
-          
-          <div className="border-t pt-4 space-y-2" style={{ borderColor: colors.ui.borderDark }}>
-            {tier.features?.slice(0, 4).map((feature, idx) => (
-              <p key={idx} className="text-sm md:text-base flex items-center" style={{ color: colors.text.secondary }}>
-                <span className="mr-2" style={{ color: colors.teal.primary }}>✓</span>
-                {feature}
-              </p>
-            ))}
-          </div>
+          ) : (
+            // Tier/package summary
+            <div>
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="font-medium md:text-lg" style={{ color: colors.text.dark }}>{tier.name}</p>
+                  <p className="text-sm md:text-base" style={{ color: colors.text.secondary }}>{tier.validity_weeks} weeks access</p>
+                </div>
+                <p className="text-xl md:text-2xl font-bold" style={{ color: colors.text.dark }}>{formatPrice(tier.price_inr)}</p>
+              </div>
+              <div className="border-t pt-4 space-y-2" style={{ borderColor: colors.ui.borderDark }}>
+                {tier.features?.slice(0, 4).map((feature, idx) => (
+                  <p key={idx} className="text-sm md:text-base flex items-center" style={{ color: colors.text.secondary }}>
+                    <span className="mr-2" style={{ color: colors.teal.primary }}>✓</span>
+                    {feature}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Error Display */}
@@ -286,14 +373,14 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
         >
           {processing ? (
             <span className="flex items-center justify-center">
-              <span 
+              <span
                 className="w-5 h-5 border-2 rounded-full animate-spin mr-2"
                 style={{ borderColor: colors.text.dark, borderTopColor: 'transparent' }}
               />
               Processing...
             </span>
           ) : (
-            `Pay ${formatPrice(tier.price_inr)}`
+            `Pay ${formatPrice(isConsultationMode ? consultation.price_inr : tier?.price_inr)}`
           )}
         </button>
 

@@ -49,7 +49,7 @@ const ONBOARDING_STEPS = {
   COMPLETE: 'complete'
 };
 
-// Wrapper so ScheduleCallScreen can read expertId/expertName from router state
+// Wrapper so ScheduleCallScreen can read expertId/expertName/consultation from router state
 function ScheduleCallRouteWrapper({ token, user, onNavigate }) {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -62,6 +62,8 @@ function ScheduleCallRouteWrapper({ token, user, onNavigate }) {
       onNavigate={onNavigate}
       expertId={state?.expertId}
       expertName={state?.expertName}
+      consultation={state?.consultation}
+      bookingId={state?.bookingId}
     />
   );
 }
@@ -314,7 +316,18 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
           onLoginClick?.();
           return;
         }
-        navigate('/app/schedule', { state: { expertId: params?.expertId, expertName: params?.expertName } });
+        if (params?.consultation) {
+          // Paid consultation — go to checkout first
+          navigate('/app/checkout', {
+            state: {
+              expertId: params.expertId,
+              expertName: params.expertName,
+              consultation: params.consultation,
+            }
+          });
+        } else {
+          navigate('/app/schedule', { state: { expertId: params?.expertId, expertName: params?.expertName } });
+        }
         break;
       case 'plan':
         if (!isAuthenticated) {
@@ -520,15 +533,15 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
                 )
               } 
             />
-            <Route 
-              path="checkout" 
+            <Route
+              path="checkout"
               element={
                 isAuthenticated ? (
-                  <CheckoutScreen token={token} user={user} />
+                  <CheckoutScreen token={token} user={user} onTabChange={handleTabChange} />
                 ) : (
                   <Navigate to="/login" replace />
                 )
-              } 
+              }
             />
             <Route 
               path="plan/:planId" 

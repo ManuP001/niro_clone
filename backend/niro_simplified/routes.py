@@ -160,11 +160,15 @@ class UserStateResponse(BaseModel):
 
 
 class CreateOrderRequest(BaseModel):
-    tier_id: str
+    tier_id: Optional[str] = None
     scenario_ids: List[str] = []
     intake_notes: str = ""
     expert_id: Optional[str] = None
     expert_name: Optional[str] = None
+    # Consultation fields (used when tier_id is absent)
+    consultation_price_inr: Optional[int] = None
+    consultation_duration_mins: Optional[int] = None
+    consultation_title: Optional[str] = None
 
 
 class CreateOrderResponse(BaseModel):
@@ -185,7 +189,9 @@ class VerifyPaymentRequest(BaseModel):
 
 class VerifyPaymentResponse(BaseModel):
     ok: bool = True
-    plan_id: str
+    plan_id: Optional[str] = None
+    booking_id: Optional[str] = None
+    order_type: str = "plan"
     message: str = "Payment successful"
 
 
@@ -737,52 +743,61 @@ async def create_order(
         except Exception:
             pass
     
-    logger.info(f"Checkout create-order: db available = {db is not None}, tier_id = {request_data.tier_id}")
-    
+    logger.info(f"Checkout create-order: db available = {db is not None}, tier_id = {request_data.tier_id}, consultation_price = {request_data.consultation_price_inr}")
+
     user_id = await get_user_id_from_token_async(authorization, db)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
-    
-    # First try catalog (hardcoded tiers)
-    catalog = get_simplified_catalog()
-    tier = catalog.get_tier(request_data.tier_id)
-    
-    # If not in catalog, check admin_tiers database
-    tier_from_db = None
-    if not tier and db is not None:
-        logger.info(f"Tier {request_data.tier_id} not in catalog, checking admin_tiers database...")
-        try:
-            tier_from_db = await db.admin_tiers.find_one(
-                {"tier_id": request_data.tier_id, "active": {"$ne": False}},
-                {"_id": 0}
-            )
-            if tier_from_db:
-                logger.info(f"Found tier in admin_tiers: {request_data.tier_id} - {tier_from_db.get('name')}")
-            else:
-                # Log all tier_ids to debug
-                all_ids = await db.admin_tiers.distinct("tier_id")
-                logger.warning(f"Tier {request_data.tier_id} NOT found. DB has {len(all_ids)} tiers. First 5: {all_ids[:5]}")
-        except Exception as e:
-            logger.error(f"Error checking admin_tiers: {e}", exc_info=True)
-    elif db is None:
-        logger.error("Database connection NOT available for checkout - all 3 sources failed")
-    
-    if not tier and not tier_from_db:
-        logger.error(f"CHECKOUT FAILED: Tier '{request_data.tier_id}' not found in catalog ({len(catalog.tiers)} tiers) or admin_tiers DB (db={'connected' if db else 'NONE'})")
-        raise HTTPException(status_code=404, detail=f"Package not found: {request_data.tier_id}. Please check if the package exists and is active.")
-    
-    # Get price and tier info
-    if tier:
-        price_inr = tier.price_inr
-        tier_id = tier.tier_id
-        tier_level = tier.tier_level
-        topic_id = tier.topic_id
+
+    # Determine if this is a direct consultation purchase (no tier_id, has consultation_price_inr)
+    is_consultation_order = not request_data.tier_id and request_data.consultation_price_inr is not None
+
+    if is_consultation_order:
+        price_inr = request_data.consultation_price_inr
+        tier_id = None
+        tier_level = "consultation"
+        topic_id = "consultation"
     else:
-        # From admin_tiers database
-        price_inr = tier_from_db.get("price", 0)
-        tier_id = tier_from_db.get("tier_id")
-        tier_level = "standalone_package"
-        topic_id = tier_from_db.get("topic_id", "standalone")
+        # First try catalog (hardcoded tiers)
+        catalog = get_simplified_catalog()
+        tier = catalog.get_tier(request_data.tier_id)
+
+        # If not in catalog, check admin_tiers database
+        tier_from_db = None
+        if not tier and db is not None:
+            logger.info(f"Tier {request_data.tier_id} not in catalog, checking admin_tiers database...")
+            try:
+                tier_from_db = await db.admin_tiers.find_one(
+                    {"tier_id": request_data.tier_id, "active": {"$ne": False}},
+                    {"_id": 0}
+                )
+                if tier_from_db:
+                    logger.info(f"Found tier in admin_tiers: {request_data.tier_id} - {tier_from_db.get('name')}")
+                else:
+                    # Log all tier_ids to debug
+                    all_ids = await db.admin_tiers.distinct("tier_id")
+                    logger.warning(f"Tier {request_data.tier_id} NOT found. DB has {len(all_ids)} tiers. First 5: {all_ids[:5]}")
+            except Exception as e:
+                logger.error(f"Error checking admin_tiers: {e}", exc_info=True)
+        elif db is None:
+            logger.error("Database connection NOT available for checkout - all 3 sources failed")
+
+        if not tier and not tier_from_db:
+            logger.error(f"CHECKOUT FAILED: Tier '{request_data.tier_id}' not found in catalog ({len(catalog.tiers)} tiers) or admin_tiers DB (db={'connected' if db else 'NONE'})")
+            raise HTTPException(status_code=404, detail=f"Package not found: {request_data.tier_id}. Please check if the package exists and is active.")
+
+        # Get price and tier info
+        if tier:
+            price_inr = tier.price_inr
+            tier_id = tier.tier_id
+            tier_level = tier.tier_level
+            topic_id = tier.topic_id
+        else:
+            # From admin_tiers database
+            price_inr = tier_from_db.get("price", 0)
+            tier_id = tier_from_db.get("tier_id")
+            tier_level = "standalone_package"
+            topic_id = tier_from_db.get("topic_id", "standalone")
     
     # Detect environment
     origin = request.headers.get('origin', '')
@@ -812,7 +827,7 @@ async def create_order(
     
     # Store order in DB
     if db is not None:
-        await db.niro_simplified_orders.insert_one({
+        order_doc = {
             "order_id": order_id,
             "razorpay_order_id": razorpay_order_id,
             "user_id": user_id,
@@ -827,8 +842,14 @@ async def create_order(
             "expert_name": request_data.expert_name,
             "status": "created",
             "environment": environment,
+            "order_type": "consultation" if is_consultation_order else "plan",
             "created_at": datetime.utcnow()
-        })
+        }
+        if is_consultation_order:
+            order_doc["consultation_price_inr"] = request_data.consultation_price_inr
+            order_doc["consultation_duration_mins"] = request_data.consultation_duration_mins
+            order_doc["consultation_title"] = request_data.consultation_title
+        await db.niro_simplified_orders.insert_one(order_doc)
     
     return CreateOrderResponse(
         order_id=order_id,
@@ -879,7 +900,40 @@ async def verify_payment(
         except Exception as e:
             logger.error(f"Payment verification failed: {e}")
             # Continue anyway for testing
-    
+
+    # Handle consultation orders — create booking record, skip plan creation
+    if order.get("order_type") == "consultation":
+        booking_id = f"booking_{uuid.uuid4().hex[:12]}"
+        booking_data = {
+            "booking_id": booking_id,
+            "order_id": request_data.order_id,
+            "user_id": user_id,
+            "expert_id": order.get("expert_id"),
+            "expert_name": order.get("expert_name"),
+            "consultation_price_inr": order.get("consultation_price_inr"),
+            "consultation_duration_mins": order.get("consultation_duration_mins"),
+            "consultation_title": order.get("consultation_title"),
+            "razorpay_payment_id": request_data.razorpay_payment_id,
+            "status": "pending_schedule",
+            "paid_at": datetime.utcnow(),
+        }
+        if db is not None:
+            await db.consultation_bookings.insert_one(booking_data)
+            await db.niro_simplified_orders.update_one(
+                {"order_id": request_data.order_id},
+                {"$set": {
+                    "status": "completed",
+                    "razorpay_payment_id": request_data.razorpay_payment_id,
+                    "booking_id": booking_id,
+                    "completed_at": datetime.utcnow()
+                }}
+            )
+        return VerifyPaymentResponse(
+            booking_id=booking_id,
+            order_type="consultation",
+            message="Payment successful! Please schedule your consultation."
+        )
+
     # Get tier - first try catalog, then admin_tiers database
     tier_id = order.get("tier_id", "")
     tier = catalog.get_tier(tier_id)
@@ -1012,6 +1066,7 @@ async def verify_payment(
     
     return VerifyPaymentResponse(
         plan_id=plan_id,
+        order_type="plan",
         message="Payment successful! Your pack is now active."
     )
 
