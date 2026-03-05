@@ -1506,6 +1506,11 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
                         />
                       </div>
                     </div>
+                  ) : field.type === 'consultation-list' ? (
+                    <ConsultationEditor
+                      value={formData[field.name] || []}
+                      onChange={(val) => setFormData({ ...formData, [field.name]: val })}
+                    />
                   ) : field.type === 'package-content' ? (
                     <PackageContentEditor
                       content={formData[field.name] || {}}
@@ -2210,6 +2215,7 @@ const ExpertsManager = () => (
       { name: 'method_tags', label: 'Method Tags', type: 'tag-multi-select', tagType: 'method', maxTags: 3, hint: '1-3 tags for how the expert works' },
       { name: 'remedy_tags', label: 'Remedy/Support Tags', type: 'tag-multi-select', tagType: 'remedy_support', maxTags: 2, hint: '0-2 tags for additional services' },
       { name: 'active', label: 'Active', type: 'checkbox', default: true },
+      { name: 'consultations', label: 'Consultation Options', type: 'consultation-list', hint: 'Add 1–4 paid session options (duration, price, what the user gets)' },
       { name: 'offers_free_call', label: 'Offers Free Consultation Call', type: 'checkbox', default: false, hint: 'If enabled, this expert appears in the free call onboarding wizard' },
       { name: 'timezone', label: 'Timezone', type: 'select', default: 'Asia/Kolkata', options: [
         { value: 'Asia/Kolkata', label: 'India (IST, UTC+5:30)' },
@@ -2267,6 +2273,79 @@ const RemediesCatalogManager = () => {
         { name: 'active', label: 'Active', type: 'checkbox', default: true },
       ]}
     />
+  );
+};
+
+// Consultation Editor - per-expert session options
+const DURATION_OPTIONS = [15, 30, 45, 60];
+const emptyConsultation = () => ({ duration_mins: 30, price_inr: '', title: '', what_you_get: '' });
+
+const ConsultationEditor = ({ value = [], onChange }) => {
+  const add = () => onChange([...value, emptyConsultation()]);
+  const remove = (i) => onChange(value.filter((_, idx) => idx !== i));
+  const update = (i, field, val) => {
+    const next = value.map((c, idx) => idx === i ? { ...c, [field]: val } : c);
+    onChange(next);
+  };
+
+  return (
+    <div className="space-y-3">
+      {value.map((c, i) => (
+        <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2 bg-gray-50">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="text-xs text-gray-500">Duration</label>
+              <select
+                value={c.duration_mins}
+                onChange={(e) => update(i, 'duration_mins', parseInt(e.target.value))}
+                className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+              >
+                {DURATION_OPTIONS.map(d => <option key={d} value={d}>{d} mins</option>)}
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="text-xs text-gray-500">Price (₹)</label>
+              <input
+                type="number"
+                value={c.price_inr}
+                onChange={(e) => update(i, 'price_inr', parseInt(e.target.value) || '')}
+                placeholder="e.g. 1200"
+                className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+              />
+            </div>
+            <button onClick={() => remove(i)} className="mt-5 text-red-400 hover:text-red-600 text-lg font-bold">×</button>
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">Session title</label>
+            <input
+              type="text"
+              value={c.title}
+              onChange={(e) => update(i, 'title', e.target.value)}
+              placeholder="e.g. Clarity Session"
+              className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-gray-500">What you get</label>
+            <textarea
+              value={c.what_you_get}
+              onChange={(e) => update(i, 'what_you_get', e.target.value)}
+              placeholder="e.g. Birth chart reading + answer to your question + remedy guidance"
+              rows={2}
+              className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm resize-none"
+            />
+          </div>
+        </div>
+      ))}
+      {value.length < 4 && (
+        <button
+          onClick={add}
+          className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-teal-400 hover:text-teal-600 transition-colors"
+        >
+          + Add consultation option
+        </button>
+      )}
+    </div>
   );
 };
 

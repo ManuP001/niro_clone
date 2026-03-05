@@ -285,19 +285,19 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
           </div>
         </div>
 
-        {/* Available Packages — always shown when packages exist */}
-        {expertPackages.length > 0 && (
-          <div ref={packagesRef} className="mb-6 scroll-mt-4">
+        {/* Consultation Options */}
+        {(expert.consultations || []).length > 0 && (
+          <div className="mb-6">
             <h3 className="font-semibold mb-3 text-sm md:text-base" style={{ color: colors.text.dark }}>
-              Services &amp; packages
+              Book a consultation
             </h3>
             <div className="space-y-3">
-              {expertPackages.map((pkg) => (
+              {expert.consultations.map((c, i) => (
                 <button
-                  key={pkg.tier_id}
+                  key={i}
                   onClick={() => {
                     if (!isAuthenticated) { onLoginClick?.(); return; }
-                    onNavigate?.('packageLanding', { packageId: pkg.tier_id });
+                    onNavigate?.('schedule', { expertId: expert.expert_id, expertName: expert.name, consultation: c });
                   }}
                   className="w-full text-left rounded-xl p-4 transition-all active:scale-[0.99] hover:shadow-sm"
                   style={{ backgroundColor: colors.peach.soft, border: `1px solid ${colors.ui.borderDark}` }}
@@ -305,31 +305,27 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-semibold text-sm" style={{ color: colors.text.dark }}>{pkg.name}</p>
-                        {pkg.popular && (
-                          <span
-                            className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                            style={{ backgroundColor: colors.teal.primary, color: '#fff' }}
-                          >
-                            Popular
-                          </span>
+                        <span
+                          className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: colors.teal.primary + '20', color: colors.teal.primary }}
+                        >
+                          {c.duration_mins} mins
+                        </span>
+                        {c.title && (
+                          <p className="font-semibold text-sm" style={{ color: colors.text.dark }}>{c.title}</p>
                         )}
                       </div>
-                      {pkg.description && (
-                        <p className="text-xs mt-0.5 line-clamp-2" style={{ color: colors.text.secondary }}>
-                          {pkg.description}
+                      {c.what_you_get && (
+                        <p className="text-xs mt-1 line-clamp-2" style={{ color: colors.text.secondary }}>
+                          {c.what_you_get}
                         </p>
                       )}
-                      <p className="text-xs mt-1" style={{ color: colors.text.muted }}>
-                        {pkg.duration_days} days
-                        {pkg.calls_included > 0 && ` · ${pkg.calls_included} call${pkg.calls_included > 1 ? 's' : ''} included`}
-                      </p>
                     </div>
                     <div className="flex-shrink-0 text-right">
                       <p className="font-bold text-base" style={{ color: colors.teal.primary }}>
-                        ₹{pkg.price_inr?.toLocaleString('en-IN')}
+                        ₹{c.price_inr?.toLocaleString('en-IN')}
                       </p>
-                      <p className="text-xs" style={{ color: colors.text.muted }}>View →</p>
+                      <p className="text-xs" style={{ color: colors.text.muted }}>Book →</p>
                     </div>
                   </div>
                 </button>
@@ -389,12 +385,15 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
       >
         <div className="max-w-2xl mx-auto">
           <button
-            onClick={handleExplorePackages}
+            onClick={() => {
+              if (!isAuthenticated) { onLoginClick?.(); return; }
+              onNavigate?.('schedule', { expertId: expert?.expert_id, expertName: expert?.name });
+            }}
             className="w-full font-semibold py-4 rounded-xl transition-all active:scale-[0.99] hover:shadow-md"
             style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
-            data-testid="expert-packages-btn"
+            data-testid="expert-book-btn"
           >
-            Explore packages
+            Book a consultation
           </button>
         </div>
       </div>
