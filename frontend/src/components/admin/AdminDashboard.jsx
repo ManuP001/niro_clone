@@ -1007,53 +1007,81 @@ const DAYS_OF_WEEK = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 's
 const DAY_LABELS = { monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed', thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun' };
 
 const WeeklyAvailabilityEditor = ({ value = {}, onChange }) => {
-  const getWindow = (day) => (value[day] && value[day][0]) || null;
+  const getSlots = (day) => (Array.isArray(value[day]) ? value[day] : []);
 
   const handleToggle = (day, enabled) => {
     const next = { ...value };
-    if (enabled) {
-      next[day] = [{ start: '09:00', end: '17:00' }];
-    } else {
-      next[day] = [];
-    }
+    next[day] = enabled ? [{ start: '09:00', end: '10:00' }] : [];
     onChange(next);
   };
 
-  const handleTime = (day, field, val) => {
-    const window = getWindow(day) || { start: '09:00', end: '17:00' };
-    const next = { ...value, [day]: [{ ...window, [field]: val }] };
-    onChange(next);
+  const handleAddSlot = (day) => {
+    const slots = getSlots(day);
+    onChange({ ...value, [day]: [...slots, { start: '18:00', end: '19:00' }] });
+  };
+
+  const handleRemoveSlot = (day, idx) => {
+    const slots = getSlots(day).filter((_, i) => i !== idx);
+    onChange({ ...value, [day]: slots });
+  };
+
+  const handleTime = (day, idx, field, val) => {
+    const slots = getSlots(day).map((s, i) => i === idx ? { ...s, [field]: val } : s);
+    onChange({ ...value, [day]: slots });
   };
 
   return (
-    <div className="space-y-2 border border-gray-200 rounded-lg p-3">
+    <div className="space-y-3 border border-gray-200 rounded-lg p-3">
       {DAYS_OF_WEEK.map(day => {
-        const window = getWindow(day);
-        const enabled = !!(window);
+        const slots = getSlots(day);
+        const enabled = slots.length > 0;
         return (
-          <div key={day} className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={enabled}
-              onChange={e => handleToggle(day, e.target.checked)}
-              className="w-4 h-4"
-            />
-            <span className="w-8 text-sm font-medium text-gray-700">{DAY_LABELS[day]}</span>
-            <input
-              type="time"
-              value={window?.start || '09:00'}
-              disabled={!enabled}
-              onChange={e => handleTime(day, 'start', e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-40"
-            />
-            <span className="text-gray-400 text-sm">–</span>
-            <input
-              type="time"
-              value={window?.end || '17:00'}
-              disabled={!enabled}
-              onChange={e => handleTime(day, 'end', e.target.value)}
-              className="px-2 py-1 border border-gray-300 rounded text-sm disabled:opacity-40"
-            />
+          <div key={day}>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={enabled}
+                onChange={e => handleToggle(day, e.target.checked)}
+                className="w-4 h-4"
+              />
+              <span className="w-8 text-sm font-semibold text-gray-700">{DAY_LABELS[day]}</span>
+              {enabled && (
+                <button
+                  type="button"
+                  onClick={() => handleAddSlot(day)}
+                  className="ml-auto text-xs text-teal-600 hover:text-teal-800 font-medium"
+                >
+                  + Add slot
+                </button>
+              )}
+            </div>
+            {enabled && slots.map((slot, idx) => (
+              <div key={idx} className="flex items-center gap-2 mt-1 ml-7">
+                <input
+                  type="time"
+                  value={slot.start}
+                  onChange={e => handleTime(day, idx, 'start', e.target.value)}
+                  className="px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+                <span className="text-gray-400 text-sm">–</span>
+                <input
+                  type="time"
+                  value={slot.end}
+                  onChange={e => handleTime(day, idx, 'end', e.target.value)}
+                  className="px-2 py-1 border border-gray-300 rounded text-sm"
+                />
+                {slots.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSlot(day, idx)}
+                    className="text-red-400 hover:text-red-600 text-lg leading-none ml-1"
+                    title="Remove slot"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         );
       })}
