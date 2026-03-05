@@ -22,6 +22,13 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/simplified", tags=["niro-simplified"])
 
+
+@router.get("/ping")
+async def ping():
+    """Lightweight keep-alive endpoint — no DB, no auth. Hit every 10 min to prevent cold starts."""
+    return {"ok": True}
+
+
 # Razorpay configuration
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_placeholder')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
