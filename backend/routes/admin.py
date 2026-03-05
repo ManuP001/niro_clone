@@ -7,6 +7,7 @@ import os
 import csv
 import io
 import uuid
+import base64
 import hashlib
 from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
@@ -1525,24 +1526,17 @@ async def upload_image(
     if file.content_type not in allowed:
         raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed. Use JPEG, PNG, WebP, or GIF.")
     
-    # Generate unique filename
-    ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "jpg"
-    filename = f"{uuid.uuid4().hex[:12]}.{ext}"
-    filepath = os.path.join(UPLOAD_DIR, filename)
-    
-    # Save file
+    # Read and validate size
     content = await file.read()
-    if len(content) > 5 * 1024 * 1024:  # 5MB limit
-        raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB.")
-    
-    with open(filepath, "wb") as f:
-        f.write(content)
-    
-    # Build URL using request base URL
-    image_url = f"/api/admin/uploads/{filename}"
-    
-    logger.info(f"Admin uploaded image: {filename} ({len(content)} bytes)")
-    return {"ok": True, "url": image_url, "filename": filename}
+    if len(content) > 2 * 1024 * 1024:  # 2MB limit (base64 inflates ~33%)
+        raise HTTPException(status_code=400, detail="File too large. Maximum size is 2MB.")
+
+    # Convert to base64 data URL — stored directly in MongoDB, survives redeployments
+    b64 = base64.b64encode(content).decode("utf-8")
+    image_url = f"data:{file.content_type};base64,{b64}"
+
+    logger.info(f"Admin uploaded image: {file.filename} ({len(content)} bytes) as base64")
+    return {"ok": True, "url": image_url}
 
 from fastapi.responses import FileResponse
 
