@@ -387,6 +387,20 @@ async def get_all_experts_grouped(request: Request):
     }
 
 
+@router.get("/experts/{expert_id}")
+async def get_expert_by_id(expert_id: str, request: Request):
+    """Fetch a single expert by ID — avoids downloading all experts just to view one profile."""
+    db = getattr(request.app.state, 'db', None)
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database not available")
+    exp = await db.admin_experts.find_one(
+        {"expert_id": expert_id, "active": {"$ne": False}}, {"_id": 0}
+    )
+    if not exp:
+        raise HTTPException(status_code=404, detail="Expert not found")
+    return {"ok": True, "expert": _normalize_db_expert(exp)}
+
+
 @router.get("/experts/{expert_id}/packages")
 async def get_expert_packages(expert_id: str, request: Request, topic_id: Optional[str] = Query(None)):
     """Return packages assigned to a given expert, optionally filtered by topic_id.

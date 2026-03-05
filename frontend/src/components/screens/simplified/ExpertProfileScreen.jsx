@@ -54,10 +54,8 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
   useEffect(() => {
     const loadExpert = async () => {
       try {
-        // Get all experts and find the one we need
-        const response = await apiSimplified.get('/experts/all', token);
-        const foundExpert = response.experts?.find(e => e.expert_id === expertId);
-        setExpert(foundExpert);
+        const response = await apiSimplified.get(`/experts/${expertId}`, token);
+        setExpert(response.expert || null);
         
         trackEvent('expert_profile_viewed', { 
           expert_id: expertId,

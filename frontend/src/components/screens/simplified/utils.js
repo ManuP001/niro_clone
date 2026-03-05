@@ -4,12 +4,13 @@ import { BACKEND_URL } from '../../../config';
 export const apiSimplified = {
   baseUrl: `${BACKEND_URL}/api/simplified`,
   
-  async get(endpoint, token) {
+  async get(endpoint, token, { signal } = {}) {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       headers: {
         'Authorization': token ? `Bearer ${token}` : '',
         'Content-Type': 'application/json',
       },
+      signal,
     });
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Request failed' }));

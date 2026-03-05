@@ -1505,22 +1505,30 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
                             const file = e.target.files?.[0];
                             if (!file) return;
                             try {
-                              const fd = new FormData();
-                              fd.append('file', file);
-                              const token = getAdminToken();
-                              const res = await fetch(`${getBackendUrl()}/api/admin/upload/image`, {
-                                method: 'POST',
-                                headers: { 'X-Admin-Token': token },
-                                body: fd,
+                              // Compress + resize client-side before storing as base64.
+                              // Keeps MongoDB documents small (25-50 KB vs 2-3 MB raw).
+                              const dataUrl = await new Promise((resolve, reject) => {
+                                const img = new Image();
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                  img.onload = () => {
+                                    const MAX = 400; // max dimension in px
+                                    const scale = Math.min(MAX / img.width, MAX / img.height, 1);
+                                    const canvas = document.createElement('canvas');
+                                    canvas.width = Math.round(img.width * scale);
+                                    canvas.height = Math.round(img.height * scale);
+                                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                                  };
+                                  img.onerror = reject;
+                                  img.src = ev.target.result;
+                                };
+                                reader.onerror = reject;
+                                reader.readAsDataURL(file);
                               });
-                              const data = await res.json();
-                              if (data.ok) {
-                                setFormData(prev => ({ ...prev, [field.name]: data.url }));
-                              } else {
-                                alert(data.detail || 'Upload failed');
-                              }
+                              setFormData(prev => ({ ...prev, [field.name]: dataUrl }));
                             } catch (err) {
-                              alert('Upload failed: ' + err.message);
+                              alert('Image processing failed: ' + err.message);
                             }
                           }}
                         />

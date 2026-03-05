@@ -25,36 +25,43 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
 
   const [experts, setExperts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [selectedModality, setSelectedModality] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Get active plan topics for entitlement checking
   const activePlanTopics = userState?.active_plans?.map(p => p.topic_id) || [];
 
-  useEffect(() => {
-    const loadExperts = async () => {
-      try {
-        const response = await apiSimplified.get('/experts/all', token);
-        let allExperts = response.experts || [];
+  const loadExperts = async () => {
+    setLoading(true);
+    setLoadError(false);
+    try {
+      // 15-second timeout — prevents infinite spinner on Render cold starts
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+      const response = await apiSimplified.get('/experts/all', token, { signal: controller.signal });
+      clearTimeout(timer);
 
-        if (topicId) {
-          const topicFiltered = allExperts.filter(e => e.topics?.includes(topicId));
-          // If none tagged with this topic, show all active experts so wizard is never empty
-          allExperts = topicFiltered.length > 0 ? topicFiltered : allExperts;
-          allExperts.sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
-          if (maxResults) allExperts = allExperts.slice(0, maxResults);
-        }
-
-        setExperts(allExperts);
-        trackEvent('experts_tab_viewed', { flow_version: 'simplified_v5' }, token);
-      } catch (err) {
-        console.error('Failed to load experts:', err);
-      } finally {
-        setLoading(false);
+      let allExperts = response.experts || [];
+      if (topicId) {
+        const topicFiltered = allExperts.filter(e => e.topics?.includes(topicId));
+        allExperts = topicFiltered.length > 0 ? topicFiltered : allExperts;
+        allExperts.sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
+        if (maxResults) allExperts = allExperts.slice(0, maxResults);
       }
-    };
+      setExperts(allExperts);
+      trackEvent('experts_tab_viewed', { flow_version: 'simplified_v5' }, token);
+    } catch (err) {
+      console.error('Failed to load experts:', err);
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadExperts();
-  }, [token, topicId, maxResults]);
+  }, [token, topicId, maxResults]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Group experts by modality
   const modalities = [...new Set(experts.map(e => e.modality))];
@@ -111,16 +118,38 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
 
   if (loading) {
     return (
-      <div 
+      <div
         className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''} flex items-center justify-center`}
         style={{ backgroundColor: colors.background.primary }}
       >
         <div className="text-center">
-          <div 
+          <div
             className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4"
             style={{ borderColor: 'rgba(74,155,142,0.3)', borderTopColor: colors.teal.primary }}
           />
           <p style={{ color: colors.text.muted }}>Loading experts...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div
+        className={`min-h-screen ${hasBottomNav ? 'pb-20 md:pb-0' : ''} flex items-center justify-center p-6`}
+        style={{ backgroundColor: colors.background.primary }}
+      >
+        <div className="text-center">
+          <p className="text-2xl mb-3">⏱️</p>
+          <p className="font-semibold mb-1" style={{ color: colors.text.dark }}>Taking longer than usual</p>
+          <p className="text-sm mb-4" style={{ color: colors.text.muted }}>The server may be waking up. Please try again.</p>
+          <button
+            onClick={loadExperts}
+            className="px-5 py-2 rounded-lg font-medium text-white"
+            style={{ backgroundColor: colors.teal.primary }}
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
