@@ -151,14 +151,18 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [showFreeCallWizard]);
 
-  // Close wizard and pop the extra history entry we pushed
+  // Close wizard and clean up the extra history entry we pushed.
+  // We use replaceState (synchronous) rather than history.go(-1) (async).
+  // history.go(-1) would fire *after* any subsequent navigate() call and undo
+  // the new navigation — e.g. expert profile → back to /app (the bug).
+  // replaceState just strips the niroWizard marker from the current entry
+  // without triggering a backward navigation, so it never races with navigate().
   const closeWizard = useCallback(() => {
     wizardClosingByButtonRef.current = true;
     setShowFreeCallWizard(false);
     setFreeCallInitialTopicId(null);
-    // Remove the history entry we pushed when wizard opened
     if (window.history.state?.niroWizard) {
-      window.history.go(-1);
+      window.history.replaceState(null, '', window.location.href);
     }
   }, []);
 
