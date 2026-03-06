@@ -235,8 +235,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     } else if (intent.returnTo) {
       navigate(intent.returnTo, { replace: true });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // eslint-disable-line
 
   // Update active tab on route change
   useEffect(() => {
