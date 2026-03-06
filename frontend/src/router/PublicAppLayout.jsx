@@ -413,12 +413,19 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
 
   // Handle birth details submission
   // BirthDetailsModal saves to /api/profile/ itself, then calls onComplete() with no args.
-  // We just need to advance the onboarding step here.
+  // We just need to advance the onboarding step and restore any pending redirect.
   const handleBirthDetailsSubmit = () => {
     localStorage.setItem(USER_DETAILS_KEY, 'true');
     localStorage.setItem(ONBOARDING_KEY, 'true');
     setOnboardingStep(ONBOARDING_STEPS.COMPLETE);
     trackEvent('birth_details_submitted');
+
+    // After filling birth details, navigate to wherever the user was originally trying to go
+    const redirect = localStorage.getItem('niro_redirect_after_login');
+    if (redirect) {
+      localStorage.removeItem('niro_redirect_after_login');
+      navigate(redirect, { replace: true });
+    }
   };
 
   // Handle CTA click - open the free call onboarding wizard (requires login)

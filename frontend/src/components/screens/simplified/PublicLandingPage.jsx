@@ -159,12 +159,12 @@ export default function PublicLandingPage({
     }
   };
 
-  // Handle Begin Consultation CTA - Navigate to topics page (category listing)
+  // Handle Begin Consultation CTA - Navigate directly to experts filtered by category
+  // This eliminates the double-selection problem: user doesn't have to pick topic twice.
   const handleBeginConsultation = (e, categoryId) => {
     e.preventDefault();
-    // Navigate to app topics page (life topics listing)
-    // The homepage shows categories, clicking should show all topics in that category
-    window.location.href = '/app';
+    // Go straight to the expert listing pre-filtered by the chosen category
+    window.location.href = `/app/experts?topicId=${categoryId}`;
   };
 
   // Handle nav Begin button
@@ -1282,13 +1282,65 @@ export default function PublicLandingPage({
           .steps { grid-template-columns: 1fr; }
           .step-header { gap: 12px; }
           .step-num { font-size: 40px; }
-          .landing-footer { 
-            flex-direction: column; 
-            gap: 24px; 
-            padding: 40px 24px; 
-            text-align: center; 
+          .landing-footer {
+            flex-direction: column;
+            gap: 24px;
+            padding: 40px 24px;
+            text-align: center;
           }
           .footer-note { text-align: center; }
+        }
+
+        /* Small phone overrides — prevents hero text overflowing on 375-414px screens */
+        @media (max-width: 480px) {
+          .landing-hero {
+            padding: 90px 20px 60px;
+            min-height: auto;
+          }
+          .landing-hero h1 {
+            font-size: clamp(32px, 9vw, 48px);
+            margin-bottom: 16px;
+          }
+          .hero-sub {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+          }
+          .hero-badges {
+            margin-bottom: 28px;
+          }
+          .hero-badge {
+            font-size: 12px;
+            padding: 9px 16px;
+          }
+          .btn-free-call {
+            padding: 16px 32px;
+            font-size: 16px;
+            width: 100%;
+            justify-content: center;
+          }
+          .landing-section {
+            padding: 56px 20px;
+          }
+          .landing-section h2 {
+            font-size: clamp(24px, 7vw, 36px);
+          }
+          .topic-card {
+            padding: 24px;
+            border-radius: 24px;
+          }
+          .topic-card h3 {
+            font-size: 18px;
+          }
+          .topic-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+          }
+          .topic-icon svg {
+            width: 26px;
+            height: 26px;
+          }
         }
 
         /* Mobile menu dropdown */
@@ -1539,7 +1591,7 @@ export default function PublicLandingPage({
 
           <div className="topic-grid">
             {/* Career */}
-            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'career_clarity')}>
+            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'career')}>
               <div className="topic-header">
                 <div className="topic-icon">
                   <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
@@ -1561,7 +1613,7 @@ export default function PublicLandingPage({
             </div>
 
             {/* Health */}
-            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'stress_management')}>
+            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'health')}>
               <div className="topic-header">
                 <div className="topic-icon">
                   <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
@@ -1585,7 +1637,7 @@ export default function PublicLandingPage({
             </div>
 
             {/* Love */}
-            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'marriage_planning')}>
+            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'love')}>
               <div className="topic-header">
                 <div className="topic-icon">
                   <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
@@ -1607,7 +1659,7 @@ export default function PublicLandingPage({
             </div>
 
             {/* Fertility */}
-            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'relationship_healing')}>
+            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'love')}>
               <div className="topic-header">
                 <div className="topic-icon">
                   <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
