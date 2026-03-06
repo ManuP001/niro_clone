@@ -61,7 +61,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
 
   useEffect(() => {
     loadExperts();
-  }, [token, topicId, maxResults]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token, topicId, maxResults]); // eslint-disable-line
 
   // Group experts by modality
   const modalities = [...new Set(experts.map(e => e.modality))];
@@ -107,8 +107,11 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
   }, {});
 
   const handleExpertClick = (expert) => {
-    // In wizard mode with onBookFreeCall, cards are display-only
-    if (onBookFreeCall) return;
+    if (onBookFreeCall) {
+      // In wizard mode, clicking the card selects that expert and advances to booking
+      onBookFreeCall(expert);
+      return;
+    }
     if (onExpertSelect) {
       onExpertSelect(expert.expert_id, expert.name);
     } else {

@@ -1371,6 +1371,7 @@ class ExpertCreate(BaseModel):
     offers_free_call: bool = False
     timezone: str = "Asia/Kolkata"
     weekly_availability: Dict[str, List[Dict[str, str]]] = {}
+    session_rate_inr: int = 0  # Per-session rate in ₹; used to compute package prices dynamically
 
 class ExpertUpdate(BaseModel):
     name: Optional[str] = None
@@ -1391,6 +1392,7 @@ class ExpertUpdate(BaseModel):
     offers_free_call: Optional[bool] = None
     timezone: Optional[str] = None
     weekly_availability: Optional[Dict[str, List[Dict[str, str]]]] = None
+    session_rate_inr: Optional[int] = None
 
 # Master tag options by type
 EXPERT_TAG_OPTIONS = {

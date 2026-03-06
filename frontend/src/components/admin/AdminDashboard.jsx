@@ -2245,6 +2245,7 @@ const ExpertsManager = () => (
       { name: 'years_experience', label: 'Years Experience', type: 'number', default: 5 },
       { name: 'rating', label: 'Rating (1–5)', type: 'number', decimal: true, min: 1, max: 5, default: 4.5 },
       { name: 'total_consults', label: 'Total Consults', type: 'number', default: 0 },
+      { name: 'session_rate_inr', label: 'Session Rate (₹ per session)', type: 'number', default: 0, hint: 'Per-session rate in ₹. When set, package prices are computed as: rate × calls × (1 + margin%). Leave 0 to use tier prices.' },
       { name: 'topics', label: 'Topics', type: 'array', hint: 'Topic IDs this expert can serve' },
       { name: 'photo_url', label: 'Photo', type: 'image-upload' },
       { name: 'life_situation_tags', label: 'Best For Tags (Life Situations)', type: 'tag-multi-select', tagType: 'life_situation', maxTags: 5, hint: '3-5 tags shown on profile as "Best for"' },
@@ -2314,7 +2315,7 @@ const RemediesCatalogManager = () => {
 
 // Consultation Editor - per-expert session options
 const DURATION_OPTIONS = [15, 30, 45, 60];
-const emptyConsultation = () => ({ duration_mins: 30, price_inr: '', title: '', what_you_get: '' });
+const emptyConsultation = () => ({ duration_mins: 30, price_inr: '', niro_margin_pct: 0, title: '', what_you_get: '' });
 
 const ConsultationEditor = ({ value = [], onChange }) => {
   const add = () => onChange([...value, emptyConsultation()]);
@@ -2328,7 +2329,7 @@ const ConsultationEditor = ({ value = [], onChange }) => {
     <div className="space-y-3">
       {value.map((c, i) => (
         <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2 bg-gray-50">
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-end">
             <div className="flex-1">
               <label className="text-xs text-gray-500">Duration</label>
               <select
@@ -2340,17 +2341,32 @@ const ConsultationEditor = ({ value = [], onChange }) => {
               </select>
             </div>
             <div className="flex-1">
-              <label className="text-xs text-gray-500">Price (₹)</label>
+              <label className="text-xs text-gray-500">Customer pays (₹)</label>
               <input
                 type="number"
                 value={c.price_inr}
                 onChange={(e) => update(i, 'price_inr', parseInt(e.target.value) || '')}
-                placeholder="e.g. 1200"
+                placeholder="e.g. 1500"
                 className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
               />
             </div>
-            <button onClick={() => remove(i)} className="mt-5 text-red-400 hover:text-red-600 text-lg font-bold">×</button>
+            <div className="w-20">
+              <label className="text-xs text-gray-500">Niro margin %</label>
+              <input
+                type="number"
+                value={c.niro_margin_pct ?? 0}
+                min="0" max="100"
+                onChange={(e) => update(i, 'niro_margin_pct', parseInt(e.target.value) || 0)}
+                className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
+              />
+            </div>
+            <button onClick={() => remove(i)} className="pb-1.5 text-red-400 hover:text-red-600 text-lg font-bold">×</button>
           </div>
+          {c.price_inr > 0 && (c.niro_margin_pct > 0) && (
+            <p className="text-xs text-gray-400">
+              Expert earns: ₹{Math.round(c.price_inr / (1 + (c.niro_margin_pct || 0) / 100)).toLocaleString('en-IN')}
+            </p>
+          )}
           <div>
             <label className="text-xs text-gray-500">Session title</label>
             <input

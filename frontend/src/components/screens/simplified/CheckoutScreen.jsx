@@ -72,7 +72,7 @@ export default function CheckoutScreen({ token, tierId: propTierId, scenarioIds 
       }
     };
     loadTierData();
-  }, [tierId, token, isConsultationMode]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [tierId, token, isConsultationMode]); // eslint-disable-line
 
   // Load Razorpay script
   const loadRazorpayScript = () => {

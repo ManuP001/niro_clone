@@ -29,6 +29,7 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
   const [loading, setLoading] = useState(true);
   const [showTopicSelector, setShowTopicSelector] = useState(false);
   const [expertRemedies, setExpertRemedies] = useState([]);
+  const [packages, setPackages] = useState([]);
   const packagesRef = useRef(null);
 
   // Fetch remedies offered by this expert
@@ -38,6 +39,17 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
       .then(res => setExpertRemedies(res.remedies || []))
       .catch(() => setExpertRemedies([]));
   }, [expertId, token]);
+
+  // Fetch packages for this expert, optionally filtered by topicId
+  useEffect(() => {
+    if (!expertId) return;
+    const url = topicId
+      ? `/experts/${expertId}/packages?topic_id=${topicId}`
+      : `/experts/${expertId}/packages`;
+    apiSimplified.get(url, token)
+      .then(res => setPackages(res.packages || []))
+      .catch(() => setPackages([]));
+  }, [expertId, topicId, token]);
 
   // Handle back navigation
   const handleBack = () => {
@@ -314,6 +326,69 @@ export default function ExpertProfileScreen({ token, expertId: propExpertId, use
                         ₹{c.price_inr?.toLocaleString('en-IN')}
                       </p>
                       <p className="text-xs" style={{ color: colors.text.muted }}>Book →</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Packages for this expert */}
+        {packages.length > 0 && (
+          <div className="mb-6" ref={packagesRef}>
+            <h3 className="font-semibold mb-3 text-sm md:text-base" style={{ color: colors.text.dark }}>
+              Packages
+            </h3>
+            <div className="space-y-3">
+              {packages.map((pkg) => (
+                <button
+                  key={pkg.tier_id}
+                  onClick={() => {
+                    if (!isAuthenticated) { onLoginClick?.(); return; }
+                    if (onBuyPackage) {
+                      onBuyPackage(pkg);
+                    } else {
+                      onNavigate?.('packageLanding', { packageId: pkg.tier_id });
+                    }
+                  }}
+                  className="w-full text-left rounded-xl p-4 transition-all active:scale-[0.99] hover:shadow-sm relative overflow-hidden"
+                  style={{ backgroundColor: colors.peach.soft, border: `1px solid ${colors.ui.borderDark}` }}
+                >
+                  {pkg.popular && (
+                    <span
+                      className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: colors.teal.primary, color: '#fff' }}
+                    >
+                      Popular
+                    </span>
+                  )}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm" style={{ color: colors.text.dark }}>{pkg.name}</p>
+                      {pkg.description && (
+                        <p className="text-xs mt-1 line-clamp-2" style={{ color: colors.text.secondary }}>
+                          {pkg.description}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {pkg.calls_included > 0 && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.dark }}>
+                            {pkg.calls_included} session{pkg.calls_included > 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {pkg.duration_days > 0 && (
+                          <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.dark }}>
+                            {pkg.duration_days} days
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 text-right">
+                      <p className="font-bold text-base" style={{ color: colors.teal.primary }}>
+                        ₹{pkg.price_inr?.toLocaleString('en-IN')}
+                      </p>
+                      <p className="text-xs" style={{ color: colors.text.muted }}>Get pack →</p>
                     </div>
                   </div>
                 </button>
