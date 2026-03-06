@@ -1372,6 +1372,12 @@ class ExpertCreate(BaseModel):
     timezone: str = "Asia/Kolkata"
     weekly_availability: Dict[str, List[Dict[str, str]]] = {}
     session_rate_inr: int = 0  # Per-session rate in ₹; used to compute package prices dynamically
+    tagline: str = ""                  # 1-line specialty shown below name on profile
+    credentials: str = ""             # Education + lineage e.g. "B.A. Math, Hindu College"
+    location: str = ""                # City e.g. "New Delhi"
+    quote: str = ""                   # Highlighted quote shown on profile
+    gallery_photos: List[Dict] = []   # [{url: str, caption: str}] for "Know Your Astrologer"
+    social_links: Dict = {}           # {instagram: url, youtube: url}
 
 class ExpertUpdate(BaseModel):
     name: Optional[str] = None
@@ -1393,6 +1399,12 @@ class ExpertUpdate(BaseModel):
     timezone: Optional[str] = None
     weekly_availability: Optional[Dict[str, List[Dict[str, str]]]] = None
     session_rate_inr: Optional[int] = None
+    tagline: Optional[str] = None
+    credentials: Optional[str] = None
+    location: Optional[str] = None
+    quote: Optional[str] = None
+    gallery_photos: Optional[List[Dict]] = None
+    social_links: Optional[Dict] = None
 
 # Master tag options by type
 EXPERT_TAG_OPTIONS = {

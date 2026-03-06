@@ -1557,6 +1557,77 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
                       value={formData[field.name] || {}}
                       onChange={(val) => setFormData({ ...formData, [field.name]: val })}
                     />
+                  ) : field.type === 'gallery' ? (
+                    <div className="space-y-3">
+                      {(formData[field.name] || []).map((item, idx) => (
+                        <div key={idx} className="border border-gray-200 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500 font-medium">Photo {idx + 1}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = [...(formData[field.name] || [])];
+                                updated.splice(idx, 1);
+                                setFormData({ ...formData, [field.name]: updated });
+                              }}
+                              className="ml-auto text-red-500 text-xs hover:text-red-700"
+                            >Remove</button>
+                          </div>
+                          {item.url && item.url.startsWith('data:') ? (
+                            <img src={item.url} alt={item.caption || ''} className="w-full h-32 object-cover rounded" />
+                          ) : null}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files[0];
+                              if (!file) return;
+                              const reader = new FileReader();
+                              reader.onload = (ev) => {
+                                const updated = [...(formData[field.name] || [])];
+                                updated[idx] = { ...updated[idx], url: ev.target.result };
+                                setFormData({ ...formData, [field.name]: updated });
+                              };
+                              reader.readAsDataURL(file);
+                            }}
+                            className="w-full text-sm"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Caption (e.g. 'At my ashram in Rohtak')"
+                            value={item.caption || ''}
+                            onChange={(e) => {
+                              const updated = [...(formData[field.name] || [])];
+                              updated[idx] = { ...updated[idx], caption: e.target.value };
+                              setFormData({ ...formData, [field.name]: updated });
+                            }}
+                            className="w-full px-3 py-1.5 border border-gray-300 rounded text-sm"
+                          />
+                        </div>
+                      ))}
+                      {(formData[field.name] || []).length < 4 && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, [field.name]: [...(formData[field.name] || []), { url: '', caption: '' }] })}
+                          className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-teal-400 hover:text-teal-600"
+                        >+ Add photo</button>
+                      )}
+                    </div>
+                  ) : field.type === 'social-links' ? (
+                    <div className="space-y-2">
+                      {['instagram', 'youtube', 'facebook', 'twitter'].map((platform) => (
+                        <div key={platform} className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600 capitalize w-20 flex-shrink-0">{platform}</span>
+                          <input
+                            type="url"
+                            placeholder={`https://${platform}.com/...`}
+                            value={(formData[field.name] || {})[platform] || ''}
+                            onChange={(e) => setFormData({ ...formData, [field.name]: { ...(formData[field.name] || {}), [platform]: e.target.value } })}
+                            className="flex-1 px-3 py-1.5 border border-gray-300 rounded text-sm"
+                          />
+                        </div>
+                      ))}
+                    </div>
                   ) : (
                     <input
                       type="text"
@@ -2246,6 +2317,12 @@ const ExpertsManager = () => (
       { name: 'rating', label: 'Rating (1–5)', type: 'number', decimal: true, min: 1, max: 5, default: 4.5 },
       { name: 'total_consults', label: 'Total Consults', type: 'number', default: 0 },
       { name: 'session_rate_inr', label: 'Session Rate (₹ per session)', type: 'number', default: 0, hint: 'Per-session rate in ₹. When set, package prices are computed as: rate × calls × (1 + margin%). Leave 0 to use tier prices.' },
+      { name: 'tagline', label: 'Tagline (1-line specialty)', type: 'text', hint: 'e.g. "Vedic astrology with numerology & palmistry" — shown below name on profile' },
+      { name: 'credentials', label: 'Credentials / Education', type: 'textarea', hint: 'Education, guru lineage etc. Shown in info card on profile.' },
+      { name: 'location', label: 'Location (City)', type: 'text', hint: 'e.g. "New Delhi"' },
+      { name: 'quote', label: 'Profile Quote', type: 'textarea', hint: 'A meaningful quote — shown as a highlighted card on their profile.' },
+      { name: 'gallery_photos', label: 'Gallery Photos (Know Your Astrologer)', type: 'gallery', hint: 'Up to 4 photos with captions shown in the profile gallery section.' },
+      { name: 'social_links', label: 'Social Links', type: 'social-links', hint: 'Instagram, YouTube etc.' },
       { name: 'topics', label: 'Topics', type: 'array', hint: 'Topic IDs this expert can serve' },
       { name: 'photo_url', label: 'Photo', type: 'image-upload' },
       { name: 'life_situation_tags', label: 'Best For Tags (Life Situations)', type: 'tag-multi-select', tagType: 'life_situation', maxTags: 5, hint: '3-5 tags shown on profile as "Best for"' },

@@ -261,8 +261,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
 
   // Kept for direct /app/topic/:topicId URL access
   const handleTopicCtaClick = (topicId) => {
-    setFreeCallInitialTopicId(topicId || null);
-    setShowFreeCallWizard(true);
+    navigate(`/app/experts${topicId ? `?topicId=${topicId}` : ''}`);
   };
 
   // Handle navigation from HomeScreen (supports multiple destination types)
@@ -277,8 +276,11 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'expert':
       case 'expertProfile': {
-        const tId = params.topicId ? `?topicId=${params.topicId}` : '';
-        navigate(`/app/expert/${params.expertId}${tId}`);
+        const q = new URLSearchParams();
+        if (params.topicId) q.set('topicId', params.topicId);
+        if (params.topicContext) q.set('context', params.topicContext);
+        const qs = q.toString();
+        navigate(`/app/expert/${params.expertId}${qs ? '?' + qs : ''}`);
         break;
       }
       case 'experts':

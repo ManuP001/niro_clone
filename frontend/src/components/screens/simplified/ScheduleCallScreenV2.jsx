@@ -95,7 +95,7 @@ const FEATURED_REMEDIES = [
   { id: 'yellow_sapphire', emoji: '💎', title: 'Yellow Sapphire (Pukhraj)', price: '₹4,200' },
 ];
 
-export default function ScheduleCallScreen({ token, user, onBack, onComplete, onNavigate, expertId, topicId, expertName }) {
+export default function ScheduleCallScreen({ token, user, onBack, onComplete, onNavigate, expertId, topicId, expertName, consultation, bookingId }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [timeSlots, setTimeSlots] = useState([]);
@@ -149,57 +149,64 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
   
   const handleBooking = async () => {
     if (!selectedSlot) return;
-    
+
     setIsBooking(true);
     setError(null);
-    
+
     try {
-      // Format the booking date/time
       const bookingDate = new Date(selectedDate);
       const [hours] = selectedSlot.time.split(':');
       bookingDate.setHours(parseInt(hours), 0, 0, 0);
-      
-      const bookingData = {
-        scheduled_date: bookingDate.toISOString(),
-        duration_minutes: 10,
-        call_type: 'free_consultation',
-        user_name: user?.name || 'User',
-        user_email: user?.email || '',
-        notes: 'Free 5-minute consultation call',
-        expert_id: expertId || null,
-        topic_id: topicId || null,
-        questions: bookingQuestions,
-        user_phone: phoneNumber || user?.phone || '',
-      };
-      
-      // Save booking to backend (use direct API call, not apiSimplified)
-      const res = await fetch(`${BACKEND_URL}/api/bookings/schedule`, {
-        method: 'POST',
-        headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingData),
-      });
-      const response = await res.json();
 
-      if (!res.ok) {
-        throw new Error(response.detail || response.message || 'Failed to schedule call');
-      }
-
-      if (response.ok) {
-        setBookingDetails({
-          id: response.booking_id,
-          date: bookingDate,
-          time: selectedSlot.displayTime,
+      if (bookingId) {
+        // Paid consultation — update existing booking record
+        const res = await fetch(`${BACKEND_URL}/api/simplified/bookings/${bookingId}/schedule`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            scheduled_date: bookingDate.toISOString(),
+            slot_time: selectedSlot.displayTime,
+          }),
         });
+        const response = await res.json();
+        if (!res.ok) throw new Error(response.detail || response.message || 'Failed to schedule');
+        setBookingDetails({ id: bookingId, date: bookingDate, time: selectedSlot.displayTime });
         setBookingComplete(true);
-        trackEvent('call_scheduled', { 
-          date: bookingDate.toISOString(),
-          type: 'free_consultation' 
-        });
+        trackEvent('consultation_scheduled', { bookingId, date: bookingDate.toISOString() });
       } else {
-        throw new Error(response.message || 'Failed to schedule call');
+        // Free call — create new booking record
+        const bookingData = {
+          scheduled_date: bookingDate.toISOString(),
+          duration_minutes: 10,
+          call_type: 'free_consultation',
+          user_name: user?.name || 'User',
+          user_email: user?.email || '',
+          notes: 'Free 5-minute consultation call',
+          expert_id: expertId || null,
+          topic_id: topicId || null,
+          questions: bookingQuestions,
+          user_phone: phoneNumber || user?.phone || '',
+        };
+        const res = await fetch(`${BACKEND_URL}/api/bookings/schedule`, {
+          method: 'POST',
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(bookingData),
+        });
+        const response = await res.json();
+        if (!res.ok) throw new Error(response.detail || response.message || 'Failed to schedule call');
+        if (response.ok) {
+          setBookingDetails({ id: response.booking_id, date: bookingDate, time: selectedSlot.displayTime });
+          setBookingComplete(true);
+          trackEvent('call_scheduled', { date: bookingDate.toISOString(), type: 'free_consultation' });
+        } else {
+          throw new Error(response.message || 'Failed to schedule call');
+        }
       }
     } catch (err) {
       console.error('Booking error:', err);
@@ -254,7 +261,9 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
               You're all set!
             </h2>
             <p className="text-base mb-8" style={{ color: colors.text.secondary }}>
-              Your free consultation call has been scheduled.
+              {consultation
+                ? `Your ${consultation.title || 'consultation'} has been scheduled.`
+                : 'Your free consultation call has been scheduled.'}
             </p>
             
             {/* Booking Details Card */}
@@ -301,7 +310,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
                   <div>
                     <p className="text-sm" style={{ color: colors.text.muted }}>Time</p>
                     <p className="font-medium" style={{ color: colors.text.dark }}>
-                      {bookingDetails.time} (5 minutes)
+                      {bookingDetails.time} ({consultation?.duration_mins || 10} minutes)
                     </p>
                   </div>
                 </div>
@@ -318,7 +327,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
                   <div>
                     <p className="text-sm" style={{ color: colors.text.muted }}>Call Type</p>
                     <p className="font-medium" style={{ color: colors.text.dark }}>
-                      Free Consultation Call
+                      {consultation?.title || 'Free Consultation Call'}
                     </p>
                   </div>
                 </div>
@@ -441,10 +450,12 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
               </div>
               <div>
                 <p className="font-semibold" style={{ color: colors.text.dark }}>
-                  Free 10-Minute Consultation
+                  {consultation?.title || 'Free 10-Minute Consultation'}
                 </p>
                 <p className="text-sm" style={{ color: colors.text.muted }}>
-                  Select a convenient time for your call
+                  {consultation?.duration_mins
+                    ? `${consultation.duration_mins} min · Select a convenient time`
+                    : 'Select a convenient time for your call'}
                 </p>
               </div>
             </div>

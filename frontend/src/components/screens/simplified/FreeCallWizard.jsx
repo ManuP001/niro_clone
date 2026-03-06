@@ -1,41 +1,36 @@
 import React, { useState } from 'react';
 import HomeScreen from './HomeScreen';
 import ExpertsScreen from './ExpertsScreen';
-import ScheduleCallScreen from './ScheduleCallScreenV2';
+import TopicQuestionScreen from './TopicQuestionScreen';
 import { colors } from './theme';
 
 /**
- * FreeCallWizard — 3-step guided wizard for booking a free consultation.
+ * FreeCallWizard — 3-step guided wizard for booking a consultation.
  *
- * Step 1: Topic Picker  (HomeScreen in picker mode)
- * Step 2: Matched Astrologers (ExpertsScreen filtered by topic, single CTA)
- * Step 3: Schedule Call  (ScheduleCallScreenV2 — questions → slots → OTP → confirmation)
+ * Step 1: Topic Picker     (HomeScreen in picker mode)
+ * Step 2: Topic Question   (TopicQuestionScreen — 1 chip question)
+ * Step 3: Expert List      (ExpertsScreen filtered by topic)
+ *          → clicking an expert closes wizard and navigates to Expert Profile
  *
- * Renders as a full-screen fixed overlay so it doesn't break existing routing.
+ * Booking (session selection, slot, OTP, confirmation) happens on ExpertProfileScreen.
  */
 
-// Only show topics that have packages defined in the backend.
-// Add a topic ID here once its packages are created.
 const TOPICS_WITH_PACKAGES = [
-  'career',
-  'money',
-  'health',
-  'marriage',
-  'love',
-  'mental_health',
-  'spiritual',
+  'career', 'money', 'health', 'marriage', 'love', 'mental_health', 'spiritual',
 ];
 
 export default function FreeCallWizard({ token, user, userState, onClose, onNavigate, onTabChange, initialTopicId }) {
   const [step, setStep] = useState(initialTopicId ? 2 : 1);
   const [selectedTopicId, setSelectedTopicId] = useState(initialTopicId || null);
+  const [topicContext, setTopicContext] = useState(null);
 
   const handleTopicSelect = (topicId) => {
     setSelectedTopicId(topicId);
     setStep(2);
   };
 
-  const handleBookFreeCall = () => {
+  const handleAnswer = (answer) => {
+    setTopicContext(answer);
     setStep(3);
   };
 
@@ -47,10 +42,22 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
     }
   };
 
-  const handleScheduleComplete = () => {
+  // Expert selected — close wizard and open their profile
+  const handleExpertClick = (expert) => {
     onClose();
-    // Navigate to mypack so the user can see their upcoming call
-    if (onNavigate) onNavigate('mypack');
+    if (expert?.expert_id) {
+      onNavigate('expertProfile', {
+        expertId: expert.expert_id,
+        topicId: selectedTopicId,
+        topicContext,
+      });
+    }
+  };
+
+  const STEP_LABELS = {
+    1: 'Step 1 of 3 — Choose your topic',
+    2: 'Step 2 of 3 — A quick question',
+    3: 'Step 3 of 3 — Your astrologers',
   };
 
   return (
@@ -75,9 +82,7 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
 
       {/* Step label */}
       <p className="text-center text-xs pb-2" style={{ color: colors.text.muted }}>
-        {step === 1 && 'Step 1 of 3 — Choose your topic'}
-        {step === 2 && 'Step 2 of 3 — Your astrologers'}
-        {step === 3 && 'Step 3 of 3 — Book your call'}
+        {STEP_LABELS[step]}
       </p>
 
       {/* Step content */}
@@ -96,25 +101,23 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
         )}
 
         {step === 2 && selectedTopicId && (
+          <TopicQuestionScreen
+            topicId={selectedTopicId}
+            onAnswer={handleAnswer}
+            onBack={handleBack}
+          />
+        )}
+
+        {step === 3 && selectedTopicId && (
           <ExpertsScreen
             token={token}
             userState={userState}
             topicId={selectedTopicId}
-            maxResults={6}
-            onBookFreeCall={handleBookFreeCall}
+            maxResults={8}
+            onBookFreeCall={handleExpertClick}
             onNavigate={onNavigate}
             onTabChange={onTabChange}
             hasBottomNav={false}
-          />
-        )}
-
-        {step === 3 && (
-          <ScheduleCallScreen
-            token={token}
-            user={user}
-            topicId={selectedTopicId}
-            onBack={handleBack}
-            onComplete={handleScheduleComplete}
           />
         )}
       </div>

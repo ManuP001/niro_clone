@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { colors, shadows } from './theme';
 import { apiSimplified, trackEvent } from './utils';
-import { StarIcon, ChevronRightIcon } from './icons';
+import { ChevronRightIcon } from './icons';
 import { getBackendUrl } from '../../../config';
+import NiroCertifiedBadge from './NiroCertifiedBadge';
+import ResponsiveHeader from './ResponsiveHeader';
 
 const resolvePhotoUrl = (url) => {
   if (!url) return null;
   if (url.startsWith('/')) return `${getBackendUrl()}${url}`;
   return url;
 };
-import ResponsiveHeader from './ResponsiveHeader';
 
 /**
  * ExpertsScreen V2 - Responsive Layout with Desktop Header
@@ -198,7 +199,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
             </>
           )}
 
-          {/* Search (hidden in wizard mode) */}
+          {/* Search (hidden in wizard/topic mode) */}
           {!topicId && (
             <div className="mb-4 max-w-md">
               <input
@@ -218,25 +219,25 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
             </div>
           )}
 
-          {/* Modality Filter Pills (hidden in wizard mode) */}
-          {!topicId && (
+          {/* Modality Filter Pills — always shown */}
+          {modalities.length > 1 && (
             <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
               <button
                 onClick={() => setSelectedModality('all')}
-                className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all"
+                className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all"
                 style={selectedModality === 'all'
                   ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
                   : { backgroundColor: '#ffffff', color: colors.text.muted, border: `1px solid ${colors.ui.borderDark}` }
                 }
                 data-testid="filter-all"
               >
-                All Experts
+                All
               </button>
               {modalities.map((modality) => (
                 <button
                   key={modality}
                   onClick={() => setSelectedModality(modality)}
-                  className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap"
+                  className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
                   style={selectedModality === modality
                     ? { backgroundColor: colors.teal.primary, color: '#ffffff' }
                     : { backgroundColor: '#ffffff', color: colors.text.muted, border: `1px solid ${colors.ui.borderDark}` }
@@ -282,47 +283,21 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
           </div>
         )}
 
-        {/* Expert Cards - Responsive Grid */}
-        <div className="px-4 md:px-8 py-6">
-          {selectedModality === 'all' ? (
-            // Show grouped view with multi-column grid
-            Object.entries(groupedExperts).map(([modality, modalityExperts]) => (
-              <div key={modality} className="mb-8">
-                <h2 className="text-lg md:text-xl font-semibold mb-4" style={{ color: colors.text.dark }}>
-                  {modalityLabels[modality] || modality}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {modalityExperts.map((expert) => (
-                    <ExpertCard
-                      key={expert.expert_id}
-                      expert={expert}
-                      hasAccess={expert.topics?.some(t => activePlanTopics.includes(t))}
-                      onClick={() => handleExpertClick(expert)}
-                      topicId={topicId}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))
-          ) : (
-            // Show flat list for filtered view with grid
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredExperts.map((expert) => (
-                <ExpertCard
-                  key={expert.expert_id}
-                  expert={expert}
-                  hasAccess={expert.topics?.some(t => activePlanTopics.includes(t))}
-                  onClick={() => handleExpertClick(expert)}
-                  topicId={topicId}
-                />
-              ))}
-            </div>
-          )}
-          
+        {/* Expert Cards - Flat vertical list */}
+        <div className="px-4 md:px-8 py-4 space-y-3 max-w-2xl mx-auto">
+          {filteredExperts.map((expert) => (
+            <ExpertCard
+              key={expert.expert_id}
+              expert={expert}
+              hasAccess={expert.topics?.some(t => activePlanTopics.includes(t))}
+              onClick={() => handleExpertClick(expert)}
+            />
+          ))}
+
           {filteredExperts.length === 0 && (
             <div className="text-center py-12">
               <p className="text-lg" style={{ color: colors.text.muted }}>No experts found</p>
-              <p className="text-sm mt-2" style={{ color: colors.text.muted }}>Try adjusting your search or filters</p>
+              <p className="text-sm mt-2" style={{ color: colors.text.muted }}>Try adjusting your filters</p>
             </div>
           )}
         </div>
@@ -350,107 +325,71 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
 }
 
 /**
- * ExpertCard - Expert card with consistent styling
+ * ExpertCard — horizontal card matching Niro design mockups.
+ * Shows: circular photo, name, modality, years of experience, Niro Certified badge, chevron.
  */
-function ExpertCard({ expert, hasAccess, onClick, topicId }) {
+function ExpertCard({ expert, onClick }) {
+  const years = expert.years_experience || expert.experience_years;
   return (
     <div
       onClick={onClick}
-      className="rounded-xl p-4 transition-all active:scale-[0.99] cursor-pointer"
-      style={{ 
+      className="flex items-center gap-4 rounded-2xl p-4 transition-all active:scale-[0.99] cursor-pointer hover:shadow-md"
+      style={{
         backgroundColor: '#ffffff',
         border: `1px solid ${colors.ui.borderDark}`,
-        boxShadow: shadows.sm,
+        boxShadow: shadows.card,
       }}
     >
-      <div className="flex gap-4">
-        {/* Avatar */}
-        <div 
-          className="w-14 h-14 rounded-full flex-shrink-0 overflow-hidden"
-          style={{ backgroundColor: colors.gold.cream }}
-        >
-          {expert.photo_url ? (
-            <img
-              src={resolvePhotoUrl(expert.photo_url)}
-              alt={expert.name}
-              className="w-full h-full object-cover"
-              onError={(e) => { e.target.style.display = 'none'; }}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-xl font-bold" style={{ color: colors.teal.primary }}>
-              {expert.name?.charAt(0) || 'E'}
-            </div>
-          )}
-        </div>
-        
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <h3 className="font-semibold text-sm" style={{ color: colors.text.dark }}>
-                {expert.name}
-              </h3>
-              <p className="text-xs mt-0.5" style={{ color: colors.teal.primary }}>
-                {expert.modality_label}
-              </p>
-            </div>
-            <ChevronRightIcon className="w-5 h-5 flex-shrink-0" style={{ color: colors.text.mutedDark }} />
+      {/* Circular photo with gold ring */}
+      <div
+        className="w-16 h-16 rounded-full flex-shrink-0 overflow-hidden"
+        style={{
+          border: '2px solid #C9A84C',
+          backgroundColor: colors.background.warm,
+        }}
+      >
+        {expert.photo_url ? (
+          <img
+            src={resolvePhotoUrl(expert.photo_url)}
+            alt={expert.name}
+            className="w-full h-full object-cover"
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        ) : (
+          <div
+            className="w-full h-full flex items-center justify-center text-2xl font-bold"
+            style={{ color: colors.teal.primary }}
+          >
+            {expert.name?.charAt(0) || 'E'}
           </div>
-          
-          <div className="flex items-center gap-3 mt-2">
-            <div className="flex items-center gap-1">
-              <StarIcon className="w-3.5 h-3.5" style={{ color: '#F59E0B' }} filled />
-              <span className="text-xs font-medium" style={{ color: colors.text.dark }}>{expert.rating || '4.8'}</span>
-            </div>
-            <span className="text-xs" style={{ color: colors.text.mutedDark }}>
-              {expert.consultations || '500'}+ consultations
-            </span>
-          </div>
-          
-          {expert.languages && (
-            <p className="text-xs mt-1" style={{ color: colors.text.mutedDark }}>
-              {expert.languages.join(', ')}
-            </p>
-          )}
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <p className="font-bold text-base leading-tight" style={{ color: colors.text.dark }}>
+          {expert.name}
+        </p>
+        <p className="text-sm mt-0.5" style={{ color: colors.text.secondary }}>
+          {expert.modality_label}
+        </p>
+        {years ? (
+          <p className="text-xs mt-0.5" style={{ color: colors.text.muted }}>
+            {years}+ years of practice
+          </p>
+        ) : null}
+        <div className="mt-1.5">
+          <NiroCertifiedBadge size="sm" />
         </div>
       </div>
-      
-      {/* Tags - show life-situation tags + optionally 1 method tag */}
-      {(() => {
-        const lifeTags = expert.life_situation_tags || [];
-        const methodTags = expert.method_tags || [];
-        const displayTags = lifeTags.length > 0
-          ? [...lifeTags.slice(0, 3), ...(methodTags.length > 0 ? [methodTags[0]] : [])].slice(0, 4)
-          : (expert.best_for_tags || []).slice(0, 3);
-        return displayTags.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {displayTags.map((tag, idx) => (
-              <span
-                key={idx}
-                className="text-[10px] px-2 py-0.5 rounded-full"
-                style={{
-                  backgroundColor: idx >= (lifeTags.length > 0 ? lifeTags.slice(0, 3).length : 999) ? `${colors.gold.accent}20` : `${colors.teal.primary}10`,
-                  color: idx >= (lifeTags.length > 0 ? lifeTags.slice(0, 3).length : 999) ? colors.gold.accent : colors.teal.primary
-                }}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        ) : null;
-      })()}
 
-      {/* Free call available badge — shown only in wizard mode */}
-      {topicId && expert.offers_free_call && (
-        <div className="mt-2">
-          <span
-            className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-            style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.primary }}
-          >
-            Free call available
-          </span>
-        </div>
-      )}
+      {/* Chevron */}
+      <div
+        className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+        style={{ backgroundColor: colors.background.secondary }}
+      >
+        <ChevronRightIcon className="w-4 h-4" style={{ color: colors.text.muted }} />
+      </div>
     </div>
   );
 }
