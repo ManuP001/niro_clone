@@ -2392,7 +2392,7 @@ const RemediesCatalogManager = () => {
 
 // Consultation Editor - per-expert session options
 const DURATION_OPTIONS = [15, 30, 45, 60];
-const emptyConsultation = () => ({ duration_mins: 30, price_inr: '', niro_margin_pct: 0, title: '', what_you_get: '' });
+const emptyConsultation = () => ({ duration_mins: 30, price_inr: 0, niro_margin_pct: 0, title: '', what_you_get: '' });
 
 const ConsultationEditor = ({ value = [], onChange }) => {
   const add = () => onChange([...value, emptyConsultation()]);
@@ -2422,8 +2422,10 @@ const ConsultationEditor = ({ value = [], onChange }) => {
               <input
                 type="number"
                 value={c.price_inr}
-                onChange={(e) => update(i, 'price_inr', parseInt(e.target.value) || '')}
+                onChange={(e) => update(i, 'price_inr', e.target.value === '' ? 0 : parseInt(e.target.value) || 0)}
                 placeholder="e.g. 1500"
+                min="0"
+                required
                 className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm"
               />
             </div>
