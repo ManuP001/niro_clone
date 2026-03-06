@@ -232,8 +232,8 @@ function MinimalistTile({ tile, onClick }) {
 // Category Module Component - Updated for responsive layout
 function CategoryModule({ situation, onTileClick, isDesktop = false }) {
   return (
-    <div 
-      className={`rounded-2xl p-4 ${isDesktop ? '' : 'mb-4'} transition-all duration-300 h-full`}
+    <div
+      className={`rounded-2xl p-3 md:p-4 ${isDesktop ? '' : 'mb-3'} transition-all duration-300 h-full`}
       style={{ 
         backgroundColor: '#FFFFFF',
         border: '1px solid rgba(74, 155, 142, 0.08)',
@@ -259,7 +259,7 @@ function CategoryModule({ situation, onTileClick, isDesktop = false }) {
       </div>
       
       {/* Grid of Tiles - Responsive: 3 cols mobile, different layout on desktop */}
-      <div className={`grid gap-2 ${isDesktop ? 'grid-cols-3' : 'grid-cols-3 md:grid-cols-6'}`}>
+      <div className={`grid gap-1.5 md:gap-2 ${isDesktop ? 'grid-cols-3' : 'grid-cols-3 md:grid-cols-6'}`}>
         {situation.tiles.map((tile) => (
           <MinimalistTile 
             key={tile.id}
@@ -431,7 +431,7 @@ export default function HomeScreen({
       )}
 
       {/* Life Topics Section Header with Search */}
-      <div className="px-4 md:px-8 lg:px-12 pt-4 mb-4 md:mb-6" id="topics-section">
+      <div className="px-4 md:px-8 lg:px-12 pt-3 mb-3 md:mb-6" id="topics-section">
         <div className="max-w-5xl mx-auto">
           {mode === 'picker' ? (
             <h2
@@ -442,7 +442,7 @@ export default function HomeScreen({
             </h2>
           ) : (
           <h2
-            className="text-lg sm:text-xl md:text-2xl font-semibold text-center mb-4 md:mb-6"
+            className="text-base sm:text-lg md:text-2xl font-semibold text-center mb-3 md:mb-6"
             style={{ color: colors.text.dark }}
           >
             Choose the area of life you need clarity <span style={{ fontStyle: 'italic' }}>on today.</span>
@@ -450,7 +450,7 @@ export default function HomeScreen({
           )}
           
           {/* Search/Filter Input */}
-          <div className="relative max-w-md mx-auto mb-6">
+          <div className="relative max-w-md mx-auto mb-4">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <svg 
                 className="w-5 h-5" 
@@ -512,7 +512,7 @@ export default function HomeScreen({
       </div>
 
       {/* Life Situations - Category Cards with Responsive Grid and Scroll Reveal */}
-      <div className="px-4 md:px-8 lg:px-12 pb-8 md:pb-12">
+      <div className="px-4 md:px-8 lg:px-12 pb-4 md:pb-12">
         <div className="max-w-5xl mx-auto">
           {/* Desktop: Show all categories in a grid layout */}
           <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
@@ -532,7 +532,7 @@ export default function HomeScreen({
           </div>
 
           {/* Mobile: Stack categories vertically */}
-          <div className="md:hidden space-y-4">
+          <div className="md:hidden space-y-3">
             {displaySituations.map((situation, index) => (
               <ScrollReveal
                 key={situation.id}

@@ -124,10 +124,9 @@ export default function BannerCarousel({
             style={{ scrollSnapAlign: 'center' }}
           >
             <div
-              className="relative rounded-2xl p-5 md:p-6 cursor-pointer transition-all hover:shadow-lg active:scale-[0.99]"
-              style={{ 
+              className="relative rounded-2xl p-4 md:p-6 cursor-pointer transition-all hover:shadow-lg active:scale-[0.99]"
+              style={{
                 background: banner.bgGradient,
-                minHeight: '140px',
               }}
               onClick={() => handleBannerClick(banner)}
               data-testid={`banner-${banner.id}`}

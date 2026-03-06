@@ -121,29 +121,32 @@ function AppContent() {
       userId: user?.user_id,
     });
     
-    // Clear URL path after OAuth callback
-    if (location.pathname === '/auth/callback') {
-      // Check for stored intent and navigate accordingly
-      const intent = getUserIntent();
-      if (intent) {
-        if (intent.type === 'free_call') {
-          navigate('/app/schedule', { replace: true });
-        } else if (intent.type === 'consultation') {
-          navigate('/app', { replace: true });
-        } else {
-          navigate('/app', { replace: true });
-        }
-      } else {
-        // Default: go to /app after login (better for mobile)
-        navigate('/app', { replace: true });
-      }
-    } else {
-      // Check for stored intent
-      const intent = getUserIntent();
-      if (intent) {
-        navigate('/app', { replace: true });
-      }
+    // After login, redirect to the stored destination (set before login was triggered)
+    // or fall back to /app.
+    const storedRedirect = localStorage.getItem('niro_redirect_after_login');
+    if (storedRedirect) {
+      localStorage.removeItem('niro_redirect_after_login');
+      navigate(storedRedirect, { replace: true });
+      return;
     }
+
+    // Handle intent stored from landing page CTA clicks
+    const intent = getUserIntent();
+    if (intent) {
+      clearUserIntent();
+      if (intent.type === 'topic' && intent.topicId) {
+        navigate(`/app/topic/${intent.topicId}`, { replace: true });
+      } else if (intent.type === 'expert' && intent.expertId) {
+        navigate(`/app/expert/${intent.expertId}`, { replace: true });
+      } else {
+        // free_call or other intents — go to /app, PublicAppLayout will open wizard
+        navigate('/app', { replace: true });
+      }
+      return;
+    }
+
+    // Default: go to /app
+    navigate('/app', { replace: true });
   };
 
   // Handle auth error

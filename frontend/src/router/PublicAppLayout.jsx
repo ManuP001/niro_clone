@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { ChatProvider } from '../context/ChatContext';
 import { colors } from '../components/screens/simplified/theme';
@@ -127,6 +127,41 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
   const [showFreeCallWizard, setShowFreeCallWizard] = useState(false);
   const [freeCallInitialTopicId, setFreeCallInitialTopicId] = useState(null);
 
+  // Android back button: when wizard is open, push a history entry so pressing
+  // the hardware back button closes the wizard instead of leaving the app.
+  const wizardClosingByButtonRef = useRef(false);
+
+  useEffect(() => {
+    if (!showFreeCallWizard) return;
+
+    // Push a dummy entry (same URL) so back button can be intercepted
+    window.history.pushState({ niroWizard: true }, '', window.location.href);
+
+    const handlePopState = () => {
+      if (wizardClosingByButtonRef.current) {
+        // Already being closed by a button click — nothing to do
+        wizardClosingByButtonRef.current = false;
+        return;
+      }
+      setShowFreeCallWizard(false);
+      setFreeCallInitialTopicId(null);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [showFreeCallWizard]);
+
+  // Close wizard and pop the extra history entry we pushed
+  const closeWizard = useCallback(() => {
+    wizardClosingByButtonRef.current = true;
+    setShowFreeCallWizard(false);
+    setFreeCallInitialTopicId(null);
+    // Remove the history entry we pushed when wizard opened
+    if (window.history.state?.niroWizard) {
+      window.history.go(-1);
+    }
+  }, []);
+
   // Onboarding state (only for authenticated users)
   const [onboardingStep, setOnboardingStep] = useState(() => {
     if (!isAuthenticated) return ONBOARDING_STEPS.COMPLETE;
@@ -226,6 +261,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'mira':
         if (!isAuthenticated) {
+          localStorage.setItem('niro_redirect_after_login', '/app/mira');
           onLoginClick?.();
           return;
         }
@@ -236,6 +272,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'mypack':
         if (!isAuthenticated) {
+          localStorage.setItem('niro_redirect_after_login', '/app/mypack');
           onLoginClick?.();
           return;
         }
@@ -243,6 +280,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'astro':
         if (!isAuthenticated) {
+          localStorage.setItem('niro_redirect_after_login', '/app/astro');
           onLoginClick?.();
           return;
         }
@@ -291,6 +329,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'mira':
         if (!isAuthenticated) {
+          localStorage.setItem('niro_redirect_after_login', '/app/mira');
           onLoginClick?.();
           return;
         }
@@ -298,6 +337,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'mypack':
         if (!isAuthenticated) {
+          localStorage.setItem('niro_redirect_after_login', '/app/mypack');
           onLoginClick?.();
           return;
         }
@@ -305,6 +345,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'profile':
         if (!isAuthenticated) {
+          localStorage.setItem('niro_redirect_after_login', '/app/profile');
           onLoginClick?.();
           return;
         }
@@ -315,6 +356,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'schedule':
         if (!isAuthenticated) {
+          localStorage.setItem('niro_redirect_after_login', '/app/experts');
           onLoginClick?.();
           return;
         }
@@ -333,6 +375,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'plan':
         if (!isAuthenticated) {
+          localStorage.setItem('niro_redirect_after_login', '/app/mypack');
           onLoginClick?.();
           return;
         }
@@ -340,6 +383,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'checkout':
         if (!isAuthenticated) {
+          localStorage.setItem('niro_redirect_after_login', '/app/experts');
           onLoginClick?.();
           return;
         }
@@ -653,7 +697,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
             user={user}
             userState={userState}
             initialTopicId={freeCallInitialTopicId}
-            onClose={() => { setShowFreeCallWizard(false); setFreeCallInitialTopicId(null); }}
+            onClose={closeWizard}
             onNavigate={handleNavigate}
             onTabChange={handleTabChange}
           />
