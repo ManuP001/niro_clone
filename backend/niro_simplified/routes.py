@@ -320,6 +320,13 @@ def _normalize_db_expert(exp: dict) -> dict:
         "is_active": exp.get("active", True),
         "offers_free_call": exp.get("offers_free_call", False),
         "display_order": 0,
+        # Profile page fields
+        "tagline": exp.get("tagline", ""),
+        "credentials": exp.get("credentials", ""),
+        "location": exp.get("location", ""),
+        "quote": exp.get("quote", ""),
+        "gallery_photos": exp.get("gallery_photos", []),
+        "social_links": exp.get("social_links", {}),
     }
 
 

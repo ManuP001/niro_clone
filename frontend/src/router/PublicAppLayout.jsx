@@ -218,25 +218,25 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     }
   }, [loadUserState, isAuthenticated]);
 
-  // Handle user intent from landing page (only for authenticated users)
+  // Handle user intent from landing page — works for ALL users including anonymous.
+  // Login is deferred to the booking step (ExpertProfile → Consult CTA).
   useEffect(() => {
-    if (!isAuthenticated) return;
-    
     const intent = getUserIntent();
-    if (intent) {
-      clearUserIntent();
-      
-      if (intent.type === 'topic' && intent.topicId) {
-        navigate(`/app/topic/${intent.topicId}`, { replace: true });
-      } else if (intent.type === 'free_call') {
-        setShowFreeCallWizard(true);
-      } else if (intent.type === 'expert' && intent.expertId) {
-        navigate(`/app/expert/${intent.expertId}`, { replace: true });
-      } else if (intent.returnTo) {
-        navigate(intent.returnTo, { replace: true });
-      }
+    if (!intent) return;
+    clearUserIntent();
+
+    if (intent.type === 'topic' && intent.topicId) {
+      navigate(`/app/topic/${intent.topicId}`, { replace: true });
+    } else if (intent.type === 'free_call') {
+      // Open the guided wizard — no login required at this stage
+      setShowFreeCallWizard(true);
+    } else if (intent.type === 'expert' && intent.expertId) {
+      navigate(`/app/expert/${intent.expertId}`, { replace: true });
+    } else if (intent.returnTo) {
+      navigate(intent.returnTo, { replace: true });
     }
-  }, [navigate, isAuthenticated]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Update active tab on route change
   useEffect(() => {
@@ -356,7 +356,9 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'schedule':
         if (!isAuthenticated) {
-          localStorage.setItem('niro_redirect_after_login', '/app/experts');
+          // Redirect back to this expert's profile after login
+          const scheduleExpertPath = params?.expertId ? `/app/expert/${params.expertId}` : '/app/experts';
+          localStorage.setItem('niro_redirect_after_login', scheduleExpertPath);
           onLoginClick?.();
           return;
         }
@@ -383,7 +385,9 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         break;
       case 'checkout':
         if (!isAuthenticated) {
-          localStorage.setItem('niro_redirect_after_login', '/app/experts');
+          // Redirect back to this expert's profile after login
+          const checkoutExpertPath = params?.expertId ? `/app/expert/${params.expertId}` : '/app/experts';
+          localStorage.setItem('niro_redirect_after_login', checkoutExpertPath);
           onLoginClick?.();
           return;
         }
@@ -428,14 +432,8 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     }
   };
 
-  // Handle CTA click - open the free call onboarding wizard (requires login)
+  // Handle CTA click - open the free call onboarding wizard (no login required at this stage)
   const handleCtaClick = (topicId = null) => {
-    if (!isAuthenticated) {
-      // Store intent to open the wizard after login
-      localStorage.setItem('niro_user_intent', JSON.stringify({ type: 'free_call' }));
-      onLoginClick?.();
-      return;
-    }
     setFreeCallInitialTopicId(topicId || null);
     setShowFreeCallWizard(true);
   };

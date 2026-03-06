@@ -85,15 +85,15 @@ export default function ExpertProfileScreen({
   };
 
   // Free call → scheduling directly. Paid → checkout → scheduling.
+  // Auth check is handled by PublicAppLayout.handleNavigate — it will store the expert URL
+  // as the post-login redirect so the user returns here after signing in.
   const handleConsultationClick = (consultation) => {
     if (!expert) return;
     if (!consultation || consultation.price_inr === 0 || consultation.is_free) {
       if (wizardMode && onBookFreeCall) { onBookFreeCall(); return; }
-      if (!isAuthenticated) { onLoginClick?.(); return; }
       onNavigate?.('schedule', { expertId: expert.expert_id, expertName: expert.name });
       return;
     }
-    if (!isAuthenticated) { onLoginClick?.(); return; }
     onNavigate?.('schedule', { expertId: expert.expert_id, expertName: expert.name, consultation });
   };
 
@@ -130,12 +130,13 @@ export default function ExpertProfileScreen({
     >
 
       {/* ── A. Hero photo ──────────────────────────────────────────── */}
-      <div className="relative w-full" style={{ height: 300 }}>
+      <div className="relative w-full" style={{ height: 380 }}>
         {expert.photo_url ? (
           <img
             src={resolvePhotoUrl(expert.photo_url)}
             alt={expert.name}
-            className="absolute inset-0 w-full h-full object-cover object-top"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: 'center 15%' }}
           />
         ) : (
           <div
@@ -148,7 +149,7 @@ export default function ExpertProfileScreen({
         {/* Gradient overlay: transparent → page background */}
         <div
           className="absolute inset-0"
-          style={{ background: `linear-gradient(to bottom, transparent 45%, ${colors.background.primary} 100%)` }}
+          style={{ background: `linear-gradient(to bottom, transparent 55%, ${colors.background.primary} 100%)` }}
         />
         {/* Back button */}
         <button
@@ -180,6 +181,13 @@ export default function ExpertProfileScreen({
       {/* ── C. Info card ───────────────────────────────────────────── */}
       <div className="px-4 mt-4 max-w-2xl mx-auto">
         <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: colors.teal.dark || '#2D5C4A' }}>
+          {/* Modalities / specialties */}
+          {expert.modality_label ? (
+            <div className="flex items-start gap-3 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <span className="text-base mt-0.5">✦</span>
+              <span className="text-sm font-medium text-white">{expert.modality_label}</span>
+            </div>
+          ) : null}
           {years ? (
             <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <span className="text-base">⊙</span>
@@ -242,9 +250,13 @@ export default function ExpertProfileScreen({
       {(expert.short_bio || expert.bio) && (
         <div className="px-5 mt-6 max-w-2xl mx-auto">
           <h3 className="font-semibold mb-2 text-sm" style={{ color: colors.text.dark }}>About {expert.name}</h3>
-          <p className="text-sm leading-relaxed" style={{ color: colors.text.secondary }}>
-            {expert.short_bio || expert.bio}
-          </p>
+          <div className="space-y-3">
+            {(expert.short_bio || expert.bio).split(/\n\n|\n/).filter(p => p.trim()).map((para, i) => (
+              <p key={i} className="text-sm leading-relaxed" style={{ color: colors.text.secondary }}>
+                {para.trim()}
+              </p>
+            ))}
+          </div>
         </div>
       )}
 
@@ -352,8 +364,9 @@ export default function ExpertProfileScreen({
       )}
 
       {/* ── J. Floating "Consult Astrologer" CTA ───────────────────── */}
+      {/* bottom-16 = above the mobile bottom nav (h-16); md:bottom-0 since nav is md:hidden */}
       <div
-        className={`fixed ${hasBottomNav ? 'bottom-16 md:bottom-0' : 'bottom-0'} left-0 right-0 p-4 z-40`}
+        className="fixed bottom-16 md:bottom-0 left-0 right-0 p-4 z-40"
         style={{ backgroundColor: colors.background.primary, borderTop: `1px solid ${colors.ui.borderDark}` }}
       >
         <div className="max-w-2xl mx-auto">

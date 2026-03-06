@@ -148,15 +148,14 @@ export default function PublicLandingPage({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Handle Free Call CTA
+  // Handle Free Call CTA — navigate to /app and open the wizard for ALL users.
+  // Login is not required at this point; it is triggered only when the user
+  // actually tries to book a session (at the ExpertProfile bottom sheet).
   const handleFreeCallClick = (e) => {
     e.preventDefault();
     setUserIntent({ type: 'free_call' });
-    if (isAuthenticated) {
-      onNavigateToApp('schedule');
-    } else {
-      onLoginClick();
-    }
+    // Navigate straight to /app — PublicAppLayout will open the wizard via intent
+    window.location.href = '/app';
   };
 
   // Handle Begin Consultation CTA - Navigate directly to experts filtered by category
@@ -1658,24 +1657,25 @@ export default function PublicLandingPage({
               <button className="topic-cta" data-testid="begin-consultation-love">Explore Marriage</button>
             </div>
 
-            {/* Fertility */}
-            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'love')}>
+            {/* Spiritual & Personal Growth */}
+            <div className="topic-card" onClick={(e) => handleBeginConsultation(e, 'spiritual')}>
               <div className="topic-header">
                 <div className="topic-icon">
                   <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
-                    <path d="M 20 7 A 11 11 0 0 1 20 33 A 15 15 0 0 0 20 7 Z" fill="white"/>
+                    <circle cx="20" cy="20" r="9" stroke="white" strokeWidth="2.5" fill="none"/>
+                    <path d="M20 11 L22 17 L28 17 L23 21 L25 27 L20 23 L15 27 L17 21 L12 17 L18 17 Z" fill="white"/>
                   </svg>
                 </div>
-                <h3>Fertility & Family Planning</h3>
+                <h3>Spiritual & Personal Growth</h3>
               </div>
               <p className="topic-desc">
-                For understanding timing, readiness, and navigating the emotional journey toward parenthood.
+                For understanding your purpose, direction, and finding clarity in major life decisions.
               </p>
               <div className="topic-meta">
-                <span className="topic-expert">Vedic Astrologer · Fertility Timing</span>
-                <span className="topic-price">Starting ₹3,999</span>
+                <span className="topic-expert">Vedic Astrologer · Spiritual Guide</span>
+                <span className="topic-price">Starting ₹2,999</span>
               </div>
-              <button className="topic-cta" data-testid="begin-consultation-fertility">Plan Family</button>
+              <button className="topic-cta" data-testid="begin-consultation-spiritual">Explore Spiritual</button>
             </div>
           </div>
 
