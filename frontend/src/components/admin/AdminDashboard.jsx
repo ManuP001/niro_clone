@@ -1163,6 +1163,7 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
           setSaving(false);
           return;
         }
+        console.log('[AdminSave] PUT payload:', JSON.stringify(cleanedData, null, 2));
         await adminFetch(`/api/admin/${entityType}/${itemId}`, {
           method: 'PUT',
           body: JSON.stringify(cleanedData),
