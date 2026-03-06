@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiSimplified, trackEvent } from './utils';
 import { getBackendUrl } from '../../../config';
@@ -41,8 +41,7 @@ export default function ExpertProfileScreen({
   const [loading, setLoading] = useState(true);
   const [expertRemedies, setExpertRemedies] = useState([]);
   const [packages, setPackages] = useState([]);
-  const consultationsRef = useRef(null);
-  const packagesRef = useRef(null);
+  const [showBottomSheet, setShowBottomSheet] = useState(false);
 
   // Fetch expert data
   useEffect(() => {
@@ -83,10 +82,6 @@ export default function ExpertProfileScreen({
   const handleBack = () => {
     if (onBack) onBack();
     else navigate(-1);
-  };
-
-  const scrollToConsultations = () => {
-    consultationsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   // Free call → scheduling directly. Paid → checkout → scheduling.
@@ -268,130 +263,58 @@ export default function ExpertProfileScreen({
         </div>
       )}
 
-      {/* ── G. Consultation options ────────────────────────────────── */}
-      <div ref={consultationsRef} className="px-5 mt-6 max-w-2xl mx-auto">
-        {hasConsultations && (
-          <>
-            <h3 className="font-semibold mb-3 text-base" style={{ color: colors.text.dark }}>Book a Session</h3>
-            <div className="space-y-3">
-
-              {/* Free 10-min intro call */}
-              {expert.offers_free_call && (
-                <button
-                  onClick={() => handleConsultationClick(null)}
-                  className="w-full text-left rounded-2xl p-4 transition-all active:scale-[0.99] hover:shadow-sm"
-                  style={{ backgroundColor: `${colors.teal.primary}10`, border: `1.5px solid ${colors.teal.primary}40` }}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: colors.teal.primary, color: '#fff' }}>
-                          10 mins
+      {/* ── G. Packages fallback (when no consultations) ───────── */}
+      {!hasConsultations && packages.length > 0 && (
+        <div className="px-5 mt-6 max-w-2xl mx-auto">
+          <h3 className="font-semibold mb-3 text-base" style={{ color: colors.text.dark }}>Packages</h3>
+          <div className="space-y-3">
+            {packages.map((pkg) => (
+              <button
+                key={pkg.tier_id}
+                onClick={() => {
+                  if (!isAuthenticated) { onLoginClick?.(); return; }
+                  if (onBuyPackage) onBuyPackage(pkg);
+                  else onNavigate?.('packageLanding', { packageId: pkg.tier_id });
+                }}
+                className="w-full text-left rounded-2xl p-4 transition-all active:scale-[0.99] hover:shadow-sm relative overflow-hidden"
+                style={{ backgroundColor: colors.peach.soft, border: `1px solid ${colors.ui.borderDark}` }}
+              >
+                {pkg.popular && (
+                  <span className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: colors.teal.primary, color: '#fff' }}>
+                    Popular
+                  </span>
+                )}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm" style={{ color: colors.text.dark }}>{pkg.name}</p>
+                    {pkg.description && (
+                      <p className="text-xs mt-1 line-clamp-2" style={{ color: colors.text.secondary }}>{pkg.description}</p>
+                    )}
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {pkg.calls_included > 0 && (
+                        <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.dark }}>
+                          {pkg.calls_included} session{pkg.calls_included > 1 ? 's' : ''}
                         </span>
-                        <p className="font-semibold text-sm" style={{ color: colors.teal.dark }}>Free intro call</p>
-                      </div>
-                      <p className="text-xs mt-1" style={{ color: colors.text.muted }}>
-                        Get to know the astrologer before committing
-                      </p>
-                    </div>
-                    <div className="flex-shrink-0 text-right">
-                      <p className="font-bold text-base" style={{ color: colors.teal.primary }}>Free</p>
-                      <p className="text-xs" style={{ color: colors.text.muted }}>Book →</p>
-                    </div>
-                  </div>
-                </button>
-              )}
-
-              {/* Paid sessions */}
-              {(expert.consultations || []).map((c, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleConsultationClick(c)}
-                  className="w-full text-left rounded-2xl p-4 transition-all active:scale-[0.99] hover:shadow-sm"
-                  style={{ backgroundColor: colors.peach.soft, border: `1px solid ${colors.ui.borderDark}` }}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${colors.teal.primary}20`, color: colors.teal.primary }}>
-                          {c.duration_mins} mins
+                      )}
+                      {pkg.duration_days > 0 && (
+                        <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.dark }}>
+                          {pkg.duration_days} days
                         </span>
-                        {c.title && (
-                          <p className="font-semibold text-sm" style={{ color: colors.text.dark }}>{c.title}</p>
-                        )}
-                      </div>
-                      {c.what_you_get && (
-                        <p className="text-xs mt-1 line-clamp-2" style={{ color: colors.text.secondary }}>
-                          {c.what_you_get}
-                        </p>
                       )}
                     </div>
-                    <div className="flex-shrink-0 text-right">
-                      <p className="font-bold text-base" style={{ color: colors.teal.primary }}>
-                        ₹{c.price_inr?.toLocaleString('en-IN')}
-                      </p>
-                      <p className="text-xs" style={{ color: colors.text.muted }}>Book →</p>
-                    </div>
                   </div>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* ── H. Packages fallback (when no consultations) ───────── */}
-        {!hasConsultations && packages.length > 0 && (
-          <>
-            <h3 className="font-semibold mb-3 text-base" style={{ color: colors.text.dark }}>Packages</h3>
-            <div className="space-y-3" ref={packagesRef}>
-              {packages.map((pkg) => (
-                <button
-                  key={pkg.tier_id}
-                  onClick={() => {
-                    if (!isAuthenticated) { onLoginClick?.(); return; }
-                    if (onBuyPackage) onBuyPackage(pkg);
-                    else onNavigate?.('packageLanding', { packageId: pkg.tier_id });
-                  }}
-                  className="w-full text-left rounded-2xl p-4 transition-all active:scale-[0.99] hover:shadow-sm relative overflow-hidden"
-                  style={{ backgroundColor: colors.peach.soft, border: `1px solid ${colors.ui.borderDark}` }}
-                >
-                  {pkg.popular && (
-                    <span className="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: colors.teal.primary, color: '#fff' }}>
-                      Popular
-                    </span>
-                  )}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm" style={{ color: colors.text.dark }}>{pkg.name}</p>
-                      {pkg.description && (
-                        <p className="text-xs mt-1 line-clamp-2" style={{ color: colors.text.secondary }}>{pkg.description}</p>
-                      )}
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {pkg.calls_included > 0 && (
-                          <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.dark }}>
-                            {pkg.calls_included} session{pkg.calls_included > 1 ? 's' : ''}
-                          </span>
-                        )}
-                        {pkg.duration_days > 0 && (
-                          <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.dark }}>
-                            {pkg.duration_days} days
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex-shrink-0 text-right">
-                      <p className="font-bold text-base" style={{ color: colors.teal.primary }}>
-                        ₹{pkg.price_inr?.toLocaleString('en-IN')}
-                      </p>
-                      <p className="text-xs" style={{ color: colors.text.muted }}>Get pack →</p>
-                    </div>
+                  <div className="flex-shrink-0 text-right">
+                    <p className="font-bold text-base" style={{ color: colors.teal.primary }}>
+                      ₹{pkg.price_inr?.toLocaleString('en-IN')}
+                    </p>
+                    <p className="text-xs" style={{ color: colors.text.muted }}>Get pack →</p>
                   </div>
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── I. Remedies ────────────────────────────────────────────── */}
       {expertRemedies.length > 0 && (
@@ -435,7 +358,7 @@ export default function ExpertProfileScreen({
       >
         <div className="max-w-2xl mx-auto">
           <button
-            onClick={scrollToConsultations}
+            onClick={() => setShowBottomSheet(true)}
             className="w-full font-semibold py-4 rounded-2xl transition-all active:scale-[0.99] hover:shadow-md"
             style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
             data-testid="expert-consult-btn"
@@ -444,6 +367,113 @@ export default function ExpertProfileScreen({
           </button>
         </div>
       </div>
+
+      {/* ── K. Consultation Bottom Sheet ────────────────────────────── */}
+      {showBottomSheet && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 z-50"
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            onClick={() => setShowBottomSheet(false)}
+          />
+          {/* Sheet */}
+          <div
+            className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl max-w-2xl mx-auto"
+            style={{ backgroundColor: colors.background.primary }}
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full" style={{ backgroundColor: colors.ui.borderDark }} />
+            </div>
+
+            <div className="px-5 pt-3 pb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-lg" style={{ color: colors.text.dark }}>Book a Session</h3>
+                <button
+                  onClick={() => setShowBottomSheet(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: colors.background.secondary }}
+                >
+                  <svg width="16" height="16" fill="none" stroke={colors.text.muted} strokeWidth="2" strokeLinecap="round" viewBox="0 0 24 24">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {/* Free 10-min intro call */}
+                {expert.offers_free_call && (
+                  <button
+                    onClick={() => { setShowBottomSheet(false); handleConsultationClick(null); }}
+                    className="w-full text-left rounded-2xl p-4 transition-all active:scale-[0.99]"
+                    style={{ backgroundColor: `${colors.teal.primary}10`, border: `1.5px solid ${colors.teal.primary}40` }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: colors.teal.primary, color: '#fff' }}>
+                            10 mins
+                          </span>
+                          <p className="font-semibold text-sm" style={{ color: colors.teal.dark }}>Free intro call</p>
+                        </div>
+                        <p className="text-xs mt-1" style={{ color: colors.text.muted }}>
+                          Get to know the astrologer before committing
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0 text-right">
+                        <p className="font-bold text-base" style={{ color: colors.teal.primary }}>Free</p>
+                        <p className="text-xs" style={{ color: colors.text.muted }}>Book →</p>
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                {/* Paid sessions */}
+                {(expert.consultations || []).map((c, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { setShowBottomSheet(false); handleConsultationClick(c); }}
+                    className="w-full text-left rounded-2xl p-4 transition-all active:scale-[0.99]"
+                    style={{ backgroundColor: colors.peach.soft, border: `1px solid ${colors.ui.borderDark}` }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${colors.teal.primary}20`, color: colors.teal.primary }}>
+                            {c.duration_mins} mins
+                          </span>
+                          {c.title && (
+                            <p className="font-semibold text-sm" style={{ color: colors.text.dark }}>{c.title}</p>
+                          )}
+                        </div>
+                        {c.what_you_get && (
+                          <p className="text-xs mt-1 line-clamp-2" style={{ color: colors.text.secondary }}>
+                            {c.what_you_get}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0 text-right">
+                        <p className="font-bold text-base" style={{ color: colors.teal.primary }}>
+                          ₹{c.price_inr?.toLocaleString('en-IN')}
+                        </p>
+                        <p className="text-xs" style={{ color: colors.text.muted }}>Book →</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+
+                {/* No options fallback */}
+                {!hasConsultations && (
+                  <p className="text-center py-6 text-sm" style={{ color: colors.text.muted }}>
+                    No sessions available yet. Check back soon.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
