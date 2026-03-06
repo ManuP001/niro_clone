@@ -1163,6 +1163,21 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
           setSaving(false);
           return;
         }
+        // Validate required fields
+        const missingFields = formFields
+          .filter(f => f.required)
+          .filter(f => {
+            const val = cleanedData[f.name];
+            if (val === null || val === undefined || val === '') return true;
+            if (Array.isArray(val) && val.length === 0) return true;
+            return false;
+          })
+          .map(f => f.label);
+        if (missingFields.length > 0) {
+          setError(`Required fields missing: ${missingFields.join(', ')}`);
+          setSaving(false);
+          return;
+        }
         console.log('[AdminSave] PUT payload:', JSON.stringify(cleanedData, null, 2));
         await adminFetch(`/api/admin/${entityType}/${itemId}`, {
           method: 'PUT',
@@ -1423,7 +1438,11 @@ const CatalogManager = ({ entityType, title, icon, columns, formFields, dataKey 
             <div className="space-y-4">
               {formFields.map(field => (
                 <div key={field.name}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{field.label}</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {field.label}
+                    {field.required && <span className="text-red-500 ml-1">*</span>}
+                    {!field.required && !field.isId && <span className="ml-2 text-[10px] font-normal text-gray-400 uppercase tracking-wide">Optional</span>}
+                  </label>
                   {field.type === 'textarea' ? (
                     <textarea
                       value={formData[field.name] || ''}
@@ -2309,35 +2328,36 @@ const ExpertsManager = () => (
     ]}
     formFields={[
       { name: 'expert_id', label: 'Expert ID', isId: true, hint: 'Unique identifier' },
-      { name: 'name', label: 'Full Name' },
-      { name: 'modality', label: 'Primary Modality', hint: 'e.g., vedic_astrologer, numerologist, tarot' },
-      { name: 'modality_label', label: 'Modality Display Name', hint: 'e.g., Vedic Astrologer' },
-      { name: 'bio', label: 'Bio', type: 'textarea' },
-      { name: 'languages', label: 'Languages', default: 'Hindi, English' },
-      { name: 'years_experience', label: 'Years Experience', type: 'number', default: 5 },
-      { name: 'rating', label: 'Rating (1–5)', type: 'number', decimal: true, min: 1, max: 5, default: 4.5 },
-      { name: 'total_consults', label: 'Total Consults', type: 'number', default: 0 },
-      { name: 'session_rate_inr', label: 'Session Rate (₹ per session)', type: 'number', default: 0, hint: 'Per-session rate in ₹. When set, package prices are computed as: rate × calls × (1 + margin%). Leave 0 to use tier prices.' },
+      { name: 'name', label: 'Full Name', required: true },
+      { name: 'photo_url', label: 'Photo', type: 'image-upload', required: true },
+      { name: 'modality', label: 'Primary Modality', required: true, hint: 'e.g., vedic_astrologer, numerologist, tarot' },
+      { name: 'modality_label', label: 'Modality Display Name', required: true, hint: 'e.g., Vedic Astrologer' },
+      { name: 'bio', label: 'Bio', type: 'textarea', required: true },
+      { name: 'languages', label: 'Languages', required: true, default: 'Hindi, English' },
+      { name: 'years_experience', label: 'Years Experience', type: 'number', required: true, default: 5 },
+      { name: 'topics', label: 'Topics', type: 'array', required: true, hint: 'Topic IDs this expert can serve' },
+      { name: 'consultations', label: 'Consultation Options', type: 'consultation-list', required: true, hint: 'Add 1–4 paid session options (duration, price, what the user gets)' },
+      { name: 'weekly_availability', label: 'Weekly Availability', type: 'weekly-availability', required: true, hint: 'Days and hours this expert accepts free consultation bookings' },
+      { name: 'active', label: 'Active', type: 'checkbox', default: true },
       { name: 'tagline', label: 'Tagline (1-line specialty)', type: 'text', hint: 'e.g. "Vedic astrology with numerology & palmistry" — shown below name on profile' },
       { name: 'credentials', label: 'Credentials / Education', type: 'textarea', hint: 'Education, guru lineage etc. Shown in info card on profile.' },
       { name: 'location', label: 'Location (City)', type: 'text', hint: 'e.g. "New Delhi"' },
       { name: 'quote', label: 'Profile Quote', type: 'textarea', hint: 'A meaningful quote — shown as a highlighted card on their profile.' },
       { name: 'gallery_photos', label: 'Gallery Photos (Know Your Astrologer)', type: 'gallery', hint: 'Up to 4 photos with captions shown in the profile gallery section.' },
-      { name: 'social_links', label: 'Social Links', type: 'social-links', hint: 'Instagram, YouTube etc.' },
-      { name: 'topics', label: 'Topics', type: 'array', hint: 'Topic IDs this expert can serve' },
-      { name: 'photo_url', label: 'Photo', type: 'image-upload' },
-      { name: 'life_situation_tags', label: 'Best For Tags (Life Situations)', type: 'tag-multi-select', tagType: 'life_situation', maxTags: 5, hint: '3-5 tags shown on profile as "Best for"' },
-      { name: 'method_tags', label: 'Method Tags', type: 'tag-multi-select', tagType: 'method', maxTags: 3, hint: '1-3 tags for how the expert works' },
-      { name: 'remedy_tags', label: 'Remedy/Support Tags', type: 'tag-multi-select', tagType: 'remedy_support', maxTags: 2, hint: '0-2 tags for additional services' },
-      { name: 'active', label: 'Active', type: 'checkbox', default: true },
-      { name: 'consultations', label: 'Consultation Options', type: 'consultation-list', hint: 'Add 1–4 paid session options (duration, price, what the user gets)' },
       { name: 'offers_free_call', label: 'Offers Free Consultation Call', type: 'checkbox', default: false, hint: 'If enabled, this expert appears in the free call onboarding wizard' },
       { name: 'timezone', label: 'Timezone', type: 'select', default: 'Asia/Kolkata', options: [
         { value: 'Asia/Kolkata', label: 'India (IST, UTC+5:30)' },
         { value: 'Asia/Dubai', label: 'Dubai (GST, UTC+4)' },
         { value: 'UTC', label: 'UTC' },
       ]},
-      { name: 'weekly_availability', label: 'Weekly Availability', type: 'weekly-availability', hint: 'Days and hours this expert accepts free consultation bookings' },
+      { name: 'social_links', label: 'Social Links', type: 'social-links', hint: 'Instagram, YouTube etc.' },
+      { name: 'life_situation_tags', label: 'Best For Tags (Life Situations)', type: 'tag-multi-select', tagType: 'life_situation', maxTags: 5, hint: '3-5 tags shown on profile as "Best for"' },
+      { name: 'method_tags', label: 'Method Tags', type: 'tag-multi-select', tagType: 'method', maxTags: 3, hint: '1-3 tags for how the expert works' },
+      { name: 'remedy_tags', label: 'Remedy/Support Tags', type: 'tag-multi-select', tagType: 'remedy_support', maxTags: 2, hint: '0-2 tags for additional services' },
+      { name: 'rating', label: 'Rating (1–5)', type: 'number', decimal: true, min: 1, max: 5, default: 4.5 },
+      { name: 'total_consults', label: 'Total Consults', type: 'number', default: 0 },
+      { name: 'session_rate_inr', label: 'Session Rate (₹ per session)', type: 'number', default: 0, hint: 'Per-session rate in ₹. When set, package prices are computed as: rate × calls × (1 + margin%). Leave 0 to use tier prices.' },
+      { name: 'tags', label: 'Tags (Legacy)', type: 'array', hint: 'Legacy flat tags — superseded by specific tag fields above' },
     ]}
   />
 );
