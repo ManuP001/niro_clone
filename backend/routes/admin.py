@@ -1378,6 +1378,7 @@ class ExpertCreate(BaseModel):
     quote: str = ""                   # Highlighted quote shown on profile
     gallery_photos: List[Dict] = []   # [{url: str, caption: str}] for "Know Your Astrologer"
     social_links: Dict = {}           # {instagram: url, youtube: url}
+    consultations: List[Dict] = []    # [{title, duration_mins, price_inr, what_you_get}]
 
 class ExpertUpdate(BaseModel):
     name: Optional[str] = None
@@ -1405,6 +1406,7 @@ class ExpertUpdate(BaseModel):
     quote: Optional[str] = None
     gallery_photos: Optional[List[Dict]] = None
     social_links: Optional[Dict] = None
+    consultations: Optional[List[Dict]] = None
 
 # Master tag options by type
 EXPERT_TAG_OPTIONS = {
