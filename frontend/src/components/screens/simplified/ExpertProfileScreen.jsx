@@ -170,14 +170,11 @@ export default function ExpertProfileScreen({
         </div>
       </div>
 
-      {/* ── B. Name + tagline ──────────────────────────────────────── */}
+      {/* ── B. Name ────────────────────────────────────────────────── */}
       <div className="px-5 -mt-4 relative z-10 max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold leading-tight" style={{ color: colors.text.dark }}>
           {expert.name}
         </h1>
-        <p className="text-sm mt-1" style={{ color: colors.text.secondary }}>
-          {expert.tagline || expert.modality_label}
-        </p>
       </div>
 
       {/* ── C. Info card ───────────────────────────────────────────── */}
