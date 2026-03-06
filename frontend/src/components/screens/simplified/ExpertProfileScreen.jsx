@@ -42,6 +42,7 @@ export default function ExpertProfileScreen({
   const [expertRemedies, setExpertRemedies] = useState([]);
   const [packages, setPackages] = useState([]);
   const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState(null); // null = closed
 
   // Fetch expert data
   useEffect(() => {
@@ -135,8 +136,9 @@ export default function ExpertProfileScreen({
           <img
             src={resolvePhotoUrl(expert.photo_url)}
             alt={expert.name}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover cursor-pointer"
             style={{ objectPosition: 'center 15%' }}
+            onClick={() => setLightboxSrc(resolvePhotoUrl(expert.photo_url))}
           />
         ) : (
           <div
@@ -226,7 +228,12 @@ export default function ExpertProfileScreen({
           </p>
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
             {expert.gallery_photos.map((photo, idx) => (
-              <div key={idx} className="flex-shrink-0 relative rounded-xl overflow-hidden" style={{ width: 160, height: 200 }}>
+              <div
+                key={idx}
+                className="flex-shrink-0 relative rounded-xl overflow-hidden cursor-pointer"
+                style={{ width: 160, height: 200 }}
+                onClick={() => setLightboxSrc(resolvePhotoUrl(photo.url))}
+              >
                 <img
                   src={resolvePhotoUrl(photo.url)}
                   alt={photo.caption || ''}
@@ -381,7 +388,34 @@ export default function ExpertProfileScreen({
         </div>
       </div>
 
-      {/* ── K. Consultation Bottom Sheet ────────────────────────────── */}
+      {/* ── K. Lightbox ─────────────────────────────────────────────── */}
+      {lightboxSrc && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(0,0,0,0.92)' }}
+          onClick={() => setLightboxSrc(null)}
+        >
+          <img
+            src={lightboxSrc}
+            alt=""
+            className="max-w-full max-h-full object-contain"
+            style={{ touchAction: 'pinch-zoom' }}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            onClick={() => setLightboxSrc(null)}
+            className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)' }}
+            aria-label="Close"
+          >
+            <svg width="18" height="18" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" viewBox="0 0 24 24">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* ── L. Consultation Bottom Sheet ────────────────────────────── */}
       {showBottomSheet && (
         <>
           {/* Overlay */}
