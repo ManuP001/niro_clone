@@ -286,13 +286,19 @@ async def list_users(
         legacy_query = {}
         if search:
             legacy_query["identifier"] = {"$regex": search, "$options": "i"}
-        
+
         legacy_users = await db.auth_users.find(legacy_query, {"_id": 0}).to_list(5000)
-        
-        # Enrich with profile data
+
+        # Batch fetch all profiles in one query instead of N+1
+        legacy_user_ids = [u.get("user_id") for u in legacy_users if u.get("user_id")]
+        profiles_list = await db.auth_profiles.find(
+            {"user_id": {"$in": legacy_user_ids}}, {"_id": 0}
+        ).to_list(5000)
+        profiles_map = {p["user_id"]: p for p in profiles_list if p.get("user_id")}
+
         for user in legacy_users:
             user_id = user.get("user_id")
-            profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0})
+            profile = profiles_map.get(user_id)
             if profile:
                 user["name"] = profile.get("name", "")
                 user["dob"] = profile.get("dob", "")
@@ -303,16 +309,16 @@ async def list_users(
                 user["profile_complete"] = True
             else:
                 user["profile_complete"] = False
-            
+
             user["email"] = user.get("identifier", "")
             user["auth_source"] = "legacy"
-        
+
         # Filter by name search for legacy
         if search:
-            legacy_users = [u for u in legacy_users if 
-                search.lower() in u.get("email", "").lower() or 
+            legacy_users = [u for u in legacy_users if
+                search.lower() in u.get("email", "").lower() or
                 search.lower() in u.get("name", "").lower()]
-        
+
         all_users.extend(legacy_users)
     
     # Filter by profile status
@@ -732,9 +738,17 @@ async def export_users_csv(
     # Get legacy users with profiles
     if source in ["all", "legacy"]:
         legacy_users = await db.auth_users.find({}, {"_id": 0}).to_list(10000)
+
+        # Batch fetch all profiles in one query
+        legacy_user_ids = [u.get("user_id") for u in legacy_users if u.get("user_id")]
+        profiles_list = await db.auth_profiles.find(
+            {"user_id": {"$in": legacy_user_ids}}, {"_id": 0}
+        ).to_list(10000)
+        profiles_map = {p["user_id"]: p for p in profiles_list if p.get("user_id")}
+
         for user in legacy_users:
             user_id = user.get("user_id")
-            profile = await db.auth_profiles.find_one({"user_id": user_id}, {"_id": 0})
+            profile = profiles_map.get(user_id)
             if profile:
                 user["name"] = profile.get("name", "")
                 user["dob"] = profile.get("dob", "")
