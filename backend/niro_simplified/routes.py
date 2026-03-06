@@ -519,6 +519,17 @@ async def get_expert_packages(expert_id: str, request: Request, topic_id: Option
                     "calls_included": (tier.access_policy.calls_per_month if tier.access_policy else 0),
                 })
 
+    # ── 5. Per-expert pricing override using session_rate_inr ────────────────
+    # If the expert has a session rate set, recompute price for all packages
+    # using: price = session_rate × calls × (1 + NIRO_MARGIN_PCT / 100)
+    session_rate = expert_doc.get("session_rate_inr", 0) or 0
+    if session_rate > 0:
+        margin_pct = float(os.environ.get("NIRO_MARGIN_PCT", "30"))
+        for pkg in packages:
+            calls = pkg.get("calls_included") or 1
+            pkg["price_inr"] = int(session_rate * calls * (1 + margin_pct / 100))
+            pkg["price_basis"] = "expert_rate"
+
     return {
         "ok": True,
         "expert_id": expert_id,
@@ -1090,6 +1101,49 @@ async def verify_payment(
         order_type="plan",
         message="Payment successful! Your pack is now active."
     )
+
+
+# ============================================================================
+# CONSULTATION BOOKING ENDPOINTS
+# ============================================================================
+
+class ScheduleBookingRequest(BaseModel):
+    scheduled_date: str  # ISO datetime string
+    slot_time: str        # Display time, e.g. "10:00 AM"
+
+
+@router.patch("/bookings/{booking_id}/schedule")
+async def schedule_consultation_booking(
+    booking_id: str,
+    data: ScheduleBookingRequest,
+    request: Request,
+    authorization: Optional[str] = Header(default=None),
+):
+    """Mark a paid consultation booking as scheduled after the user picks a time slot."""
+    db = getattr(request.app.state, 'db', None)
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database not available")
+
+    # Verify user owns the booking (soft check — missing token still allowed for now)
+    user_id = await get_user_id_from_token_async(authorization, db)
+
+    booking = await db.consultation_bookings.find_one({"booking_id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    if user_id and booking.get("user_id") and booking["user_id"] != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    await db.consultation_bookings.update_one(
+        {"booking_id": booking_id},
+        {"$set": {
+            "status": "scheduled",
+            "scheduled_date": data.scheduled_date,
+            "slot_time": data.slot_time,
+            "scheduled_at": datetime.utcnow(),
+        }}
+    )
+    return {"ok": True, "booking_id": booking_id, "status": "scheduled"}
 
 
 # ============================================================================
