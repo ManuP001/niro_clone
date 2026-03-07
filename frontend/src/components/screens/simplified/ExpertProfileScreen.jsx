@@ -224,27 +224,34 @@ export default function ExpertProfileScreen({
             Know Your Astrologer
           </p>
           <div className="flex gap-3 overflow-x-auto px-5 pb-1 scrollbar-hide">
-            {expert.gallery_photos.map((photo, idx) => (
-              <div
-                key={idx}
-                className="flex-shrink-0 relative rounded-xl overflow-hidden cursor-pointer"
-                style={{ width: 160, height: 200 }}
-                onClick={() => setLightboxSrc(resolvePhotoUrl(photo.url))}
-              >
-                <img
-                  src={resolvePhotoUrl(photo.url)}
-                  alt={photo.caption || ''}
-                  className="w-full h-full object-cover"
-                />
-                {photo.caption && (
-                  <div
-                    className="absolute bottom-0 left-0 right-0 px-2 py-1.5"
-                    style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.72))' }}
-                  >
-                    <p className="text-white text-[10px] leading-tight">{photo.caption}</p>
-                  </div>
-                )}
-              </div>
+            {expert.gallery_photos.map((photo, idx) => {
+              const src = resolvePhotoUrl(photo.url);
+              const openPhoto = () => { if (src) setLightboxSrc(src); };
+              return (
+                <div
+                  key={idx}
+                  className="flex-shrink-0 relative rounded-xl overflow-hidden cursor-pointer"
+                  style={{ width: 160, height: 200 }}
+                  onClick={openPhoto}
+                >
+                  <img
+                    src={src}
+                    alt={photo.caption || ''}
+                    className="w-full h-full object-cover"
+                    onClick={openPhoto}
+                  />
+                  {photo.caption && (
+                    <div
+                      className="absolute bottom-0 left-0 right-0 px-2 py-1.5"
+                      style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.72))' }}
+                      onClick={openPhoto}
+                    >
+                      <p className="text-white text-[10px] leading-tight">{photo.caption}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })
             ))}
           </div>
         </div>
