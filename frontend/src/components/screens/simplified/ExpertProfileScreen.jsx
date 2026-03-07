@@ -251,8 +251,7 @@ export default function ExpertProfileScreen({
                   )}
                 </div>
               );
-            })
-            ))}
+            })}
           </div>
         </div>
       )}
