@@ -322,7 +322,7 @@ export default function BirthDetailsModal({ token, isOpen, onClose, onComplete, 
             style={{ backgroundColor: '#3E827A', color: 'white' }}
             data-testid="birth-details-submit"
           >
-            {loading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save & View Kundli'}
+            {loading ? 'Saving...' : isOnboarding ? 'Continue' : 'Save'}
           </button>
         </div>
       </form>

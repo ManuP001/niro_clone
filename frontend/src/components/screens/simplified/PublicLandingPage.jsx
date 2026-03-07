@@ -1400,7 +1400,7 @@ export default function PublicLandingPage({
                 onClick={handleNavBegin}
                 data-testid="nav-begin-btn"
               >
-                📞 Get a free 5 mins consultation
+                📞 Get a free 5 min consultation
               </a>
             </li>
           </ul>
@@ -1432,7 +1432,7 @@ export default function PublicLandingPage({
               className="nav-btn"
               onClick={(e) => { handleNavBegin(e); setMobileMenuOpen(false); }}
             >
-              📞 Get a free 5 mins consultation
+              📞 Get a free 5 min consultation
             </a>
           </div>
         </nav>

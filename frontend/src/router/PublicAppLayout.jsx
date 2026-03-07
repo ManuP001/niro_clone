@@ -548,6 +548,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
                   isAuthenticated={isAuthenticated}
                   user={user}
                   onLoginClick={onLoginClick}
+                  hasBottomNav={true}
                 />
               }
             />

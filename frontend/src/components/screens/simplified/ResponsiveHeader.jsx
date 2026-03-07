@@ -30,7 +30,7 @@ export default function ResponsiveHeader({
   showBackButton = false,
   title = '',
   transparent = false,
-  ctaText = 'Get a Free 5 mins consultation',
+  ctaText = 'Get a free 5 min consultation',
   onCtaClick,
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

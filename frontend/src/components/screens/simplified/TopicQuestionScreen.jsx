@@ -37,8 +37,8 @@ export default function TopicQuestionScreen({ topicId, onAnswer, onBack }) {
 
   return (
     <div
-      className="flex flex-col min-h-screen px-5 pt-8 pb-6"
-      style={{ backgroundColor: colors.background.primary }}
+      className="flex flex-col h-full px-5 pt-8 pb-32"
+      style={{ backgroundColor: colors.background.primary, minHeight: '100%' }}
     >
       {/* Topic context */}
       <div className="flex items-center gap-3 mb-8">
@@ -62,7 +62,7 @@ export default function TopicQuestionScreen({ topicId, onAnswer, onBack }) {
       </h2>
 
       {/* Option chips */}
-      <div className="flex flex-col gap-3 flex-1">
+      <div className="flex flex-col gap-3">
         {opts.map((opt) => (
           <button
             key={opt}
@@ -86,8 +86,8 @@ export default function TopicQuestionScreen({ topicId, onAnswer, onBack }) {
         ))}
       </div>
 
-      {/* Continue button */}
-      <div className="mt-8">
+      {/* Continue button — fixed at bottom of wizard container */}
+      <div className="fixed bottom-0 left-0 right-0 px-5 pb-5 pt-3 z-10" style={{ backgroundColor: colors.background.primary }}>
         <button
           onClick={() => selected && onAnswer(selected)}
           disabled={!selected}
@@ -102,7 +102,7 @@ export default function TopicQuestionScreen({ topicId, onAnswer, onBack }) {
         </button>
         <button
           onClick={onBack}
-          className="w-full mt-3 py-3 text-sm font-medium"
+          className="w-full mt-2 py-2 text-sm font-medium"
           style={{ color: colors.text.muted }}
         >
           ← Back

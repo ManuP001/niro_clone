@@ -125,7 +125,7 @@ export default function PublicNavHeader({ isAuthenticated, showBackButton = fals
           >
             <span className="hidden sm:inline">📞</span>
             <span className="sm:hidden">📞</span>
-            <span className="hidden sm:inline">Get a free 5 mins consultation</span>
+            <span className="hidden sm:inline">Get a free 5 min consultation</span>
             <span className="sm:hidden">Free Call</span>
           </button>
         </div>

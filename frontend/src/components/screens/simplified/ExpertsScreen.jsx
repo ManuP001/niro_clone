@@ -161,7 +161,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
 
   return (
     <div
-      className={`${!topicId ? 'min-h-screen' : ''} ${hasBottomNav && !topicId ? 'pb-20 md:pb-0' : ''} ${onBookFreeCall ? 'pb-24' : ''}`}
+      className={`${!topicId ? 'min-h-screen' : ''} ${hasBottomNav && !topicId ? 'pb-20 md:pb-0' : ''}`}
       style={{ backgroundColor: colors.background.primary }}
     >
       {/* Responsive Header (hidden in wizard mode) */}
@@ -303,23 +303,7 @@ export default function ExpertsScreen({ token, userState, onNavigate, onTabChang
         </div>
       </div>
 
-      {/* Sticky footer CTA — wizard mode only */}
-      {onBookFreeCall && (
-        <div
-          className="fixed bottom-0 left-0 right-0 z-40 px-4 py-4"
-          style={{ backgroundColor: colors.background.primary, borderTop: `1px solid ${colors.ui.borderDark}` }}
-        >
-          <div className="max-w-lg mx-auto">
-            <button
-              onClick={onBookFreeCall}
-              className="w-full py-4 rounded-full font-semibold text-base transition-all hover:shadow-lg active:scale-[0.99]"
-              style={{ backgroundColor: colors.teal.primary, color: '#ffffff' }}
-            >
-              Book your free 5 min call →
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Sticky footer CTA removed — in wizard mode users tap individual expert cards */}
     </div>
   );
 }

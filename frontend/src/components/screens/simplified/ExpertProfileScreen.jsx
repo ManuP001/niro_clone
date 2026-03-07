@@ -452,7 +452,7 @@ export default function ExpertProfileScreen({
               </div>
 
               <div className="space-y-3">
-                {/* Free 10-min intro call */}
+                {/* Free 5-min intro call */}
                 {expert.offers_free_call && (
                   <button
                     onClick={() => { setShowBottomSheet(false); handleConsultationClick(null); }}
@@ -463,7 +463,7 @@ export default function ExpertProfileScreen({
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: colors.teal.primary, color: '#fff' }}>
-                            10 mins
+                            5 min
                           </span>
                           <p className="font-semibold text-sm" style={{ color: colors.teal.dark }}>Free intro call</p>
                         </div>
