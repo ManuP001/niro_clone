@@ -3203,6 +3203,428 @@ const BulkUpload = () => {
 };
 
 // ============================================================================
+// EMAIL CAMPAIGNS (CRM)
+// ============================================================================
+const SEGMENT_DEFAULTS = {
+  user_source: 'all',
+  has_booking: '',
+  has_paid_order: '',
+  profile_complete: '',
+  registered_days_ago_max: '',
+  inactive_days_min: '',
+};
+
+const EmailCampaigns = () => {
+  const [view, setView] = useState('list'); // 'list' | 'new' | 'detail'
+  const [campaigns, setCampaigns] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [detailCampaign, setDetailCampaign] = useState(null);
+
+  // New campaign form state
+  const [form, setForm] = useState({
+    name: '',
+    subject: '',
+    html_content: '',
+    segment: { ...SEGMENT_DEFAULTS },
+  });
+  const [previewCount, setPreviewCount] = useState(null);
+  const [previewSample, setPreviewSample] = useState([]);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendResult, setSendResult] = useState(null);
+  const [htmlPreview, setHtmlPreview] = useState(false);
+  const [sendConfirmId, setSendConfirmId] = useState(null);
+  const [error, setError] = useState('');
+
+  const fetchCampaigns = async (p = 1) => {
+    setLoading(true);
+    try {
+      const data = await adminFetch(`/api/admin/campaigns?page=${p}&limit=20`);
+      setCampaigns(data.campaigns || []);
+      setTotal(data.total || 0);
+      setPage(p);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchCampaigns(1); }, []); // eslint-disable-line
+
+  const buildSegmentPayload = () => {
+    const s = form.segment;
+    const payload = { user_source: s.user_source };
+    if (s.has_booking !== '') payload.has_booking = s.has_booking === 'true';
+    if (s.has_paid_order !== '') payload.has_paid_order = s.has_paid_order === 'true';
+    if (s.profile_complete !== '') payload.profile_complete = s.profile_complete === 'true';
+    if (s.registered_days_ago_max !== '') payload.registered_days_ago_max = parseInt(s.registered_days_ago_max, 10);
+    if (s.inactive_days_min !== '') payload.inactive_days_min = parseInt(s.inactive_days_min, 10);
+    return payload;
+  };
+
+  const handlePreview = async () => {
+    setPreviewLoading(true);
+    setPreviewCount(null);
+    try {
+      const data = await adminFetch('/api/admin/campaigns/preview', {
+        method: 'POST',
+        body: JSON.stringify(buildSegmentPayload()),
+      });
+      setPreviewCount(data.count);
+      setPreviewSample(data.sample || []);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    if (!form.name || !form.subject || !form.html_content) {
+      setError('Name, subject, and email body are required.');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      const payload = { name: form.name, subject: form.subject, html_content: form.html_content, segment: buildSegmentPayload() };
+      const data = await adminFetch('/api/admin/campaigns', { method: 'POST', body: JSON.stringify(payload) });
+      setSendConfirmId(data.campaign.campaign_id);
+      await fetchCampaigns(1);
+      setView('list');
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveThenSend = async () => {
+    if (!form.name || !form.subject || !form.html_content) {
+      setError('Name, subject, and email body are required.');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      const payload = { name: form.name, subject: form.subject, html_content: form.html_content, segment: buildSegmentPayload() };
+      const created = await adminFetch('/api/admin/campaigns', { method: 'POST', body: JSON.stringify(payload) });
+      setSendConfirmId(created.campaign.campaign_id);
+      await fetchCampaigns(1);
+      setView('list');
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSend = async (campaignId) => {
+    setSending(true);
+    setSendResult(null);
+    setError('');
+    try {
+      const data = await adminFetch(`/api/admin/campaigns/${campaignId}/send`, { method: 'POST' });
+      setSendResult({ ok: true, sent: data.sent, errors: data.errors, total: data.total });
+      setSendConfirmId(null);
+      await fetchCampaigns(page);
+    } catch (e) {
+      setSendResult({ ok: false, message: e.message });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const segmentLabel = (seg) => {
+    if (!seg) return 'All users';
+    const parts = [];
+    if (seg.user_source && seg.user_source !== 'all') parts.push(seg.user_source);
+    if (seg.has_booking === false) parts.push('never booked');
+    if (seg.has_booking === true) parts.push('has booking');
+    if (seg.has_paid_order === false) parts.push('never paid');
+    if (seg.has_paid_order === true) parts.push('has paid order');
+    if (seg.registered_days_ago_max) parts.push(`joined ≤${seg.registered_days_ago_max}d ago`);
+    if (seg.inactive_days_min) parts.push(`inactive ≥${seg.inactive_days_min}d`);
+    return parts.length ? parts.join(', ') : 'All users';
+  };
+
+  // ---- LIST VIEW ----
+  if (view === 'list') return (
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">Email Campaigns</h2>
+          <p className="text-sm text-gray-500 mt-0.5">Send targeted emails to re-engage customers.</p>
+        </div>
+        <button onClick={() => { setForm({ name: '', subject: '', html_content: '', segment: { ...SEGMENT_DEFAULTS } }); setPreviewCount(null); setSendResult(null); setError(''); setView('new'); }}
+          className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium">
+          + New Campaign
+        </button>
+      </div>
+
+      {sendResult && (
+        <div className={`mb-4 p-4 rounded-xl border text-sm ${sendResult.ok ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-700'}`}>
+          {sendResult.ok ? `Sent to ${sendResult.sent} recipients. ${sendResult.errors} errors.` : `Send failed: ${sendResult.message}`}
+        </div>
+      )}
+
+      {sendConfirmId && (
+        <div className="mb-4 p-4 rounded-xl border border-yellow-300 bg-yellow-50 text-sm text-yellow-800 flex items-center gap-4">
+          <span>Campaign saved as draft. Ready to send?</span>
+          {sending ? <span className="text-gray-500">Sending…</span> : (
+            <>
+              <button onClick={() => handleSend(sendConfirmId)} className="px-3 py-1 bg-teal-600 text-white rounded-lg text-xs font-semibold">Yes, Send Now</button>
+              <button onClick={() => setSendConfirmId(null)} className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-xs">Later</button>
+            </>
+          )}
+        </div>
+      )}
+
+      {loading ? <p className="text-gray-500">Loading…</p> : campaigns.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">
+          <p className="text-4xl mb-3">📧</p>
+          <p>No campaigns yet. Create one to get started.</p>
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+              <tr>
+                <th className="px-4 py-3 text-left">Name</th>
+                <th className="px-4 py-3 text-left">Subject</th>
+                <th className="px-4 py-3 text-left">Segment</th>
+                <th className="px-4 py-3 text-left">Status</th>
+                <th className="px-4 py-3 text-left">Recipients</th>
+                <th className="px-4 py-3 text-left">Sent</th>
+                <th className="px-4 py-3 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {campaigns.map(c => (
+                <tr key={c.campaign_id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 font-medium text-gray-800">{c.name}</td>
+                  <td className="px-4 py-3 text-gray-600 max-w-[180px] truncate">{c.subject}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">{segmentLabel(c.segment)}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${c.status === 'sent' ? 'bg-green-100 text-green-700' : c.status === 'sending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
+                      {c.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">{c.recipient_count || '-'}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">{c.sent_at ? formatDate(c.sent_at) : '-'}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => { setDetailCampaign(c); setView('detail'); }} className="text-teal-600 hover:underline text-xs">View</button>
+                      {c.status === 'draft' && (
+                        <button onClick={() => { setSendConfirmId(c.campaign_id); setSendResult(null); }} className="text-orange-600 hover:underline text-xs">Send</button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {total > 20 && (
+            <div className="px-4 py-3 border-t border-gray-100 flex gap-2 text-sm">
+              {page > 1 && <button onClick={() => fetchCampaigns(page - 1)} className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200">← Prev</button>}
+              <span className="text-gray-500 py-1">Page {page}</span>
+              {page * 20 < total && <button onClick={() => fetchCampaigns(page + 1)} className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200">Next →</button>}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  // ---- DETAIL VIEW ----
+  if (view === 'detail' && detailCampaign) return (
+    <div className="p-6">
+      <button onClick={() => setView('list')} className="text-teal-600 hover:underline text-sm mb-4">← Back to Campaigns</button>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-gray-800">{detailCampaign.name}</h3>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${detailCampaign.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>{detailCampaign.status}</span>
+        </div>
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div><span className="text-gray-500">Subject:</span> <span className="font-medium">{detailCampaign.subject}</span></div>
+          <div><span className="text-gray-500">Segment:</span> <span className="font-medium">{segmentLabel(detailCampaign.segment)}</span></div>
+          <div><span className="text-gray-500">Recipients:</span> <span className="font-medium">{detailCampaign.recipient_count || '-'}</span></div>
+          <div><span className="text-gray-500">Sent at:</span> <span className="font-medium">{detailCampaign.sent_at ? formatDate(detailCampaign.sent_at) : '-'}</span></div>
+          {detailCampaign.send_errors > 0 && <div><span className="text-red-500">Send errors:</span> <span className="font-medium text-red-600">{detailCampaign.send_errors}</span></div>}
+        </div>
+        <div>
+          <p className="text-sm text-gray-500 mb-2">Email HTML preview:</p>
+          <iframe
+            srcDoc={detailCampaign.html_content}
+            title="Email Preview"
+            className="w-full border border-gray-200 rounded-lg"
+            style={{ height: 400 }}
+            sandbox="allow-same-origin"
+          />
+        </div>
+        {detailCampaign.status === 'draft' && (
+          <div className="flex gap-3">
+            {sending ? <span className="text-gray-500 text-sm">Sending…</span> : (
+              <button onClick={() => handleSend(detailCampaign.campaign_id)} className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium">
+                Send This Campaign
+              </button>
+            )}
+            {sendResult && <span className={`text-sm py-2 ${sendResult.ok ? 'text-green-700' : 'text-red-600'}`}>{sendResult.ok ? `Sent to ${sendResult.sent}` : sendResult.message}</span>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // ---- NEW CAMPAIGN FORM ----
+  return (
+    <div className="p-6">
+      <button onClick={() => setView('list')} className="text-teal-600 hover:underline text-sm mb-4">← Back to Campaigns</button>
+      <div className="max-w-3xl space-y-6">
+        <h2 className="text-xl font-bold text-gray-800">New Email Campaign</h2>
+
+        {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>}
+
+        {/* Basic Info */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <h3 className="font-semibold text-gray-700">Campaign Details</h3>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Campaign Name <span className="text-gray-400">(internal)</span></label>
+            <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+              placeholder="e.g. March cold users re-engagement"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-1">Subject Line</label>
+            <input type="text" value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
+              placeholder="e.g. Your stars are calling ✨"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+          </div>
+        </div>
+
+        {/* Segment Builder */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <h3 className="font-semibold text-gray-700">Audience Segment</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">User Source</label>
+              <select value={form.segment.user_source} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, user_source: e.target.value } }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="all">All users</option>
+                <option value="google">Google OAuth only</option>
+                <option value="legacy">Legacy (email/phone) only</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Has booked a call?</label>
+              <select value={form.segment.has_booking} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, has_booking: e.target.value } }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="">Any</option>
+                <option value="false">Never booked (re-engage)</option>
+                <option value="true">Has booked before</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Has paid order?</label>
+              <select value={form.segment.has_paid_order} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, has_paid_order: e.target.value } }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="">Any</option>
+                <option value="false">Never paid (convert)</option>
+                <option value="true">Has paid before (upsell)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Profile complete?</label>
+              <select value={form.segment.profile_complete} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, profile_complete: e.target.value } }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="">Any</option>
+                <option value="false">Incomplete profile</option>
+                <option value="true">Profile complete</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Registered in last N days</label>
+              <input type="number" min="1" value={form.segment.registered_days_ago_max}
+                onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, registered_days_ago_max: e.target.value } }))}
+                placeholder="Blank = all time"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">No booking in last N days</label>
+              <input type="number" min="1" value={form.segment.inactive_days_min}
+                onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, inactive_days_min: e.target.value } }))}
+                placeholder="Blank = ignore"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+            </div>
+          </div>
+          <div className="flex items-center gap-4 pt-2">
+            <button onClick={handlePreview} disabled={previewLoading}
+              className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm font-medium disabled:opacity-50">
+              {previewLoading ? 'Counting…' : 'Preview Audience'}
+            </button>
+            {previewCount !== null && (
+              <div className="text-sm">
+                <span className="font-semibold text-teal-700">{previewCount} users</span>
+                <span className="text-gray-500"> will receive this email</span>
+                {previewSample.length > 0 && (
+                  <span className="text-gray-400 ml-2">— e.g. {previewSample.map(u => u.name || u.email).slice(0, 3).join(', ')}</span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Email Body */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-gray-700">Email Body (HTML)</h3>
+            <button onClick={() => setHtmlPreview(v => !v)} className="text-sm text-teal-600 hover:underline">
+              {htmlPreview ? 'Hide Preview' : 'Show Preview'}
+            </button>
+          </div>
+          <p className="text-xs text-gray-400">Use <code className="bg-gray-100 px-1 rounded">{'{{name}}'}</code> for recipient's name and <code className="bg-gray-100 px-1 rounded">{'{{email}}'}</code> for their email address.</p>
+          <textarea
+            value={form.html_content}
+            onChange={e => setForm(f => ({ ...f, html_content: e.target.value }))}
+            placeholder={`<p>Hi {{name}},</p>\n<p>We noticed you haven't tried a reading yet. Book your free intro call today!</p>\n<p>– The Niro Team</p>`}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-teal-500"
+            style={{ height: 320, resize: 'vertical' }}
+          />
+          {htmlPreview && form.html_content && (
+            <div>
+              <p className="text-xs text-gray-500 mb-1">Preview (rendered):</p>
+              <iframe
+                srcDoc={form.html_content}
+                title="HTML Preview"
+                className="w-full border border-gray-200 rounded-lg bg-white"
+                style={{ height: 360 }}
+                sandbox="allow-same-origin"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-4 pb-8">
+          <button onClick={handleSaveDraft} disabled={saving}
+            className="px-5 py-2.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm font-medium disabled:opacity-50">
+            {saving ? 'Saving…' : 'Save as Draft'}
+          </button>
+          <button onClick={handleSaveThenSend} disabled={saving}
+            className="px-5 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium disabled:opacity-50">
+            {saving ? 'Saving…' : 'Save & Send Campaign'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
 // MAIN ADMIN DASHBOARD
 // ============================================================================
 export default function AdminDashboard() {
@@ -3254,6 +3676,7 @@ export default function AdminDashboard() {
     { id: 'manage-tiers', label: 'Packages', icon: '🎁' },
     { id: 'divider3', label: '─── Tools ───', icon: '' },
     { id: 'bulk-upload', label: 'Bulk Upload', icon: '📤' },
+    { id: 'campaigns', label: 'Email Campaigns', icon: '📧' },
   ];
 
   const renderContent = () => {
@@ -3269,6 +3692,7 @@ export default function AdminDashboard() {
       case 'manage-remedies': return <RemediesCatalogManager />;
       case 'manage-tiers': return <TiersManager />;
       case 'bulk-upload': return <BulkUpload />;
+      case 'campaigns': return <EmailCampaigns />;
       default: return <DashboardHome stats={stats} onNavigate={setCurrentPage} environment={environment} />;
     }
   };

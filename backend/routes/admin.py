@@ -9,6 +9,7 @@ import io
 import uuid
 import base64
 import hashlib
+import asyncio
 from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, HTTPException, Header, Query, Request, Response, UploadFile, File
@@ -3011,4 +3012,338 @@ async def update_platform_settings(
     )
     logger.info(f"Platform settings updated: {data}")
     return {"ok": True, "settings": data}
+
+
+# ============================================================================
+# EMAIL CAMPAIGNS (CRM)
+# ============================================================================
+
+class SegmentRules(BaseModel):
+    user_source: str = "all"                        # "all" | "google" | "legacy"
+    has_booking: Optional[bool] = None              # True = has booked, False = never booked
+    has_paid_order: Optional[bool] = None           # True = has paid order, False = never paid
+    profile_complete: Optional[bool] = None
+    registered_days_ago_max: Optional[int] = None   # signed up within last N days
+    inactive_days_min: Optional[int] = None         # no booking in last N days
+
+class CampaignCreate(BaseModel):
+    name: str
+    subject: str
+    html_content: str
+    segment: SegmentRules = SegmentRules()
+
+
+async def _get_segment_users(segment: SegmentRules, db) -> List[Dict]:
+    """Resolve a SegmentRules into a deduplicated list of {user_id, email, name}."""
+    import re
+    from datetime import timezone as _tz
+
+    now = datetime.now(timezone.utc)
+    users: List[Dict] = []
+
+    # 1. Collect Google OAuth users
+    if segment.user_source in ("all", "google"):
+        cursor = db.users.find(
+            {"email": {"$exists": True, "$ne": ""}},
+            {"user_id": 1, "email": 1, "name": 1, "created_at": 1, "profile_complete": 1, "_id": 0}
+        )
+        async for u in cursor:
+            users.append({
+                "user_id": u.get("user_id", ""),
+                "email": u.get("email", ""),
+                "name": u.get("name", ""),
+                "created_at": u.get("created_at"),
+                "profile_complete": u.get("profile_complete", False),
+                "source": "google",
+            })
+
+    # 2. Collect legacy users (identifier is email)
+    if segment.user_source in ("all", "legacy"):
+        auth_cursor = db.auth_users.find(
+            {"identifier": {"$regex": "@"}},
+            {"user_id": 1, "identifier": 1, "created_at": 1, "_id": 0}
+        )
+        auth_user_ids = []
+        legacy_map: Dict[str, Dict] = {}
+        async for u in auth_cursor:
+            uid = u.get("user_id", "")
+            legacy_map[uid] = {
+                "user_id": uid,
+                "email": u.get("identifier", ""),
+                "name": "",
+                "created_at": u.get("created_at"),
+                "profile_complete": False,
+                "source": "legacy",
+            }
+            auth_user_ids.append(uid)
+        # Enrich with profile names
+        if auth_user_ids:
+            prof_cursor = db.auth_profiles.find(
+                {"user_id": {"$in": auth_user_ids}},
+                {"user_id": 1, "name": 1, "_id": 0}
+            )
+            async for p in prof_cursor:
+                uid = p.get("user_id", "")
+                if uid in legacy_map:
+                    legacy_map[uid]["name"] = p.get("name", "")
+                    legacy_map[uid]["profile_complete"] = True
+        users.extend(legacy_map.values())
+
+    # 3. Deduplicate by email (keep first occurrence)
+    seen_emails: set = set()
+    deduped: List[Dict] = []
+    for u in users:
+        email = (u.get("email") or "").strip().lower()
+        if email and email not in seen_emails:
+            seen_emails.add(email)
+            deduped.append(u)
+    users = deduped
+
+    # 4. Apply segment filters
+    # --- registered_days_ago_max ---
+    if segment.registered_days_ago_max is not None:
+        cutoff = now - timedelta(days=segment.registered_days_ago_max)
+        filtered = []
+        for u in users:
+            created = u.get("created_at")
+            if created:
+                if isinstance(created, str):
+                    try:
+                        created = datetime.fromisoformat(created.replace("Z", "+00:00"))
+                    except Exception:
+                        continue
+                if not created.tzinfo:
+                    created = created.replace(tzinfo=timezone.utc)
+                if created >= cutoff:
+                    filtered.append(u)
+        users = filtered
+
+    # --- has_booking ---
+    if segment.has_booking is not None:
+        all_user_ids = [u["user_id"] for u in users if u["user_id"]]
+        booked_ids: set = set()
+        async for b in db.bookings.find({"user_id": {"$in": all_user_ids}}, {"user_id": 1, "_id": 0}):
+            booked_ids.add(b.get("user_id", ""))
+        if segment.has_booking:
+            users = [u for u in users if u["user_id"] in booked_ids]
+        else:
+            users = [u for u in users if u["user_id"] not in booked_ids]
+
+    # --- inactive_days_min (no booking in last N days) ---
+    if segment.inactive_days_min is not None:
+        cutoff = now - timedelta(days=segment.inactive_days_min)
+        all_user_ids = [u["user_id"] for u in users if u["user_id"]]
+        recently_booked_ids: set = set()
+        async for b in db.bookings.find(
+            {"user_id": {"$in": all_user_ids}, "created_at": {"$gte": cutoff}},
+            {"user_id": 1, "_id": 0}
+        ):
+            recently_booked_ids.add(b.get("user_id", ""))
+        users = [u for u in users if u["user_id"] not in recently_booked_ids]
+
+    # --- has_paid_order ---
+    if segment.has_paid_order is not None:
+        paid_statuses = ["paid", "completed", "success", "Paid", "Completed", "Success"]
+        all_user_ids = [u["user_id"] for u in users if u["user_id"]]
+        paid_ids: set = set()
+        for coll in (db.niro_simplified_orders, db.niro_v2_orders):
+            async for o in coll.find(
+                {"user_id": {"$in": all_user_ids}, "status": {"$in": paid_statuses}},
+                {"user_id": 1, "_id": 0}
+            ):
+                paid_ids.add(o.get("user_id", ""))
+        if segment.has_paid_order:
+            users = [u for u in users if u["user_id"] in paid_ids]
+        else:
+            users = [u for u in users if u["user_id"] not in paid_ids]
+
+    # --- profile_complete ---
+    if segment.profile_complete is not None:
+        users = [u for u in users if bool(u.get("profile_complete")) == segment.profile_complete]
+
+    return users
+
+
+@router.get("/campaigns")
+async def list_campaigns(
+    request: Request,
+    x_admin_token: str = Header(None),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+):
+    """List email campaigns."""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    skip = (page - 1) * limit
+    total = await db.admin_email_campaigns.count_documents({})
+    cursor = db.admin_email_campaigns.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit)
+    campaigns = await cursor.to_list(length=limit)
+    return {"ok": True, "campaigns": campaigns, "total": total, "page": page, "limit": limit}
+
+
+@router.post("/campaigns")
+async def create_campaign(
+    campaign: CampaignCreate,
+    request: Request,
+    x_admin_token: str = Header(None),
+):
+    """Create a new email campaign (saved as draft)."""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    campaign_id = f"campaign_{uuid.uuid4().hex[:12]}"
+    doc = {
+        "campaign_id": campaign_id,
+        "name": campaign.name,
+        "subject": campaign.subject,
+        "html_content": campaign.html_content,
+        "segment": campaign.segment.model_dump(),
+        "status": "draft",
+        "recipient_count": 0,
+        "sent_at": None,
+        "send_errors": 0,
+        "created_at": datetime.now(timezone.utc),
+    }
+    await db.admin_email_campaigns.insert_one(doc)
+    doc.pop("_id", None)
+    return {"ok": True, "campaign": doc}
+
+
+@router.get("/campaigns/preview")
+async def preview_campaign_segment_get(
+    request: Request,
+    x_admin_token: str = Header(None),
+    user_source: str = Query("all"),
+    has_booking: Optional[str] = Query(None),
+    has_paid_order: Optional[str] = Query(None),
+    profile_complete: Optional[str] = Query(None),
+    registered_days_ago_max: Optional[int] = Query(None),
+    inactive_days_min: Optional[int] = Query(None),
+):
+    """Preview how many users match the segment rules (GET version for easy testing)."""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    def _parse_bool(v: Optional[str]) -> Optional[bool]:
+        if v is None or v == "":
+            return None
+        return v.lower() in ("true", "1", "yes")
+
+    segment = SegmentRules(
+        user_source=user_source,
+        has_booking=_parse_bool(has_booking),
+        has_paid_order=_parse_bool(has_paid_order),
+        profile_complete=_parse_bool(profile_complete),
+        registered_days_ago_max=registered_days_ago_max,
+        inactive_days_min=inactive_days_min,
+    )
+    users = await _get_segment_users(segment, db)
+    return {"ok": True, "count": len(users), "sample": [{"email": u["email"], "name": u["name"]} for u in users[:5]]}
+
+
+@router.post("/campaigns/preview")
+async def preview_campaign_segment(
+    segment: SegmentRules,
+    request: Request,
+    x_admin_token: str = Header(None),
+):
+    """Preview how many users match the segment rules (POST version used by the UI)."""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    users = await _get_segment_users(segment, db)
+    return {"ok": True, "count": len(users), "sample": [{"email": u["email"], "name": u["name"]} for u in users[:5]]}
+
+
+@router.get("/campaigns/{campaign_id}")
+async def get_campaign(
+    campaign_id: str,
+    request: Request,
+    x_admin_token: str = Header(None),
+):
+    """Get a single campaign by ID."""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    doc = await db.admin_email_campaigns.find_one({"campaign_id": campaign_id}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    return {"ok": True, "campaign": doc}
+
+
+@router.post("/campaigns/{campaign_id}/send")
+async def send_campaign(
+    campaign_id: str,
+    request: Request,
+    x_admin_token: str = Header(None),
+):
+    """Send an email campaign to all users matching the segment."""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    doc = await db.admin_email_campaigns.find_one({"campaign_id": campaign_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    if doc.get("status") == "sending":
+        raise HTTPException(status_code=409, detail="Campaign is already being sent")
+
+    # Mark as sending
+    await db.admin_email_campaigns.update_one(
+        {"campaign_id": campaign_id},
+        {"$set": {"status": "sending"}}
+    )
+
+    try:
+        from backend.services.email_service import send_email as _send_email
+
+        segment = SegmentRules(**doc.get("segment", {}))
+        users = await _get_segment_users(segment, db)
+
+        subject = doc["subject"]
+        html_template = doc["html_content"]
+        errors = 0
+        sent = 0
+
+        for user in users:
+            email_addr = user.get("email", "")
+            name = user.get("name") or email_addr.split("@")[0]
+            if not email_addr:
+                continue
+            personalised_html = html_template.replace("{{name}}", name).replace("{{email}}", email_addr)
+            try:
+                result = await _send_email(email_addr, subject, personalised_html)
+                if result.get("status") == "error":
+                    errors += 1
+                else:
+                    sent += 1
+            except Exception as e:
+                logger.warning(f"Campaign {campaign_id}: failed to send to {email_addr}: {e}")
+                errors += 1
+            await asyncio.sleep(0.1)  # Respect Resend rate limits
+
+        await db.admin_email_campaigns.update_one(
+            {"campaign_id": campaign_id},
+            {"$set": {
+                "status": "sent",
+                "recipient_count": sent,
+                "send_errors": errors,
+                "sent_at": datetime.now(timezone.utc),
+            }}
+        )
+        return {"ok": True, "sent": sent, "errors": errors, "total": len(users)}
+
+    except Exception as e:
+        logger.error(f"Campaign {campaign_id} send failed: {e}")
+        await db.admin_email_campaigns.update_one(
+            {"campaign_id": campaign_id},
+            {"$set": {"status": "draft"}}
+        )
+        raise HTTPException(status_code=500, detail=f"Send failed: {str(e)}")
 
