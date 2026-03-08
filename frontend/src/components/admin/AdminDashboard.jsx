@@ -522,6 +522,21 @@ const UsersList = () => {
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
   const [selectedUser, setSelectedUser] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteUser = async (user) => {
+    if (!window.confirm(`PERMANENTLY delete ${user.name || user.email}?\n\nThis will remove the user and all their orders, plans, and bookings. This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      await adminFetch(`/api/admin/users/${user.user_id}`, { method: 'DELETE' });
+      setSelectedUser(null);
+      await loadUsers();
+    } catch (err) {
+      alert('Delete failed: ' + err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const loadUsers = async () => {
     setLoading(true);
@@ -718,6 +733,15 @@ const UsersList = () => {
             <div className="mt-4 pt-4 border-t">
               <p className="text-xs text-gray-500">User ID</p>
               <p className="font-mono text-sm">{selectedUser.user_id}</p>
+            </div>
+            <div className="mt-4 pt-4 border-t flex justify-end">
+              <button
+                onClick={() => handleDeleteUser(selectedUser)}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete User'}
+              </button>
             </div>
           </div>
         </div>

@@ -518,6 +518,51 @@ async def get_user_detail(
     }
 
 
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    request: Request,
+    x_admin_token: str = Header(None)
+):
+    """Permanently delete a user and all associated data."""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    deleted = {}
+
+    # Remove from Google OAuth users
+    r = await db.users.delete_one({"user_id": user_id})
+    deleted["users"] = r.deleted_count
+
+    # Remove from legacy auth system
+    r = await db.auth_users.delete_one({"user_id": user_id})
+    deleted["auth_users"] = r.deleted_count
+    r = await db.auth_profiles.delete_one({"user_id": user_id})
+    deleted["auth_profiles"] = r.deleted_count
+
+    # Remove orders and plans
+    r = await db.niro_simplified_orders.delete_many({"user_id": user_id})
+    deleted["simplified_orders"] = r.deleted_count
+    r = await db.niro_v2_orders.delete_many({"user_id": user_id})
+    deleted["v2_orders"] = r.deleted_count
+    r = await db.niro_simplified_plans.delete_many({"user_id": user_id})
+    deleted["plans"] = r.deleted_count
+    r = await db.niro_remedy_orders.delete_many({"user_id": user_id})
+    deleted["remedy_orders"] = r.deleted_count
+
+    # Remove bookings
+    r = await db.bookings.delete_many({"user_id": user_id})
+    deleted["bookings"] = r.deleted_count
+
+    total = sum(deleted.values())
+    if total == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    logger.info(f"Admin deleted user {user_id}: {deleted}")
+    return {"ok": True, "deleted": deleted}
+
+
 # ============================================================================
 # ORDERS ENDPOINTS - Combined view of all orders
 # ============================================================================
