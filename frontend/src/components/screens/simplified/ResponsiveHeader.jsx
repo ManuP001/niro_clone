@@ -19,7 +19,7 @@ const NAV_ITEMS = [
   { id: 'topics', label: 'Life Topics', href: '/app' },
   { id: 'experts', label: 'Experts', href: '/app/experts' },
   { id: 'remedies', label: 'Remedies', href: '/app/remedies' },
-  { id: 'astro', label: 'Astro', screen: 'kundli', tab: 'astro' },
+  { id: 'account', label: 'My Account', href: '/app/account' },
 ];
 
 export default function ResponsiveHeader({

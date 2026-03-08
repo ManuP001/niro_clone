@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import HomeScreen from './HomeScreen';
 import ExpertsScreen from './ExpertsScreen';
-import TopicQuestionScreen from './TopicQuestionScreen';
 import { colors } from './theme';
 
 /**
- * FreeCallWizard — 3-step guided wizard for booking a consultation.
+ * FreeCallWizard — 2-step guided wizard for booking a consultation.
  *
- * Step 1: Topic Picker     (HomeScreen in picker mode)
- * Step 2: Topic Question   (TopicQuestionScreen — 1 chip question)
- * Step 3: Expert List      (ExpertsScreen filtered by topic)
+ * Step 1: Topic Picker  (HomeScreen in picker mode)
+ * Step 2: Expert List   (ExpertsScreen filtered by topic)
  *          → clicking an expert closes wizard and navigates to Expert Profile
- *
- * Booking (session selection, slot, OTP, confirmation) happens on ExpertProfileScreen.
  */
 
 const TOPICS_WITH_PACKAGES = [
@@ -22,16 +18,10 @@ const TOPICS_WITH_PACKAGES = [
 export default function FreeCallWizard({ token, user, userState, onClose, onNavigate, onTabChange, initialTopicId }) {
   const [step, setStep] = useState(initialTopicId ? 2 : 1);
   const [selectedTopicId, setSelectedTopicId] = useState(initialTopicId || null);
-  const [topicContext, setTopicContext] = useState(null);
 
   const handleTopicSelect = (topicId) => {
     setSelectedTopicId(topicId);
     setStep(2);
-  };
-
-  const handleAnswer = (answer) => {
-    setTopicContext(answer);
-    setStep(3);
   };
 
   const handleBack = () => {
@@ -49,15 +39,13 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
       onNavigate('expertProfile', {
         expertId: expert.expert_id,
         topicId: selectedTopicId,
-        topicContext,
       });
     }
   };
 
   const STEP_LABELS = {
-    1: 'Step 1 of 3 — Choose your topic',
-    2: 'Step 2 of 3 — A quick question',
-    3: 'Step 3 of 3 — Your astrologers',
+    1: 'Step 1 of 2 — Choose your topic',
+    2: 'Step 2 of 2 — Your astrologers',
   };
 
   return (
@@ -67,7 +55,7 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
     >
       {/* Progress dots */}
       <div className="flex items-center justify-center gap-2 pt-3 pb-1">
-        {[1, 2, 3].map((s) => (
+        {[1, 2].map((s) => (
           <div
             key={s}
             className="rounded-full transition-all"
@@ -101,14 +89,6 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
         )}
 
         {step === 2 && selectedTopicId && (
-          <TopicQuestionScreen
-            topicId={selectedTopicId}
-            onAnswer={handleAnswer}
-            onBack={handleBack}
-          />
-        )}
-
-        {step === 3 && selectedTopicId && (
           <ExpertsScreen
             token={token}
             userState={userState}
