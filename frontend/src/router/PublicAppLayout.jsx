@@ -383,6 +383,14 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
         }
         navigate('/app/checkout', { state: params });
         break;
+      case 'astro':
+        if (!isAuthenticated) {
+          localStorage.setItem('niro_redirect_after_login', '/app/astro');
+          onLoginClick?.();
+          return;
+        }
+        navigate('/app/astro');
+        break;
       default:
         navigate('/app');
     }
