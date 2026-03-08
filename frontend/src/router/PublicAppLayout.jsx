@@ -21,6 +21,7 @@ import MyPackScreen from '../components/screens/simplified/MyPackScreen';
 import AskMiraScreen from '../components/screens/simplified/AskMiraScreen';
 import ProfileScreen from '../components/screens/simplified/ProfileScreen';
 import KundliScreenSimplified from '../components/screens/simplified/KundliScreenSimplified';
+import AccountScreen from '../components/screens/simplified/AccountScreen';
 import ScheduleCallScreen from '../components/screens/simplified/ScheduleCallScreenV2';
 import ExpertPackagesPage from '../components/screens/simplified/ExpertPackagesPage';
 import FreeCallWizard from '../components/screens/simplified/FreeCallWizard';
@@ -191,8 +192,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     if (path.includes('/experts') || path.includes('/expert/')) return 'consult';
     if (path.includes('/mira')) return 'mira';
     if (path.includes('/remedies')) return 'remedies';
-    if (path.includes('/mypack')) return 'mypack';
-    if (path.includes('/astro')) return 'astro';
+    if (path.includes('/account') || path.includes('/mypack') || path.includes('/astro') || path.includes('/profile')) return 'account';
     return 'home';
   });
 
@@ -248,8 +248,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     if (path.includes('/experts') || path.includes('/expert/')) setActiveTab('consult');
     else if (path.includes('/mira')) setActiveTab('mira');
     else if (path.includes('/remedies')) setActiveTab('remedies');
-    else if (path.includes('/mypack')) setActiveTab('mypack');
-    else if (path.includes('/astro')) setActiveTab('astro');
+    else if (path.includes('/account') || path.includes('/mypack') || path.includes('/astro') || path.includes('/profile')) setActiveTab('account');
     else setActiveTab('home');
   }, [location.pathname]);
 
@@ -274,21 +273,8 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
       case 'remedies':
         navigate('/app/remedies');
         break;
-      case 'mypack':
-        if (!isAuthenticated) {
-          localStorage.setItem('niro_redirect_after_login', '/app/mypack');
-          onLoginClick?.();
-          return;
-        }
-        navigate('/app/mypack');
-        break;
-      case 'astro':
-        if (!isAuthenticated) {
-          localStorage.setItem('niro_redirect_after_login', '/app/astro');
-          onLoginClick?.();
-          return;
-        }
-        navigate('/app/astro');
+      case 'account':
+        navigate('/app/account');
         break;
       default:
         navigate('/app');
@@ -609,8 +595,22 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
                 )
               } 
             />
-            <Route 
-              path="mypack" 
+            <Route
+              path="account"
+              element={
+                <AccountScreen
+                  token={token}
+                  user={user}
+                  isAuthenticated={isAuthenticated}
+                  onLoginClick={onLoginClick}
+                  onLogout={onLogout}
+                  onNavigate={handleNavigate}
+                  hasBottomNav={shouldShowBottomNav()}
+                />
+              }
+            />
+            <Route
+              path="mypack"
               element={
                 isAuthenticated ? (
                   <MyPackScreen
@@ -683,10 +683,9 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
 
         {/* Bottom Navigation */}
         {shouldShowBottomNav() && (
-          <BottomNav 
+          <BottomNav
             activeTab={activeTab}
             onTabChange={handleTabChange}
-            isAuthenticated={isAuthenticated}
           />
         )}
 

@@ -1,40 +1,25 @@
 import React from 'react';
 import { colors } from './theme';
-import { HomeIcon, ConsultIcon, RemediesIcon, AstroIcon, PackageIcon } from './icons';
+import { HomeIcon, ConsultIcon, RemediesIcon, ProfileIcon } from './icons';
 
 /**
- * BottomNav - Navigation with new design system (V10)
- * New users: Home, Consult, Remedies, Astro (4 tabs)
- * Returning users: Home, Consult, Remedies, My Pack, Astro (5 tabs)
- * 
+ * BottomNav - Always 4 static tabs: Home, Consult, Remedies, Account
+ * Account tab shows login prompt when logged out, full profile when logged in.
  * Only shown on mobile (< 768px) - Desktop uses DesktopNav
  */
 
-// Base tabs for all users
-const baseTabs = [
+const tabs = [
   { id: 'home', label: 'Home', Icon: HomeIcon },
   { id: 'consult', label: 'Consult', Icon: ConsultIcon },
   { id: 'remedies', label: 'Remedies', Icon: RemediesIcon },
+  { id: 'account', label: 'Account', Icon: ProfileIcon },
 ];
 
-// Tab shown for all authenticated users (shows plan if paid, bookings if free)
-const myCallsTab = { id: 'mypack', label: 'My Calls', Icon: PackageIcon };
-
-// End tabs
-const endTabs = [
-  { id: 'astro', label: 'Astro', Icon: AstroIcon },
-];
-
-export default function BottomNav({ activeTab, onTabChange, hasActivePlan = false, isAuthenticated = false }) {
-  // Show My Calls tab for any logged-in user (paid or free)
-  const tabs = isAuthenticated
-    ? [...baseTabs, myCallsTab, ...endTabs]
-    : [...baseTabs, ...endTabs];
-  
+export default function BottomNav({ activeTab, onTabChange }) {
   return (
-    <nav 
+    <nav
       className="fixed bottom-0 left-0 right-0 border-t z-50 md:hidden"
-      style={{ 
+      style={{
         backgroundColor: '#ffffff',
         borderColor: colors.ui.borderDark,
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
@@ -53,25 +38,25 @@ export default function BottomNav({ activeTab, onTabChange, hasActivePlan = fals
               data-testid={`nav-tab-${tab.id}`}
             >
               {/* Icon container */}
-              <div 
+              <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center mb-0.5 transition-all ${isActive ? 'scale-105' : ''}`}
-                style={{ 
+                style={{
                   backgroundColor: isActive ? `${colors.teal.primary}15` : 'transparent',
                 }}
               >
-                <Icon 
-                  className="w-5 h-5" 
+                <Icon
+                  className="w-5 h-5"
                   style={{ color: isActive ? colors.teal.primary : colors.text.muted }}
                 />
               </div>
-              <span 
+              <span
                 className="text-[10px] font-medium"
                 style={{ color: isActive ? colors.teal.primary : colors.text.muted }}
               >
                 {tab.label}
               </span>
               {isActive && (
-                <div 
+                <div
                   className="absolute bottom-0 w-8 h-0.5 rounded-t-full"
                   style={{ backgroundColor: colors.teal.primary }}
                 />
