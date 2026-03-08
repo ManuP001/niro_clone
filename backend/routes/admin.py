@@ -329,16 +329,17 @@ async def list_users(
     elif profile_status == "incomplete":
         all_users = [u for u in all_users if not u.get("profile_complete")]
 
-    # Filter by purchase status (pre-fetch all paying user_ids before pagination)
+    # Filter by purchase status (pre-fetch paying user_ids before pagination)
     if purchase_status in ("has_purchase", "no_purchase"):
-        paid_statuses = ["paid", "completed", "success"]
-        simp_buyers = await db.niro_simplified_orders.distinct(
-            "user_id", {"status": {"$in": paid_statuses}}
-        )
-        v2_buyers = await db.niro_v2_orders.distinct(
-            "user_id", {"status": {"$in": paid_statuses}}
-        )
-        buyer_ids = set(simp_buyers) | set(v2_buyers)
+        paid_statuses = ["paid", "completed", "success", "Paid", "Completed", "Success"]
+        all_user_ids = [u.get("user_id") for u in all_users if u.get("user_id")]
+        buyer_ids: set = set()
+        for coll in (db.niro_simplified_orders, db.niro_v2_orders):
+            async for o in coll.find(
+                {"user_id": {"$in": all_user_ids}, "status": {"$in": paid_statuses}},
+                {"user_id": 1, "_id": 0}
+            ):
+                buyer_ids.add(o.get("user_id", ""))
         if purchase_status == "has_purchase":
             all_users = [u for u in all_users if u.get("user_id") in buyer_ids]
         else:
