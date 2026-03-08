@@ -3,6 +3,7 @@ import { colors, shadows } from './theme';
 import { trackEvent } from './utils';
 import { BACKEND_URL } from '../../../config';
 import PreBookingQuestionsScreen from './PreBookingQuestionsScreen';
+import ResponsiveHeader from './ResponsiveHeader';
 
 /**
  * ScheduleCallScreen V2 - Embedded scheduling experience
@@ -241,16 +242,16 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
   // Show booking confirmation
   if (bookingComplete && bookingDetails) {
     return (
-      <div 
+      <div
         className="min-h-screen flex flex-col"
         style={{ backgroundColor: colors.background.primary }}
       >
-        {/* Header */}
-        <header className="sticky top-0 z-40 px-4 py-4 flex items-center gap-4" style={{ backgroundColor: colors.background.primary }}>
-          <h1 className="text-lg font-semibold" style={{ color: colors.text.dark }}>
-            Booking Confirmed
-          </h1>
-        </header>
+        <ResponsiveHeader
+          showBackButton={false}
+          onNavigate={onNavigate}
+          user={user}
+          title="Booking Confirmed"
+        />
 
         {/* Content */}
         <div className="flex-1 px-4 py-8">
@@ -420,33 +421,17 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
   }
   
   return (
-    <div 
+    <div
       className="min-h-screen flex flex-col"
       style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Header */}
-      <header className="sticky top-0 z-40 px-4 py-4 flex items-center gap-4" style={{ backgroundColor: colors.background.primary }}>
-        <button
-          onClick={onBack || (() => window.history.back())}
-          className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-gray-100"
-          style={{ backgroundColor: '#FFFFFF', boxShadow: shadows.card }}
-          data-testid="schedule-back-btn"
-        >
-          <svg className="w-5 h-5" style={{ color: colors.text.dark }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <div>
-          <h1 className="text-lg font-semibold" style={{ color: colors.text.dark }}>
-            Schedule Your Free Call
-          </h1>
-          {expertName && (
-            <p className="text-sm mt-0.5" style={{ color: colors.teal.primary }}>
-              with {expertName}
-            </p>
-          )}
-        </div>
-      </header>
+      <ResponsiveHeader
+        showBackButton={true}
+        onBack={onBack || (() => window.history.back())}
+        onNavigate={onNavigate}
+        user={user}
+        title="Schedule Your Free Call"
+      />
 
       {/* Content */}
       <div className="flex-1 px-4 py-4">

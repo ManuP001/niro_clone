@@ -15,7 +15,7 @@ const TOPICS_WITH_PACKAGES = [
   'career', 'money', 'health', 'marriage', 'love', 'mental_health', 'spiritual',
 ];
 
-export default function FreeCallWizard({ token, user, userState, onClose, onNavigate, onTabChange, initialTopicId }) {
+export default function FreeCallWizard({ token, userState, onClose, onNavigate, onTabChange, initialTopicId }) {
   const [step, setStep] = useState(initialTopicId ? 2 : 1);
   const [selectedTopicId, setSelectedTopicId] = useState(initialTopicId || null);
 
@@ -97,7 +97,7 @@ export default function FreeCallWizard({ token, user, userState, onClose, onNavi
             onBookFreeCall={handleExpertClick}
             onNavigate={onNavigate}
             onTabChange={onTabChange}
-            hasBottomNav={false}
+            hasBottomNav={true}
           />
         )}
       </div>

@@ -4,6 +4,7 @@ import { apiSimplified, trackEvent } from './utils';
 import { getBackendUrl } from '../../../config';
 import { colors, shadows } from './theme';
 import NiroCertifiedBadge from './NiroCertifiedBadge';
+import ResponsiveHeader from './ResponsiveHeader';
 
 const resolvePhotoUrl = (url) => {
   if (!url) return null;
@@ -129,9 +130,16 @@ export default function ExpertProfileScreen({
       className={`min-h-screen ${hasBottomNav ? 'pb-32 md:pb-28' : 'pb-28'}`}
       style={{ backgroundColor: colors.background.primary }}
     >
+      <ResponsiveHeader
+        showBackButton={true}
+        onBack={handleBack}
+        onNavigate={onNavigate}
+        onTabChange={onTabChange}
+        user={user}
+      />
 
       {/* ── A. Hero photo ──────────────────────────────────────────── */}
-      <div className="relative w-full" style={{ height: 380 }}>
+      <div className="relative w-full" style={{ height: 320 }}>
         {expert.photo_url ? (
           <img
             src={resolvePhotoUrl(expert.photo_url)}
@@ -153,17 +161,6 @@ export default function ExpertProfileScreen({
           className="absolute inset-0"
           style={{ background: `linear-gradient(to bottom, transparent 55%, ${colors.background.primary} 100%)` }}
         />
-        {/* Back button */}
-        <button
-          onClick={handleBack}
-          className="absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center z-10"
-          style={{ backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}
-          aria-label="Go back"
-        >
-          <svg width="20" height="20" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-            <path d="M15 18l-6-6 6-6" />
-          </svg>
-        </button>
         {/* Niro Certified badge */}
         <div className="absolute top-4 right-4 z-10">
           <NiroCertifiedBadge size="md" />
