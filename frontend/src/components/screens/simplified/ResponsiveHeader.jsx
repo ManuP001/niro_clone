@@ -32,6 +32,7 @@ export default function ResponsiveHeader({
   transparent = false,
   ctaText = 'Get a free 5 min consultation',
   onCtaClick,
+  user,
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -163,24 +164,25 @@ export default function ResponsiveHeader({
                 📞 {ctaText}
               </button>
 
-              {/* Profile Button */}
+              {/* Profile Button — shows user's initial when logged in */}
               {onOpenProfile && (
                 <button
                   onClick={onOpenProfile}
-                  className="hidden md:flex w-10 h-10 rounded-full items-center justify-center transition-all hover:bg-black/5"
+                  className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full transition-all hover:bg-black/5"
                   style={{ border: `1px solid ${colors.ui.borderDark}` }}
                   data-testid="header-profile-btn"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke={colors.text.muted}
-                    strokeWidth="2"
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold"
+                    style={{ backgroundColor: colors.teal.primary, color: '#fff' }}
                   >
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
+                    {user?.name ? user.name.charAt(0).toUpperCase() : '?'}
+                  </div>
+                  {user?.name && (
+                    <span className="text-sm font-medium max-w-[100px] truncate" style={{ color: colors.text.dark }}>
+                      {user.name.split(' ')[0]}
+                    </span>
+                  )}
                 </button>
               )}
 
@@ -265,17 +267,13 @@ export default function ResponsiveHeader({
                 style={{ color: colors.text.dark }}
                 data-testid="mobile-profile-btn"
               >
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0"
+                  style={{ backgroundColor: colors.teal.primary, color: '#fff' }}
                 >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-                My Profile
+                  {user?.name ? user.name.charAt(0).toUpperCase() : '?'}
+                </div>
+                {user?.name ? `Hi, ${user.name.split(' ')[0]}` : 'My Profile'}
               </button>
             )}
           </div>

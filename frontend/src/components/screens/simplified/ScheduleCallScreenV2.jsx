@@ -155,8 +155,15 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
 
     try {
       const bookingDate = new Date(selectedDate);
-      const [hours] = selectedSlot.time.split(':');
-      bookingDate.setHours(parseInt(hours), 0, 0, 0);
+      const [hours, mins] = selectedSlot.time.split(':');
+      bookingDate.setHours(parseInt(hours), parseInt(mins || '0'), 0, 0);
+
+      // Reject if the slot is already in the past (stale slot picker)
+      if (bookingDate <= new Date()) {
+        setError('This time slot is now in the past. Please select a future slot.');
+        setIsBooking(false);
+        return;
+      }
 
       if (bookingId) {
         // Paid consultation — update existing booking record
@@ -180,12 +187,13 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
         // Free call — create new booking record
         const bookingData = {
           scheduled_date: bookingDate.toISOString(),
-          duration_minutes: 10,
+          duration_minutes: 5,
           call_type: 'free_consultation',
           user_name: user?.name || 'User',
           user_email: user?.email || '',
           notes: 'Free 5-minute consultation call',
           expert_id: expertId || null,
+          expert_name: expertName || null,
           topic_id: topicId || null,
           questions: bookingQuestions,
           user_phone: phoneNumber || user?.phone || '',
@@ -257,13 +265,22 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
               </svg>
             </div>
             
+            <div
+              className="inline-block px-4 py-1.5 rounded-full text-sm font-semibold mb-3"
+              style={{ backgroundColor: `${colors.teal.primary}15`, color: colors.teal.primary }}
+            >
+              Booking Confirmed ✓
+            </div>
             <h2 className="text-2xl font-bold mb-2" style={{ color: colors.text.dark }}>
               You're all set!
             </h2>
-            <p className="text-base mb-8" style={{ color: colors.text.secondary }}>
+            <p className="text-base mb-3" style={{ color: colors.text.secondary }}>
               {consultation
                 ? `Your ${consultation.title || 'consultation'} has been scheduled.`
-                : 'Your free consultation call has been scheduled.'}
+                : 'Your free 5-minute consultation call has been booked.'}
+            </p>
+            <p className="text-sm mb-8 px-2" style={{ color: colors.text.muted }}>
+              A confirmation email has been sent to {user?.email || 'your email address'}. We'll reach out on WhatsApp before the call with the astrologer's details.
             </p>
             
             {/* Booking Details Card */}
@@ -333,13 +350,13 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
                 </div>
               </div>
               
-              <div 
-                className="mt-6 p-4 rounded-xl"
+              <div
+                className="mt-6 p-4 rounded-xl flex items-start gap-3"
                 style={{ backgroundColor: colors.cream.warm }}
               >
+                <span className="text-xl">📱</span>
                 <p className="text-sm" style={{ color: colors.text.secondary }}>
-                  You'll receive a call from our Niro Expert Team at the scheduled time. 
-                  Make sure your phone is nearby!
+                  Keep your phone handy. Our astrologer will call you at the scheduled time.
                 </p>
               </div>
             </div>
@@ -450,7 +467,7 @@ export default function ScheduleCallScreen({ token, user, onBack, onComplete, on
               </div>
               <div>
                 <p className="font-semibold" style={{ color: colors.text.dark }}>
-                  {consultation?.title || 'Free 10-Minute Consultation'}
+                  {consultation?.title || 'Free 5-Minute Consultation'}
                 </p>
                 <p className="text-sm" style={{ color: colors.text.muted }}>
                   {consultation?.duration_mins

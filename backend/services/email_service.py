@@ -93,9 +93,10 @@ async def send_booking_confirmation(
     customer_email: str,
     customer_phone: str,
     expert_id: str,
-    scheduled_date: datetime,
-    topic_id: str,
-    questions: list,
+    expert_name: str = "",
+    scheduled_date: datetime = None,
+    topic_id: str = "",
+    questions: list = None,
     birth_details: dict = None,
 ) -> None:
     """
@@ -104,7 +105,16 @@ async def send_booking_confirmation(
     2. Customer
     """
     bd = birth_details or {}
-    time_str = scheduled_date.strftime("%B %d, %Y at %I:%M %p IST") if scheduled_date else "TBD"
+    questions = questions or []
+    expert_display = expert_name or expert_id or "To be assigned"
+    # Convert UTC datetime to IST (UTC+5:30) for display
+    if scheduled_date:
+        from datetime import timezone as _tz, timedelta as _td
+        ist_offset = _td(hours=5, minutes=30)
+        scheduled_ist = scheduled_date.replace(tzinfo=_tz.utc).astimezone(_tz(ist_offset))
+        time_str = scheduled_ist.strftime("%B %d, %Y at %I:%M %p IST")
+    else:
+        time_str = "TBD"
     topic_label = TOPIC_LABELS.get(topic_id, topic_id or "Not specified")
 
     questions_html = "".join(
@@ -144,6 +154,7 @@ async def send_booking_confirmation(
       <h2 style="color:#3E827A;margin-top:20px;font-size:16px;">Booking Details</h2>
       <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;">
         <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;color:#666;width:38%;"><b>Life Topic</b></td><td style="padding:10px 14px;">{topic_label}</td></tr>
+        <tr style="border-bottom:1px solid #eee;"><td style="padding:10px 14px;color:#666;"><b>Astrologer</b></td><td style="padding:10px 14px;">{expert_display}</td></tr>
         <tr><td style="padding:10px 14px;color:#666;"><b>Slot</b></td><td style="padding:10px 14px;"><b style="color:#3E827A;">{time_str}</b></td></tr>
       </table>
 
@@ -165,11 +176,12 @@ async def send_booking_confirmation(
     </div>
     <div style="background:#f9f9f9;padding:24px;border-radius:0 0 10px 10px;">
       <p style="font-size:16px;">Hi {customer_name},</p>
-      <p>Your free 10-minute consultation call with Niro has been successfully scheduled.</p>
+      <p>Your free 5-minute consultation call with Niro has been successfully scheduled.</p>
       <div style="background:#fff;border-radius:10px;padding:20px;margin:16px 0;border:1px solid #e0e0e0;">
         <h3 style="color:#3E827A;margin-top:0;">Call Details</h3>
         <p><b>Date & Time:</b> {time_str}</p>
-        <p><b>Duration:</b> 10 minutes</p>
+        <p><b>Duration:</b> 5 minutes</p>
+        <p><b>Astrologer:</b> {expert_display}</p>
         <p><b>Booking ID:</b> <code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;">{booking_id}</code></p>
       </div>
       <p style="color:#555;">You'll receive your astrologer's details and call confirmation on WhatsApp before the scheduled time. Please keep your phone nearby!</p>

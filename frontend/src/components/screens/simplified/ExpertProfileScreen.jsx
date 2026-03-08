@@ -92,10 +92,10 @@ export default function ExpertProfileScreen({
     if (!expert) return;
     if (!consultation || consultation.price_inr === 0 || consultation.is_free) {
       if (wizardMode && onBookFreeCall) { onBookFreeCall(); return; }
-      onNavigate?.('schedule', { expertId: expert.expert_id, expertName: expert.name });
+      onNavigate?.('schedule', { expertId: expert.expert_id, expertName: expert.name, topicId });
       return;
     }
-    onNavigate?.('schedule', { expertId: expert.expert_id, expertName: expert.name, consultation });
+    onNavigate?.('schedule', { expertId: expert.expert_id, expertName: expert.name, topicId, consultation });
   };
 
   if (loading) {

@@ -110,12 +110,13 @@ async def get_current_user(request: Request, authorization: Optional[str] = Head
 
 class BookingCreate(BaseModel):
     scheduled_date: str  # ISO format datetime
-    duration_minutes: int = 10
+    duration_minutes: int = 5
     call_type: str = "free_consultation"
     user_name: Optional[str] = None
     user_email: Optional[str] = None
     notes: Optional[str] = None
     expert_id: Optional[str] = None
+    expert_name: Optional[str] = None
     topic_id: Optional[str] = None
     questions: List[str] = []
     user_phone: Optional[str] = None
@@ -161,6 +162,7 @@ async def schedule_call(
             "call_type": booking.call_type,
             "notes": booking.notes,
             "expert_id": booking.expert_id,
+            "expert_name": booking.expert_name,
             "topic_id": booking.topic_id,
             "questions": booking.questions,
             "user_phone": booking.user_phone,
@@ -195,6 +197,7 @@ async def schedule_call(
                 customer_email=booking_doc["user_email"],
                 customer_phone=booking_doc.get("user_phone", "") or user_profile.get("phone", ""),
                 expert_id=booking_doc.get("expert_id", ""),
+                expert_name=booking_doc.get("expert_name", ""),
                 scheduled_date=booking_doc["scheduled_date"],
                 topic_id=booking_doc.get("topic_id", ""),
                 questions=booking_doc.get("questions", []),

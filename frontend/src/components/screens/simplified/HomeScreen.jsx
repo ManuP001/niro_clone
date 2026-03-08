@@ -412,6 +412,7 @@ export default function HomeScreen({
           onTabChange={onTabChange}
           ctaText={ctaText}
           onCtaClick={ctaHandler}
+          user={user}
         />
       )}
 

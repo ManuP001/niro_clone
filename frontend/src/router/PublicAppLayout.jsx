@@ -62,6 +62,7 @@ function ScheduleCallRouteWrapper({ token, user, onNavigate }) {
       onNavigate={onNavigate}
       expertId={state?.expertId}
       expertName={state?.expertName}
+      topicId={state?.topicId}
       consultation={state?.consultation}
       bookingId={state?.bookingId}
     />
@@ -375,7 +376,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
             }
           });
         } else {
-          navigate('/app/schedule', { state: { expertId: params?.expertId, expertName: params?.expertName } });
+          navigate('/app/schedule', { state: { expertId: params?.expertId, expertName: params?.expertName, topicId: params?.topicId } });
         }
         break;
       case 'plan':
