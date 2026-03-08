@@ -17,18 +17,18 @@ const baseTabs = [
   { id: 'remedies', label: 'Remedies', Icon: RemediesIcon },
 ];
 
-// Tab for returning users with active plans
-const myPackTab = { id: 'mypack', label: 'My Pack', Icon: PackageIcon };
+// Tab shown for all authenticated users (shows plan if paid, bookings if free)
+const myCallsTab = { id: 'mypack', label: 'My Calls', Icon: PackageIcon };
 
 // End tabs
 const endTabs = [
   { id: 'astro', label: 'Astro', Icon: AstroIcon },
 ];
 
-export default function BottomNav({ activeTab, onTabChange, hasActivePlan = false }) {
-  // Build tabs based on user state
-  const tabs = hasActivePlan 
-    ? [...baseTabs, myPackTab, ...endTabs]
+export default function BottomNav({ activeTab, onTabChange, hasActivePlan = false, isAuthenticated = false }) {
+  // Show My Calls tab for any logged-in user (paid or free)
+  const tabs = isAuthenticated
+    ? [...baseTabs, myCallsTab, ...endTabs]
     : [...baseTabs, ...endTabs];
   
   return (

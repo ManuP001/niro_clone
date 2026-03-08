@@ -1672,13 +1672,22 @@ async def get_kundli(
         # Parse birth details
         from backend.astro_client.models import BirthDetails
         try:
+            # Normalise location: it may be a string (pob) or a dict (location obj)
+            raw_loc = profile_data['location']
+            if isinstance(raw_loc, dict):
+                raw_loc = (
+                    raw_loc.get('city') or
+                    raw_loc.get('name') or
+                    raw_loc.get('display_name') or
+                    'India'
+                )
             birth_details = BirthDetails(
                 dob=datetime.strptime(profile_data['dob'], '%Y-%m-%d').date(),
                 tob=profile_data['tob'],
-                location=profile_data['location'],
+                location=raw_loc or 'India',
                 timezone=5.5  # Default to IST
             )
-        except (ValueError, KeyError) as e:
+        except (ValueError, KeyError, Exception) as e:
             logger.error(f"Failed to parse birth details: {e}")
             return {
                 "ok": False,

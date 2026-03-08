@@ -376,7 +376,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
             }
           });
         } else {
-          navigate('/app/schedule', { state: { expertId: params?.expertId, expertName: params?.expertName, topicId: params?.topicId } });
+          navigate('/app/schedule', { state: { expertId: params?.expertId, expertName: params?.expertName, topicId: params?.topicId || freeCallInitialTopicId } });
         }
         break;
       case 'plan':

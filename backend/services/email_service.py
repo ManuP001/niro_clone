@@ -66,6 +66,35 @@ async def send_email(
         return {"status": "error", "reason": str(e)}
 
 
+async def send_email_multi(
+    recipient_emails: list,
+    subject: str,
+    html_content: str
+) -> Dict[str, Any]:
+    """Send one email to multiple recipients in a single Resend API call."""
+    if not is_email_configured():
+        logger.warning("Email service not configured. RESEND_API_KEY is missing.")
+        return {"status": "skipped", "reason": "Email service not configured"}
+
+    try:
+        import resend
+        resend.api_key = RESEND_API_KEY
+
+        params = {
+            "from": SENDER_EMAIL,
+            "to": recipient_emails,
+            "subject": subject,
+            "html": html_content
+        }
+
+        email = await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"Email sent to {len(recipient_emails)} recipients, id: {email.get('id') if isinstance(email, dict) else getattr(email, 'id', None)}")
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(f"Failed to send multi-recipient email: {str(e)}")
+        return {"status": "error", "reason": str(e)}
+
+
 ADMIN_EMAILS = [
     os.environ.get('ADMIN_EMAIL_1', 'sharad@getniro.ai'),
     os.environ.get('ADMIN_EMAIL_2', 'manu@getniro.ai'),
@@ -191,16 +220,22 @@ async def send_booking_confirmation(
     </body></html>
     """
 
-    # Send to admins and customer concurrently
-    tasks = [
-        send_email(admin_email, f"New Free Call — {customer_name}", admin_html)
-        for admin_email in ADMIN_EMAILS
-    ]
-    if customer_email:
-        tasks.append(send_email(customer_email, "Your free consultation is confirmed ✓", customer_html))
-
+    # Send admin notification as ONE email to all admins (avoids rate limit)
+    # Then send customer confirmation separately — total 2 API calls vs 4
     import asyncio
-    await asyncio.gather(*tasks, return_exceptions=True)
+
+    valid_admins = [e for e in ADMIN_EMAILS if e]
+    if valid_admins:
+        await send_email_multi(
+            valid_admins,
+            f"New Free Call — {customer_name}",
+            admin_html,
+        )
+        # Brief pause to respect Resend's 2 req/s limit
+        await asyncio.sleep(0.6)
+
+    if customer_email:
+        await send_email(customer_email, "Your free consultation is confirmed ✓", customer_html)
 
 
 async def send_booking_notification(
