@@ -3205,6 +3205,75 @@ const BulkUpload = () => {
 // ============================================================================
 // EMAIL CAMPAIGNS (CRM)
 // ============================================================================
+
+const NIRO_EMAIL_TEMPLATE = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body style="margin:0;padding:0;background:#f5f0e8;font-family:Georgia,serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f0e8;padding:32px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:#3E827A;padding:28px 40px;text-align:center;">
+            <p style="margin:0;font-size:26px;font-weight:bold;color:#ffffff;letter-spacing:2px;">NIRO</p>
+            <p style="margin:6px 0 0;font-size:13px;color:rgba(255,255,255,0.75);letter-spacing:1px;">GUIDED BY THE STARS</p>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:36px 40px;">
+            <p style="margin:0 0 16px;font-size:17px;color:#1a1a2e;">Hi {{name}},</p>
+
+            <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#444;">
+              <!-- YOUR MESSAGE HERE -->
+              We wanted to reach out personally. Whether you're navigating a big decision or simply seeking clarity, Niro's expert astrologers are here to guide you.
+            </p>
+
+            <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#444;">
+              <!-- OPTIONAL SECOND PARAGRAPH -->
+              Your first call is completely free — no commitment, no pressure. Just an honest conversation with someone who can help you see things more clearly.
+            </p>
+
+            <!-- CTA Button -->
+            <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+              <tr>
+                <td style="background:#3E827A;border-radius:50px;padding:14px 32px;">
+                  <a href="https://getniro.ai" style="color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;letter-spacing:0.5px;">
+                    Book Your Free 5 Min Call →
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0;font-size:14px;color:#888;line-height:1.6;">
+              With care,<br/>
+              <strong style="color:#3E827A;">The Niro Team</strong>
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="background:#f5f0e8;padding:20px 40px;text-align:center;border-top:1px solid #e8e0d0;">
+            <p style="margin:0;font-size:12px;color:#999;">
+              You're receiving this because you signed up at getniro.ai.<br/>
+              Questions? Reply to this email — we read every one.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
 const SEGMENT_DEFAULTS = {
   user_source: 'all',
   has_booking: '',
@@ -3750,9 +3819,14 @@ const EmailCampaigns = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-gray-700">Email Body (HTML)</h3>
-            <button onClick={() => setHtmlPreview(v => !v)} className="text-sm text-teal-600 hover:underline">
-              {htmlPreview ? 'Hide Preview' : 'Show Preview'}
-            </button>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setForm(f => ({ ...f, html_content: NIRO_EMAIL_TEMPLATE }))} className="text-xs px-3 py-1 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50">
+                Use Niro Template
+              </button>
+              <button onClick={() => setHtmlPreview(v => !v)} className="text-sm text-teal-600 hover:underline">
+                {htmlPreview ? 'Hide Preview' : 'Show Preview'}
+              </button>
+            </div>
           </div>
           <p className="text-xs text-gray-400">Use <code className="bg-gray-100 px-1 rounded">{'{{name}}'}</code> for recipient's name and <code className="bg-gray-100 px-1 rounded">{'{{email}}'}</code> for their email address.</p>
           <textarea
