@@ -255,6 +255,7 @@ async def list_users(
     search: str = Query(default=None),
     source: str = Query(default="all", description="Filter: all, google, legacy"),
     profile_status: str = Query(default="all", description="Filter: all, complete, incomplete"),
+    purchase_status: str = Query(default="all", description="Filter: all, has_purchase, no_purchase"),
     sort_by: str = Query(default="created_at", description="Sort by: created_at, name, email"),
     sort_order: str = Query(default="desc", description="Sort order: asc, desc")
 ):
@@ -327,7 +328,22 @@ async def list_users(
         all_users = [u for u in all_users if u.get("profile_complete")]
     elif profile_status == "incomplete":
         all_users = [u for u in all_users if not u.get("profile_complete")]
-    
+
+    # Filter by purchase status (pre-fetch all paying user_ids before pagination)
+    if purchase_status in ("has_purchase", "no_purchase"):
+        paid_statuses = ["paid", "completed", "success"]
+        simp_buyers = await db.niro_simplified_orders.distinct(
+            "user_id", {"status": {"$in": paid_statuses}}
+        )
+        v2_buyers = await db.niro_v2_orders.distinct(
+            "user_id", {"status": {"$in": paid_statuses}}
+        )
+        buyer_ids = set(simp_buyers) | set(v2_buyers)
+        if purchase_status == "has_purchase":
+            all_users = [u for u in all_users if u.get("user_id") in buyer_ids]
+        else:
+            all_users = [u for u in all_users if u.get("user_id") not in buyer_ids]
+
     # Sort
     def get_sort_key(x):
         if sort_by == "name":
@@ -389,6 +405,7 @@ async def list_users(
         "filters": {
             "source": source,
             "profile_status": profile_status,
+            "purchase_status": purchase_status,
             "sort_by": sort_by,
             "sort_order": sort_order
         }

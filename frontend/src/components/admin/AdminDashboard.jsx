@@ -517,6 +517,7 @@ const UsersList = () => {
   const [search, setSearch] = useState('');
   const [source, setSource] = useState('all');
   const [profileStatus, setProfileStatus] = useState('all');
+  const [purchaseStatus, setPurchaseStatus] = useState('all');
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
   const [selectedUser, setSelectedUser] = useState(null);
@@ -525,7 +526,8 @@ const UsersList = () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
-        page, limit: 20, source, profile_status: profileStatus, sort_by: sortBy, sort_order: sortOrder,
+        page, limit: 20, source, profile_status: profileStatus, purchase_status: purchaseStatus,
+        sort_by: sortBy, sort_order: sortOrder,
         ...(search && { search })
       });
       const data = await adminFetch(`/api/admin/users?${params}`);
@@ -538,7 +540,7 @@ const UsersList = () => {
     }
   };
 
-  useEffect(() => { loadUsers(); }, [page, source, profileStatus, sortBy, sortOrder]);
+  useEffect(() => { loadUsers(); }, [page, source, profileStatus, purchaseStatus, sortBy, sortOrder]);
 
   const handleSearch = (e) => { e.preventDefault(); setPage(1); loadUsers(); };
 
@@ -596,6 +598,11 @@ const UsersList = () => {
             <option value="all">All Profiles</option>
             <option value="complete">Complete</option>
             <option value="incomplete">Incomplete</option>
+          </select>
+          <select value={purchaseStatus} onChange={(e) => { setPurchaseStatus(e.target.value); setPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
+            <option value="all">All Purchases</option>
+            <option value="has_purchase">Has Purchased</option>
+            <option value="no_purchase">Never Purchased</option>
           </select>
           <select value={sortBy} onChange={(e) => { setSortBy(e.target.value); setPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
             <option value="created_at">Sort by Date</option>
