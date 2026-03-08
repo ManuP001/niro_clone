@@ -2023,42 +2023,53 @@ async def get_checklist_report(request_id: str):
 @app.on_event("startup")
 async def init_astro_db():
     """Initialize astro database on startup"""
+    import asyncio as _asyncio
     try:
-        astro_db = await get_astro_db()
-        await astro_db.init()
+        astro_db = await _asyncio.wait_for(get_astro_db(), timeout=15)
+        await _asyncio.wait_for(astro_db.init(), timeout=15)
         logger.info("✅ Astro database initialized")
+    except _asyncio.TimeoutError:
+        logger.warning("⚠ Astro database init timed out — skipping")
     except Exception as e:
         logger.error(f"Failed to initialize astro database: {e}")
 
 @app.on_event("startup")
 async def init_niro_v2_db():
     """Initialize NIRO V2 MongoDB storage on startup"""
+    import asyncio as _asyncio
     try:
         if db is not None:
-            niro_storage = await init_niro_v2_storage(db)
+            niro_storage = await _asyncio.wait_for(init_niro_v2_storage(db), timeout=20)
             app.state.niro_v2_storage = niro_storage
             app.state.db = db  # Make database available to Google auth router
-            
+
             # Also set db for profile module
             from backend.profile import set_db
             set_db(db)
-            
+
             logger.info("✅ NIRO V2 storage initialized with MongoDB")
         else:
             logger.warning("⚠ NIRO V2 storage not initialized - MongoDB not available")
+    except _asyncio.TimeoutError:
+        logger.warning("⚠ NIRO V2 MongoDB init timed out — server will still start")
+        if db is not None:
+            app.state.db = db
     except Exception as e:
         logger.error(f"Failed to initialize NIRO V2 storage: {e}")
 
 @app.on_event("startup")
 async def init_simplified_db():
     """Initialize NIRO Simplified MongoDB storage on startup"""
+    import asyncio as _asyncio
     try:
         if db is not None:
-            simplified_storage = await init_simplified_storage(db)
+            simplified_storage = await _asyncio.wait_for(init_simplified_storage(db), timeout=20)
             app.state.simplified_storage = simplified_storage
             logger.info("✅ NIRO Simplified storage initialized with MongoDB")
         else:
             logger.warning("⚠ NIRO Simplified storage not initialized - MongoDB not available")
+    except _asyncio.TimeoutError:
+        logger.warning("⚠ NIRO Simplified MongoDB init timed out — server will still start")
     except Exception as e:
         logger.error(f"Failed to initialize NIRO Simplified storage: {e}")
 
