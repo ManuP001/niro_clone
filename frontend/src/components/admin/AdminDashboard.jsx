@@ -518,6 +518,7 @@ const UsersList = () => {
   const [source, setSource] = useState('all');
   const [profileStatus, setProfileStatus] = useState('all');
   const [purchaseStatus, setPurchaseStatus] = useState('all');
+  const [freeCallStatus, setFreeCallStatus] = useState('all');
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
   const [selectedUser, setSelectedUser] = useState(null);
@@ -527,7 +528,7 @@ const UsersList = () => {
     try {
       const params = new URLSearchParams({
         page, limit: 20, source, profile_status: profileStatus, purchase_status: purchaseStatus,
-        sort_by: sortBy, sort_order: sortOrder,
+        free_call_status: freeCallStatus, sort_by: sortBy, sort_order: sortOrder,
         ...(search && { search })
       });
       const data = await adminFetch(`/api/admin/users?${params}`);
@@ -540,7 +541,7 @@ const UsersList = () => {
     }
   };
 
-  useEffect(() => { loadUsers(); }, [page, source, profileStatus, purchaseStatus, sortBy, sortOrder]);
+  useEffect(() => { loadUsers(); }, [page, source, profileStatus, purchaseStatus, freeCallStatus, sortBy, sortOrder]);
 
   const handleSearch = (e) => { e.preventDefault(); setPage(1); loadUsers(); };
 
@@ -604,6 +605,11 @@ const UsersList = () => {
             <option value="has_purchase">Has Purchased</option>
             <option value="no_purchase">Never Purchased</option>
           </select>
+          <select value={freeCallStatus} onChange={(e) => { setFreeCallStatus(e.target.value); setPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
+            <option value="all">All Free Calls</option>
+            <option value="has_free_call">Booked Free Call</option>
+            <option value="no_free_call">No Free Call</option>
+          </select>
           <select value={sortBy} onChange={(e) => { setSortBy(e.target.value); setPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
             <option value="created_at">Sort by Date</option>
             <option value="name">Sort by Name</option>
@@ -629,14 +635,15 @@ const UsersList = () => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Profile</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Spent</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Free Call</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
-                <tr><td colSpan="8" className="px-4 py-8 text-center text-gray-500">Loading...</td></tr>
+                <tr><td colSpan="9" className="px-4 py-8 text-center text-gray-500">Loading...</td></tr>
               ) : users.length === 0 ? (
-                <tr><td colSpan="8" className="px-4 py-8 text-center text-gray-500">No users found</td></tr>
+                <tr><td colSpan="9" className="px-4 py-8 text-center text-gray-500">No users found</td></tr>
               ) : (
                 users.map((user) => (
                   <tr key={user.user_id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelectedUser(user)}>
@@ -655,6 +662,15 @@ const UsersList = () => {
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{user.order_count || 0}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{formatCurrency(user.total_spent)}</td>
+                    <td className="px-4 py-3">
+                      {user.free_call_status ? (
+                        <span className={`px-2 py-1 text-xs rounded-full ${user.free_call_status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                          {user.free_call_status === 'completed' ? 'Done' : 'Scheduled'}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{formatDate(user.created_at)}</td>
                   </tr>
                 ))
@@ -691,6 +707,7 @@ const UsersList = () => {
                 ['Auth Source', selectedUser.auth_source],
                 ['Orders', selectedUser.order_count],
                 ['Total Spent', formatCurrency(selectedUser.total_spent)],
+                ['Free Call', selectedUser.free_call_status ? `${selectedUser.free_call_status} (${selectedUser.free_call_expert || 'unknown expert'})` : 'Not booked'],
               ].map(([label, value]) => (
                 <div key={label}>
                   <p className="text-xs text-gray-500">{label}</p>

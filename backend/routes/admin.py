@@ -256,6 +256,7 @@ async def list_users(
     source: str = Query(default="all", description="Filter: all, google, legacy"),
     profile_status: str = Query(default="all", description="Filter: all, complete, incomplete"),
     purchase_status: str = Query(default="all", description="Filter: all, has_purchase, no_purchase"),
+    free_call_status: str = Query(default="all", description="Filter: all, has_free_call, no_free_call"),
     sort_by: str = Query(default="created_at", description="Sort by: created_at, name, email"),
     sort_order: str = Query(default="desc", description="Sort order: asc, desc")
 ):
@@ -347,6 +348,23 @@ async def list_users(
         else:
             all_users = [u for u in all_users if u.get("user_id") not in buyer_ids]
 
+    # Filter by free call status
+    if free_call_status in ("has_free_call", "no_free_call"):
+        all_user_ids = [u.get("user_id") for u in all_users if u.get("user_id")]
+        free_call_ids: set = set()
+        async for b in db.bookings.find(
+            {"user_id": {"$in": all_user_ids}, "call_type": "free_consultation",
+             "status": {"$in": ["scheduled", "completed"]}},
+            {"user_id": 1, "_id": 0}
+        ):
+            uid = b.get("user_id", "")
+            if uid:
+                free_call_ids.add(uid)
+        if free_call_status == "has_free_call":
+            all_users = [u for u in all_users if u.get("user_id") in free_call_ids]
+        else:
+            all_users = [u for u in all_users if u.get("user_id") not in free_call_ids]
+
     # Sort
     def get_sort_key(x):
         if sort_by == "name":
@@ -395,7 +413,25 @@ async def list_users(
                     total_spent += order.get("total_amount", 0)
             
             user["total_spent"] = total_spent
-    
+
+            # Free call info
+            free_booking = await db.bookings.find_one(
+                {"user_id": user_id, "call_type": "free_consultation",
+                 "status": {"$in": ["scheduled", "completed"]}},
+                {"status": 1, "expert_id": 1, "scheduled_date": 1, "_id": 0},
+                sort=[("created_at", -1)]
+            )
+            if free_booking:
+                user["free_call_status"] = free_booking.get("status")
+                user["free_call_scheduled_at"] = free_booking.get("scheduled_date")
+                exp_doc = await db.admin_experts.find_one(
+                    {"expert_id": free_booking.get("expert_id")}, {"name": 1, "_id": 0}
+                )
+                user["free_call_expert"] = exp_doc.get("name") if exp_doc else None
+            else:
+                user["free_call_status"] = None
+                user["free_call_expert"] = None
+
     return {
         "ok": True,
         "users": paginated_users,
@@ -409,6 +445,7 @@ async def list_users(
             "source": source,
             "profile_status": profile_status,
             "purchase_status": purchase_status,
+            "free_call_status": free_call_status,
             "sort_by": sort_by,
             "sort_order": sort_order
         }
