@@ -3214,6 +3214,36 @@ const SEGMENT_DEFAULTS = {
   inactive_days_min: '',
 };
 
+// Parse a CSV file text into [{email, name}] — handles headers, quoted fields, comma-separated
+const parseCSV = (text) => {
+  const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+  if (!lines.length) return [];
+  const firstLower = lines[0].toLowerCase();
+  const hasHeader = firstLower.includes('email') || firstLower.includes('name');
+  const headers = hasHeader
+    ? lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, '').toLowerCase())
+    : null;
+  const dataLines = hasHeader ? lines.slice(1) : lines;
+  const emailIdx = headers ? headers.findIndex(h => h.includes('email')) : -1;
+  const nameIdx  = headers ? headers.findIndex(h => h.includes('name'))  : -1;
+  const results = [];
+  for (const line of dataLines) {
+    const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+    let email = '', name = '';
+    if (emailIdx >= 0) {
+      email = cols[emailIdx] || '';
+      name  = nameIdx >= 0 ? (cols[nameIdx] || '') : '';
+    } else {
+      // Auto-detect: first col with @ is email
+      for (let i = 0; i < cols.length; i++) {
+        if (cols[i].includes('@')) { email = cols[i]; name = i > 0 ? cols[0] : ''; break; }
+      }
+    }
+    if (email && email.includes('@')) results.push({ email: email.toLowerCase(), name });
+  }
+  return results;
+};
+
 const EmailCampaigns = () => {
   const [view, setView] = useState('list'); // 'list' | 'new' | 'detail'
   const [campaigns, setCampaigns] = useState([]);
@@ -3229,9 +3259,27 @@ const EmailCampaigns = () => {
     html_content: '',
     segment: { ...SEGMENT_DEFAULTS },
   });
+  const [audienceMode, setAudienceMode] = useState('segment'); // 'segment' | 'csv'
+  const [csvRecipients, setCsvRecipients] = useState([]); // parsed from uploaded CSV
+  const [csvError, setCsvError] = useState('');
+
   const [previewCount, setPreviewCount] = useState(null);
   const [previewSample, setPreviewSample] = useState([]);
   const [previewLoading, setPreviewLoading] = useState(false);
+
+  // Full recipient list modal
+  const [showRecipients, setShowRecipients] = useState(false);
+  const [recipientsList, setRecipientsList] = useState([]);
+  const [recipientsTotal, setRecipientsTotal] = useState(0);
+  const [recipientsPage, setRecipientsPage] = useState(1);
+  const [recipientsLoading, setRecipientsLoading] = useState(false);
+
+  // Test email
+  const [testEmail, setTestEmail] = useState('');
+  const [testName, setTestName] = useState('Test User');
+  const [testSending, setTestSending] = useState(false);
+  const [testResult, setTestResult] = useState(null);
+
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState(null);
@@ -3256,6 +3304,9 @@ const EmailCampaigns = () => {
   useEffect(() => { fetchCampaigns(1); }, []); // eslint-disable-line
 
   const buildSegmentPayload = () => {
+    if (audienceMode === 'csv') {
+      return { user_source: 'all', custom_recipients: csvRecipients };
+    }
     const s = form.segment;
     const payload = { user_source: s.user_source };
     if (s.has_booking !== '') payload.has_booking = s.has_booking === 'true';
@@ -3283,64 +3334,96 @@ const EmailCampaigns = () => {
     }
   };
 
-  const handleSaveDraft = async () => {
-    if (!form.name || !form.subject || !form.html_content) {
-      setError('Name, subject, and email body are required.');
-      return;
+  const handleLoadRecipients = async (p = 1) => {
+    setRecipientsLoading(true);
+    try {
+      const data = await adminFetch(`/api/admin/campaigns/recipients?page=${p}&limit=50`, {
+        method: 'POST',
+        body: JSON.stringify(buildSegmentPayload()),
+      });
+      setRecipientsList(data.recipients || []);
+      setRecipientsTotal(data.total || 0);
+      setRecipientsPage(p);
+      setShowRecipients(true);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setRecipientsLoading(false);
     }
-    setSaving(true);
-    setError('');
+  };
+
+  const handleSendTest = async () => {
+    if (!testEmail || !testEmail.includes('@')) { setTestResult({ ok: false, message: 'Enter a valid email address.' }); return; }
+    if (!form.subject || !form.html_content) { setTestResult({ ok: false, message: 'Subject and email body required.' }); return; }
+    setTestSending(true);
+    setTestResult(null);
+    try {
+      await adminFetch('/api/admin/campaigns/send-test', {
+        method: 'POST',
+        body: JSON.stringify({ subject: form.subject, html_content: form.html_content, test_email: testEmail, test_name: testName }),
+      });
+      setTestResult({ ok: true, message: `Test sent to ${testEmail}` });
+    } catch (e) {
+      setTestResult({ ok: false, message: e.message });
+    } finally {
+      setTestSending(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    if (!form.name || !form.subject || !form.html_content) { setError('Name, subject, and email body are required.'); return; }
+    if (audienceMode === 'csv' && csvRecipients.length === 0) { setError('Upload a CSV with at least one valid email.'); return; }
+    setSaving(true); setError('');
     try {
       const payload = { name: form.name, subject: form.subject, html_content: form.html_content, segment: buildSegmentPayload() };
       const data = await adminFetch('/api/admin/campaigns', { method: 'POST', body: JSON.stringify(payload) });
       setSendConfirmId(data.campaign.campaign_id);
       await fetchCampaigns(1);
       setView('list');
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
-    }
+    } catch (e) { setError(e.message); } finally { setSaving(false); }
   };
 
   const handleSaveThenSend = async () => {
-    if (!form.name || !form.subject || !form.html_content) {
-      setError('Name, subject, and email body are required.');
-      return;
-    }
-    setSaving(true);
-    setError('');
+    if (!form.name || !form.subject || !form.html_content) { setError('Name, subject, and email body are required.'); return; }
+    if (audienceMode === 'csv' && csvRecipients.length === 0) { setError('Upload a CSV with at least one valid email.'); return; }
+    setSaving(true); setError('');
     try {
       const payload = { name: form.name, subject: form.subject, html_content: form.html_content, segment: buildSegmentPayload() };
       const created = await adminFetch('/api/admin/campaigns', { method: 'POST', body: JSON.stringify(payload) });
       setSendConfirmId(created.campaign.campaign_id);
       await fetchCampaigns(1);
       setView('list');
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
-    }
+    } catch (e) { setError(e.message); } finally { setSaving(false); }
   };
 
   const handleSend = async (campaignId) => {
-    setSending(true);
-    setSendResult(null);
-    setError('');
+    setSending(true); setSendResult(null); setError('');
     try {
       const data = await adminFetch(`/api/admin/campaigns/${campaignId}/send`, { method: 'POST' });
       setSendResult({ ok: true, sent: data.sent, errors: data.errors, total: data.total });
       setSendConfirmId(null);
       await fetchCampaigns(page);
-    } catch (e) {
-      setSendResult({ ok: false, message: e.message });
-    } finally {
-      setSending(false);
-    }
+    } catch (e) { setSendResult({ ok: false, message: e.message }); } finally { setSending(false); }
+  };
+
+  const handleCSVUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setCsvError('');
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const parsed = parseCSV(ev.target.result);
+      if (!parsed.length) { setCsvError('No valid email addresses found in the CSV.'); return; }
+      setCsvRecipients(parsed);
+      setPreviewCount(parsed.length);
+      setPreviewSample(parsed.slice(0, 5));
+    };
+    reader.readAsText(file);
   };
 
   const segmentLabel = (seg) => {
     if (!seg) return 'All users';
+    if (seg.custom_recipients?.length) return `Custom list (${seg.custom_recipients.length} addresses)`;
     const parts = [];
     if (seg.user_source && seg.user_source !== 'all') parts.push(seg.user_source);
     if (seg.has_booking === false) parts.push('never booked');
@@ -3352,6 +3435,52 @@ const EmailCampaigns = () => {
     return parts.length ? parts.join(', ') : 'All users';
   };
 
+  // ---- RECIPIENTS MODAL ----
+  const RecipientsModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b">
+          <div>
+            <h3 className="font-bold text-gray-800">Recipient List</h3>
+            <p className="text-xs text-gray-500 mt-0.5">{recipientsTotal} total recipients</p>
+          </div>
+          <button onClick={() => setShowRecipients(false)} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 text-lg">✕</button>
+        </div>
+        <div className="flex-1 overflow-auto">
+          {recipientsLoading ? (
+            <p className="p-6 text-gray-500 text-sm">Loading…</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-gray-500 text-xs uppercase sticky top-0">
+                <tr>
+                  <th className="px-4 py-2 text-left">#</th>
+                  <th className="px-4 py-2 text-left">Name</th>
+                  <th className="px-4 py-2 text-left">Email</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {recipientsList.map((r, i) => (
+                  <tr key={i} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 text-gray-400">{(recipientsPage - 1) * 50 + i + 1}</td>
+                    <td className="px-4 py-2 text-gray-700">{r.name || '—'}</td>
+                    <td className="px-4 py-2 text-gray-600">{r.email}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+        {recipientsTotal > 50 && (
+          <div className="px-6 py-3 border-t flex gap-2 text-sm">
+            {recipientsPage > 1 && <button onClick={() => handleLoadRecipients(recipientsPage - 1)} className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200">← Prev</button>}
+            <span className="text-gray-500 py-1">Page {recipientsPage} of {Math.ceil(recipientsTotal / 50)}</span>
+            {recipientsPage * 50 < recipientsTotal && <button onClick={() => handleLoadRecipients(recipientsPage + 1)} className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200">Next →</button>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   // ---- LIST VIEW ----
   if (view === 'list') return (
     <div className="p-6">
@@ -3360,7 +3489,7 @@ const EmailCampaigns = () => {
           <h2 className="text-xl font-bold text-gray-800">Email Campaigns</h2>
           <p className="text-sm text-gray-500 mt-0.5">Send targeted emails to re-engage customers.</p>
         </div>
-        <button onClick={() => { setForm({ name: '', subject: '', html_content: '', segment: { ...SEGMENT_DEFAULTS } }); setPreviewCount(null); setSendResult(null); setError(''); setView('new'); }}
+        <button onClick={() => { setForm({ name: '', subject: '', html_content: '', segment: { ...SEGMENT_DEFAULTS } }); setAudienceMode('segment'); setCsvRecipients([]); setPreviewCount(null); setSendResult(null); setTestResult(null); setError(''); setView('new'); }}
           className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium">
           + New Campaign
         </button>
@@ -3396,7 +3525,7 @@ const EmailCampaigns = () => {
               <tr>
                 <th className="px-4 py-3 text-left">Name</th>
                 <th className="px-4 py-3 text-left">Subject</th>
-                <th className="px-4 py-3 text-left">Segment</th>
+                <th className="px-4 py-3 text-left">Audience</th>
                 <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-left">Recipients</th>
                 <th className="px-4 py-3 text-left">Sent</th>
@@ -3407,8 +3536,8 @@ const EmailCampaigns = () => {
               {campaigns.map(c => (
                 <tr key={c.campaign_id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-medium text-gray-800">{c.name}</td>
-                  <td className="px-4 py-3 text-gray-600 max-w-[180px] truncate">{c.subject}</td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{segmentLabel(c.segment)}</td>
+                  <td className="px-4 py-3 text-gray-600 max-w-[160px] truncate">{c.subject}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs max-w-[140px] truncate">{segmentLabel(c.segment)}</td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${c.status === 'sent' ? 'bg-green-100 text-green-700' : c.status === 'sending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
                       {c.status}
@@ -3451,23 +3580,17 @@ const EmailCampaigns = () => {
         </div>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div><span className="text-gray-500">Subject:</span> <span className="font-medium">{detailCampaign.subject}</span></div>
-          <div><span className="text-gray-500">Segment:</span> <span className="font-medium">{segmentLabel(detailCampaign.segment)}</span></div>
+          <div><span className="text-gray-500">Audience:</span> <span className="font-medium">{segmentLabel(detailCampaign.segment)}</span></div>
           <div><span className="text-gray-500">Recipients:</span> <span className="font-medium">{detailCampaign.recipient_count || '-'}</span></div>
           <div><span className="text-gray-500">Sent at:</span> <span className="font-medium">{detailCampaign.sent_at ? formatDate(detailCampaign.sent_at) : '-'}</span></div>
           {detailCampaign.send_errors > 0 && <div><span className="text-red-500">Send errors:</span> <span className="font-medium text-red-600">{detailCampaign.send_errors}</span></div>}
         </div>
         <div>
           <p className="text-sm text-gray-500 mb-2">Email HTML preview:</p>
-          <iframe
-            srcDoc={detailCampaign.html_content}
-            title="Email Preview"
-            className="w-full border border-gray-200 rounded-lg"
-            style={{ height: 400 }}
-            sandbox="allow-same-origin"
-          />
+          <iframe srcDoc={detailCampaign.html_content} title="Email Preview" className="w-full border border-gray-200 rounded-lg" style={{ height: 400 }} sandbox="allow-same-origin" />
         </div>
         {detailCampaign.status === 'draft' && (
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap items-center">
             {sending ? <span className="text-gray-500 text-sm">Sending…</span> : (
               <button onClick={() => handleSend(detailCampaign.campaign_id)} className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-sm font-medium">
                 Send This Campaign
@@ -3483,13 +3606,14 @@ const EmailCampaigns = () => {
   // ---- NEW CAMPAIGN FORM ----
   return (
     <div className="p-6">
+      {showRecipients && <RecipientsModal />}
       <button onClick={() => setView('list')} className="text-teal-600 hover:underline text-sm mb-4">← Back to Campaigns</button>
       <div className="max-w-3xl space-y-6">
         <h2 className="text-xl font-bold text-gray-800">New Email Campaign</h2>
 
         {error && <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>}
 
-        {/* Basic Info */}
+        {/* Campaign Details */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
           <h3 className="font-semibold text-gray-700">Campaign Details</h3>
           <div>
@@ -3506,76 +3630,120 @@ const EmailCampaigns = () => {
           </div>
         </div>
 
-        {/* Segment Builder */}
+        {/* Audience — mode toggle */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
-          <h3 className="font-semibold text-gray-700">Audience Segment</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">User Source</label>
-              <select value={form.segment.user_source} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, user_source: e.target.value } }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                <option value="all">All users</option>
-                <option value="google">Google OAuth only</option>
-                <option value="legacy">Legacy (email/phone) only</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Has booked a call?</label>
-              <select value={form.segment.has_booking} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, has_booking: e.target.value } }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                <option value="">Any</option>
-                <option value="false">Never booked (re-engage)</option>
-                <option value="true">Has booked before</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Has paid order?</label>
-              <select value={form.segment.has_paid_order} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, has_paid_order: e.target.value } }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                <option value="">Any</option>
-                <option value="false">Never paid (convert)</option>
-                <option value="true">Has paid before (upsell)</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Profile complete?</label>
-              <select value={form.segment.profile_complete} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, profile_complete: e.target.value } }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                <option value="">Any</option>
-                <option value="false">Incomplete profile</option>
-                <option value="true">Profile complete</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">Registered in last N days</label>
-              <input type="number" min="1" value={form.segment.registered_days_ago_max}
-                onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, registered_days_ago_max: e.target.value } }))}
-                placeholder="Blank = all time"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">No booking in last N days</label>
-              <input type="number" min="1" value={form.segment.inactive_days_min}
-                onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, inactive_days_min: e.target.value } }))}
-                placeholder="Blank = ignore"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-gray-700">Audience</h3>
+            <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+              <button onClick={() => { setAudienceMode('segment'); setPreviewCount(null); }}
+                className={`px-3 py-1.5 ${audienceMode === 'segment' ? 'bg-teal-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                Segment Rules
+              </button>
+              <button onClick={() => { setAudienceMode('csv'); setPreviewCount(csvRecipients.length || null); }}
+                className={`px-3 py-1.5 ${audienceMode === 'csv' ? 'bg-teal-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
+                Upload CSV
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-4 pt-2">
-            <button onClick={handlePreview} disabled={previewLoading}
-              className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm font-medium disabled:opacity-50">
-              {previewLoading ? 'Counting…' : 'Preview Audience'}
-            </button>
-            {previewCount !== null && (
-              <div className="text-sm">
-                <span className="font-semibold text-teal-700">{previewCount} users</span>
-                <span className="text-gray-500"> will receive this email</span>
-                {previewSample.length > 0 && (
-                  <span className="text-gray-400 ml-2">— e.g. {previewSample.map(u => u.name || u.email).slice(0, 3).join(', ')}</span>
+
+          {audienceMode === 'segment' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">User Source</label>
+                  <select value={form.segment.user_source} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, user_source: e.target.value } }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="all">All users</option>
+                    <option value="google">Google OAuth only</option>
+                    <option value="legacy">Legacy (email/phone) only</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Has booked a call?</label>
+                  <select value={form.segment.has_booking} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, has_booking: e.target.value } }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="">Any</option>
+                    <option value="false">Never booked (re-engage)</option>
+                    <option value="true">Has booked before</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Has paid order?</label>
+                  <select value={form.segment.has_paid_order} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, has_paid_order: e.target.value } }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="">Any</option>
+                    <option value="false">Never paid (convert)</option>
+                    <option value="true">Has paid before (upsell)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Profile complete?</label>
+                  <select value={form.segment.profile_complete} onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, profile_complete: e.target.value } }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="">Any</option>
+                    <option value="false">Incomplete profile</option>
+                    <option value="true">Profile complete</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Registered in last N days</label>
+                  <input type="number" min="1" value={form.segment.registered_days_ago_max}
+                    onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, registered_days_ago_max: e.target.value } }))}
+                    placeholder="Blank = all time"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">No booking in last N days</label>
+                  <input type="number" min="1" value={form.segment.inactive_days_min}
+                    onChange={e => setForm(f => ({ ...f, segment: { ...f.segment, inactive_days_min: e.target.value } }))}
+                    placeholder="Blank = ignore"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3 pt-1 flex-wrap">
+                <button onClick={handlePreview} disabled={previewLoading}
+                  className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm font-medium disabled:opacity-50">
+                  {previewLoading ? 'Counting…' : 'Preview Audience'}
+                </button>
+                {previewCount !== null && (
+                  <>
+                    <span className="text-sm">
+                      <span className="font-semibold text-teal-700">{previewCount} users</span>
+                      <span className="text-gray-500"> will receive this email</span>
+                      {previewSample.length > 0 && (
+                        <span className="text-gray-400 ml-1">— e.g. {previewSample.map(u => u.name || u.email).slice(0, 3).join(', ')}</span>
+                      )}
+                    </span>
+                    <button onClick={() => handleLoadRecipients(1)} disabled={recipientsLoading}
+                      className="text-teal-600 hover:underline text-sm disabled:opacity-50">
+                      {recipientsLoading ? 'Loading…' : 'View full list →'}
+                    </button>
+                  </>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {audienceMode === 'csv' && (
+            <div className="space-y-3">
+              <p className="text-xs text-gray-500">
+                Upload a CSV with columns <code className="bg-gray-100 px-1 rounded">email</code> and optionally <code className="bg-gray-100 px-1 rounded">name</code>. First row can be a header row.
+              </p>
+              <input type="file" accept=".csv,text/csv" onChange={handleCSVUpload}
+                className="block w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100" />
+              {csvError && <p className="text-sm text-red-600">{csvError}</p>}
+              {csvRecipients.length > 0 && (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-teal-700">{csvRecipients.length} recipients loaded</span>
+                  <span className="text-gray-400 text-sm">— e.g. {csvRecipients.slice(0, 3).map(r => r.name || r.email).join(', ')}</span>
+                  <button onClick={() => handleLoadRecipients(1)} disabled={recipientsLoading}
+                    className="text-teal-600 hover:underline text-sm disabled:opacity-50">
+                    {recipientsLoading ? 'Loading…' : 'View full list →'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Email Body */}
@@ -3597,14 +3765,29 @@ const EmailCampaigns = () => {
           {htmlPreview && form.html_content && (
             <div>
               <p className="text-xs text-gray-500 mb-1">Preview (rendered):</p>
-              <iframe
-                srcDoc={form.html_content}
-                title="HTML Preview"
-                className="w-full border border-gray-200 rounded-lg bg-white"
-                style={{ height: 360 }}
-                sandbox="allow-same-origin"
-              />
+              <iframe srcDoc={form.html_content} title="HTML Preview" className="w-full border border-gray-200 rounded-lg bg-white" style={{ height: 360 }} sandbox="allow-same-origin" />
             </div>
+          )}
+        </div>
+
+        {/* Send Test Email */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-3">
+          <h3 className="font-semibold text-gray-700">Send Test Email</h3>
+          <p className="text-xs text-gray-400">Send a test to yourself before launching the campaign. Subject will be prefixed with [TEST].</p>
+          <div className="flex gap-3 flex-wrap">
+            <input type="text" value={testName} onChange={e => setTestName(e.target.value)}
+              placeholder="Your name"
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm w-40 focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            <input type="email" value={testEmail} onChange={e => setTestEmail(e.target.value)}
+              placeholder="your@email.com"
+              className="flex-1 min-w-[200px] px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            <button onClick={handleSendTest} disabled={testSending}
+              className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 text-sm font-medium disabled:opacity-50 whitespace-nowrap">
+              {testSending ? 'Sending…' : 'Send Test →'}
+            </button>
+          </div>
+          {testResult && (
+            <p className={`text-sm ${testResult.ok ? 'text-green-700' : 'text-red-600'}`}>{testResult.message}</p>
           )}
         </div>
 

@@ -3025,6 +3025,7 @@ class SegmentRules(BaseModel):
     profile_complete: Optional[bool] = None
     registered_days_ago_max: Optional[int] = None   # signed up within last N days
     inactive_days_min: Optional[int] = None         # no booking in last N days
+    custom_recipients: List[Dict] = []              # [{email, name}] — when set, bypasses all DB filters
 
 class CampaignCreate(BaseModel):
     name: str
@@ -3032,11 +3033,32 @@ class CampaignCreate(BaseModel):
     html_content: str
     segment: SegmentRules = SegmentRules()
 
+class TestEmailRequest(BaseModel):
+    subject: str
+    html_content: str
+    test_email: str
+    test_name: str = "Test User"
+
 
 async def _get_segment_users(segment: SegmentRules, db) -> List[Dict]:
     """Resolve a SegmentRules into a deduplicated list of {user_id, email, name}."""
     import re
     from datetime import timezone as _tz
+
+    # If custom recipients list is provided, bypass all DB queries
+    if segment.custom_recipients:
+        seen: set = set()
+        result = []
+        for r in segment.custom_recipients:
+            email = (r.get("email") or "").strip().lower()
+            if email and "@" in email and email not in seen:
+                seen.add(email)
+                result.append({
+                    "user_id": "",
+                    "email": email,
+                    "name": r.get("name") or email.split("@")[0],
+                })
+        return result
 
     now = datetime.now(timezone.utc)
     users: List[Dict] = []
@@ -3258,6 +3280,60 @@ async def preview_campaign_segment(
 
     users = await _get_segment_users(segment, db)
     return {"ok": True, "count": len(users), "sample": [{"email": u["email"], "name": u["name"]} for u in users[:5]]}
+
+
+@router.post("/campaigns/send-test")
+async def send_test_email(
+    req: TestEmailRequest,
+    request: Request,
+    x_admin_token: str = Header(None),
+):
+    """Send a single test email to verify the template before launching a campaign."""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        from backend.services.email_service import send_email as _send_email
+        personalised_html = (
+            req.html_content
+            .replace("{{name}}", req.test_name)
+            .replace("{{email}}", req.test_email)
+        )
+        result = await _send_email(req.test_email, f"[TEST] {req.subject}", personalised_html)
+        if result.get("status") == "error":
+            raise HTTPException(status_code=500, detail=f"Email send failed: {result.get('message', 'Unknown error')}")
+        return {"ok": True, "status": result.get("status"), "email_id": result.get("email_id")}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/campaigns/recipients")
+async def get_campaign_recipients(
+    segment: SegmentRules,
+    request: Request,
+    x_admin_token: str = Header(None),
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=200),
+):
+    """Return the full paginated recipient list for a segment (for preview before sending)."""
+    db = await get_db(request)
+    if not await verify_admin_token_async(x_admin_token, db):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    users = await _get_segment_users(segment, db)
+    total = len(users)
+    start = (page - 1) * limit
+    page_users = users[start:start + limit]
+    return {
+        "ok": True,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "recipients": [{"email": u["email"], "name": u["name"]} for u in page_users],
+    }
 
 
 @router.get("/campaigns/{campaign_id}")
