@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { ChatProvider } from '../context/ChatContext';
 import { colors } from '../components/screens/simplified/theme';
@@ -126,47 +126,6 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
   const [loadingState, setLoadingState] = useState(true);
   const [miraInitialMessage, setMiraInitialMessage] = useState('');
   const [showHomeTour, setShowHomeTour] = useState(false);
-  const [showFreeCallWizard, setShowFreeCallWizard] = useState(false);
-  const [freeCallInitialTopicId, setFreeCallInitialTopicId] = useState(null);
-
-  // Android back button: when wizard is open, push a history entry so pressing
-  // the hardware back button closes the wizard instead of leaving the app.
-  const wizardClosingByButtonRef = useRef(false);
-
-  useEffect(() => {
-    if (!showFreeCallWizard) return;
-
-    // Push a dummy entry (same URL) so back button can be intercepted
-    window.history.pushState({ niroWizard: true }, '', window.location.href);
-
-    const handlePopState = () => {
-      if (wizardClosingByButtonRef.current) {
-        // Already being closed by a button click — nothing to do
-        wizardClosingByButtonRef.current = false;
-        return;
-      }
-      setShowFreeCallWizard(false);
-      setFreeCallInitialTopicId(null);
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [showFreeCallWizard]);
-
-  // Close wizard and clean up the extra history entry we pushed.
-  // We use replaceState (synchronous) rather than history.go(-1) (async).
-  // history.go(-1) would fire *after* any subsequent navigate() call and undo
-  // the new navigation — e.g. expert profile → back to /app (the bug).
-  // replaceState just strips the niroWizard marker from the current entry
-  // without triggering a backward navigation, so it never races with navigate().
-  const closeWizard = useCallback(() => {
-    wizardClosingByButtonRef.current = true;
-    setShowFreeCallWizard(false);
-    setFreeCallInitialTopicId(null);
-    if (window.history.state?.niroWizard) {
-      window.history.replaceState(null, '', window.location.href);
-    }
-  }, []);
 
   // Onboarding state (only for authenticated users)
   const [onboardingStep, setOnboardingStep] = useState(() => {
@@ -233,8 +192,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     if (intent.type === 'topic' && intent.topicId) {
       navigate(`/app/topic/${intent.topicId}`, { replace: true });
     } else if (intent.type === 'free_call') {
-      // Open the guided wizard — no login required at this stage
-      setShowFreeCallWizard(true);
+      navigate('/app/wizard', { replace: true });
     } else if (intent.type === 'expert' && intent.expertId) {
       navigate(`/app/expert/${intent.expertId}`, { replace: true });
     } else if (intent.returnTo) {
@@ -281,10 +239,9 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     }
   };
 
-  // Handle topic selection — opens FreeCallWizard with topic pre-selected
+  // Handle topic selection — navigate to wizard with topic pre-selected
   const handleTopicSelect = (topicId) => {
-    setFreeCallInitialTopicId(topicId || null);
-    setShowFreeCallWizard(true);
+    navigate('/app/wizard', { state: { topicId: topicId || null } });
   };
 
   // Kept for direct /app/topic/:topicId URL access
@@ -296,8 +253,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
   const handleNavigate = (destination, params = {}) => {
     switch (destination) {
       case 'topic':
-        setFreeCallInitialTopicId(params.topicId || null);
-        setShowFreeCallWizard(true);
+        navigate('/app/wizard', { state: { topicId: params.topicId || null } });
         break;
       case 'packageLanding':
         navigate(`/app/package/${params.packageId}`);
@@ -362,7 +318,7 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
             }
           });
         } else {
-          navigate('/app/schedule', { state: { expertId: params?.expertId, expertName: params?.expertName, topicId: params?.topicId || freeCallInitialTopicId } });
+          navigate('/app/schedule', { state: { expertId: params?.expertId, expertName: params?.expertName, topicId: params?.topicId } });
         }
         break;
       case 'plan':
@@ -430,10 +386,9 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
     }
   };
 
-  // Handle CTA click - open the free call onboarding wizard (no login required at this stage)
+  // Handle CTA click - navigate to wizard (no login required at this stage)
   const handleCtaClick = (topicId = null) => {
-    setFreeCallInitialTopicId(topicId || null);
-    setShowFreeCallWizard(true);
+    navigate('/app/wizard', { state: { topicId: topicId || null } });
   };
 
   // Handle onboarding step progression
@@ -604,6 +559,17 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
               } 
             />
             <Route
+              path="wizard"
+              element={
+                <FreeCallWizard
+                  token={token}
+                  userState={userState}
+                  onNavigate={handleNavigate}
+                  onTabChange={handleTabChange}
+                />
+              }
+            />
+            <Route
               path="account"
               element={
                 <AccountScreen
@@ -707,18 +673,6 @@ export default function PublicAppLayout({ authState, onLogout, onLoginClick }) {
           />
         )}
 
-        {/* Free Call Onboarding Wizard */}
-        {showFreeCallWizard && (
-          <FreeCallWizard
-            token={token}
-            user={user}
-            userState={userState}
-            initialTopicId={freeCallInitialTopicId}
-            onClose={closeWizard}
-            onNavigate={handleNavigate}
-            onTabChange={handleTabChange}
-          />
-        )}
       </div>
     </ChatProvider>
   );

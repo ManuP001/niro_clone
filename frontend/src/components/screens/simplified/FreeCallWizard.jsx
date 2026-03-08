@@ -1,23 +1,31 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import HomeScreen from './HomeScreen';
 import ExpertsScreen from './ExpertsScreen';
-import { colors } from './theme';
 
 /**
- * FreeCallWizard — 2-step guided wizard for booking a consultation.
+ * FreeCallWizard — 2-step wizard rendered as a proper route (/app/wizard).
+ * Because it is a route (not a fixed overlay) the layout's BottomNav and
+ * each screen's ResponsiveHeader are always visible.
  *
  * Step 1: Topic Picker  (HomeScreen in picker mode)
  * Step 2: Expert List   (ExpertsScreen filtered by topic)
- *          → clicking an expert closes wizard and navigates to Expert Profile
+ *          → clicking an expert navigates to Expert Profile
+ *
+ * Navigation state: pass { topicId } to pre-select a topic and start at step 2.
  */
 
 const TOPICS_WITH_PACKAGES = [
   'career', 'money', 'health', 'marriage', 'love', 'mental_health', 'spiritual',
 ];
 
-export default function FreeCallWizard({ token, userState, onClose, onNavigate, onTabChange, initialTopicId }) {
+export default function FreeCallWizard({ token, userState, onNavigate, onTabChange }) {
+  const navigate = useNavigate();
+  const { state } = useLocation();
+
+  const initialTopicId = state?.topicId || null;
   const [step, setStep] = useState(initialTopicId ? 2 : 1);
-  const [selectedTopicId, setSelectedTopicId] = useState(initialTopicId || null);
+  const [selectedTopicId, setSelectedTopicId] = useState(initialTopicId);
 
   const handleTopicSelect = (topicId) => {
     setSelectedTopicId(topicId);
@@ -25,16 +33,14 @@ export default function FreeCallWizard({ token, userState, onClose, onNavigate, 
   };
 
   const handleBack = () => {
-    if (step === 1) {
-      onClose();
-    } else {
+    if (step > 1) {
       setStep(s => s - 1);
+    } else {
+      navigate(-1);
     }
   };
 
-  // Expert selected — close wizard and open their profile
   const handleExpertClick = (expert) => {
-    onClose();
     if (expert?.expert_id) {
       onNavigate('expertProfile', {
         expertId: expert.expert_id,
@@ -43,64 +49,31 @@ export default function FreeCallWizard({ token, userState, onClose, onNavigate, 
     }
   };
 
-  const STEP_LABELS = {
-    1: 'Step 1 of 2 — Choose your topic',
-    2: 'Step 2 of 2 — Your astrologers',
-  };
+  if (step === 1) {
+    return (
+      <HomeScreen
+        token={token}
+        userState={userState}
+        mode="picker"
+        onTopicSelect={handleTopicSelect}
+        enabledTopicIds={TOPICS_WITH_PACKAGES}
+        onNavigate={onNavigate}
+        onTabChange={onTabChange}
+        onBack={handleBack}
+      />
+    );
+  }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col"
-      style={{ backgroundColor: colors.background.primary }}
-    >
-      {/* Progress dots */}
-      <div className="flex items-center justify-center gap-2 pt-3 pb-1">
-        {[1, 2].map((s) => (
-          <div
-            key={s}
-            className="rounded-full transition-all"
-            style={{
-              width: s === step ? 20 : 8,
-              height: 8,
-              backgroundColor: s <= step ? colors.teal.primary : `${colors.teal.primary}30`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Step label */}
-      <p className="text-center text-xs pb-2" style={{ color: colors.text.muted }}>
-        {STEP_LABELS[step]}
-      </p>
-
-      {/* Step content */}
-      <div className="flex-1 overflow-auto">
-        {step === 1 && (
-          <HomeScreen
-            token={token}
-            userState={userState}
-            mode="picker"
-            onTopicSelect={handleTopicSelect}
-            enabledTopicIds={TOPICS_WITH_PACKAGES}
-            onNavigate={onNavigate}
-            onTabChange={onTabChange}
-            onBack={handleBack}
-          />
-        )}
-
-        {step === 2 && selectedTopicId && (
-          <ExpertsScreen
-            token={token}
-            userState={userState}
-            topicId={selectedTopicId}
-            maxResults={8}
-            onBookFreeCall={handleExpertClick}
-            onNavigate={onNavigate}
-            onTabChange={onTabChange}
-            hasBottomNav={true}
-          />
-        )}
-      </div>
-    </div>
+    <ExpertsScreen
+      token={token}
+      userState={userState}
+      topicId={selectedTopicId}
+      maxResults={8}
+      onBookFreeCall={handleExpertClick}
+      onNavigate={onNavigate}
+      onTabChange={onTabChange}
+      hasBottomNav={true}
+    />
   );
 }
