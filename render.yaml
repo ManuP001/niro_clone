@@ -14,7 +14,7 @@ services:
       - key: MONGO_URL
         sync: false        # MongoDB Atlas connection string (mongodb+srv://...)
       - key: DB_NAME
-        value: niro_db
+        value: niro-backend
       - key: GEMINI_API_KEY
         sync: false        # Required – backend crashes at startup without this
       # ── OPTIONAL – only needed when those features are used ─────────────────
