@@ -10,26 +10,18 @@ services:
     startCommand: uvicorn backend.server:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:
+      # ── REQUIRED – server will not start without these ──────────────────────
       - key: MONGO_URL
-        sync: false          # Set this in Render dashboard (MongoDB Atlas URI)
+        sync: false        # MongoDB Atlas connection string (mongodb+srv://...)
       - key: DB_NAME
-        value: niro_db       # Change if your DB has a different name
+        value: niro_db
       - key: GEMINI_API_KEY
-        sync: false          # Required for AI features
-      - key: OPENAI_API_KEY
-        sync: false          # Optional – for OpenAI features
-      - key: VEDIC_API_KEY
-        sync: false          # Required for Vedic astrology calculations
-      - key: VEDIC_API_BASE_URL
-        value: https://api.vedicastroapi.com/v3-json
-      - key: GEONAMES_USERNAME
-        value: demo          # Replace with your GeoNames account username
-      - key: ASTRO_CALCULATION_SOURCE
-        value: vedic_api
-      - key: CORS_ORIGINS
-        value: "*"           # Tighten this to your frontend URL after first deploy
+        sync: false        # Required – backend crashes at startup without this
+      # ── OPTIONAL – only needed when those features are used ─────────────────
       - key: PYTHONUNBUFFERED
         value: "1"
+      - key: CORS_ORIGINS
+        value: "*"
 
   # ─── Frontend: React Static Site ─────────────────────────────────────────────
   - type: web
@@ -41,8 +33,10 @@ services:
     buildCommand: npm install --legacy-peer-deps && npm run build
     staticPublishPath: build
     envVars:
+      # Set this to your niro-backend Render URL after first backend deploy
+      # e.g. https://niro-backend.onrender.com
       - key: REACT_APP_BACKEND_URL
-        sync: false          # Set to your niro-backend Render URL (e.g. https://niro-backend.onrender.com)
+        sync: false
     headers:
       - path: /static/*
         name: Cache-Control
