@@ -1,0 +1,56 @@
+services:
+  # ─── Backend: FastAPI Web Service ────────────────────────────────────────────
+  - type: web
+    name: niro-backend
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: .
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: MONGO_URL
+        sync: false          # Set this in Render dashboard (MongoDB Atlas URI)
+      - key: DB_NAME
+        value: niro_db       # Change if your DB has a different name
+      - key: GEMINI_API_KEY
+        sync: false          # Required for AI features
+      - key: OPENAI_API_KEY
+        sync: false          # Optional – for OpenAI features
+      - key: VEDIC_API_KEY
+        sync: false          # Required for Vedic astrology calculations
+      - key: VEDIC_API_BASE_URL
+        value: https://api.vedicastroapi.com/v3-json
+      - key: GEONAMES_USERNAME
+        value: demo          # Replace with your GeoNames account username
+      - key: ASTRO_CALCULATION_SOURCE
+        value: vedic_api
+      - key: CORS_ORIGINS
+        value: "*"           # Tighten this to your frontend URL after first deploy
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+  # ─── Frontend: React Static Site ─────────────────────────────────────────────
+  - type: web
+    name: niro-frontend
+    runtime: static
+    region: oregon
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install --legacy-peer-deps && npm run build
+    staticPublishPath: build
+    envVars:
+      - key: REACT_APP_BACKEND_URL
+        sync: false          # Set to your niro-backend Render URL (e.g. https://niro-backend.onrender.com)
+    headers:
+      - path: /static/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
