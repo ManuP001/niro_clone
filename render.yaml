@@ -27,7 +27,6 @@ services:
   - type: web
     name: niro-frontend
     runtime: static
-    region: oregon
     plan: free
     rootDir: frontend
     buildCommand: npm install --legacy-peer-deps && npm run build
